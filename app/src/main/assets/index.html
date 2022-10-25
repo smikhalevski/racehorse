@@ -1,15 +1,19 @@
 <html>
 <head>
-    <!-- Tip: Use relative URLs when referring to other in-app content to give
-              your app code the flexibility to change the scheme or domain as
-              necessary. -->
-    <link rel="stylesheet" href="/stylesheet.css">
 </head>
 <body>
-<p>This file was loaded from in-app content</p>
-<p><img src="/res/drawable/android_robot.png" alt="Android robot" width="100"></p>
 
-<input type="file">
+<button id="send-event">Send Event</button>
+
+<script language="JavaScript">
+    document.getElementById('send-event').addEventListener('click', function () {
+        window.__eventBridgeOutbox__.push(JSON.stringify({
+          requestId: Math.floor(Math.random() * 1e18),
+          javaClass: 'com.example.myapplication.FooEvent',
+          eventJson: JSON.stringify({www: 123})
+        }))
+    })
+</script>
 
 </body>
 </html>

@@ -1,26 +1,38 @@
 package com.example.myapplication
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.webkit.CookieManager
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.webkit.WebViewAssetLoader
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 
+val eventBus: EventBus = EventBus.getDefault()
 
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(configureWebView("foo.com", applicationContext))
 
+        val webView = configureWebView("foo.com", applicationContext);
+
+        EventBridge(webView, eventBus).register()
+
+//        eventBus.register(this);
+
+        setContentView(webView)
     }
 }
 
+@SuppressLint("SetJavaScriptEnabled")
 fun configureWebView(host: String, context: Context): WebView {
     val w = WebView(context)
 
@@ -57,7 +69,7 @@ class WebAppChromeClient() : WebChromeClient() {
     override fun onShowFileChooser(
         webView: WebView,
         filePathCallback: ValueCallback<Array<Uri>>,
-        fileChooserParams: FileChooserParams
+        fileChooserParams: FileChooserParams,
     ): Boolean {
 //        fileChooserParams = fileChooserParams
 //        filePathCallback = filePathCallback
