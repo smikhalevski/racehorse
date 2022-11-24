@@ -7,7 +7,10 @@ import java.io.File
 import java.io.FileInputStream
 import java.net.URLConnection
 
-class LocalPathHandler(private val baseDirectory: File) : WebViewAssetLoader.PathHandler {
+/**
+ * The path handler that loads static assets from a given directory.
+ */
+class DirectoryPathHandler(private val baseDirectory: File) : WebViewAssetLoader.PathHandler {
 
     private val basePath = baseDirectory.absolutePath
 

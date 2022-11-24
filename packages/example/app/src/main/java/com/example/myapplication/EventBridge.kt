@@ -9,6 +9,9 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.SubscriberExceptionEvent
 import org.greenrobot.eventbus.ThreadMode
 
+/**
+ * The event that can be dispatched by the [EventBridge].
+ */
 open class Event {
     @Transient
     var requestId = -1L
@@ -25,26 +28,27 @@ infix fun <T : Event> T.causedBy(event: Event): T {
  */
 open class OutboxEvent : Event()
 
-private const val TAG = "JavascriptOutbox"
+private const val JAVASCRIPT_OUTBOX_TAG = "JavascriptOutbox"
 
 /**
  * The bridge enables seamless event transport between the [WebView] and the [EventBus].
  *
  * The client should push messages to the outbox:
- * ```
- * window.__eventBridgeOutbox__.push(JSON.stringify({
+ *
+ * ```js
+ * window.__outbox.push(JSON.stringify({
  *     requestId: Math.random() * 1e8
  *     javaClass: 'com.example.MyEvent',
  *     eventJson: JSON.stringify({
  *         value: 'Hello'
  *     })
- * }))
+ * }));
  * ```
  *
  * And the bridge would push messages to the inbox that the client should declare:
  *
- * ```
- * window.__eventBridgeInbox__ = {
+ * ```js
+ * window.__inbox = {
  *     push(response) {
  *         if (response.ok) {
  *             handleEvent(response.event)
@@ -55,24 +59,29 @@ private const val TAG = "JavascriptOutbox"
  * };
  * ```
  *
- * Note: `window.__eventBridgeInbox__` may be initialized with an array if bridge is injected before the client code is
- * executed.
+ * Note: `window.__inbox` may be set to an array if not yet initialized.
  */
 class EventBridge(
     private val webView: WebView,
     private val eventBus: EventBus = EventBus.getDefault(),
     private val gson: Gson = Gson(),
-    private val inboxKey: String = "__eventBridgeInbox__",
-    private val outboxKey: String = "__eventBridgeOutbox__",
+    private val inboxKey: String = "__inbox",
+    private val outboxKey: String = "__outbox",
 ) {
 
     private val javascriptOutbox = JavascriptOutbox()
 
+    /**
+     * Connects the [WebView] to the [EventBus].
+     */
     fun register() {
         webView.addJavascriptInterface(javascriptOutbox, outboxKey)
         eventBus.register(this)
     }
 
+    /**
+     * Disconnects the [WebView] from the [EventBus].
+     */
     fun unregister() {
         webView.removeJavascriptInterface(outboxKey)
         eventBus.unregister(this)
@@ -90,7 +99,7 @@ class EventBridge(
         }
     }
 
-    private fun pushToJavascriptInbox(response: Response) {
+    private fun pushToJavascriptInbox(response: EventBridgeResponse) {
         val json = gson.toJson(response)
 
         webView.evaluateJavascript("(window.$inboxKey||(window.$inboxKey=[])).push($json)", null)
@@ -101,17 +110,17 @@ class EventBridge(
         @JavascriptInterface
         fun push(message: String) {
             val event: Event
-            val request = gson.fromJson(message, Request::class.java)
+            val request = gson.fromJson(message, EventBridgeRequest::class.java)
 
             try {
                 val eventClass = Class.forName(request.javaClass)
 
-                Event::class.java.isAssignableFrom(eventClass) || throw ClassNotFoundException(request.javaClass)
+                Event::class.java.isAssignableFrom(eventClass) || throw IllegalArgumentException("Expected an event class: ${request.javaClass}")
 
                 event = gson.fromJson(request.eventJson, eventClass) as Event
                 event.requestId = request.requestId
             } catch (ex: Throwable) {
-                Log.e(TAG, "Event cannot be processed", ex)
+                Log.e(JAVASCRIPT_OUTBOX_TAG, "Cannot process an event", ex)
 
                 pushToJavascriptInbox(Err(request.requestId, ex))
                 return
@@ -122,20 +131,42 @@ class EventBridge(
     }
 }
 
-private class Request {
+/**
+ * The request sent from the [WebView].
+ */
+private class EventBridgeRequest {
+    /**
+     * The unique request ID.
+     */
     var requestId = -1L
 
+    /**
+     * The qualified name of the class that extends [Event].
+     */
     lateinit var javaClass: String
+
+    /**
+     * The serialized instance of [javaClass].
+     */
     lateinit var eventJson: String
 }
 
-private open class Response(val ok: Boolean, val requestId: Long)
+/**
+ * The response sent from the [EventBus].
+ */
+private open class EventBridgeResponse(val ok: Boolean, val requestId: Long)
 
-private class Ok(val event: Event) : Response(true, event.requestId) {
+/**
+ * Success response from the [EventBus].
+ */
+private class Ok(val event: Event) : EventBridgeResponse(true, event.requestId) {
     val javaClass = event::class.qualifiedName
 }
 
-private class Err(requestId: Long, ex: Throwable) : Response(true, requestId) {
+/**
+ * Error response from the [EventBus].
+ */
+private class Err(requestId: Long, ex: Throwable) : EventBridgeResponse(true, requestId) {
     val javaClass = ex::class.qualifiedName
     val message = ex.message
     val stack = ex.stackTraceToString()
