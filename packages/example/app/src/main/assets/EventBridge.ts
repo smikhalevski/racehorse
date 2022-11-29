@@ -40,7 +40,7 @@ export interface EventBridgeResponses {
 export interface EventBridge<I, O> {
   request<T extends keyof I & keyof O>(javaClass: T, event: O[T]): Promise<I[T]>;
 
-  subscribe<T extends keyof I>(javaClass: T, listener: (event: I[T]) => void): () => void;
+  subscribe<T extends keyof O>(javaClass: T, listener: (event: O[T]) => void): () => void;
 }
 
 function createEventBridge<I, O = unknown>(): EventBridge<I, O> {

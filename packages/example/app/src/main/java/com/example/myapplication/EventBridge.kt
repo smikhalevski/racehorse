@@ -36,7 +36,7 @@ private const val JAVASCRIPT_OUTBOX_TAG = "JavascriptOutbox"
  * The client should push messages to the outbox:
  *
  * ```js
- * window.__outbox.push(JSON.stringify({
+ * window.__OUTBOX__.push(JSON.stringify({
  *     requestId: Math.random() * 1e8
  *     javaClass: 'com.example.MyEvent',
  *     eventJson: JSON.stringify({
@@ -48,7 +48,7 @@ private const val JAVASCRIPT_OUTBOX_TAG = "JavascriptOutbox"
  * And the bridge would push messages to the inbox that the client should declare:
  *
  * ```js
- * window.__inbox = {
+ * window.__INBOX__ = {
  *     push(response) {
  *         if (response.ok) {
  *             handleEvent(response.event)
@@ -59,14 +59,14 @@ private const val JAVASCRIPT_OUTBOX_TAG = "JavascriptOutbox"
  * };
  * ```
  *
- * Note: `window.__inbox` may be set to an array if not yet initialized.
+ * Note: `window.__INBOX__` may be set to an array if not yet initialized.
  */
 class EventBridge(
     private val webView: WebView,
     private val eventBus: EventBus = EventBus.getDefault(),
     private val gson: Gson = Gson(),
-    private val inboxKey: String = "__inbox",
-    private val outboxKey: String = "__outbox",
+    private val inboxVar: String = "__INBOX__",
+    private val outboxVar: String = "__OUTBOX__",
 ) {
 
     private val javascriptOutbox = JavascriptOutbox()
@@ -75,7 +75,7 @@ class EventBridge(
      * Connects the [WebView] to the [EventBus].
      */
     fun register() {
-        webView.addJavascriptInterface(javascriptOutbox, outboxKey)
+        webView.addJavascriptInterface(javascriptOutbox, outboxVar)
         eventBus.register(this)
     }
 
@@ -83,7 +83,7 @@ class EventBridge(
      * Disconnects the [WebView] from the [EventBus].
      */
     fun unregister() {
-        webView.removeJavascriptInterface(outboxKey)
+        webView.removeJavascriptInterface(outboxVar)
         eventBus.unregister(this)
     }
 
@@ -102,7 +102,7 @@ class EventBridge(
     private fun pushToJavascriptInbox(response: EventBridgeResponse) {
         val json = gson.toJson(response)
 
-        webView.evaluateJavascript("(window.$inboxKey||(window.$inboxKey=[])).push($json)", null)
+        webView.evaluateJavascript("(window.$inboxVar||(window.$inboxVar=[])).push($json)", null)
     }
 
     private inner class JavascriptOutbox {

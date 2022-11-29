@@ -3,7 +3,7 @@ package com.example.myapplication
 import com.google.gson.Gson
 import okhttp3.*
 
-enum class UpdateMode { LAZY, MANDATORY }
+enum class UpdateMode1 { LAZY, MANDATORY }
 
 class UpdateInfo {
     lateinit var archiveUrl: String
