@@ -1,0 +1,34 @@
+{
+  "name": "racehorse",
+  "version": "1.0.0",
+  "description": "JS bindings for Racehorse",
+  "main": "./lib/index-cjs.js",
+  "module": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "typedoc": {
+    "entryPoint": "./src/main/index.ts"
+  },
+  "sideEffects": false,
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "build": "tsc --project ./tsconfig.build.json && npm run build:rollup",
+    "build:rollup": "rollup --input ./lib/index.js --file ./lib/index-cjs.js --format cjs --plugin @rollup/plugin-node-resolve",
+    "clean": "rimraf './lib'",
+    "test": "jest --config ../../jest.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smikhalevski/racehorse.git"
+  },
+  "keywords": [
+    "android"
+  ],
+  "author": "Savva Mikhalevski <smikhalevski@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/smikhalevski/racehorse/issues"
+  },
+  "homepage": "https://github.com/smikhalevski/racehorse#readme"
+}
