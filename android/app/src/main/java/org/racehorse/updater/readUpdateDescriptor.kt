@@ -1,4 +1,4 @@
-package com.example.myapplication.updater
+package org.racehorse.updater
 
 import org.json.JSONObject
 import java.net.URL

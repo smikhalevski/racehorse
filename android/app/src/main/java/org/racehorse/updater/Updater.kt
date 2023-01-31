@@ -1,4 +1,4 @@
-package com.example.myapplication.updater
+package org.racehorse.updater
 
 import android.content.Context
 import androidx.lifecycle.Observer

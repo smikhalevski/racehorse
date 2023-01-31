@@ -1,4 +1,4 @@
-package com.example.myapplication
+package org.racehorse
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
@@ -7,7 +7,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.work.ListenableWorker
 import androidx.work.testing.TestWorkerBuilder
 import androidx.work.workDataOf
-import com.example.myapplication.updater.DownloadWorker
+import org.racehorse.updater.DownloadWorker
 import com.squareup.okhttp.mockwebserver.MockResponse
 import com.squareup.okhttp.mockwebserver.MockWebServer
 import org.junit.Assert.*
@@ -30,7 +30,7 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.example.myapplication", appContext.packageName)
+        assertEquals("org.racehorse", appContext.packageName)
     }
 
     private lateinit var appContext: Context

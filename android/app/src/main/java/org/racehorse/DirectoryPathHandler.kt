@@ -1,4 +1,4 @@
-package com.example.myapplication
+package org.racehorse
 
 import android.webkit.WebResourceResponse
 import androidx.annotation.WorkerThread

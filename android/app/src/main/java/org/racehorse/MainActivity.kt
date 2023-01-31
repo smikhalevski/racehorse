@@ -1,21 +1,20 @@
-package com.example.myapplication
+package org.racehorse
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
+import org.racehorse.webview.RacehorseWebView
 
 class MainActivity : AppCompatActivity() {
 
-    val eventBus: EventBus = EventBus.getDefault()
+    private val eventBus: EventBus = EventBus.getDefault()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val webView = RacehorseWebView("10.0.2.2:1234", applicationContext, eventBus)
 
-        webView.loadApp()
+        webView.start()
 
         setContentView(webView)
     }

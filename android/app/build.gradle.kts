@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.myapplication"
+    namespace = "org.racehorse"
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "com.example.myapplication"
+        applicationId = "org.racehorse"
         minSdk = 21
         targetSdk = 33
         versionCode = 1
