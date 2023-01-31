@@ -52,7 +52,7 @@ class RacehorseWebView(
         eventBus.register(this)
     }
 
-    private fun pushEventToConnectionInbox(ok: Boolean, event: Event) {
+    private fun pushToInbox(ok: Boolean, event: Event) {
         val jsonObject = gson.toJsonTree(event).asJsonObject
         jsonObject.remove("requestId")
         jsonObject.addProperty("type", event.javaClass.name)
@@ -68,12 +68,12 @@ class RacehorseWebView(
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onOkEvent(event: OkEvent) {
-        pushEventToConnectionInbox(true, event)
+        pushToInbox(true, event)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onErrEvent(event: ErrEvent) {
-        pushEventToConnectionInbox(false, event)
+        pushToInbox(false, event)
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)

@@ -6,16 +6,18 @@ import androidx.work.*
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-const val DOWNLOAD_BUNDLE = "DOWNLOAD_BUNDLE"
-
 open class Updater(
     private val updateDescriptorUrl: String,
     private val baseDirectory: File,
     private val appContext: Context
 ) {
 
+    companion object {
+        const val DOWNLOAD_BUNDLE = "DOWNLOAD_BUNDLE"
+    }
+
     private val progressObserver = Observer<WorkInfo> {
-        val progress = it.progress.getInt(DownloadWorker.PERCENTAGE, 0)
+        val progress = 0//it.progress.getInt(DownloadWorker.PERCENTAGE, 0)
 
         onProgress(progress)
 
@@ -41,30 +43,31 @@ open class Updater(
 
         val workInfos = workManager.getWorkInfosForUniqueWork(DOWNLOAD_BUNDLE).await()
 
-        val workRequestId = if (workInfos.isEmpty() || workInfos[0].progress.getString(DownloadWorker.VERSION) != version) {
+        val workRequestId =
+            if (workInfos.isEmpty() /*|| workInfos[0].progress.getString(DownloadWorker.VERSION) != version*/) {
 
-            val workRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
-                .setBackoffCriteria(
-                    BackoffPolicy.LINEAR,
-                    OneTimeWorkRequest.MIN_BACKOFF_MILLIS,
-                    TimeUnit.MILLISECONDS
-                )
-                .setInputData(
-                    workDataOf(
-                        DownloadWorker.URL to url,
-                        DownloadWorker.PATHNAME to pathname
+                val workRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
+                    .setBackoffCriteria(
+                        BackoffPolicy.LINEAR,
+                        OneTimeWorkRequest.MIN_BACKOFF_MILLIS,
+                        TimeUnit.MILLISECONDS
                     )
-                )
-                .build()
+                    .setInputData(
+                        workDataOf(
+                            DownloadWorker.URL to url,
+                            DownloadWorker.PATHNAME to pathname
+                        )
+                    )
+                    .build()
 
-            workManager
-                .beginUniqueWork(DOWNLOAD_BUNDLE, ExistingWorkPolicy.REPLACE, workRequest)
-                .enqueue()
+                workManager
+                    .beginUniqueWork(DOWNLOAD_BUNDLE, ExistingWorkPolicy.REPLACE, workRequest)
+                    .enqueue()
 
-            workRequest.id
-        } else {
-            workInfos[0].id
-        }
+                workRequest.id
+            } else {
+                workInfos[0].id
+            }
 
         workManager
             .getWorkInfoByIdLiveData(workRequestId)
