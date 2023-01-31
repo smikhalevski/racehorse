@@ -38,12 +38,11 @@ class RacehorseWebView(
         settings.setGeolocationEnabled(true)
 
         addJavascriptInterface(Connection(gson, eventBus), "racehorseConnection")
-
-        eventBus.register(this)
     }
 
     fun loadApp() {
         loadUrl("http://$appUrl/index.html")
+        eventBus.register(this)
     }
 
     fun pushEventToConnectionInbox(ok: Boolean, event: Event) {

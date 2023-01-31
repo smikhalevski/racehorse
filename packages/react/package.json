@@ -1,7 +1,7 @@
 {
-  "name": "racehorse",
+  "name": "@racehorse/react",
   "version": "0.0.1",
-  "description": "JS bindings for Racehorse.",
+  "description": "React hooks for Racehorse.",
   "main": "./lib/index.js",
   "module": "./lib/index.mjs",
   "types": "./lib/index.d.ts",
@@ -30,7 +30,8 @@
     "url": "https://github.com/smikhalevski/racehorse/issues"
   },
   "homepage": "https://github.com/smikhalevski/racehorse#readme",
-  "dependencies": {
-    "parallel-universe": "^2.0.0"
+  "peerDependencies": {
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
+    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0"
   }
 }

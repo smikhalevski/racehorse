@@ -1,24 +1,20 @@
-import { createEventBridge, Event } from 'racehorse';
+import { Event } from 'racehorse';
+import { useEventBridge, useEventBridgeSubscription } from '@racehorse/react';
 import { Fragment, useEffect, useState } from 'react';
-
-const eventBridge = createEventBridge();
 
 export function App() {
   const [events, setEvents] = useState<Event[]>([]);
 
+  const eventBridge = useEventBridge();
+
+  useEventBridgeSubscription(event => {
+    setEvents(events => events.concat(event));
+  });
+
   useEffect(() => {
-    eventBridge.subscribe(event => {
+    eventBridge.request({ type: 'com.example.myapplication.UnknownEvent' }).then(event => {
       setEvents(events => events.concat(event));
     });
-
-    eventBridge.request({ type: 'com.example.myapplication.UnknownEvent' }).then(
-      event => {
-        setEvents(events => events.concat(event));
-      }
-      // error => {
-      //   setEvents(events => events.concat(error));
-      // }
-    );
   });
 
   return (
