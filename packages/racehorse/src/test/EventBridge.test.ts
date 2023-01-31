@@ -2,6 +2,22 @@ import { sleep } from 'parallel-universe';
 import { Connection, createEventBridge } from '../main';
 
 describe('EventBridge', () => {
+  test('updates connection status', async () => {
+    const eventBridge = createEventBridge({
+      connectionProvider: () => connection,
+    });
+
+    expect(eventBridge.connected).toBe(false);
+
+    const connection: Connection = {
+      post() {},
+    };
+
+    await sleep(200);
+
+    expect(eventBridge.connected).toBe(true);
+  });
+
   test('sends a request and gets a response when a connection is already initialized', async () => {
     const connection: Connection = {
       post: jest.fn(() => {
@@ -13,18 +29,18 @@ describe('EventBridge', () => {
       }),
     };
 
-    const messageBus = createEventBridge({
+    const eventBridge = createEventBridge({
       connectionProvider: () => connection,
     });
 
-    await expect(messageBus.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb', key1: 111 });
+    await expect(eventBridge.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb', key1: 111 });
 
     expect(connection.post).toHaveBeenCalledTimes(1);
     expect(connection.post).toHaveBeenNthCalledWith(1, 0, '{"type":"aaa"}');
   });
 
   test('sends a request and gets a response when a connection is not yet initialized', async () => {
-    const messageBus = createEventBridge({
+    const eventBridge = createEventBridge({
       connectionProvider: () => connection,
     });
 
@@ -38,7 +54,7 @@ describe('EventBridge', () => {
       }),
     };
 
-    await expect(messageBus.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb', key1: 111 });
+    await expect(eventBridge.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb', key1: 111 });
 
     expect(connection.post).toHaveBeenCalledTimes(1);
     expect(connection.post).toHaveBeenNthCalledWith(1, 0, '{"type":"aaa"}');
@@ -55,11 +71,11 @@ describe('EventBridge', () => {
       },
     };
 
-    const messageBus = createEventBridge({
+    const eventBridge = createEventBridge({
       connectionProvider: () => connection,
     });
 
-    messageBus.request({ type: 'aaa' }).catch(error => {
+    eventBridge.request({ type: 'aaa' }).catch(error => {
       expect(error.name).toBe('ccc');
       expect(error.message).toBe('ddd');
       expect(error.stack).toBe('eee');
@@ -70,17 +86,17 @@ describe('EventBridge', () => {
   test('listener receives a message', async () => {
     const listenerMock = jest.fn();
 
-    const messageBus = createEventBridge({
+    const eventBridge = createEventBridge({
       connectionProvider: () => connection,
     });
 
-    messageBus.subscribe(listenerMock);
+    eventBridge.subscribe(listenerMock);
 
     const connection: Connection = {
       post() {},
     };
 
-    await sleep(100);
+    await sleep(200);
 
     expect(connection.inbox).toBeDefined();
 
@@ -98,7 +114,7 @@ describe('EventBridge', () => {
     const connection: Connection = {
       inbox: [
         {
-          requestId: 0,
+          requestId: -1,
           ok: true,
           event: { type: 'aaa', key1: 111 },
         },
@@ -108,23 +124,40 @@ describe('EventBridge', () => {
 
     const listenerMock = jest.fn();
 
-    const messageBus = createEventBridge({
-      connectionProvider: () => connection,
-    });
+    createEventBridge({ connectionProvider: () => connection }).subscribe(listenerMock);
 
-    messageBus.subscribe(listenerMock);
-
-    await sleep(100);
+    await sleep(200);
 
     expect(listenerMock).toHaveBeenCalledTimes(1);
     expect(listenerMock).toHaveBeenNthCalledWith(1, { type: 'aaa', key1: 111 });
   });
 
-  test('handles an error', async () => {
+  test('listener does not receive a message with invalid request ID', async () => {
     const connection: Connection = {
       inbox: [
         {
-          requestId: 0,
+          requestId: -555,
+          ok: true,
+          event: { type: 'aaa', key1: 111 },
+        },
+      ],
+      post() {},
+    };
+
+    const listenerMock = jest.fn();
+
+    createEventBridge({ connectionProvider: () => connection }).subscribe(listenerMock);
+
+    await sleep(200);
+
+    expect(listenerMock).not.toHaveBeenCalled();
+  });
+
+  test('passes an error to error handler', async () => {
+    const connection: Connection = {
+      inbox: [
+        {
+          requestId: -1,
           ok: false,
           event: { type: 'aaa', name: 'bbb', message: 'ccc', stack: 'ddd' },
         },
@@ -135,14 +168,14 @@ describe('EventBridge', () => {
     const listenerMock = jest.fn();
     const errorHandlerMock = jest.fn();
 
-    const messageBus = createEventBridge({
+    const eventBridge = createEventBridge({
       connectionProvider: () => connection,
       errorHandler: errorHandlerMock,
     });
 
-    messageBus.subscribe(listenerMock);
+    eventBridge.subscribe(listenerMock);
 
-    await sleep(100);
+    await sleep(200);
 
     expect(listenerMock).not.toHaveBeenCalled();
     expect(errorHandlerMock).toHaveBeenCalledTimes(1);

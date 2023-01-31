@@ -75,6 +75,11 @@ declare global {
  */
 export interface EventBridge {
   /**
+   * `true` if bridge connection is ready to process events, `false` otherwise.
+   */
+  readonly connected: boolean;
+
+  /**
    * Sends an event through a connection to Android and returns a promise that is resolved when a response with a
    * matching {@linkcode Envelope.requestId} is pushed to the {@link Connection.inbox connection inbox}. If an exception
    * is thrown in Android during an event processing, the returned promise is rejected with an `Error`.
@@ -123,26 +128,33 @@ export function createEventBridge(options: EventBridgeOptions = {}): EventBridge
   const pubSub = new PubSub<Event>(errorHandler);
   const consumers = new Map<number, { resolve(event: Event): void; reject(error: Error): void }>();
 
+  let nonce = 0;
+  let connected = false;
+
   const pushToInbox = (envelope: Envelope): void => {
-    const { event } = envelope;
+    const { ok, requestId, event } = envelope;
 
-    const consumer = consumers.get(envelope.requestId);
-
-    if (envelope.ok) {
-      if (consumer) {
-        consumer.resolve(event);
-      } else {
+    if (requestId === -1) {
+      if (ok) {
         pubSub.publish(event);
+      } else {
+        errorHandler(createError(event));
       }
       return;
     }
 
-    const error = Object.assign(Object.create(Error.prototype), event);
+    const consumer = consumers.get(requestId);
 
-    if (consumer) {
-      consumer.reject(error);
+    if (consumer === undefined) {
+      return;
+    }
+
+    consumers.delete(requestId);
+
+    if (ok) {
+      consumer.resolve(event);
     } else {
-      errorHandler(error);
+      consumer.reject(createError(event));
     }
   };
 
@@ -151,6 +163,8 @@ export function createEventBridge(options: EventBridgeOptions = {}): EventBridge
 
     connection.inbox = { push: pushToInbox };
 
+    connected = true;
+
     if (Array.isArray(inbox)) {
       for (const envelope of inbox) {
         pushToInbox(envelope);
@@ -158,8 +172,6 @@ export function createEventBridge(options: EventBridgeOptions = {}): EventBridge
     }
     return connection;
   });
-
-  let nonce = 0;
 
   const request: EventBridge['request'] = event =>
     new Promise((resolve, reject) => {
@@ -175,5 +187,16 @@ export function createEventBridge(options: EventBridgeOptions = {}): EventBridge
 
   const subscribe: EventBridge['subscribe'] = listener => pubSub.subscribe(listener);
 
-  return { request, subscribe };
+  return {
+    get connected() {
+      return connected;
+    },
+
+    request,
+    subscribe,
+  };
+}
+
+function createError(event: Event): Error {
+  return Object.assign(Object.create(Error.prototype), event);
 }
