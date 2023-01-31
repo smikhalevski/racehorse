@@ -5,8 +5,11 @@
     "esModuleInterop": true,
     "strict": true,
     "target": "ES5",
-    "module": "ES6",
-    "rootDir": ".",
+    "module": "ESNext",
+    "lib": [
+      "DOM",
+      "ES7"
+    ],
     "baseUrl": ".",
     "paths": {
       "racehorse": [
@@ -18,6 +21,7 @@
     }
   },
   "include": [
-    "./packages/*/src/main/**/*"
+    "./packages/*/rollup.config.ts",
+    "./packages/*/src/**/*"
   ]
 }

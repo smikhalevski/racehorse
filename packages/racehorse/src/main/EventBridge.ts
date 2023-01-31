@@ -1,117 +1,179 @@
-interface Ok<T> {
-  ok: true;
+import { PubSub, untilTruthy } from 'parallel-universe';
+
+/**
+ * The event transported through the {@linkcode EventBridge}.
+ */
+export interface Event {
+  /**
+   * The event type (a qualified class name).
+   */
+  type: string;
+
+  /**
+   * The event payload.
+   */
+  [key: string]: any;
+}
+
+/**
+ * The envelope pushed to the inbox by Android.
+ */
+export interface Envelope {
+  /**
+   * The request ID passed to {@linkcode Connection.post} or -1 if the {@linkcode event} is a notification.
+   */
   requestId: number;
-  javaClass: string;
-  event: T;
+
+  /**
+   * `true` for an event, or `false` for an exception.
+   */
+  ok: boolean;
+
+  /**
+   * The response event.
+   */
+  event: Event;
 }
 
-interface Err {
-  ok: false;
-  requestId: number;
-  javaClass: string;
-  message: string;
-  stack: string;
-}
-
-interface EventBridgeRequest {
-  requestId: number;
-  javaClass: string;
-  eventJson: string;
-}
-
-export interface EventBridgeRequests {
-  'com.example.myapplication.FooEvent': {
-    www: number;
-  };
-  'com.example.myapplication.AAA': {
-    www: number;
-  };
-}
-
-export interface EventBridgeResponses {
-  'com.example.myapplication.FooEvent': {
-    www: number;
-  };
-  'com.example.myapplication.AAA': {
-    www: number;
-  };
-}
-
-export interface EventBridge<I, O> {
-  request<T extends keyof I & keyof O>(javaClass: T, event: O[T]): Promise<I[T]>;
-
-  subscribe<T extends keyof O>(javaClass: T, listener: (event: O[T]) => void): () => void;
-}
-
-export function createEventBridge<I, O = unknown>(): EventBridge<I, O> {
-  let nonce = 0;
-
-  const pendingRequestsMap = new Map<number, { resolve(value: any): void; reject(reason: any): void }>();
-  const listenersMap = new Map<string, Set<(event: any) => void>>();
-
-  // window.__inbox = {
-  //   push(response: Ok<any> | Err) {
-  //     const { requestId } = response;
-  //
-  //     if (requestId === -1) {
-  //       if (response.ok) {
-  //         listenersMap.get(response.javaClass)?.forEach(listener => {
-  //           listener(response.event);
-  //         });
-  //         return;
-  //       }
-  //       throw new Error(response.message);
-  //     }
-  //
-  //     const deferred = pendingRequestsMap.get(requestId);
-  //
-  //     if (deferred === undefined) {
-  //       throw new Error('Received an unexpected response');
-  //     }
-  //     if (response.ok) {
-  //       deferred.resolve(response.event);
-  //     } else {
-  //       deferred.reject(response);
-  //     }
-  //     pendingRequestsMap.delete(requestId);
-  //   }
-  // };
-
-  const request = (javaClass: any, event: any): Promise<any> => {
-    return new Promise((resolve, reject) => {
-      const requestId = nonce++;
-      const request: EventBridgeRequest = { requestId, javaClass, eventJson: JSON.stringify(event) };
-
-      pendingRequestsMap.set(requestId, { resolve, reject });
-
-      // window.__outbox.push(JSON.stringify(request));
-    });
+/**
+ * The connection is added to the page as a
+ * {@linkcode https://developer.android.com/reference/android/webkit/JavascriptInterface JavascriptInterface}
+ */
+export interface Connection {
+  /**
+   * An array of envelopes pushed by Android, or an inbox object created by the {@linkcode EventBridge}.
+   */
+  inbox?: {
+    /**
+     * Called by Android when an envelope is pushed through the connection.
+     *
+     * @param envelope An incoming envelope.
+     */
+    push(envelope: Envelope): void;
   };
 
-  const subscribe = (javaClass: any, listener: (event: any) => void): (() => void) => {
-    let listeners = listenersMap.get(javaClass);
+  /**
+   * Delivers a serialized event to Android.
+   *
+   * @param requestId The unique request ID.
+   * @param eventStr The serialized event.
+   */
+  post(requestId: number, eventStr: string): void;
+}
 
-    if (listeners === undefined) {
-      listeners = new Set();
-      listenersMap.set(javaClass, listeners);
+declare global {
+  interface Window {
+    /**
+     * The connection object injected by Android.
+     */
+    racehorseConnection?: Connection;
+  }
+}
+
+/**
+ * The event bridge that transports events between the Android and web realms.
+ */
+export interface EventBridge {
+  /**
+   * Sends an event through a connection to Android and returns a promise that is resolved when a response with a
+   * matching {@linkcode Envelope.requestId} is pushed to the {@link Connection.inbox connection inbox}. If an exception
+   * is thrown in Android during an event processing, the returned promise is rejected with an `Error`.
+   *
+   * @param event The request event to send.
+   * @returns The response event.
+   */
+  request(event: Event): Promise<Event>;
+
+  /**
+   * Subscribes a listener to all events pushed to the inbox that don't have a consumer.
+   *
+   * @param listener The listener to subscribe.
+   * @returns The callback that unsubscribes the listener.
+   */
+  subscribe(
+    /**
+     * @param event The event pushed to the connection inbox.
+     */
+    listener: (event: Event) => void
+  ): () => void;
+}
+
+export interface EventBridgeOptions {
+  /**
+   * Returns the connection opened by Android. The callback is polled until the connection is returned. By default,
+   * {@linkcode window.racehorseConnection} is awaited.
+   */
+  connectionProvider?: () => Connection | undefined;
+
+  /**
+   * A handler that is triggered if a listener throws an error, or an error was pushed the
+   * {@link Connection.inbox connection inbox}.
+   */
+  errorHandler?: (error: unknown) => void;
+}
+
+/**
+ * Creates a message bus that transports messages from and to the native realm through the connection.
+ *
+ * @param options The message bus options.
+ */
+export function createEventBridge(options: EventBridgeOptions = {}): EventBridge {
+  const { connectionProvider = () => window.racehorseConnection, errorHandler = PubSub.defaultErrorHandler } = options;
+
+  const pubSub = new PubSub<Event>(errorHandler);
+  const consumers = new Map<number, { resolve(event: Event): void; reject(error: Error): void }>();
+
+  const pushToInbox = (envelope: Envelope): void => {
+    const { event } = envelope;
+
+    const consumer = consumers.get(envelope.requestId);
+
+    if (envelope.ok) {
+      if (consumer) {
+        consumer.resolve(event);
+      } else {
+        pubSub.publish(event);
+      }
+      return;
     }
 
-    listeners.add(listener);
+    const error = Object.assign(Object.create(Error.prototype), event);
 
-    return () => {
-      listeners!.delete(listener);
-
-      if (listeners!.size === 0) {
-        listenersMap.delete(javaClass);
-      }
-    };
+    if (consumer) {
+      consumer.reject(error);
+    } else {
+      errorHandler(error);
+    }
   };
+
+  const connectionPromise = untilTruthy(connectionProvider, 100).then(connection => {
+    const { inbox } = connection;
+
+    connection.inbox = { push: pushToInbox };
+
+    if (Array.isArray(inbox)) {
+      for (const envelope of inbox) {
+        pushToInbox(envelope);
+      }
+    }
+    return connection;
+  });
+
+  let nonce = 0;
+
+  const request: EventBridge['request'] = event =>
+    new Promise((resolve, reject) => {
+      const requestId = nonce++;
+      const eventStr = JSON.stringify(event);
+
+      consumers.set(requestId, { resolve, reject });
+
+      connectionPromise.then(connection => {
+        connection.post(requestId, eventStr);
+      });
+    });
+
+  const subscribe: EventBridge['subscribe'] = listener => pubSub.subscribe(listener);
 
   return { request, subscribe };
 }
-
-const eventBridge = createEventBridge<EventBridgeRequests, EventBridgeResponses>();
-
-eventBridge.request('com.example.myapplication.FooEvent', { www: 123 }).then(val => {
-  val.www;
-});

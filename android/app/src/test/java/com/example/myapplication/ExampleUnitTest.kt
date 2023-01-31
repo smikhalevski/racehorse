@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import com.google.gson.Gson
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -12,6 +13,16 @@ import org.junit.Assert.*
 class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
+
+        val a = Gson().fromJson("{\"hey\":456,\"wow\":\"rrr\",\"baz\":\"ttt\"}", Foo::class.java)
+
         assertEquals(4, 2 + 2)
     }
+}
+
+
+
+class Foo {
+    val hey = 123
+    val wow = "asd"
 }

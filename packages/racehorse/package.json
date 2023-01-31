@@ -1,9 +1,9 @@
 {
   "name": "racehorse",
   "version": "1.0.0",
-  "description": "JS bindings for Racehorse",
-  "main": "./lib/index-cjs.js",
-  "module": "./lib/index.js",
+  "description": "JS bindings for Racehorse.",
+  "main": "./lib/index.js",
+  "module": "./lib/index.mjs",
   "types": "./lib/index.d.ts",
   "typedoc": {
     "entryPoint": "./src/main/index.ts"
@@ -13,10 +13,9 @@
     "lib"
   ],
   "scripts": {
-    "build": "tsc --project ./tsconfig.build.json && npm run build:rollup",
-    "build:rollup": "rollup --input ./lib/index.js --file ./lib/index-cjs.js --format cjs --plugin @rollup/plugin-node-resolve",
-    "clean": "rimraf './lib'",
-    "test": "jest --config ../../jest.config.js"
+    "build": "rollup --config --configPlugin typescript",
+    "clean": "rimraf lib",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -30,5 +29,8 @@
   "bugs": {
     "url": "https://github.com/smikhalevski/racehorse/issues"
   },
-  "homepage": "https://github.com/smikhalevski/racehorse#readme"
+  "homepage": "https://github.com/smikhalevski/racehorse#readme",
+  "dependencies": {
+    "parallel-universe": "^2.0.0"
+  }
 }

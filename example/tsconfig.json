@@ -5,9 +5,10 @@
     "strict": true,
     "target": "ES5",
     "module": "CommonJS",
-    "rootDir": "."
+    "rootDir": ".",
+    "jsx": "react-jsx"
   },
   "include": [
-    "./src/main/**/*"
+    "./src/**/*"
   ]
 }
