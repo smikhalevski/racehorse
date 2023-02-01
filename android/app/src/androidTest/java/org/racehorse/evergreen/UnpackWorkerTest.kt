@@ -1,4 +1,4 @@
-package org.racehorse.updater
+package org.racehorse.evergreen
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -22,7 +22,7 @@ class UnpackWorkerTest {
     private val targetDir = File(appContext.filesDir, "test")
 
     @Before
-    fun before() {
+    fun setup() {
         archiveFile.delete()
         targetDir.deleteRecursively()
     }

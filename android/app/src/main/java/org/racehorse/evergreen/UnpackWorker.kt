@@ -1,4 +1,4 @@
-package org.racehorse.updater
+package org.racehorse.evergreen
 
 import android.content.Context
 import androidx.work.CoroutineWorker
@@ -8,7 +8,7 @@ import java.io.FileOutputStream
 import java.util.zip.ZipInputStream
 
 /**
- * Unpacks the ZIP archive contents into a given directory.
+ * Unpacks the ZIP archive contents into a target directory.
  */
 class UnpackWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {

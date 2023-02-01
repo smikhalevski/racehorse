@@ -1,4 +1,4 @@
-package org.racehorse.updater
+package org.racehorse.evergreen
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -24,7 +24,7 @@ class DownloadWorkerTest {
     private val etagFile = File(outputFile.absolutePath + DownloadWorker.ETAG_SUFFIX)
 
     @Before
-    fun before() {
+    fun setup() {
         DownloadWorker.deleteDownload(outputFile.absolutePath)
     }
 

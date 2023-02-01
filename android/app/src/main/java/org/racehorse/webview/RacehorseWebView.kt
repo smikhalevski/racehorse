@@ -7,33 +7,22 @@ import android.webkit.WebView
 import androidx.webkit.WebViewAssetLoader
 import com.google.gson.Gson
 import org.greenrobot.eventbus.*
-import org.racehorse.events.Event
-import org.racehorse.events.ErrEvent
-import org.racehorse.events.OkEvent
+import org.racehorse.webview.events.Event
+import org.racehorse.webview.events.ErrEvent
+import org.racehorse.webview.events.OkEvent
 
 /**
  * The [WebView] that manages the web app.
  */
 @SuppressLint("SetJavaScriptEnabled", "ViewConstructor")
-class RacehorseWebView(
-    private val appUrl: String,
-    context: Context,
-    private val eventBus: EventBus,
-    pathHandler: WebViewAssetLoader.PathHandler = WebViewAssetLoader.AssetsPathHandler(context),
-) : WebView(context) {
+class RacehorseWebView(context: Context, private val eventBus: EventBus) : WebView(context) {
 
     private val gson = Gson()
 
     init {
-        with(CookieManager.getInstance()) {
-            setAcceptCookie(true)
-            setAcceptThirdPartyCookies(this@RacehorseWebView, true)
-        }
-
-        webViewClient = RacehorseWebViewClient(
-            appUrl,
-            WebViewAssetLoader.Builder().setHttpAllowed(true).setDomain(appUrl).addPathHandler("/", pathHandler).build()
-        )
+        val cookieManager = CookieManager.getInstance()
+        cookieManager.setAcceptCookie(true)
+        cookieManager.setAcceptThirdPartyCookies(this@RacehorseWebView, true)
 
         webChromeClient = RacehorseWebChromeClient()
 
@@ -47,7 +36,12 @@ class RacehorseWebView(
     /**
      * Load the app.
      */
-    fun start() {
+    fun start(appUrl: String, pathHandler: WebViewAssetLoader.PathHandler) {
+        webViewClient = RacehorseWebViewClient(
+            appUrl,
+            WebViewAssetLoader.Builder().setHttpAllowed(true).setDomain(appUrl).addPathHandler("/", pathHandler).build()
+        )
+
         loadUrl("http://$appUrl/index.html")
         eventBus.register(this)
     }

@@ -1,4 +1,4 @@
-package org.racehorse.updater
+package org.racehorse.evergreen
 
 import android.content.Context
 import androidx.work.CoroutineWorker

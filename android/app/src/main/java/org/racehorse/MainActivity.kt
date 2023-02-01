@@ -2,8 +2,12 @@ package org.racehorse
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.webkit.WebViewAssetLoader
+import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.EventBus
+import org.racehorse.evergreen.RacehorseUpdateManager
 import org.racehorse.webview.RacehorseWebView
+import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
@@ -12,9 +16,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val webView = RacehorseWebView("10.0.2.2:1234", applicationContext, eventBus)
+        val webView = RacehorseWebView(applicationContext, eventBus)
 
-        webView.start()
+//        RacehorseUpdateManager(webView, eventBus, "https://example.com/version.json").update()
+
+        webView.start("10.0.2.2:1234", WebViewAssetLoader.AssetsPathHandler(applicationContext))
 
         setContentView(webView)
     }
