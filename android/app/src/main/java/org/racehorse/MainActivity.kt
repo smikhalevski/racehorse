@@ -3,11 +3,8 @@ package org.racehorse
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.webkit.WebViewAssetLoader
-import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.EventBus
-import org.racehorse.evergreen.RacehorseUpdateManager
 import org.racehorse.webview.RacehorseWebView
-import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
