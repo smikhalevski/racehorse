@@ -14,7 +14,14 @@ class UnpackWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
 
     companion object {
+        /**
+         * The path to the ZIP archive to unpack.
+         */
         const val ARCHIVE_PATHNAME = "ARCHIVE_PATHNAME"
+
+        /**
+         * The target dir to write unpacked files to.
+         */
         const val TARGET_DIR = "TARGET_DIR"
     }
 
@@ -27,10 +34,7 @@ class UnpackWorker(appContext: Context, workerParams: WorkerParameters) :
                 val zipEntry = zipInputStream.nextEntry ?: break
                 val file = File(targetDir, zipEntry.name)
 
-                if (!file.canonicalPath.startsWith(targetDir.canonicalPath + File.separator)) {
-                    throw SecurityException("ZIP entry $zipEntry is outside of the target directory $targetDir")
-                }
-                if (file.exists()) {
+                if (!file.canonicalPath.startsWith(targetDir.canonicalPath + File.separator) || file.exists()) {
                     continue
                 }
 

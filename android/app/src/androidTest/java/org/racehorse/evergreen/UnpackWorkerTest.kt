@@ -28,11 +28,46 @@ class UnpackWorkerTest {
     }
 
     @Test
-    fun testUnzipsArchive() {
+    fun testUnpacksArchive() {
         val zipOutputStream = ZipOutputStream(FileOutputStream(archiveFile))
 
         val buffer1 = "111".toByteArray()
         zipOutputStream.putNextEntry(ZipEntry("aaa.txt"))
+        zipOutputStream.write(buffer1, 0, buffer1.size)
+        zipOutputStream.closeEntry()
+
+        val buffer2 = "222".toByteArray()
+        zipOutputStream.putNextEntry(ZipEntry("bbb/ccc.txt"))
+        zipOutputStream.write(buffer2, 0, buffer2.size)
+        zipOutputStream.closeEntry()
+
+        zipOutputStream.close()
+
+        val worker = TestListenableWorkerBuilder<UnpackWorker>(appContext)
+            .setInputData(
+                workDataOf(
+                    UnpackWorker.ARCHIVE_PATHNAME to archiveFile.absolutePath,
+                    UnpackWorker.TARGET_DIR to targetDir.absolutePath,
+                )
+            )
+            .build()
+
+        val result = runBlocking {
+            worker.doWork()
+        }
+
+        Assert.assertTrue(result is ListenableWorker.Result.Success)
+
+        Assert.assertEquals("111", File(targetDir, "aaa.txt").readText())
+        Assert.assertEquals("222", File(targetDir, "bbb/ccc.txt").readText())
+    }
+
+    @Test
+    fun testDoesNotUnpackFilesOutsideOfTargetDir() {
+        val zipOutputStream = ZipOutputStream(FileOutputStream(archiveFile))
+
+        val buffer1 = "111".toByteArray()
+        zipOutputStream.putNextEntry(ZipEntry("../aaa.txt"))
         zipOutputStream.write(buffer1, 0, buffer1.size)
         zipOutputStream.closeEntry()
 
@@ -57,32 +92,7 @@ class UnpackWorkerTest {
         }
 
         Assert.assertTrue(result is ListenableWorker.Result.Success)
-        Assert.assertEquals("111", File(targetDir.absolutePath + File.separator + "aaa.txt").readText())
-        Assert.assertEquals("222", File(targetDir.absolutePath + File.separator + "bbb.txt").readText())
-    }
-
-    @Test(expected = SecurityException::class)
-    fun testThrowsSecurityException() {
-        val zipOutputStream = ZipOutputStream(FileOutputStream(archiveFile))
-
-        val buffer = "111".toByteArray()
-        zipOutputStream.putNextEntry(ZipEntry("../aaa.txt"))
-        zipOutputStream.write(buffer, 0, buffer.size)
-        zipOutputStream.closeEntry()
-
-        zipOutputStream.close()
-
-        val worker = TestListenableWorkerBuilder<UnpackWorker>(appContext)
-            .setInputData(
-                workDataOf(
-                    UnpackWorker.ARCHIVE_PATHNAME to archiveFile.absolutePath,
-                    UnpackWorker.TARGET_DIR to targetDir.absolutePath,
-                )
-            )
-            .build()
-
-        runBlocking {
-            worker.doWork()
-        }
+        Assert.assertFalse(File(targetDir, "../aaa.txt").exists())
+        Assert.assertEquals("222", File(targetDir, "bbb.txt").readText())
     }
 }

@@ -11,22 +11,51 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * Downloads URL response body to a local file at given pathname, can continue previously started download if server
- * responded with ETag header.
+ * Downloads URL response body to a local file at given pathname, can continue previously started download if ETag
+ * header is available.
  */
 open class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
 
     companion object {
-        const val URL = "URL"
-        const val PATHNAME = "PATHNAME"
-        const val BUFFER_SIZE = "BUFFER_SIZE"
-        const val CONTENT_LENGTH = "CONTENT_LENGTH"
-        const val READ_LENGTH = "READ_LENGTH"
+        /**
+         * The URL of the downloaded file.
+         */
+        const val URL = "url"
 
+        /**
+         * The pathname to save the downloaded file.
+         */
+        const val PATHNAME = "pathname"
+
+        /**
+         * The read buffer size in bytes. Default is 8192.
+         */
+        const val BUFFER_SIZE = "bufferSize"
+
+        /**
+         * The content length in bytes (int), or -1 if unknown.
+         */
+        const val CONTENT_LENGTH = "contentLength"
+
+        /**
+         * The read length in bytes (long).
+         */
+        const val READ_LENGTH = "readLength"
+
+        /**
+         * The suffix of a temporary file that holds the partially downloaded content.
+         */
         const val PARTIAL_SUFFIX = ".partial"
+
+        /**
+         * The suffix of the file that holds the ETag header value of the downloaded file.
+         */
         const val ETAG_SUFFIX = ".etag"
 
+        /**
+         * Deletes downloaded file and related temporary files.
+         */
         fun deleteDownload(pathname: String) {
             File(pathname).delete()
             File(pathname + PARTIAL_SUFFIX).delete()
@@ -34,6 +63,9 @@ open class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
         }
     }
 
+    /**
+     * Creates a URL connection. Override this method to add header or authentication if needed.
+     */
     open fun openConnection(url: String): HttpURLConnection {
         return URL(url).openConnection() as HttpURLConnection
     }
@@ -52,11 +84,11 @@ open class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
         val partialFile = File(pathname + PARTIAL_SUFFIX)
         val etagFile = File(pathname + ETAG_SUFFIX)
 
-        var readLength = 0
+        var readLength = 0L
         val connection = openConnection(url)
 
         if (partialFile.exists() && etagFile.exists()) {
-            readLength = partialFile.length().toInt()
+            readLength = partialFile.length()
             connection.setRequestProperty("Range", "bytes=$readLength-")
             connection.setRequestProperty("If-Range", etagFile.readText())
         }
@@ -66,7 +98,7 @@ open class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                 return Result.retry()
             }
             if (connection.responseCode != HttpURLConnection.HTTP_PARTIAL) {
-                readLength = 0
+                readLength = 0L
             }
 
             val etag = connection.getHeaderField("ETag")
@@ -74,7 +106,7 @@ open class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                 etagFile.writeText(etag)
             }
 
-            FileOutputStream(partialFile, readLength != 0).use { outputStream ->
+            FileOutputStream(partialFile, readLength != 0L).use { outputStream ->
                 val contentLength = connection.contentLength
                 val buffer = ByteArray(bufferSize)
 
@@ -94,7 +126,7 @@ open class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
 
         if (!isStopped && partialFile.renameTo(File(pathname))) {
             etagFile.delete()
-            return Result.success()
+            return Result.success(workDataOf(PATHNAME to pathname))
         }
 
         return Result.failure()
