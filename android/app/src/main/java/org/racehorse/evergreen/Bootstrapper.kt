@@ -1,177 +1,109 @@
 package org.racehorse.evergreen
 
-import android.content.Context
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.Observer
-import androidx.work.*
-import androidx.work.WorkInfo.State.*
-import kotlinx.coroutines.*
 import java.io.File
 import java.io.IOException
-import java.util.concurrent.TimeUnit
-import kotlin.concurrent.thread
+import java.net.URLConnection
 
 /**
- * Manages the app start process, downloads and unzips updates, handles blocking and background updates, swaps app
+ * Manages the app start process, downloads and unzips updates, handles mandatory and background updates, swaps app
  * bundles after restart.
  *
- * @param context The Android app context.
- * @param lifecycleOwner The owner of the update lifecycle.
- * @param updateWorkerClass The worker that would download the web app bundle.
- * @param bundleCacheDir The bootstrapper cache directory.
+ * @param cacheDir The directory where bootstrapper sores app bundles.
  */
-abstract class Bootstrapper(
-    private val context: Context,
-    private val lifecycleOwner: LifecycleOwner,
-    private val updateWorkerClass: Class<out UpdateWorker>,
-    bundleCacheDir: File
-) {
+open class Bootstrapper(cacheDir: File) {
 
-    companion object {
-        private const val UPDATE_WORK = "update"
-    }
+    private var masterDir = File(cacheDir, "master")
+    private var masterVersionFile = File(cacheDir, "master.version")
 
-    private var activeBundleDir = File(bundleCacheDir, "active")
-    private var activeVersionFile = File(bundleCacheDir, "active.version")
+    private var updateDir = File(cacheDir, "update")
+    private var updateVersionFile = File(cacheDir, "update.version")
 
-    private var updateBundleDir = File(bundleCacheDir, "update")
-    private var updateVersionFile = File(bundleCacheDir, "update.version")
+    private var updateDownload: BundleDownload? = null
 
-    protected abstract suspend fun getUpdateDescriptor(): UpdateDescriptor
+    protected open fun onBundleReady(appDir: File) {}
 
-    /**
-     * Start the app from the [bundleDir].
-     *
-     * @param bundleDir The directory that contains the app bundle files.
-     */
-    protected open fun onBundleReady(bundleDir: File) {}
+    protected open fun onUpdateStarted(mandatory: Boolean) {}
 
-    /**
-     * The update download has started.
-     *
-     * @param blocking `true` if the app should wait until the update is provisioned, `false` otherwise.
-     */
-    protected open fun onUpdateStarted(blocking: Boolean) {}
+    protected open fun onUpdateFailed(mandatory: Boolean, exception: IOException) {}
 
-    /**
-     * The progress the bundle download process.
-     */
+    protected open fun onUpdateReady() {}
+
     protected open fun onUpdateProgress(contentLength: Int, readLength: Long) {}
 
     /**
-     * The non-blocking update was downloaded and ready to be applied.
-     */
-    protected open fun onUpdateBundleReady() {}
-
-    /**
-     * Failed to read the update descriptor.
+     * Starts/restarts the bundle provisioning process.
      *
-     * @param bundleDir The directory that contains bundle files, or `null` if there's no active bundle available.
+     * @param version The expected version of the app bundle.
+     * @param mandatory If `true` then the app must not start if version isn't [version], otherwise the app can start
+     * if any bundle is available, and update is downloaded in the background.
+     * @param openConnection Returns connection that downloads the bundle ZIP archive.
      */
-    protected open fun onNoUpdateDescriptor(bundleDir: File?) {}
+    fun start(
+        version: String,
+        mandatory: Boolean,
+        openConnection: () -> URLConnection
+    ) {
+        val masterVersion = masterVersionFile.takeIf { it.exists() }?.readText()
+        val updateVersion = updateVersionFile.takeIf { it.exists() }?.readText()
 
-    /**
-     * Checks for updates and triggers [onBundleReady] if the app can be started.
-     */
-    open fun start() {
-        GlobalScope.launch(Dispatchers.IO) {
-            checkForUpdateAndStart()
-        }
-    }
-
-    private suspend fun checkForUpdateAndStart() {
-        val updateDescriptor = try {
-            getUpdateDescriptor()
-        } catch (error: IOException) {
-            onNoUpdateDescriptor(if (activeBundleDir.exists()) activeBundleDir else null)
-            return
-        }
-
-        val activeVersion = if (activeVersionFile.exists()) activeVersionFile.readText() else null
-        val updateVersion = if (updateVersionFile.exists()) updateVersionFile.readText() else null
+        val masterReady = masterDir.exists()
 
         if (
-            (activeVersion == updateDescriptor.version && activeBundleDir.exists()) ||
-            (updateVersion == updateDescriptor.version && applyUpdateBundle())
+            (masterVersion == version && masterReady) ||
+            (updateVersion == version && applyUpdate())
         ) {
-            // Active bundle is up-to-date
-            onBundleReady(activeBundleDir)
+            updateDownload?.stop()
+            updateDownload = null
+            onBundleReady(masterDir)
             return
         }
 
-        updateVersionFile.writeText(updateDescriptor.version)
-        enqueueUpdateWork(updateDescriptor.url, updateDescriptor.blocking, updateVersion == updateDescriptor.version)
-    }
+        if (masterReady && !mandatory) {
+            onBundleReady(masterDir)
+        }
 
-    /**
-     * Moves the [updateBundleDir] to [activeBundleDir].
-     */
-    private fun applyUpdateBundle(): Boolean {
-        return updateBundleDir.exists().also {
-            activeBundleDir.deleteRecursively()
-            activeVersionFile.delete()
+        onUpdateStarted(mandatory)
 
-            updateBundleDir.renameTo(activeBundleDir)
-            updateVersionFile.renameTo(activeVersionFile)
+        updateDownload?.stop()
+        updateDownload = null
+
+        try {
+            updateDir.deleteRecursively()
+            updateVersionFile.writeText(version)
+
+            val download = BundleDownload(openConnection(), updateDir, 8192, this::onUpdateProgress)
+
+            updateDownload = download
+
+            download.start()
+        } catch (exception: IOException) {
+            onUpdateFailed(mandatory, exception)
+            return
+        }
+
+        if (masterReady && !mandatory) {
+            onUpdateReady()
+        } else {
+            applyUpdate()
+            onBundleReady(masterDir)
         }
     }
 
     /**
-     * Starts or joins an existing [UPDATE_WORK] and
+     * Applies update it it is available.
+     *
+     * @return `true` is update was applied, or `false` if there is no update to apply.
      */
-    private suspend fun enqueueUpdateWork(url: String, blocking: Boolean, joinable: Boolean) {
-        val workManager = WorkManager.getInstance(context)
-
-        var workId =
-            if (joinable) workManager.getWorkInfosForUniqueWork(UPDATE_WORK).await().firstOrNull()?.id else null
-
-        if (workId == null) {
-            val work = OneTimeWorkRequest.Builder(updateWorkerClass)
-                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1000L, TimeUnit.MILLISECONDS)
-                .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
-                .setInputData(
-                    workDataOf(UpdateWorker.URL to url, UpdateWorker.TARGET_DIR to updateBundleDir.canonicalPath)
-                )
-                .build()
-
-            workManager.enqueueUniqueWork(UPDATE_WORK, ExistingWorkPolicy.REPLACE, work)
-            workId = work.id
+    private fun applyUpdate(): Boolean {
+        if (!updateDir.exists()) {
+            return false
         }
 
-        val workData = workManager.getWorkInfoByIdLiveData(workId)
+        masterVersionFile.delete()
+        masterDir.deleteRecursively()
 
-        onUpdateStarted(blocking)
-
-        lateinit var workObserver: Observer<WorkInfo>
-
-        workObserver = Observer<WorkInfo> {
-            when (it.state) {
-                SUCCEEDED -> {
-                    workData.removeObserver(workObserver)
-
-                    if (blocking) {
-                        applyUpdateBundle()
-                        onBundleReady(activeBundleDir)
-                    } else {
-                        onUpdateBundleReady()
-                    }
-                }
-
-                RUNNING -> {
-                    onUpdateProgress(
-                        it.progress.getInt(UpdateWorker.CONTENT_LENGTH, 0),
-                        it.progress.getLong(UpdateWorker.READ_LENGTH, 0L)
-                    )
-                }
-
-                ENQUEUED, BLOCKED -> {}
-
-                FAILED, CANCELLED -> workData.removeObserver(workObserver)
-            }
-        }
-
-        withContext(Dispatchers.Main) {
-            workData.observe(lifecycleOwner, workObserver)
-        }
+        updateDir.renameTo(masterDir)
+        updateVersionFile.renameTo(masterVersionFile)
+        return true
     }
 }

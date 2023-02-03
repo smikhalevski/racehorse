@@ -1,4 +1,4 @@
-package org.racehorse
+package org.racehorse.webview
 
 import android.webkit.WebResourceResponse
 import androidx.annotation.WorkerThread

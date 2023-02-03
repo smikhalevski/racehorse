@@ -3,21 +3,45 @@ package org.racehorse
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.webkit.WebViewAssetLoader
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
+import org.racehorse.evergreen.RacehorseBootstrapper
+import org.racehorse.evergreen.events.BundleReadyEvent
+import org.racehorse.webview.DirectoryPathHandler
 import org.racehorse.webview.RacehorseWebView
+import java.net.URL
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
-    private val eventBus: EventBus = EventBus.getDefault()
+    private lateinit var scope: CoroutineScope
+    private lateinit var eventBus: EventBus
+    private lateinit var bootstrapper: RacehorseBootstrapper
+    private lateinit var webView: RacehorseWebView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val webView = RacehorseWebView(applicationContext, eventBus)
+        scope = CoroutineScope(coroutineContext)
+        eventBus = EventBus.getDefault()
+        bootstrapper = RacehorseBootstrapper(applicationContext, eventBus)
+        webView = RacehorseWebView(applicationContext, eventBus)
 
-//        RacehorseUpdateManager(webView, eventBus, "https://example.com/version.json").update()
+        eventBus.register(this)
 
-        webView.start("10.0.2.2:1234", WebViewAssetLoader.AssetsPathHandler(applicationContext))
+        scope.launch(Dispatchers.IO) {
+            bootstrapper.start("0.0.0", false) {
+                URL("").openConnection()
+            }
+        }
+
+//        webView.start("10.0.2.2:1234", WebViewAssetLoader.AssetsPathHandler(applicationContext))
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onBundleReadyEvent(event: BundleReadyEvent) {
+        webView.start("10.0.2.2:1234", DirectoryPathHandler(event.appDir))
 
         setContentView(webView)
     }

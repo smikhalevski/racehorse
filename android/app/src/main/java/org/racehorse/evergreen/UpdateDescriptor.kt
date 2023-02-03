@@ -5,7 +5,7 @@ package org.racehorse.evergreen
  *
  * @param version The latest version.
  * @param url The URL of the bundle archive to download.
- * @param blocking If `true` then the app cannot be started before update is downloaded and applied, otherwise the
+ * @param mandatory If `true` then the app cannot be started before update is downloaded and applied, otherwise the
  * update is downloaded in the background and applied during the next app restart.
  */
-class UpdateDescriptor(val version: String, val url: String, val blocking: Boolean)
+class UpdateDescriptor(val version: String, val url: String, val mandatory: Boolean)
