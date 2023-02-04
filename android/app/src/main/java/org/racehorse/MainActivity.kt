@@ -8,12 +8,10 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.evergreen.RacehorseBootstrapper
-import org.racehorse.evergreen.events.BundleReadyEvent
-import org.racehorse.permissions.RacehorsePermissionsManager
-import org.racehorse.permissions.events.RequestPermissionsResultEvent
+import org.racehorse.evergreen.BundleReadyEvent
+import org.racehorse.permissions.PermissionResponder
 import org.racehorse.webview.DirectoryPathHandler
 import org.racehorse.webview.RacehorseWebView
-import java.net.URL
 
 class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
@@ -21,7 +19,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private lateinit var eventBus: EventBus
     private lateinit var bootstrapper: RacehorseBootstrapper
     private lateinit var webView: RacehorseWebView
-    private lateinit var permissionsManager: RacehorsePermissionsManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,9 +27,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         eventBus = EventBus.getDefault()
         bootstrapper = RacehorseBootstrapper(this, eventBus)
         webView = RacehorseWebView(this, eventBus)
-        permissionsManager = RacehorsePermissionsManager(this, eventBus)
 
-        eventBus.register(permissionsManager)
+        val permissionResponder = PermissionResponder(this)
+
+        eventBus.register(permissionResponder)
         eventBus.register(this)
 
 //        scope.launch(Dispatchers.IO) {
@@ -43,11 +41,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         webView.start("10.0.2.2:1234", WebViewAssetLoader.AssetsPathHandler(this))
         setContentView(webView)
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        eventBus.post(RequestPermissionsResultEvent(requestCode, permissions, grantResults))
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

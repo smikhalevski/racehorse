@@ -1,6 +1,6 @@
 import { Event } from 'racehorse';
 import { useEventBridge, useEventBridgeSubscription } from '@racehorse/react';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useState } from 'react';
 
 export function App() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -11,19 +11,13 @@ export function App() {
     setEvents(events => events.concat(event));
   });
 
-  useEffect(() => {
-    eventBridge.request({ type: 'com.example.myapplication.UnknownEvent' }).then(event => {
-      setEvents(events => events.concat(event));
-    });
-  });
-
   return (
     <>
       <button
         onClick={() => {
           eventBridge
             .request({
-              type: 'org.racehorse.permissions.events.PermissionsRequestedEvent',
+              type: 'org.racehorse.permissions.IsPermissionGrantedRequestEvent',
               permissions: [
                 'android.permission.ACCESS_WIFI_STATE',
                 'android.permission.ACCESS_NETWORK_STATE',
@@ -43,11 +37,11 @@ export function App() {
         {'Request permission'}
       </button>
 
-      <h1>{'Events:'}</h1>
+      <h1>{'Events'}</h1>
 
       {events.map((event, i) => (
         <Fragment key={i}>
-          <pre>{JSON.stringify(event, null, 2)}</pre>
+          <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(event, null, 2)}</pre>
           <hr />
         </Fragment>
       ))}

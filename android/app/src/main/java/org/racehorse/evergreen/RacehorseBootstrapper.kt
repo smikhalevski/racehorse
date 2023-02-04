@@ -2,7 +2,6 @@ package org.racehorse.evergreen
 
 import android.content.Context
 import org.greenrobot.eventbus.EventBus
-import org.racehorse.evergreen.events.*
 import java.io.File
 import java.io.IOException
 
@@ -22,7 +21,7 @@ class RacehorseBootstrapper(context: Context, private val eventBus: EventBus) :
     }
 
     override fun onUpdateReady() {
-        eventBus.post(UpdateReady())
+        eventBus.post(UpdateReadyEvent())
     }
 
     override fun onUpdateProgress(contentLength: Int, readLength: Long) {

@@ -4,34 +4,41 @@ import android.webkit.JavascriptInterface
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.greenrobot.eventbus.EventBus
-import org.racehorse.webview.events.ErrEvent
-import org.racehorse.webview.events.WebEvent
 
 /**
  * The connection injected to the web page.
  */
-class Connection(private val gson: Gson, private val eventBus: EventBus) {
+internal class Connection(private val gson: Gson, private val eventBus: EventBus) {
 
     @JavascriptInterface
-    fun post(requestId: Long, eventStr: String) {
+    fun post(requestId: Int, eventStr: String) {
+        val event: Any
+
         try {
             val jsonObject = gson.fromJson(eventStr, JsonObject::class.java)
-            val type = jsonObject["type"].asString
+            jsonObject.remove("requestId")
+
+            val eventType = jsonObject["type"].asString
 
             jsonObject.remove("type")
-            jsonObject.addProperty("requestId", requestId)
 
-            val eventClass = Class.forName(type)
+            val eventClass = Class.forName(eventType)
 
-            if (!WebEvent::class.java.isAssignableFrom(eventClass)) {
-                throw IllegalArgumentException("Cannot use class $type as the request event")
+            if (!InboxEvent::class.java.isAssignableFrom(eventClass)) {
+                throw IllegalArgumentException("Not an event $eventType")
             }
 
-            val event = gson.fromJson(jsonObject, eventClass)
+            event = gson.fromJson(jsonObject, eventClass)
+        } catch (throwable: Throwable) {
+            eventBus.post(ErrorResponseEvent(requestId, throwable))
+            return
+        }
 
+        if (event is ChainableEvent) {
+            event.requestId = requestId
             eventBus.post(event)
-        } catch (e: Throwable) {
-            eventBus.post(ErrEvent(requestId, e))
+        } else {
+            eventBus.post(AutoCloseResponseEvent(requestId))
         }
     }
 }

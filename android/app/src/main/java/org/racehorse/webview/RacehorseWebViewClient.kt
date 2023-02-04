@@ -10,7 +10,7 @@ import androidx.webkit.WebViewClientCompat
 /**
  * Client that serves assets via [assetLoader] if a request comes from the URL with [host].
  */
-class RacehorseWebViewClient(private val host: String, private val assetLoader: WebViewAssetLoader) :
+internal class RacehorseWebViewClient(private val host: String, private val assetLoader: WebViewAssetLoader) :
     WebViewClientCompat() {
 
     override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {

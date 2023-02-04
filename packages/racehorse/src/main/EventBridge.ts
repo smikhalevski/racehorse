@@ -15,24 +15,8 @@ export interface Event {
   [key: string]: any;
 }
 
-/**
- * The envelope pushed to the inbox by Android.
- */
-export interface Envelope {
-  /**
-   * The request ID passed to {@linkcode Connection.post} or -1 if the {@linkcode event} is a notification.
-   */
-  requestId: number;
-
-  /**
-   * `true` for an event, or `false` for an exception.
-   */
+export interface ResponseEvent extends Event {
   ok: boolean;
-
-  /**
-   * The response event.
-   */
-  event: Event;
 }
 
 /**
@@ -46,10 +30,8 @@ export interface Connection {
   inbox?: {
     /**
      * Called by Android when an envelope is pushed through the connection.
-     *
-     * @param envelope An incoming envelope.
      */
-    push(envelope: Envelope): void;
+    push(response: readonly [requestId: number | null, event: Event]): void;
   };
 
   /**
@@ -77,7 +59,7 @@ export interface EventBridge {
   /**
    * `true` if bridge connection is ready to process events, `false` otherwise.
    */
-  readonly connected: boolean;
+  isConnected(): boolean;
 
   /**
    * Sends an event through a connection to Android and returns a promise that is resolved when a response with a
@@ -87,7 +69,7 @@ export interface EventBridge {
    * @param event The request event to send.
    * @returns The response event.
    */
-  request(event: Event): Promise<Event>;
+  request(event: Event): Promise<ResponseEvent>;
 
   /**
    * Subscribes a listener to all events pushed to the inbox that don't have a consumer.
@@ -109,12 +91,6 @@ export interface EventBridgeOptions {
    * {@linkcode window.racehorseConnection} is awaited.
    */
   connectionProvider?: () => Connection | undefined;
-
-  /**
-   * A handler that is triggered if a listener throws an error, or an error was pushed the
-   * {@link Connection.inbox connection inbox}.
-   */
-  errorHandler?: (error: unknown) => void;
 }
 
 /**
@@ -123,62 +99,53 @@ export interface EventBridgeOptions {
  * @param options The message bus options.
  */
 export function createEventBridge(options: EventBridgeOptions = {}): EventBridge {
-  const { connectionProvider = () => window.racehorseConnection, errorHandler = PubSub.defaultErrorHandler } = options;
+  const { connectionProvider = () => window.racehorseConnection } = options;
 
-  const pubSub = new PubSub<Event>(errorHandler);
-  const consumers = new Map<number, { resolve(event: Event): void; reject(error: Error): void }>();
+  const pubSub = new PubSub<Event>();
+  const callbacks = new Map<number, (event: ResponseEvent) => void>();
 
-  let nonce = 0;
+  let requestCount = 0;
   let connected = false;
 
-  const pushToInbox = (envelope: Envelope): void => {
-    const { ok, requestId, event } = envelope;
-
-    if (requestId === -1) {
-      if (ok) {
+  const inbox: Connection['inbox'] = {
+    push([requestId, event]) {
+      if (requestId === null) {
+        // org.racehorse.AlertEvent
         pubSub.publish(event);
-      } else {
-        errorHandler(createError(event));
+        return;
       }
-      return;
-    }
 
-    const consumer = consumers.get(requestId);
+      // org.racehorse.ResponseEvent
+      const callback = callbacks.get(requestId);
 
-    if (consumer === undefined) {
-      return;
-    }
-
-    consumers.delete(requestId);
-
-    if (ok) {
-      consumer.resolve(event);
-    } else {
-      consumer.reject(createError(event));
-    }
+      if (callback !== undefined) {
+        callbacks.delete(requestId);
+        callback(event as ResponseEvent);
+      }
+    },
   };
 
   const connectionPromise = untilTruthy(connectionProvider, 100).then(connection => {
-    const { inbox } = connection;
+    const responses = connection.inbox;
 
-    connection.inbox = { push: pushToInbox };
+    connection.inbox = inbox;
 
     connected = true;
 
-    if (Array.isArray(inbox)) {
-      for (const envelope of inbox) {
-        pushToInbox(envelope);
+    if (Array.isArray(responses)) {
+      for (const response of responses) {
+        inbox.push(response);
       }
     }
     return connection;
   });
 
   const request: EventBridge['request'] = event =>
-    new Promise((resolve, reject) => {
-      const requestId = nonce++;
+    new Promise(resolve => {
+      const requestId = requestCount++;
       const eventStr = JSON.stringify(event);
 
-      consumers.set(requestId, { resolve, reject });
+      callbacks.set(requestId, resolve);
 
       connectionPromise.then(connection => {
         connection.post(requestId, eventStr);
@@ -188,15 +155,8 @@ export function createEventBridge(options: EventBridgeOptions = {}): EventBridge
   const subscribe: EventBridge['subscribe'] = listener => pubSub.subscribe(listener);
 
   return {
-    get connected() {
-      return connected;
-    },
-
+    isConnected: () => connected,
     request,
     subscribe,
   };
-}
-
-function createError(event: Event): Error {
-  return Object.assign(Object.create(Error.prototype), event);
 }

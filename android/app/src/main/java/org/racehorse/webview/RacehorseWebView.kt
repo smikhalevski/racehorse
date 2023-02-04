@@ -7,9 +7,6 @@ import android.webkit.WebView
 import androidx.webkit.WebViewAssetLoader
 import com.google.gson.Gson
 import org.greenrobot.eventbus.*
-import org.racehorse.webview.events.Event
-import org.racehorse.webview.events.ErrEvent
-import org.racehorse.webview.events.OkEvent
 
 /**
  * The [WebView] that manages the web app.
@@ -46,45 +43,46 @@ class RacehorseWebView(context: Context, private val eventBus: EventBus) : WebVi
         eventBus.register(this)
     }
 
-    private fun pushToInbox(ok: Boolean, event: Event) {
-        val jsonObject = gson.toJsonTree(event).asJsonObject
-        jsonObject.remove("requestId")
-        jsonObject.addProperty("type", event.javaClass.name)
-
-        val eventStr = gson.toJson(jsonObject)
+    private fun pushEvent(requestId: Int?, event: Any) {
+        val json = gson.toJson(gson.toJsonTree(event).asJsonObject.also {
+            it.remove("requestId")
+            it.addProperty("type", event.javaClass.name)
+        })
 
         evaluateJavascript(
-            "(window.racehorseConnection.inbox||(window.racehorseConnection.inbox=[]))" +
-                    ".push({requestId:${event.requestId},ok:${ok},event:${eventStr}})",
+            "(window.racehorseConnection.inbox||(window.racehorseConnection.inbox=[])).push([$requestId,$json])",
             null
         )
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onOkEvent(event: OkEvent) {
-        pushToInbox(true, event)
+    fun onResponseEvent(event: ResponseEvent) {
+        pushEvent(event.requestId, event)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onErrEvent(event: ErrEvent) {
-        pushToInbox(false, event)
+    fun onAlertEvent(event: AlertEvent) {
+        pushEvent(null, event)
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onNoSubscriberEvent(event: NoSubscriberEvent) {
         val originalEvent = event.originalEvent
 
-        if (originalEvent is Event) {
-            eventBus.post(ErrEvent(originalEvent.requestId, IllegalStateException("No subscriber")))
+        if (originalEvent is RequestEvent) {
+            eventBus.post(
+                ErrorResponseEvent(originalEvent.requestId, IllegalStateException("No subscribers for $originalEvent"))
+            )
         }
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onSubscriberExceptionEvent(event: SubscriberExceptionEvent) {
-        val causingEvent = event.causingEvent
+        when (val causingEvent = event.causingEvent) {
 
-        if (causingEvent is Event) {
-            eventBus.post(ErrEvent(causingEvent.requestId, event.throwable))
+            is ErrorResponseEvent -> causingEvent.cause.printStackTrace()
+
+            is RequestEvent -> eventBus.post(ErrorResponseEvent(causingEvent.requestId, event.throwable))
         }
     }
 }

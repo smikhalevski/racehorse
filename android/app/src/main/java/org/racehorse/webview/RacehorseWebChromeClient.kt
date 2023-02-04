@@ -5,7 +5,7 @@ import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 
-class RacehorseWebChromeClient : WebChromeClient() {
+internal class RacehorseWebChromeClient : WebChromeClient() {
 
     override fun onShowFileChooser(
         webView: WebView,
