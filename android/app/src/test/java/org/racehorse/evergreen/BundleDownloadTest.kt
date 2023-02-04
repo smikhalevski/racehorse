@@ -65,7 +65,7 @@ class BundleDownloadTest {
                 .setChunkedBody(byteArrayOutputStream.toByteArray(), 1024)
         )
 
-        BundleDownload(server.getUrl("/").openConnection(), targetDir, 1024) { contentLength, readLength -> }.start()
+        BundleDownload(server.getUrl("/").openConnection(), targetDir, 1024) { _, _ -> }.start()
 
         Assert.assertEquals("value1", File(targetDir, "file1.txt").readText())
         Assert.assertEquals("value3", File(targetDir, "dir/file3.txt").readText())
@@ -95,7 +95,7 @@ class BundleDownloadTest {
                 .setChunkedBody(byteArrayOutputStream.toByteArray(), 1024)
         )
 
-        BundleDownload(server.getUrl("/").openConnection(), targetDir, 1024) { contentLength, readLength -> }.start()
+        BundleDownload(server.getUrl("/").openConnection(), targetDir, 1024) { _, _ -> }.start()
 
         Assert.assertEquals("value", File(targetDir, "file.txt").readText())
 
@@ -127,7 +127,7 @@ class BundleDownloadTest {
                 .setChunkedBody(byteArray.sliceArray(byteArray.size / 2 until byteArray.size), 1024)
         )
 
-        BundleDownload(server.getUrl("/").openConnection(), targetDir, 1024) { contentLength, readLength -> }.start()
+        BundleDownload(server.getUrl("/").openConnection(), targetDir, 1024) { _, _ -> }.start()
 
         val request = server.takeRequest()
 
@@ -164,7 +164,7 @@ class BundleDownloadTest {
         )
 
         val download =
-            BundleDownload(server.getUrl("/").openConnection(), targetDir, 28) { contentLength, readLength -> }
+            BundleDownload(server.getUrl("/").openConnection(), targetDir, 28) { _, _ -> }
 
         Thread {
             Thread.sleep(1500L)
