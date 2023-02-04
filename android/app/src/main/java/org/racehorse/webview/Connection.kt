@@ -23,7 +23,7 @@ class Connection(private val gson: Gson, private val eventBus: EventBus) {
 
             val eventClass = Class.forName(type)
 
-            if (!eventClass.isAssignableFrom(WebEvent::class.java)) {
+            if (!WebEvent::class.java.isAssignableFrom(eventClass)) {
                 throw IllegalArgumentException("Cannot use class $type as the request event")
             }
 

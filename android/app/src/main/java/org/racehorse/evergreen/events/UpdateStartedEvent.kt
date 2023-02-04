@@ -1,7 +1,7 @@
 package org.racehorse.evergreen.events
 
-import org.racehorse.webview.events.Event
+import org.racehorse.webview.events.OkEvent
 
-class UpdateStartedEvent(val mandatory: Boolean) : Event {
+class UpdateStartedEvent(val mandatory: Boolean) : OkEvent {
     override val requestId = -1L
 }
