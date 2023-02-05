@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.webview.*
 
@@ -32,10 +33,17 @@ class AskForPermissionResponseEvent(val statuses: Map<String, Boolean>) : Respon
 /**
  * Responds to permission-related requests.
  */
-class PermissionResponder(private val activity: ComponentActivity) {
-
-    private fun isPermissionGranted(permission: String): Boolean {
+class PermissionPlugin : Plugin() {
+    fun isPermissionGranted(permission: String): Boolean {
         return ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED
+    }
+
+    override fun start() {
+        eventBus.register(this)
+    }
+
+    override fun stop() {
+        eventBus.unregister(this)
     }
 
     @Subscribe

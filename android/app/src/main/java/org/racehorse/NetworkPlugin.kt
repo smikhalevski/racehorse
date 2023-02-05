@@ -5,6 +5,7 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import androidx.activity.ComponentActivity
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.webview.AlertEvent
@@ -18,28 +19,31 @@ class IsOnlineRequestEvent : RequestEvent()
 
 class IsOnlineResponseEvent(val online: Boolean) : ResponseEvent()
 
-class NetworkStatusResponder(context: Context, private val eventBus: EventBus) {
+class NetworkPlugin : Plugin() {
 
-    private val networkOnlineStatuses = HashMap<Network, Boolean>()
+    val online get() = onlineStatuses.values.contains(true)
 
-    private val online get() = networkOnlineStatuses.values.contains(true)
+    private val onlineStatuses = HashMap<Network, Boolean>()
+    private var connectivityManager: ConnectivityManager? = null
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
-            networkOnlineStatuses[network] = true
+            onlineStatuses[network] = true
             eventBus.post(OnlineStatusChangedAlertEvent(true))
         }
 
         override fun onLost(network: Network) {
-            networkOnlineStatuses[network] = false
+            onlineStatuses[network] = false
             eventBus.post(OnlineStatusChangedAlertEvent(online))
         }
     }
 
-    init {
-        // TODO Must be unregistered
-        @Suppress("UNNECESSARY_SAFE_CALL")
-        (context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager)?.registerNetworkCallback(
+    override fun start() {
+        eventBus.register(this)
+
+        connectivityManager = activity.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        connectivityManager?.registerNetworkCallback(
             NetworkRequest.Builder()
                 .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
@@ -47,6 +51,11 @@ class NetworkStatusResponder(context: Context, private val eventBus: EventBus) {
                 .build(),
             networkCallback
         )
+    }
+
+    override fun stop() {
+        connectivityManager?.unregisterNetworkCallback(networkCallback)
+        eventBus.unregister(this)
     }
 
     @Subscribe

@@ -1,20 +1,22 @@
 package org.racehorse.webview
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.webkit.CookieManager
 import android.webkit.WebView
+import androidx.activity.ComponentActivity
 import androidx.webkit.WebViewAssetLoader
 import com.google.gson.Gson
 import org.greenrobot.eventbus.*
+import org.racehorse.Plugin
 
 /**
  * The [WebView] that manages the web app.
  */
 @SuppressLint("SetJavaScriptEnabled", "ViewConstructor")
-class RacehorseWebView(context: Context, private val eventBus: EventBus) : WebView(context) {
+class RacehorseWebView(private val activity: ComponentActivity) : WebView(activity) {
 
     private val gson = Gson()
+    private val eventBus = EventBus.getDefault()
 
     init {
         val cookieManager = CookieManager.getInstance()
@@ -53,6 +55,11 @@ class RacehorseWebView(context: Context, private val eventBus: EventBus) : WebVi
             "(window.racehorseConnection.inbox||(window.racehorseConnection.inbox=[])).push([$requestId,$json])",
             null
         )
+    }
+
+    fun registerPlugin(plugin: Plugin) {
+        plugin.init(activity, eventBus)
+        plugin.start()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
