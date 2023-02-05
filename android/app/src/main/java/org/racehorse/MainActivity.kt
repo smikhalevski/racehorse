@@ -14,6 +14,7 @@ class MainActivity : AppCompatActivity() {
 
         webView.registerPlugin(PermissionPlugin())
         webView.registerPlugin(NetworkPlugin())
+        webView.registerPlugin(ConfigurationPlugin())
 
         webView.start("10.0.2.2:1234", WebViewAssetLoader.AssetsPathHandler(this))
 

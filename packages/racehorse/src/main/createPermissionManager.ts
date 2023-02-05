@@ -1,5 +1,8 @@
 import { EventBridge } from './createEventBridge';
 
+/**
+ * Allows checking and requesting application permissions.
+ */
 export interface PermissionManager {
   /**
    * Gets whether you should show UI with rationale before requesting a permission.
@@ -51,7 +54,7 @@ export interface PermissionManager {
 }
 
 /**
- * Creates the new {@linkcode PermissionManager} instance that allows checking and requesting application permissions.
+ * Creates the new {@linkcode PermissionManager} instance.
  *
  * @param eventBridge The event bridge to use for communication with Android device.
  */

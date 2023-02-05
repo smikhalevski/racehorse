@@ -2,7 +2,10 @@ import { useEventBridge } from './useEventBridge';
 import { useMemo } from 'react';
 import { createNetworkManager } from 'racehorse';
 
-export function useNetworkManager() {
+/**
+ * Device network monitoring.
+ */
+export function useNetwork() {
   const eventBridge = useEventBridge();
 
   return useMemo(() => createNetworkManager(eventBridge), [eventBridge]);

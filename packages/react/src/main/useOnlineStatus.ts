@@ -1,4 +1,4 @@
-import { useNetworkManager } from './useNetworkManager';
+import { useNetwork } from './useNetwork';
 import { useEffect, useState } from 'react';
 
 /**
@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
  */
 export function useOnlineStatus(): boolean | undefined {
   const [online, setOnline] = useState<boolean>();
-  const networkManager = useNetworkManager();
+  const networkManager = useNetwork();
 
   useEffect(() => networkManager.subscribe(setOnline), [networkManager]);
 

@@ -1,5 +1,8 @@
 import { EventBridge } from './createEventBridge';
 
+/**
+ * Device network monitoring.
+ */
 export interface NetworkManager {
   /**
    * Returns the current online status or `undefined` if not yet known.
@@ -16,7 +19,7 @@ export interface NetworkManager {
 }
 
 /**
- * Creates the new {@linkcode NetworkManager} instance that monitors device online status.
+ * Creates the new {@linkcode NetworkManager} instance.
  *
  * @param eventBridge The event bridge to use for communication with Android device.
  */

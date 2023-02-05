@@ -1,21 +1,34 @@
-import { useOnlineStatus, usePermissionManager } from '@racehorse/react';
-import { useState } from 'react';
+import { useConfiguration, useOnlineStatus, usePermissions } from '@racehorse/react';
+import { useEffect, useState } from 'react';
 
 module.hot?.accept(() => {
   location.reload();
 });
 
 export function App() {
+  const [locales, setLocales] = useState<string[]>();
   const [value, setValue] = useState<any>();
 
   const online = useOnlineStatus();
-  const { askForPermission } = usePermissionManager();
+  const { getPreferredLocales } = useConfiguration();
+  const { askForPermission } = usePermissions();
+
+  useEffect(() => {
+    getPreferredLocales().then(setLocales);
+  }, []);
 
   return (
     <>
       <h1>
         {'Online: '}
         {online === undefined ? '🟡' : online ? '🟢' : '🔴'}
+      </h1>
+
+      <hr />
+
+      <h1>
+        {'Locales: '}
+        {locales?.join(',')}
       </h1>
 
       <hr />
