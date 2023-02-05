@@ -25,9 +25,14 @@ interface ChainableEvent {
 /**
  * Posts the event to event bus and sets its [ChainableEvent.requestId] to the ID of this event.
  */
-fun ChainableEvent.postToChain(event: ChainableEvent) {
-    event.requestId = this.requestId
-    EventBus.getDefault().post(event)
+fun <T : ChainableEvent> ChainableEvent.postToChain(event: T): T {
+    EventBus.getDefault().post(event.forChain(this.requestId))
+    return event
+}
+
+fun <T : ChainableEvent> T.forChain(requestId: Int): T {
+    this.requestId = requestId
+    return this
 }
 
 /**
@@ -51,11 +56,13 @@ open class ResponseEvent(val ok: Boolean = true) : BasicChainableEvent(-1)
 /**
  * Pushed to web in response to non-chainable event posted from web.
  */
-class AutoCloseResponseEvent(override var requestId: Int) : ResponseEvent()
+class AutoCloseResponseEvent : ResponseEvent()
 
 /**
  * An event that rejects the request promise.
  */
-class ErrorResponseEvent(requestId: Int, @Transient val cause: Throwable) : ResponseEvent(false) {
-    constructor(cause: Throwable) : this(-1, cause)
+class ErrorResponseEvent(@Transient val cause: Throwable) : ResponseEvent(false) {
+    val name = cause.javaClass.name
+    val message = cause.message
+    val stackTrace = cause.stackTraceToString()
 }

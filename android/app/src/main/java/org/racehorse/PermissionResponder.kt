@@ -1,4 +1,4 @@
-package org.racehorse.permissions
+package org.racehorse
 
 import android.content.pm.PackageManager
 import androidx.activity.ComponentActivity

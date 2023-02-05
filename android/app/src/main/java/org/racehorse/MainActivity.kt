@@ -1,5 +1,6 @@
 package org.racehorse
 
+import NetworkStatusResponder
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.webkit.WebViewAssetLoader
@@ -9,7 +10,6 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.evergreen.RacehorseBootstrapper
 import org.racehorse.evergreen.BundleReadyEvent
-import org.racehorse.permissions.PermissionResponder
 import org.racehorse.webview.DirectoryPathHandler
 import org.racehorse.webview.RacehorseWebView
 
@@ -29,6 +29,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         webView = RacehorseWebView(this, eventBus)
 
         val permissionResponder = PermissionResponder(this)
+
+        NetworkStatusResponder(this, eventBus)
 
         eventBus.register(permissionResponder)
         eventBus.register(this)

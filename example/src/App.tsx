@@ -2,6 +2,10 @@ import { Event } from 'racehorse';
 import { useEventBridge, useEventBridgeSubscription } from '@racehorse/react';
 import { Fragment, useState } from 'react';
 
+module.hot?.accept(() => {
+  location.reload();
+});
+
 export function App() {
   const [events, setEvents] = useState<Event[]>([]);
 
@@ -17,7 +21,7 @@ export function App() {
         onClick={() => {
           eventBridge
             .request({
-              type: 'org.racehorse.permissions.IsPermissionGrantedRequestEvent',
+              type: 'org.racehorse.IsPermissionGrantedRequestEvent',
               permissions: [
                 'android.permission.ACCESS_WIFI_STATE',
                 'android.permission.ACCESS_NETWORK_STATE',
