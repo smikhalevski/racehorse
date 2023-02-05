@@ -1,4 +1,4 @@
-import { usePermissionManager } from '@racehorse/react';
+import { useOnlineStatus, usePermissionManager } from '@racehorse/react';
 import { useState } from 'react';
 
 module.hot?.accept(() => {
@@ -8,10 +8,18 @@ module.hot?.accept(() => {
 export function App() {
   const [value, setValue] = useState<any>();
 
-  const { isPermissionGranted, askForPermission } = usePermissionManager();
+  const online = useOnlineStatus();
+  const { askForPermission } = usePermissionManager();
 
   return (
     <>
+      <h1>
+        {'Online: '}
+        {online === undefined ? '🟡' : online ? '🟢' : '🔴'}
+      </h1>
+
+      <hr />
+
       <button
         onClick={() => {
           askForPermission([
@@ -29,7 +37,7 @@ export function App() {
         {'Request permission'}
       </button>
 
-      <h1>{'Value'}</h1>
+      <h1>{'Result'}</h1>
 
       <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(value, null, 2)}</pre>
     </>

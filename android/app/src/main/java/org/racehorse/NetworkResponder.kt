@@ -1,3 +1,5 @@
+package org.racehorse
+
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
@@ -7,30 +9,35 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.webview.AlertEvent
 import org.racehorse.webview.RequestEvent
+import org.racehorse.webview.ResponseEvent
 import org.racehorse.webview.respond
 
 class OnlineStatusChangedAlertEvent(val online: Boolean) : AlertEvent
 
 class IsOnlineRequestEvent : RequestEvent()
 
-class IsOnlineResponseEvent(val online: Boolean) : RequestEvent()
+class IsOnlineResponseEvent(val online: Boolean) : ResponseEvent()
 
-// https://developer.android.com/training/monitoring-device-state/connectivity-status-type
 class NetworkStatusResponder(context: Context, private val eventBus: EventBus) {
+
+    private val networkOnlineStatuses = HashMap<Network, Boolean>()
+
+    private val online get() = networkOnlineStatuses.values.contains(true)
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
+            networkOnlineStatuses[network] = true
             eventBus.post(OnlineStatusChangedAlertEvent(true))
         }
 
         override fun onLost(network: Network) {
-            eventBus.post(OnlineStatusChangedAlertEvent(false))
+            networkOnlineStatuses[network] = false
+            eventBus.post(OnlineStatusChangedAlertEvent(online))
         }
     }
 
-    private val online = false
-
     init {
+        // TODO Must be unregistered
         @Suppress("UNNECESSARY_SAFE_CALL")
         (context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager)?.registerNetworkCallback(
             NetworkRequest.Builder()

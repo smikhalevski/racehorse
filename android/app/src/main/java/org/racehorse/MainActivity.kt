@@ -1,6 +1,5 @@
 package org.racehorse
 
-import NetworkStatusResponder
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.webkit.WebViewAssetLoader
@@ -30,9 +29,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         val permissionResponder = PermissionResponder(this)
 
-        NetworkStatusResponder(this, eventBus)
+        val networkStatusResponder = NetworkStatusResponder(this, eventBus)
 
         eventBus.register(permissionResponder)
+        eventBus.register(networkStatusResponder)
         eventBus.register(this)
 
 //        scope.launch(Dispatchers.IO) {

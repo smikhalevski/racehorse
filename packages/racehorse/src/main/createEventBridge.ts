@@ -134,7 +134,7 @@ export function createEventBridge(options: EventBridgeOptions = {}): EventBridge
           inbox.push(response);
         }
       } else if (responses !== undefined) {
-        throw new Error('Connection should belong to single event bridge');
+        throw new Error('Connection should belong to a single event bridge');
       }
       return connection;
     });

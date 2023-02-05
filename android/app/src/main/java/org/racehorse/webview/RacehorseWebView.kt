@@ -19,7 +19,7 @@ class RacehorseWebView(context: Context, private val eventBus: EventBus) : WebVi
     init {
         val cookieManager = CookieManager.getInstance()
         cookieManager.setAcceptCookie(true)
-        cookieManager.setAcceptThirdPartyCookies(this@RacehorseWebView, true)
+        cookieManager.setAcceptThirdPartyCookies(this, true)
 
         webChromeClient = RacehorseWebChromeClient()
 
