@@ -1,54 +1,37 @@
-import { Event } from 'racehorse';
-import { useEventBridge, useEventBridgeSubscription } from '@racehorse/react';
-import { Fragment, useState } from 'react';
+import { usePermissionManager } from '@racehorse/react';
+import { useState } from 'react';
 
 module.hot?.accept(() => {
   location.reload();
 });
 
 export function App() {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [value, setValue] = useState<any>();
 
-  const eventBridge = useEventBridge();
-
-  useEventBridgeSubscription(event => {
-    setEvents(events => events.concat(event));
-  });
+  const { isPermissionGranted, askForPermission } = usePermissionManager();
 
   return (
     <>
       <button
         onClick={() => {
-          eventBridge
-            .request({
-              type: 'org.racehorse.IsPermissionGrantedRequestEvent',
-              permissions: [
-                'android.permission.ACCESS_WIFI_STATE',
-                'android.permission.ACCESS_NETWORK_STATE',
-                'android.permission.CHANGE_WIFI_STATE',
-                'android.permission.CALL_PHONE',
-                'android.permission.READ_EXTERNAL_STORAGE',
-                'android.permission.CAMERA',
-                'android.permission.ACCESS_FINE_LOCATION',
-                'android.permission.ACCESS_COARSE_LOCATION',
-              ],
-            })
-            .then(event => {
-              setEvents(events => events.concat(event));
-            });
+          askForPermission([
+            // 'android.permission.ACCESS_WIFI_STATE',
+            // 'android.permission.ACCESS_NETWORK_STATE',
+            // 'android.permission.CHANGE_WIFI_STATE',
+            // 'android.permission.CALL_PHONE',
+            // 'android.permission.READ_EXTERNAL_STORAGE',
+            'android.permission.CAMERA',
+            // 'android.permission.ACCESS_FINE_LOCATION',
+            // 'android.permission.ACCESS_COARSE_LOCATION',
+          ]).then(setValue);
         }}
       >
         {'Request permission'}
       </button>
 
-      <h1>{'Events'}</h1>
+      <h1>{'Value'}</h1>
 
-      {events.map((event, i) => (
-        <Fragment key={i}>
-          <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(event, null, 2)}</pre>
-          <hr />
-        </Fragment>
-      ))}
+      <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(value, null, 2)}</pre>
     </>
   );
 }

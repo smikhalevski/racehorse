@@ -1,1 +1,2 @@
-export * from './EventBridge';
+export * from './createEventBridge';
+export * from './createPermissionManager';

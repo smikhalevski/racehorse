@@ -15,7 +15,13 @@ export interface Event {
   [key: string]: any;
 }
 
+/**
+ * The response event pushed by Android as the result of a request.
+ */
 export interface ResponseEvent extends Event {
+  /**
+   * `true` for a success response, or `false` for an error response.
+   */
   ok: boolean;
 }
 
@@ -31,16 +37,16 @@ export interface Connection {
     /**
      * Called by Android when an envelope is pushed through the connection.
      */
-    push(response: readonly [requestId: number | null, event: Event]): void;
+    push(response: readonly [requestId: number | null, event: ResponseEvent]): void;
   };
 
   /**
    * Delivers a serialized event to Android.
    *
    * @param requestId The unique request ID.
-   * @param eventStr The serialized event.
+   * @param eventJson The serialized event.
    */
-  post(requestId: number, eventStr: string): void;
+  post(requestId: number, eventJson: string): void;
 }
 
 declare global {
@@ -57,14 +63,9 @@ declare global {
  */
 export interface EventBridge {
   /**
-   * `true` if bridge connection is ready to process events, `false` otherwise.
-   */
-  isConnected(): boolean;
-
-  /**
    * Sends an event through a connection to Android and returns a promise that is resolved when a response with a
-   * matching {@linkcode Envelope.requestId} is pushed to the {@link Connection.inbox connection inbox}. If an exception
-   * is thrown in Android during an event processing, the returned promise is rejected with an `Error`.
+   * matching {@linkcode Envelope.requestId} is pushed to the {@link Connection.inbox connection inbox}. The returned
+   * promise is never rejected. Check {@linkcode ResponseEvent.ok} to detect that an error occurred.
    *
    * @param event The request event to send.
    * @returns The response event.
@@ -102,61 +103,64 @@ export function createEventBridge(options: EventBridgeOptions = {}): EventBridge
   const { connectionProvider = () => window.racehorseConnection } = options;
 
   const pubSub = new PubSub<Event>();
-  const callbacks = new Map<number, (event: ResponseEvent) => void>();
-
-  let requestCount = 0;
-  let connected = false;
+  const resolvers = new Map<number, (event: ResponseEvent) => void>();
 
   const inbox: Connection['inbox'] = {
     push([requestId, event]) {
       if (requestId === null) {
-        // org.racehorse.AlertEvent
         pubSub.publish(event);
         return;
       }
 
-      // org.racehorse.ResponseEvent
-      const callback = callbacks.get(requestId);
+      const resolver = resolvers.get(requestId);
 
-      if (callback !== undefined) {
-        callbacks.delete(requestId);
-        callback(event as ResponseEvent);
+      if (resolver !== undefined) {
+        resolvers.delete(requestId);
+        resolver(event as ResponseEvent);
       }
     },
   };
 
-  const connectionPromise = untilTruthy(connectionProvider, 100).then(connection => {
-    const responses = connection.inbox;
+  let requestCount = 0;
 
-    connection.inbox = inbox;
+  let openConnection = (): Promise<Connection> => {
+    const promise = untilTruthy(connectionProvider, 100).then(connection => {
+      const responses = connection.inbox;
 
-    connected = true;
+      connection.inbox = inbox;
 
-    if (Array.isArray(responses)) {
-      for (const response of responses) {
-        inbox.push(response);
+      if (Array.isArray(responses)) {
+        for (const response of responses) {
+          inbox.push(response);
+        }
+      } else if (responses !== undefined) {
+        throw new Error('Connection should belong to single event bridge');
       }
-    }
-    return connection;
-  });
-
-  const request: EventBridge['request'] = event =>
-    new Promise(resolve => {
-      const requestId = requestCount++;
-      const eventStr = JSON.stringify(event);
-
-      callbacks.set(requestId, resolve);
-
-      connectionPromise.then(connection => {
-        connection.post(requestId, eventStr);
-      });
+      return connection;
     });
 
-  const subscribe: EventBridge['subscribe'] = listener => pubSub.subscribe(listener);
+    openConnection = () => promise;
+
+    return promise;
+  };
 
   return {
-    isConnected: () => connected,
-    request,
-    subscribe,
+    request(event) {
+      return new Promise(resolve => {
+        const requestId = requestCount++;
+        const eventJson = JSON.stringify(event);
+
+        resolvers.set(requestId, resolve);
+
+        openConnection().then(connection => {
+          connection.post(requestId, eventJson);
+        });
+      });
+    },
+
+    subscribe(listener) {
+      openConnection();
+      return pubSub.subscribe(listener);
+    },
   };
 }

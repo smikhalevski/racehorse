@@ -1,16 +1,10 @@
-import { createContext, useContext, useEffect } from 'react';
-import { createEventBridge, Event, EventBridge } from 'racehorse';
+import { createContext, useContext } from 'react';
+import { createEventBridge, EventBridge } from 'racehorse';
 
-let eventBridge: EventBridge | undefined;
+export const EventBridgeContext = createContext(createEventBridge());
 
-export const EventBridgeProviderContext = createContext(() => (eventBridge ||= createEventBridge()));
+EventBridgeContext.displayName = 'EventBridgeContext';
 
 export function useEventBridge(): EventBridge {
-  return useContext(EventBridgeProviderContext)();
-}
-
-export function useEventBridgeSubscription(listener: (event: Event) => void): void {
-  const eventBridge = useEventBridge();
-
-  useEffect(() => eventBridge.subscribe(listener), [eventBridge]);
+  return useContext(EventBridgeContext);
 }

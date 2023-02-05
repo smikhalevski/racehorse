@@ -71,7 +71,9 @@ class RacehorseWebView(context: Context, private val eventBus: EventBus) : WebVi
 
         if (originalEvent is RequestEvent) {
             eventBus.post(
-                ErrorResponseEvent(IllegalStateException("No subscribers for $originalEvent")).forChain(originalEvent.requestId)
+                ErrorResponseEvent(IllegalStateException("No subscribers for $originalEvent")).setRequestId(
+                    originalEvent.requestId
+                )
             )
         }
     }
@@ -82,7 +84,7 @@ class RacehorseWebView(context: Context, private val eventBus: EventBus) : WebVi
 
             is ErrorResponseEvent -> causingEvent.cause.printStackTrace()
 
-            is RequestEvent -> eventBus.post(ErrorResponseEvent(event.throwable).forChain(causingEvent.requestId))
+            is RequestEvent -> eventBus.post(ErrorResponseEvent(event.throwable).setRequestId(causingEvent.requestId))
         }
     }
 }

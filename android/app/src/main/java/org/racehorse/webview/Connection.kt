@@ -11,11 +11,11 @@ import org.greenrobot.eventbus.EventBus
 internal class Connection(private val gson: Gson, private val eventBus: EventBus) {
 
     @JavascriptInterface
-    fun post(requestId: Int, eventStr: String) {
+    fun post(requestId: Int, eventJson: String) {
         val event: Any
 
         try {
-            val jsonObject = gson.fromJson(eventStr, JsonObject::class.java)
+            val jsonObject = gson.fromJson(eventJson, JsonObject::class.java)
             jsonObject.remove("requestId")
 
             val eventType = jsonObject["type"].asString
@@ -30,14 +30,14 @@ internal class Connection(private val gson: Gson, private val eventBus: EventBus
 
             event = gson.fromJson(jsonObject, eventClass)
         } catch (throwable: Throwable) {
-            eventBus.post(ErrorResponseEvent(throwable).forChain(requestId))
+            eventBus.post(ErrorResponseEvent(throwable).setRequestId(requestId))
             return
         }
 
         if (event is ChainableEvent) {
-            eventBus.post(event.forChain(requestId))
+            eventBus.post(event.setRequestId(requestId))
         } else {
-            eventBus.post(AutoCloseResponseEvent().forChain(requestId))
+            eventBus.post(AutoCloseResponseEvent().setRequestId(requestId))
         }
     }
 }

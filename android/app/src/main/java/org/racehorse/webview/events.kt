@@ -25,12 +25,12 @@ interface ChainableEvent {
 /**
  * Posts the event to event bus and sets its [ChainableEvent.requestId] to the ID of this event.
  */
-fun <T : ChainableEvent> ChainableEvent.postToChain(event: T): T {
-    EventBus.getDefault().post(event.forChain(this.requestId))
+fun <T : ChainableEvent> ChainableEvent.respond(event: T): T {
+    EventBus.getDefault().post(event.setRequestId(this.requestId))
     return event
 }
 
-fun <T : ChainableEvent> T.forChain(requestId: Int): T {
+fun <T : ChainableEvent> T.setRequestId(requestId: Int): T {
     this.requestId = requestId
     return this
 }

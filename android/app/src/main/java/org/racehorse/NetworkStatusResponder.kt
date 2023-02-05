@@ -7,7 +7,7 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.webview.AlertEvent
 import org.racehorse.webview.RequestEvent
-import org.racehorse.webview.postToChain
+import org.racehorse.webview.respond
 
 class OnlineStatusChangedAlertEvent(val online: Boolean) : AlertEvent
 
@@ -44,6 +44,6 @@ class NetworkStatusResponder(context: Context, private val eventBus: EventBus) {
 
     @Subscribe
     fun onIsOnlineRequestEvent(event: IsOnlineRequestEvent) {
-        event.postToChain(IsOnlineResponseEvent(online))
+        event.respond(IsOnlineResponseEvent(online))
     }
 }

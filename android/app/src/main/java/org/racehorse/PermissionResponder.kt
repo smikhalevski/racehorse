@@ -13,30 +13,34 @@ import org.racehorse.webview.*
  */
 class ShouldShowRequestPermissionRationaleRequestEvent(val permissions: Array<String>) : RequestEvent()
 
-class ShouldShowTaskPermissionRationaleResponseEvent(val results: Map<String, Boolean>) : ResponseEvent()
+class ShouldShowTaskPermissionRationaleResponseEvent(val statuses: Map<String, Boolean>) : ResponseEvent()
 
 /**
  * Determine whether you have been granted a particular permission.
  */
 class IsPermissionGrantedRequestEvent(val permissions: Array<String>) : RequestEvent()
 
-class IsPermissionGrantedResponseEvent(val results: Map<String, Boolean>) : ResponseEvent()
+class IsPermissionGrantedResponseEvent(val statuses: Map<String, Boolean>) : ResponseEvent()
 
 /**
  * Requests permissions to be granted to the application.
  */
 class AskForPermissionRequestEvent(val permissions: Array<String>) : RequestEvent()
 
-class AskForPermissionResponseEvent(val results: Map<String, Boolean>) : ResponseEvent()
+class AskForPermissionResponseEvent(val statuses: Map<String, Boolean>) : ResponseEvent()
 
 /**
  * Responds to permission-related requests.
  */
 class PermissionResponder(private val activity: ComponentActivity) {
 
+    private fun isPermissionGranted(permission: String): Boolean {
+        return ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED
+    }
+
     @Subscribe
     fun onShouldShowRequestPermissionRationaleRequestEvent(event: ShouldShowRequestPermissionRationaleRequestEvent) {
-        event.postToChain(ShouldShowTaskPermissionRationaleResponseEvent(
+        event.respond(ShouldShowTaskPermissionRationaleResponseEvent(
             event.permissions.associateWith {
                 ActivityCompat.shouldShowRequestPermissionRationale(activity, it)
             }
@@ -45,27 +49,21 @@ class PermissionResponder(private val activity: ComponentActivity) {
 
     @Subscribe
     fun onIsPermissionGrantedRequestEvent(event: IsPermissionGrantedRequestEvent) {
-        event.postToChain(IsPermissionGrantedResponseEvent(
-            event.permissions.associateWith {
-                ContextCompat.checkSelfPermission(activity, it) == PackageManager.PERMISSION_GRANTED
-            }
-        ))
+        event.respond(IsPermissionGrantedResponseEvent(event.permissions.associateWith(this::isPermissionGranted)))
     }
 
     @Subscribe
     fun onAskForPermissionRequestEvent(event: AskForPermissionRequestEvent) {
-        val permissions = event.permissions
+        val notGrantedPermissions = event.permissions.filterNot(this::isPermissionGranted).toTypedArray()
+        val result = event.permissions.associateWith { true }
 
-        val launcher = activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-            event.postToChain(AskForPermissionResponseEvent(
-                permissions.associateWith { true } + it
-            ))
+        if (notGrantedPermissions.isEmpty()) {
+            event.respond(AskForPermissionResponseEvent(result))
+            return
         }
 
-        launcher.launch(
-            permissions.filter {
-                ContextCompat.checkSelfPermission(activity, it) != PackageManager.PERMISSION_GRANTED
-            }.toTypedArray()
-        )
+        activity.launch(ActivityResultContracts.RequestMultiplePermissions(), notGrantedPermissions) {
+            event.respond(AskForPermissionResponseEvent(result + it))
+        }
     }
 }

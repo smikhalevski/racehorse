@@ -2,22 +2,6 @@ import { sleep } from 'parallel-universe';
 import { Connection, createEventBridge } from '../main';
 
 describe('EventBridge', () => {
-  test('updates connection status', async () => {
-    const eventBridge = createEventBridge({
-      connectionProvider: () => connection,
-    });
-
-    expect(eventBridge.isConnected()).toBe(false);
-
-    const connection: Connection = {
-      post() {},
-    };
-
-    await sleep(200);
-
-    expect(eventBridge.isConnected()).toBe(true);
-  });
-
   test('sends a request and gets a response when a connection is already initialized', async () => {
     const connection: Connection = {
       post: jest.fn(() => {
