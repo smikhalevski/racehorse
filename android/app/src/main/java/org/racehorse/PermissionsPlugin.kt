@@ -1,13 +1,13 @@
 package org.racehorse
 
 import android.content.pm.PackageManager
-import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.webview.*
+import org.racehorse.webview.RequestEvent
+import org.racehorse.webview.ResponseEvent
+import org.racehorse.webview.respond
 
 /**
  * Gets whether you should show UI with rationale before requesting a permission.
@@ -33,8 +33,8 @@ class AskForPermissionResponseEvent(val statuses: Map<String, Boolean>) : Respon
 /**
  * Responds to permission-related requests.
  */
-class PermissionPlugin : Plugin() {
-    fun isPermissionGranted(permission: String): Boolean {
+class PermissionsPlugin : Plugin() {
+    private fun isPermissionGranted(permission: String): Boolean {
         return ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED
     }
 
@@ -70,7 +70,7 @@ class PermissionPlugin : Plugin() {
             return
         }
 
-        activity.launch(ActivityResultContracts.RequestMultiplePermissions(), notGrantedPermissions) {
+        activity.launchForResult(ActivityResultContracts.RequestMultiplePermissions(), notGrantedPermissions) {
             event.respond(AskForPermissionResponseEvent(result + it))
         }
     }

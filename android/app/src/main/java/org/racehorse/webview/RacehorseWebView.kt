@@ -78,7 +78,7 @@ class RacehorseWebView(private val activity: ComponentActivity) : WebView(activi
 
         if (originalEvent is RequestEvent) {
             eventBus.post(
-                ErrorResponseEvent(IllegalStateException("No subscribers for $originalEvent")).setRequestId(
+                ExceptionResponseEvent(IllegalStateException("No subscribers for $originalEvent")).setRequestId(
                     originalEvent.requestId
                 )
             )
@@ -89,9 +89,9 @@ class RacehorseWebView(private val activity: ComponentActivity) : WebView(activi
     fun onSubscriberExceptionEvent(event: SubscriberExceptionEvent) {
         when (val causingEvent = event.causingEvent) {
 
-            is ErrorResponseEvent -> causingEvent.cause.printStackTrace()
+            is ExceptionResponseEvent -> causingEvent.cause.printStackTrace()
 
-            is RequestEvent -> eventBus.post(ErrorResponseEvent(event.throwable).setRequestId(causingEvent.requestId))
+            is RequestEvent -> eventBus.post(ExceptionResponseEvent(event.throwable).setRequestId(causingEvent.requestId))
         }
     }
 }

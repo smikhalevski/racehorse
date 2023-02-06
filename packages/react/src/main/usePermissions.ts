@@ -1,6 +1,6 @@
 import { useEventBridge } from './useEventBridge';
 import { useMemo } from 'react';
-import { createPermissionManager } from 'racehorse';
+import { createPermissionsManager } from 'racehorse';
 
 /**
  * Allows checking and requesting application permissions.
@@ -8,5 +8,5 @@ import { createPermissionManager } from 'racehorse';
 export function usePermissions() {
   const eventBridge = useEventBridge();
 
-  return useMemo(() => createPermissionManager(eventBridge), [eventBridge]);
+  return useMemo(() => createPermissionsManager(eventBridge), [eventBridge]);
 }

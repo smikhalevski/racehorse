@@ -58,7 +58,7 @@ export interface PermissionManager {
  *
  * @param eventBridge The event bridge to use for communication with Android device.
  */
-export function createPermissionManager(eventBridge: EventBridge): PermissionManager {
+export function createPermissionsManager(eventBridge: EventBridge): PermissionManager {
   return {
     shouldShowRequestPermissionRationale(permissions: string | string[]) {
       return runOperation('org.racehorse.ShouldShowRequestPermissionRationaleRequestEvent', eventBridge, permissions);

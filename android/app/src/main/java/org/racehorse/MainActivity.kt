@@ -12,9 +12,10 @@ class MainActivity : AppCompatActivity() {
 
         val webView = RacehorseWebView(this)
 
-        webView.registerPlugin(PermissionPlugin())
+        webView.registerPlugin(PermissionsPlugin())
         webView.registerPlugin(NetworkPlugin())
         webView.registerPlugin(ConfigurationPlugin())
+        webView.registerPlugin(IntentsPlugin())
 
         webView.start("10.0.2.2:1234", WebViewAssetLoader.AssetsPathHandler(this))
 

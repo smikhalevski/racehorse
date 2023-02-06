@@ -9,7 +9,7 @@ import java.util.*
 /**
  * Launches a one-time activity for result.
  */
-fun <I, O> ComponentActivity.launch(
+fun <I, O> ComponentActivity.launchForResult(
     contract: ActivityResultContract<I, O>,
     input: I,
     callback: ActivityResultCallback<O>

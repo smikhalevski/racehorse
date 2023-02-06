@@ -54,15 +54,13 @@ open class RequestEvent : BasicChainableEvent(-1), InboxEvent
 open class ResponseEvent(val ok: Boolean = true) : BasicChainableEvent(-1)
 
 /**
- * Pushed to web in response to non-chainable event posted from web.
+ * Response with no payload.
  */
-class AutoCloseResponseEvent : ResponseEvent()
+class VoidResponseEvent : ResponseEvent()
 
 /**
- * An event that rejects the request promise.
+ * Response that describes an occurred exception.
  */
-class ErrorResponseEvent(@Transient val cause: Throwable) : ResponseEvent(false) {
-    val name = cause.javaClass.name
-    val message = cause.message
+class ExceptionResponseEvent(@Transient val cause: Throwable) : ResponseEvent(false) {
     val stackTrace = cause.stackTraceToString()
 }
