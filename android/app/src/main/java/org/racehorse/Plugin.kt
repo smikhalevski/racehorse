@@ -5,15 +5,25 @@ import org.greenrobot.eventbus.EventBus
 
 open class Plugin {
 
-    protected lateinit var activity: ComponentActivity
-    protected lateinit var eventBus: EventBus
+    val activity get() = _activity
+
+    private lateinit var _activity: ComponentActivity
+    private lateinit var _eventBus: EventBus
 
     fun init(activity: ComponentActivity, eventBus: EventBus) {
-        this.activity = activity
-        this.eventBus = eventBus
+        this._activity = activity
+        this._eventBus = eventBus
     }
 
-    open fun start() {}
+    open fun onStart() {
+        _eventBus.register(this)
+    }
 
-    open fun stop() {}
+    open fun onStop() {
+        _eventBus.unregister(this)
+    }
+
+    protected fun post(event: Any) {
+        _eventBus.post(event)
+    }
 }

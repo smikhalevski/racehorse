@@ -1,7 +1,5 @@
 package org.racehorse.webview
 
-import org.greenrobot.eventbus.EventBus
-
 /**
  * Any event posted from web.
  */
@@ -23,14 +21,17 @@ interface ChainableEvent {
 }
 
 /**
- * Posts the event to event bus and sets its [ChainableEvent.requestId] to the ID of this event.
+ * Sets the request ID of the [event] to the ID of this event and returns the [event].
  */
-fun <T : ChainableEvent> ChainableEvent.respond(event: T): T {
-    EventBus.getDefault().post(event.setRequestId(this.requestId))
+fun <T : ChainableEvent> ChainableEvent.chain(event: T): T {
+    event.chain(this.requestId)
     return event
 }
 
-fun <T : ChainableEvent> T.setRequestId(requestId: Int): T {
+/**
+ * Sets the request ID of this event to [requestId] and returns this event.
+ */
+fun <T : ChainableEvent> T.chain(requestId: Int): T {
     this.requestId = requestId
     return this
 }

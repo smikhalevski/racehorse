@@ -59,7 +59,7 @@ class RacehorseWebView(private val activity: ComponentActivity) : WebView(activi
 
     fun registerPlugin(plugin: Plugin) {
         plugin.init(activity, eventBus)
-        plugin.start()
+        plugin.onStart()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -78,9 +78,7 @@ class RacehorseWebView(private val activity: ComponentActivity) : WebView(activi
 
         if (originalEvent is RequestEvent) {
             eventBus.post(
-                ExceptionResponseEvent(IllegalStateException("No subscribers for $originalEvent")).setRequestId(
-                    originalEvent.requestId
-                )
+                ExceptionResponseEvent(IllegalStateException("No subscribers for $originalEvent")).chain(originalEvent.requestId)
             )
         }
     }
@@ -91,7 +89,7 @@ class RacehorseWebView(private val activity: ComponentActivity) : WebView(activi
 
             is ExceptionResponseEvent -> causingEvent.cause.printStackTrace()
 
-            is RequestEvent -> eventBus.post(ExceptionResponseEvent(event.throwable).setRequestId(causingEvent.requestId))
+            is RequestEvent -> eventBus.post(ExceptionResponseEvent(event.throwable).chain(causingEvent.requestId))
         }
     }
 }

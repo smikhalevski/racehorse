@@ -7,9 +7,9 @@ import androidx.activity.result.contract.ActivityResultContract
 import java.util.*
 
 /**
- * Launches a one-time activity for result.
+ * Launches a one-time activity and returns its result via [callback].
  */
-fun <I, O> ComponentActivity.launchForResult(
+fun <I, O> ComponentActivity.launchForActivityResult(
     contract: ActivityResultContract<I, O>,
     input: I,
     callback: ActivityResultCallback<O>

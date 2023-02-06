@@ -30,14 +30,14 @@ internal class Connection(private val gson: Gson, private val eventBus: EventBus
 
             event = gson.fromJson(jsonObject, eventClass)
         } catch (throwable: Throwable) {
-            eventBus.post(ExceptionResponseEvent(throwable).setRequestId(requestId))
+            eventBus.post(ExceptionResponseEvent(throwable).chain(requestId))
             return
         }
 
         if (event is ChainableEvent) {
-            eventBus.post(event.setRequestId(requestId))
+            eventBus.post(event.chain(requestId))
         } else {
-            eventBus.post(VoidResponseEvent().setRequestId(requestId))
+            eventBus.post(VoidResponseEvent().chain(requestId))
         }
     }
 }

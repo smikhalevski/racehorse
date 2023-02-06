@@ -7,7 +7,7 @@ import androidx.core.content.ContextCompat
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.webview.RequestEvent
 import org.racehorse.webview.ResponseEvent
-import org.racehorse.webview.respond
+import org.racehorse.webview.chain
 
 /**
  * Gets whether you should show UI with rationale before requesting a permission.
@@ -38,26 +38,18 @@ class PermissionsPlugin : Plugin() {
         return ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED
     }
 
-    override fun start() {
-        eventBus.register(this)
-    }
-
-    override fun stop() {
-        eventBus.unregister(this)
-    }
-
     @Subscribe
     fun onShouldShowRequestPermissionRationaleRequestEvent(event: ShouldShowRequestPermissionRationaleRequestEvent) {
-        event.respond(ShouldShowTaskPermissionRationaleResponseEvent(
+        post(event.chain(ShouldShowTaskPermissionRationaleResponseEvent(
             event.permissions.associateWith {
                 ActivityCompat.shouldShowRequestPermissionRationale(activity, it)
             }
-        ))
+        )))
     }
 
     @Subscribe
     fun onIsPermissionGrantedRequestEvent(event: IsPermissionGrantedRequestEvent) {
-        event.respond(IsPermissionGrantedResponseEvent(event.permissions.associateWith(this::isPermissionGranted)))
+        post(event.chain(IsPermissionGrantedResponseEvent(event.permissions.associateWith(this::isPermissionGranted))))
     }
 
     @Subscribe
@@ -66,12 +58,12 @@ class PermissionsPlugin : Plugin() {
         val result = event.permissions.associateWith { true }
 
         if (notGrantedPermissions.isEmpty()) {
-            event.respond(AskForPermissionResponseEvent(result))
+            post(event.chain(AskForPermissionResponseEvent(result)))
             return
         }
 
-        activity.launchForResult(ActivityResultContracts.RequestMultiplePermissions(), notGrantedPermissions) {
-            event.respond(AskForPermissionResponseEvent(result + it))
+        activity.launchForActivityResult(ActivityResultContracts.RequestMultiplePermissions(), notGrantedPermissions) {
+            post(event.chain(AskForPermissionResponseEvent(result + it)))
         }
     }
 }

@@ -5,7 +5,7 @@ import android.os.Build
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.webview.RequestEvent
 import org.racehorse.webview.ResponseEvent
-import org.racehorse.webview.respond
+import org.racehorse.webview.chain
 
 class GetPreferredLocalesRequestEvent : RequestEvent()
 
@@ -15,13 +15,10 @@ class ConfigurationPlugin : Plugin() {
 
     private lateinit var configuration: Configuration
 
-    override fun start() {
-        eventBus.register(this)
-        configuration = activity.resources.configuration
-    }
+    override fun onStart() {
+        super.onStart()
 
-    override fun stop() {
-        eventBus.unregister(this)
+        configuration = activity.resources.configuration
     }
 
     @Subscribe
@@ -36,6 +33,6 @@ class ConfigurationPlugin : Plugin() {
             locales.toTypedArray()
         }
 
-        event.respond(GetPreferredLocalesResponseEvent(locales))
+        post(event.chain(GetPreferredLocalesResponseEvent(locales)))
     }
 }

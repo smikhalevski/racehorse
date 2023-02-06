@@ -5,13 +5,11 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import androidx.activity.ComponentActivity
-import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.webview.AlertEvent
 import org.racehorse.webview.RequestEvent
 import org.racehorse.webview.ResponseEvent
-import org.racehorse.webview.respond
+import org.racehorse.webview.chain
 
 class OnlineStatusChangedAlertEvent(val online: Boolean) : AlertEvent
 
@@ -21,7 +19,7 @@ class IsOnlineResponseEvent(val online: Boolean) : ResponseEvent()
 
 class NetworkPlugin : Plugin() {
 
-    val online get() = onlineStatuses.values.contains(true)
+    private val online get() = onlineStatuses.values.contains(true)
 
     private val onlineStatuses = HashMap<Network, Boolean>()
     private var connectivityManager: ConnectivityManager? = null
@@ -29,17 +27,17 @@ class NetworkPlugin : Plugin() {
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
             onlineStatuses[network] = true
-            eventBus.post(OnlineStatusChangedAlertEvent(true))
+            post(OnlineStatusChangedAlertEvent(true))
         }
 
         override fun onLost(network: Network) {
             onlineStatuses[network] = false
-            eventBus.post(OnlineStatusChangedAlertEvent(online))
+            post(OnlineStatusChangedAlertEvent(online))
         }
     }
 
-    override fun start() {
-        eventBus.register(this)
+    override fun onStart() {
+        super.onStart()
 
         connectivityManager = activity.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
@@ -53,13 +51,14 @@ class NetworkPlugin : Plugin() {
         )
     }
 
-    override fun stop() {
+    override fun onStop() {
+        super.onStop()
+
         connectivityManager?.unregisterNetworkCallback(networkCallback)
-        eventBus.unregister(this)
     }
 
     @Subscribe
     fun onIsOnlineRequestEvent(event: IsOnlineRequestEvent) {
-        event.respond(IsOnlineResponseEvent(online))
+        post(event.chain(IsOnlineResponseEvent(online)))
     }
 }

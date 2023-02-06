@@ -6,7 +6,7 @@ import androidx.core.content.ContextCompat
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.webview.RequestEvent
 import org.racehorse.webview.VoidResponseEvent
-import org.racehorse.webview.respond
+import org.racehorse.webview.chain
 
 // VoidResponseEvent
 /**
@@ -15,14 +15,6 @@ import org.racehorse.webview.respond
 class OpenInExternalActivityEvent(val url: String) : RequestEvent()
 
 class IntentsPlugin : Plugin() {
-
-    override fun start() {
-        eventBus.register(this)
-    }
-
-    override fun stop() {
-        eventBus.unregister(this)
-    }
 
     @Subscribe
     fun onOpenInExternalActivity(event: OpenInExternalActivityEvent) {
@@ -33,6 +25,6 @@ class IntentsPlugin : Plugin() {
 
         ContextCompat.startActivity(activity, intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), null)
 
-        event.respond(VoidResponseEvent())
+        post(event.chain(VoidResponseEvent()))
     }
 }
