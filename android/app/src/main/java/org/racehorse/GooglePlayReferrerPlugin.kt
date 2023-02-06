@@ -26,8 +26,8 @@ class GooglePlayReferrerPlugin : Plugin() {
     private val preferences
         get() = activity.getSharedPreferences(GooglePlayReferrerPlugin::class.java.name, Context.MODE_PRIVATE)
 
-    override fun onCreate() {
-        super.onCreate()
+    override fun onStart() {
+        super.onStart()
 
         val referrerClient = InstallReferrerClient.newBuilder(activity).build()
 

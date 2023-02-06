@@ -10,21 +10,15 @@ import java.net.URLConnection
 /**
  * The path handler that loads static assets from a given directory.
  */
-class DirectoryPathHandler(private val baseDirectory: File) : WebViewAssetLoader.PathHandler {
+class StaticPathHandler(private val baseDir: File) : WebViewAssetLoader.PathHandler {
 
-    private val basePath = baseDirectory.absolutePath
-
-    init {
-        require(baseDirectory.isDirectory && baseDirectory.canRead()) {
-            "Cannot serve contents of a directory ${baseDirectory.absolutePath}"
-        }
-    }
+    private val baseDirPath = baseDir.canonicalPath
 
     @WorkerThread
     override fun handle(path: String): WebResourceResponse {
-        var file = File(baseDirectory, path)
+        var file = File(baseDir, path)
 
-        if (file.absolutePath.startsWith(basePath)) {
+        if (file.canonicalPath.startsWith(baseDirPath)) {
             if (file.isDirectory) {
                 file = File(file, "index.html")
             }

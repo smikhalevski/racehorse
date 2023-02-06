@@ -1,9 +1,7 @@
 package org.racehorse
 
-import android.content.pm.PackageManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.webview.RequestEvent
 import org.racehorse.webview.ResponseEvent
@@ -33,10 +31,6 @@ class AskForPermissionResponseEvent(val statuses: Map<String, Boolean>) : Respon
  * Responds to permission-related requests.
  */
 class PermissionsPlugin : Plugin() {
-    private fun isPermissionGranted(permission: String): Boolean {
-        return ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED
-    }
-
     @Subscribe
     fun onShouldShowRequestPermissionRationaleRequestEvent(event: ShouldShowRequestPermissionRationaleRequestEvent) {
         postResponse(event, ShouldShowTaskPermissionRationaleResponseEvent(
@@ -50,13 +44,13 @@ class PermissionsPlugin : Plugin() {
     fun onIsPermissionGrantedRequestEvent(event: IsPermissionGrantedRequestEvent) {
         postResponse(
             event,
-            IsPermissionGrantedResponseEvent(event.permissions.associateWith(this::isPermissionGranted))
+            IsPermissionGrantedResponseEvent(event.permissions.associateWith { isPermissionGranted(activity, it) })
         )
     }
 
     @Subscribe
     fun onAskForPermissionRequestEvent(event: AskForPermissionRequestEvent) {
-        val notGrantedPermissions = event.permissions.filterNot(this::isPermissionGranted).toTypedArray()
+        val notGrantedPermissions = event.permissions.filterNot { isPermissionGranted(activity, it) }.toTypedArray()
         val result = event.permissions.associateWith { true }
 
         if (notGrantedPermissions.isEmpty()) {

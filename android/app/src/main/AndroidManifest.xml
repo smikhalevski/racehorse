@@ -37,6 +37,19 @@
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
+
+            <!-- Deep linking -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="smikhalevski.github.io"
+                    android:pathPrefix="/racehorse/"
+                    android:scheme="https" />
+            </intent-filter>
         </activity>
     </application>
 

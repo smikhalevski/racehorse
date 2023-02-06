@@ -17,17 +17,13 @@ open class Plugin {
         this._eventBus = eventBus
     }
 
-    open fun onCreate() {
+    open fun onRegister() {
         _eventBus.register(this)
     }
 
     open fun onStart() {}
 
-    open fun onStop() {}
-
-    open fun onDestroy() {
-        _eventBus.unregister(this)
-    }
+    open fun onPause() {}
 
     protected fun post(event: Any) {
         _eventBus.post(event)

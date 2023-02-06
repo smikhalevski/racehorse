@@ -40,6 +40,13 @@ export function App() {
 
       <hr />
 
+      <input
+        type="file"
+        accept="*/*"
+      />
+
+      <hr />
+
       <button
         onClick={() => {
           askForPermission([

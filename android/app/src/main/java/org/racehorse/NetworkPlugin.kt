@@ -47,13 +47,13 @@ class NetworkPlugin(
         }
     }
 
-    override fun onCreate() {
-        super.onCreate()
+    override fun onStart() {
+        super.onStart()
         connectivityManager?.registerNetworkCallback(networkRequest, networkCallback)
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onPause() {
+        super.onPause()
         connectivityManager?.unregisterNetworkCallback(networkCallback)
     }
 
