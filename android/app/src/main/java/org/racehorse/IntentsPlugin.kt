@@ -18,9 +18,9 @@ class IntentsPlugin : Plugin() {
 
     @Subscribe
     fun onOpenInExternalActivity(event: OpenInExternalActivityEvent) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(event.url)).constrainPackage(
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(event.url)).excludePackage(
             activity.packageManager,
-            excludedPackageNames = arrayOf(activity.javaClass.name)
+            arrayOf(activity.javaClass.name)
         ) ?: throw IllegalStateException("No external activity can open " + event.url)
 
         ContextCompat.startActivity(activity, intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), null)

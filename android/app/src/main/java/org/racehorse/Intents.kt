@@ -4,20 +4,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 
-/**
- * Returns a new intent that is handled by any app that isn't among [excludedPackageNames] or is among
- * [includedPackageNames].
- */
-fun Intent.constrainPackage(
-    packageManager: PackageManager,
-    excludedPackageNames: Array<String>? = null,
-    includedPackageNames: Array<String>? = null,
-): Intent? {
-
-    if (excludedPackageNames == null && includedPackageNames == null) {
-        return this
-    }
-
+fun Intent.excludePackage(packageManager: PackageManager, excludedPackageNames: Array<String>): Intent? {
     // Look for activities that that can handle this intent
     val packageNames = if (Build.VERSION.SDK_INT < 33) {
         packageManager.queryIntentActivities(this, 0)
@@ -26,10 +13,7 @@ fun Intent.constrainPackage(
     }.map { it.activityInfo.packageName }
 
     val targetPackageNames = packageNames.filter { packageName ->
-        val excluded = excludedPackageNames != null && excludedPackageNames.any { packageName.startsWith(it) }
-        val included = includedPackageNames != null && includedPackageNames.any { packageName.startsWith(it) }
-
-        !excluded || included
+        excludedPackageNames.none { packageName.startsWith(it) }
     }
 
     if (targetPackageNames.isEmpty()) {
