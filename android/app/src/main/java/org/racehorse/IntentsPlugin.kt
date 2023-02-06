@@ -12,16 +12,19 @@ import org.racehorse.webview.chain
 /**
  * `<queries>` must be present in the manifest file.
  */
-class OpenInExternalActivityEvent(val url: String) : RequestEvent()
+class OpenInExternalApplicationEvent(val url: String) : RequestEvent()
 
 class IntentsPlugin : Plugin() {
 
     @Subscribe
-    fun onOpenInExternalActivity(event: OpenInExternalActivityEvent) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(event.url)).excludePackage(
+    fun onOpenInExternalApplicationEvent(event: OpenInExternalApplicationEvent) {
+        val uri = Uri.parse(event.url)
+        val action = if (uri.scheme.equals("tel")) Intent.ACTION_DIAL else Intent.ACTION_VIEW
+
+        val intent = Intent(action, uri).excludePackage(
             activity.packageManager,
             arrayOf(activity.javaClass.name)
-        ) ?: throw IllegalStateException("No external activity can open " + event.url)
+        ) ?: throw IllegalStateException("Cannot open $action $uri in any external application")
 
         ContextCompat.startActivity(activity, intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), null)
 

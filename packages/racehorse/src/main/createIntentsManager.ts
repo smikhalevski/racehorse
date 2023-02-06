@@ -5,12 +5,12 @@ import { EventBridge } from './createEventBridge';
  */
 export interface IntentsManager {
   /**
-   * Opens a URL in an external browser or another app that supports deep links with this URL.
+   * Opens a URL in an external application.
    *
    * @param url The URL to open.
    * @returns `true` if external browser was opened, or `false` otherwise.
    */
-  openInExternalActivity(url: string): Promise<boolean>;
+  openInExternalApplication(url: string): Promise<boolean>;
 }
 
 /**
@@ -20,8 +20,8 @@ export interface IntentsManager {
  */
 export function createIntentsManager(eventBridge: EventBridge): IntentsManager {
   return {
-    openInExternalActivity(url) {
-      return eventBridge.request({ type: 'org.racehorse.OpenInExternalActivityEvent', url }).then(event => event.ok);
+    openInExternalApplication(url) {
+      return eventBridge.request({ type: 'org.racehorse.OpenInExternalApplicationEvent', url }).then(event => event.ok);
     },
   };
 }

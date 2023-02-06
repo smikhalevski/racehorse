@@ -10,7 +10,7 @@ export function App() {
   const [value, setValue] = useState<any>();
 
   const online = useOnlineStatus();
-  const { openInExternalActivity } = useIntents();
+  const { openInExternalApplication } = useIntents();
   const { getPreferredLocales } = useConfiguration();
   const { askForPermission } = usePermissions();
 
@@ -34,7 +34,7 @@ export function App() {
 
       <hr />
 
-      <button onClick={() => openInExternalActivity('https://github.com/smikhalevski')}>
+      <button onClick={() => openInExternalApplication('https://github.com/smikhalevski')}>
         {'Open in external browser2'}
       </button>
 
