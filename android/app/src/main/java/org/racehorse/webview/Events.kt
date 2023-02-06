@@ -20,18 +20,7 @@ interface ChainableEvent {
     var requestId: Int
 }
 
-/**
- * Sets the request ID of the [event] to the ID of this event and returns the [event].
- */
-fun <T : ChainableEvent> ChainableEvent.chain(event: T): T {
-    event.chain(this.requestId)
-    return event
-}
-
-/**
- * Sets the request ID of this event to [requestId] and returns this event.
- */
-fun <T : ChainableEvent> T.chain(requestId: Int): T {
+fun <T : ChainableEvent> T.setRequestId(requestId: Int): T {
     this.requestId = requestId
     return this
 }

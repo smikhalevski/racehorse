@@ -7,7 +7,6 @@ import androidx.core.content.ContextCompat
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.webview.RequestEvent
 import org.racehorse.webview.ResponseEvent
-import org.racehorse.webview.chain
 
 /**
  * Gets whether you should show UI with rationale before requesting a permission.
@@ -40,16 +39,19 @@ class PermissionsPlugin : Plugin() {
 
     @Subscribe
     fun onShouldShowRequestPermissionRationaleRequestEvent(event: ShouldShowRequestPermissionRationaleRequestEvent) {
-        post(event.chain(ShouldShowTaskPermissionRationaleResponseEvent(
+        postResponse(event, ShouldShowTaskPermissionRationaleResponseEvent(
             event.permissions.associateWith {
                 ActivityCompat.shouldShowRequestPermissionRationale(activity, it)
             }
-        )))
+        ))
     }
 
     @Subscribe
     fun onIsPermissionGrantedRequestEvent(event: IsPermissionGrantedRequestEvent) {
-        post(event.chain(IsPermissionGrantedResponseEvent(event.permissions.associateWith(this::isPermissionGranted))))
+        postResponse(
+            event,
+            IsPermissionGrantedResponseEvent(event.permissions.associateWith(this::isPermissionGranted))
+        )
     }
 
     @Subscribe
@@ -58,12 +60,12 @@ class PermissionsPlugin : Plugin() {
         val result = event.permissions.associateWith { true }
 
         if (notGrantedPermissions.isEmpty()) {
-            post(event.chain(AskForPermissionResponseEvent(result)))
+            postResponse(event, AskForPermissionResponseEvent(result))
             return
         }
 
         activity.launchForActivityResult(ActivityResultContracts.RequestMultiplePermissions(), notGrantedPermissions) {
-            post(event.chain(AskForPermissionResponseEvent(result + it)))
+            postResponse(event, AskForPermissionResponseEvent(result + it))
         }
     }
 }

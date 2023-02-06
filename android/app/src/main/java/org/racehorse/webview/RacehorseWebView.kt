@@ -48,7 +48,7 @@ class RacehorseWebView(private val activity: ComponentActivity) : WebView(activi
     private fun pushEvent(requestId: Int?, event: Any) {
         val json = gson.toJson(gson.toJsonTree(event).asJsonObject.also {
             it.remove("requestId")
-            it.addProperty("type", event.javaClass.name)
+            it.addProperty("type", event::class.java.name)
         })
 
         evaluateJavascript(
@@ -59,7 +59,7 @@ class RacehorseWebView(private val activity: ComponentActivity) : WebView(activi
 
     fun registerPlugin(plugin: Plugin) {
         plugin.init(activity, eventBus)
-        plugin.onStart()
+        plugin.onCreate()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -78,7 +78,8 @@ class RacehorseWebView(private val activity: ComponentActivity) : WebView(activi
 
         if (originalEvent is RequestEvent) {
             eventBus.post(
-                ExceptionResponseEvent(IllegalStateException("No subscribers for $originalEvent")).chain(originalEvent.requestId)
+                ExceptionResponseEvent(IllegalStateException("No subscribers for $originalEvent"))
+                    .setRequestId(originalEvent.requestId)
             )
         }
     }
@@ -89,7 +90,7 @@ class RacehorseWebView(private val activity: ComponentActivity) : WebView(activi
 
             is ExceptionResponseEvent -> causingEvent.cause.printStackTrace()
 
-            is RequestEvent -> eventBus.post(ExceptionResponseEvent(event.throwable).chain(causingEvent.requestId))
+            is RequestEvent -> eventBus.post(ExceptionResponseEvent(event.throwable).setRequestId(causingEvent.requestId))
         }
     }
 }

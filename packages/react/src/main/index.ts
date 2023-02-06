@@ -3,5 +3,5 @@ export * from './useEventBridge';
 export * from './useEventBridgeSubscription';
 export * from './useIntents';
 export * from './useNetwork';
-export * from './useOnlineStatus';
+export * from './useOnline';
 export * from './usePermissions';

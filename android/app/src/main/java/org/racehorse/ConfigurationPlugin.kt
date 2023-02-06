@@ -1,11 +1,9 @@
 package org.racehorse
 
-import android.content.res.Configuration
 import android.os.Build
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.webview.RequestEvent
 import org.racehorse.webview.ResponseEvent
-import org.racehorse.webview.chain
 
 class GetPreferredLocalesRequestEvent : RequestEvent()
 
@@ -13,16 +11,10 @@ class GetPreferredLocalesResponseEvent(val locales: Array<String>) : ResponseEve
 
 class ConfigurationPlugin : Plugin() {
 
-    private lateinit var configuration: Configuration
-
-    override fun onStart() {
-        super.onStart()
-
-        configuration = activity.resources.configuration
-    }
-
     @Subscribe
     fun onGetPreferredLocalesRequestEvent(event: GetPreferredLocalesRequestEvent) {
+        val configuration = activity.resources.configuration
+
         val locales = if (Build.VERSION.SDK_INT < 24) {
             arrayOf(configuration.locale.toLanguageTag())
         } else {
@@ -33,6 +25,6 @@ class ConfigurationPlugin : Plugin() {
             locales.toTypedArray()
         }
 
-        post(event.chain(GetPreferredLocalesResponseEvent(locales)))
+        postResponse(event, GetPreferredLocalesResponseEvent(locales))
     }
 }

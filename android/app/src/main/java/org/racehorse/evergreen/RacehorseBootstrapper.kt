@@ -2,8 +2,19 @@ package org.racehorse.evergreen
 
 import android.content.Context
 import org.greenrobot.eventbus.EventBus
+import org.racehorse.webview.AlertEvent
 import java.io.File
 import java.io.IOException
+
+class BundleReadyEvent(val appDir: File)
+
+class UpdateFailedEvent(val mandatory: Boolean) : AlertEvent
+
+class UpdateProgressEvent(val contentLength: Int, val readLength: Long) : AlertEvent
+
+class UpdateReadyEvent : AlertEvent
+
+class UpdateStartedEvent(val mandatory: Boolean) : AlertEvent
 
 class RacehorseBootstrapper(context: Context, private val eventBus: EventBus) :
     Bootstrapper(File(context.filesDir, "app")) {

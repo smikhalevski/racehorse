@@ -6,7 +6,6 @@ import androidx.core.content.ContextCompat
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.webview.RequestEvent
 import org.racehorse.webview.VoidResponseEvent
-import org.racehorse.webview.chain
 
 // VoidResponseEvent
 /**
@@ -23,11 +22,11 @@ class IntentsPlugin : Plugin() {
 
         val intent = Intent(action, uri).excludePackage(
             activity.packageManager,
-            arrayOf(activity.javaClass.name)
+            arrayOf(activity::class.java.name)
         ) ?: throw IllegalStateException("Cannot open $action $uri in any external application")
 
         ContextCompat.startActivity(activity, intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), null)
 
-        post(event.chain(VoidResponseEvent()))
+        postResponse(event, VoidResponseEvent())
     }
 }

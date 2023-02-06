@@ -1,4 +1,4 @@
-import { useConfiguration, useIntents, useOnlineStatus, usePermissions } from '@racehorse/react';
+import { useConfiguration, useIntents, useOnline, usePermissions } from '@racehorse/react';
 import { useEffect, useState } from 'react';
 
 module.hot?.accept(() => {
@@ -9,7 +9,7 @@ export function App() {
   const [locales, setLocales] = useState<string[]>();
   const [value, setValue] = useState<any>();
 
-  const online = useOnlineStatus();
+  const online = useOnline();
   const { openInExternalApplication } = useIntents();
   const { getPreferredLocales } = useConfiguration();
   const { askForPermission } = usePermissions();

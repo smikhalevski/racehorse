@@ -124,7 +124,7 @@ export function createEventBridge(options: EventBridgeOptions = {}): EventBridge
   let requestCount = 0;
 
   let openConnection = (): Promise<Connection> => {
-    const promise = untilTruthy(connectionProvider, 100).then(connection => {
+    const connectionPromise = untilTruthy(connectionProvider, 100).then(connection => {
       const responses = connection.inbox;
 
       connection.inbox = inbox;
@@ -139,9 +139,9 @@ export function createEventBridge(options: EventBridgeOptions = {}): EventBridge
       return connection;
     });
 
-    openConnection = () => promise;
+    openConnection = () => connectionPromise;
 
-    return promise;
+    return connectionPromise;
   };
 
   return {

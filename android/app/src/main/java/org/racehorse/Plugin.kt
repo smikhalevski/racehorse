@@ -2,6 +2,8 @@ package org.racehorse
 
 import androidx.activity.ComponentActivity
 import org.greenrobot.eventbus.EventBus
+import org.racehorse.webview.ChainableEvent
+import org.racehorse.webview.setRequestId
 
 open class Plugin {
 
@@ -15,15 +17,23 @@ open class Plugin {
         this._eventBus = eventBus
     }
 
-    open fun onStart() {
+    open fun onCreate() {
         _eventBus.register(this)
     }
 
-    open fun onStop() {
+    open fun onStart() {}
+
+    open fun onStop() {}
+
+    open fun onDestroy() {
         _eventBus.unregister(this)
     }
 
     protected fun post(event: Any) {
         _eventBus.post(event)
+    }
+
+    protected fun postResponse(causingEvent: ChainableEvent, event: ChainableEvent) {
+        post(event.setRequestId(causingEvent.requestId))
     }
 }

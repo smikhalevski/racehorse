@@ -12,32 +12,28 @@ internal class Connection(private val gson: Gson, private val eventBus: EventBus
 
     @JavascriptInterface
     fun post(requestId: Int, eventJson: String) {
-        val event: Any
-
-        try {
+        val event = try {
             val jsonObject = gson.fromJson(eventJson, JsonObject::class.java)
+            val eventClass = Class.forName(jsonObject["type"].asString)
+
             jsonObject.remove("requestId")
-
-            val eventType = jsonObject["type"].asString
-
             jsonObject.remove("type")
 
-            val eventClass = Class.forName(eventType)
-
             if (!InboxEvent::class.java.isAssignableFrom(eventClass)) {
-                throw IllegalArgumentException("Not an event $eventType")
+                throw IllegalArgumentException("Expected an event but found $eventClass")
             }
 
-            event = gson.fromJson(jsonObject, eventClass)
+            gson.fromJson(jsonObject, eventClass)
         } catch (throwable: Throwable) {
-            eventBus.post(ExceptionResponseEvent(throwable).chain(requestId))
+            eventBus.post(ExceptionResponseEvent(throwable).setRequestId(requestId))
+            return
+        }
+        if (event is ChainableEvent) {
+            eventBus.post(event.setRequestId(requestId))
             return
         }
 
-        if (event is ChainableEvent) {
-            eventBus.post(event.chain(requestId))
-        } else {
-            eventBus.post(VoidResponseEvent().chain(requestId))
-        }
+        eventBus.post(event)
+        eventBus.post(VoidResponseEvent().setRequestId(requestId))
     }
 }

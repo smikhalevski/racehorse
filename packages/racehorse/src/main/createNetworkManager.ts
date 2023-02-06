@@ -26,7 +26,7 @@ export interface NetworkManager {
 export function createNetworkManager(eventBridge: EventBridge): NetworkManager {
   let online: boolean | undefined;
 
-  const promise = eventBridge
+  const onlinePromise = eventBridge
     .request({ type: 'org.racehorse.IsOnlineRequestEvent' })
     .then(event => (online = event.online));
 
@@ -38,7 +38,7 @@ export function createNetworkManager(eventBridge: EventBridge): NetworkManager {
     subscribe(listener) {
       let subscribed = true;
 
-      promise.then(online => {
+      onlinePromise.then(online => {
         if (subscribed) {
           listener(online);
         }

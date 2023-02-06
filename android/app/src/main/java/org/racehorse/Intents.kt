@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 
 fun Intent.excludePackage(packageManager: PackageManager, excludedPackageNames: Array<String>): Intent? {
+
     // Look for activities that that can handle this intent
     val packageNames = if (Build.VERSION.SDK_INT < 33) {
         packageManager.queryIntentActivities(this, 0)
