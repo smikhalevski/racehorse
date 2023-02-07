@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
+import android.net.http.SslError
 import android.webkit.*
 import androidx.webkit.WebViewAssetLoader
 import com.google.gson.Gson
@@ -11,7 +12,8 @@ import org.greenrobot.eventbus.*
 import org.racehorse.OpenInExternalApplicationEvent
 import org.racehorse.Plugin
 
-@SuppressLint("SetJavaScriptEnabled", "ViewConstructor")
+
+@SuppressLint("SetJavaScriptEnabled")
 class AppWebView(context: Context) : WebView(context) {
 
     private val gson = Gson()
@@ -35,9 +37,7 @@ class AppWebView(context: Context) : WebView(context) {
     }
 
     fun start(appUrl: String, assetLoader: WebViewAssetLoader? = null) {
-        if (assetLoader != null) {
-            webViewClient = AppWebViewClient(appUrl, assetLoader, eventBus)
-        }
+        webViewClient = AppWebViewClient(appUrl, assetLoader)
 
         loadUrl(appUrl)
 
@@ -141,43 +141,47 @@ class AppWebView(context: Context) : WebView(context) {
             }
         }
     }
-}
 
-internal class AppWebViewClient(
-    private val appUrl: String,
-    private val assetLoader: WebViewAssetLoader,
-    private val eventBus: EventBus,
-) : WebViewClient() {
+    inner class AppWebViewClient(appUrl: String, private val assetLoader: WebViewAssetLoader?) :
+        WebViewClient() {
 
-    private val appUri = Uri.parse(appUrl)
+        private val appUri = Uri.parse(appUrl)
 
-    override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
-        return if (request.url.authority == appUri.authority) assetLoader.shouldInterceptRequest(request.url) else null
-    }
-
-    // Support API < 21
-    override fun shouldInterceptRequest(view: WebView, requestUrl: String): WebResourceResponse? {
-        val requestUri = Uri.parse(requestUrl)
-
-        return if (requestUri.authority == appUri.authority) assetLoader.shouldInterceptRequest(requestUri) else null
-    }
-
-    override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-        if (request.url.authority === appUri.authority) {
-            return false
+        @SuppressLint("WebViewClientOnReceivedSslError")
+        override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
+            if (!plugins.filterIsInstance<HttpsCapability>().any { it.onReceivedSslError(view, handler, error) }) {
+                handler.cancel()
+            }
         }
-        eventBus.post(OpenInExternalApplicationEvent(request.url.toString()))
-        return true
-    }
 
-    // Support API < 24
-    override fun shouldOverrideUrlLoading(view: WebView, requestUrl: String): Boolean {
-        val requestUri = Uri.parse(requestUrl)
-
-        if (requestUri.authority === appUri.authority) {
-            return false
+        override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
+            return if (request.url.authority == appUri.authority) assetLoader?.shouldInterceptRequest(request.url) else null
         }
-        eventBus.post(OpenInExternalApplicationEvent(requestUrl))
-        return true
+
+        // Support API < 21
+        override fun shouldInterceptRequest(view: WebView, requestUrl: String): WebResourceResponse? {
+            val requestUri = Uri.parse(requestUrl)
+
+            return if (requestUri.authority == appUri.authority) assetLoader?.shouldInterceptRequest(requestUri) else null
+        }
+
+        override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+            if (request.url.authority === appUri.authority) {
+                return false
+            }
+            eventBus.post(OpenInExternalApplicationEvent(request.url.toString()))
+            return true
+        }
+
+        // Support API < 24
+        override fun shouldOverrideUrlLoading(view: WebView, requestUrl: String): Boolean {
+            val requestUri = Uri.parse(requestUrl)
+
+            if (requestUri.authority === appUri.authority) {
+                return false
+            }
+            eventBus.post(OpenInExternalApplicationEvent(requestUrl))
+            return true
+        }
     }
 }

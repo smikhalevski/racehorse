@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "build": "parcel build src/index.html",
-    "serve": "parcel serve src/index.html",
+    "serve": "parcel serve src/index.html --https",
     "clean": "rimraf dist .parcel-cache",
     "test": "jest"
   },

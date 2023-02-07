@@ -7,7 +7,8 @@ module.hot?.accept(() => {
 
 export function App() {
   const [locales, setLocales] = useState<string[]>();
-  const [value, setValue] = useState<any>();
+  const [permissions, setPermissions] = useState<any>();
+  const [geolocation, setGeolocation] = useState<any>();
 
   const online = useOnline();
   const { openInExternalApplication } = useIntents();
@@ -53,6 +54,25 @@ export function App() {
 
       <button
         onClick={() => {
+          navigator.geolocation.getCurrentPosition(
+            position => {
+              setGeolocation({ latitude: position.coords.latitude, longitude: position.coords.longitude });
+            },
+            positionError => {
+              setGeolocation(positionError.message);
+            }
+          );
+        }}
+      >
+        {'Get geolocation'}
+      </button>
+
+      <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(geolocation, null, 2)}</pre>
+
+      <hr />
+
+      <button
+        onClick={() => {
           askForPermission([
             // 'android.permission.ACCESS_WIFI_STATE',
             // 'android.permission.ACCESS_NETWORK_STATE',
@@ -62,7 +82,7 @@ export function App() {
             'android.permission.CAMERA',
             // 'android.permission.ACCESS_FINE_LOCATION',
             // 'android.permission.ACCESS_COARSE_LOCATION',
-          ]).then(setValue);
+          ]).then(setPermissions);
         }}
       >
         {'Request permission'}
@@ -70,7 +90,7 @@ export function App() {
 
       <h1>{'Result'}</h1>
 
-      <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(value, null, 2)}</pre>
+      <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(permissions, null, 2)}</pre>
     </>
   );
 }

@@ -12,6 +12,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         webView = AppWebView(this)
+            .registerPlugin(HttpsPlugin())
             .registerPlugin(PermissionsPlugin(this))
             .registerPlugin(NetworkPlugin())
             .registerPlugin(ConfigurationPlugin())
@@ -20,7 +21,7 @@ class MainActivity : AppCompatActivity() {
             .registerPlugin(FileChooserPlugin(this, externalCacheDir, "$packageName.provider"))
 
         // 1️⃣ Debug in emulator with server on localhost:1234
-        webView.start("http://10.0.2.2:1234")
+        webView.start("https://10.0.2.2:1234")
 
 //        // 2️⃣ Load app bundle from src/main/assets folder
 //        webView.start(
