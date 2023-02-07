@@ -2,18 +2,21 @@ package org.racehorse
 
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
 import org.greenrobot.eventbus.Subscribe
+import org.racehorse.webview.EventBusCapability
 import org.racehorse.webview.RequestEvent
 import org.racehorse.webview.VoidResponseEvent
 
-// VoidResponseEvent
 /**
- * `<queries>` must be present in the manifest file.
+ * Opens URL in the external application.
+ *
+ * **Note:** `<queries>` must be present in the manifest file.
  */
 class OpenInExternalApplicationEvent(val url: String) : RequestEvent()
 
-class IntentsPlugin : Plugin() {
+class IntentsPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability {
 
     @Subscribe
     fun onOpenInExternalApplicationEvent(event: OpenInExternalApplicationEvent) {
@@ -25,6 +28,6 @@ class IntentsPlugin : Plugin() {
 
         ContextCompat.startActivity(activity, intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), null)
 
-        postResponse(event, VoidResponseEvent())
+        postToChain(event, VoidResponseEvent())
     }
 }

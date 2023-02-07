@@ -52,7 +52,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Required by org.racehorse.FileChooserDelegate.apply -->
+        <!-- Required by org.racehorse.FileChooserPlugin -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

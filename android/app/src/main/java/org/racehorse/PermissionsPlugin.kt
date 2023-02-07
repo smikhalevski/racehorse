@@ -1,8 +1,10 @@
 package org.racehorse
 
+import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import org.greenrobot.eventbus.Subscribe
+import org.racehorse.webview.EventBusCapability
 import org.racehorse.webview.RequestEvent
 import org.racehorse.webview.ResponseEvent
 
@@ -30,10 +32,11 @@ class AskForPermissionResponseEvent(val statuses: Map<String, Boolean>) : Respon
 /**
  * Responds to permission-related requests.
  */
-class PermissionsPlugin : Plugin() {
+class PermissionsPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability {
+
     @Subscribe
     fun onShouldShowRequestPermissionRationaleRequestEvent(event: ShouldShowRequestPermissionRationaleRequestEvent) {
-        postResponse(event, ShouldShowTaskPermissionRationaleResponseEvent(
+        postToChain(event, ShouldShowTaskPermissionRationaleResponseEvent(
             event.permissions.distinct().associateWith {
                 ActivityCompat.shouldShowRequestPermissionRationale(activity, it)
             }
@@ -42,7 +45,7 @@ class PermissionsPlugin : Plugin() {
 
     @Subscribe
     fun onIsPermissionGrantedRequestEvent(event: IsPermissionGrantedRequestEvent) {
-        postResponse(event, IsPermissionGrantedResponseEvent(
+        postToChain(event, IsPermissionGrantedResponseEvent(
             event.permissions.distinct().associateWith {
                 isPermissionGranted(activity, it)
             }
@@ -55,12 +58,12 @@ class PermissionsPlugin : Plugin() {
         val notGrantedPermissions = result.keys.filterNot { isPermissionGranted(activity, it) }.toTypedArray()
 
         if (notGrantedPermissions.isEmpty()) {
-            postResponse(event, AskForPermissionResponseEvent(result))
+            postToChain(event, AskForPermissionResponseEvent(result))
             return
         }
 
         activity.launchForActivityResult(ActivityResultContracts.RequestMultiplePermissions(), notGrantedPermissions) {
-            postResponse(event, AskForPermissionResponseEvent(result + it))
+            postToChain(event, AskForPermissionResponseEvent(result + it))
         }
     }
 }

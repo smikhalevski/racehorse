@@ -1,40 +1,60 @@
-package org.racehorse.webview
+package org.racehorse
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.MediaStore
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient.FileChooserParams
+import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
-import org.racehorse.isPermissionGranted
-import org.racehorse.launchForActivityResult
+import org.racehorse.webview.FileChooserCapability
 import java.io.File
 import java.io.IOException
 
 /**
- * Starts a `GET_CONTENT`, `IMAGE_CAPTURE` or `VIDEO_CAPTURE` intents.
+ * The plugin allows user to choose a file on the device.
  *
+ * @param activity The activity that starts intents.
  * @param cacheDir The directory to store files captured by camera activity.
  * @param authority The [authority of the content provider](https://developer.android.com/guide/topics/providers/content-provider-basics#ContentURIs)
  * that provides access to [cacheDir] for camera app.
  */
-open class FileChooserDelegate(val cacheDir: File? = null, val authority: String? = null) : FileChooser {
+open class FileChooserPlugin(
+    val activity: ComponentActivity,
+    val cacheDir: File? = null,
+    val authority: String? = null
+) : Plugin(), FileChooserCapability {
 
-    override fun onShow(
-        appWebView: AppWebView,
+    companion object {
+        fun parseResult(resultCode: Int, intent: Intent?): Array<Uri>? {
+            if (resultCode != Activity.RESULT_OK) {
+                return null
+            }
+            intent?.data?.let {
+                return arrayOf(it)
+            }
+            intent?.clipData?.let { clipData ->
+                return (0 until clipData.itemCount).mapNotNull { clipData.getItemAt(it).uri }.toTypedArray()
+            }
+            return null
+        }
+    }
+
+    override fun onShowFileChooser(
+        webView: WebView,
         filePathCallback: ValueCallback<Array<Uri>>,
         fileChooserParams: FileChooserParams
     ): Boolean {
-        Request(appWebView.activity, filePathCallback, fileChooserParams).start()
+        Request(filePathCallback, fileChooserParams).start()
         return true
     }
 
-    open inner class Request(
-        private val activity: ComponentActivity,
+    private inner class Request(
         private val filePathCallback: ValueCallback<Array<Uri>>,
         fileChooserParams: FileChooserParams,
     ) {
@@ -113,7 +133,7 @@ open class FileChooserDelegate(val cacheDir: File? = null, val authority: String
             }
 
             val launched = activity.launchForActivityResult(ActivityResultContracts.StartActivityForResult(), intent) {
-                val uris = FileChooserParams.parseResult(it.resultCode, it.data)
+                val uris = parseResult(it.resultCode, it.data)
 
                 filePathCallback.onReceiveValue(
                     when {

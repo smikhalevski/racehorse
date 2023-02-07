@@ -42,7 +42,8 @@ export function App() {
 
       <input
         type="file"
-        accept="image/*,video/*"
+        accept="image/*"
+        multiple={true}
         onChange={event => {
           console.log(event);
         }}

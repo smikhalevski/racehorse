@@ -1,9 +1,9 @@
 package org.racehorse.webview
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.net.Uri
 import android.webkit.*
-import androidx.activity.ComponentActivity
 import androidx.webkit.WebViewAssetLoader
 import com.google.gson.Gson
 import org.greenrobot.eventbus.*
@@ -11,12 +11,11 @@ import org.racehorse.OpenInExternalApplicationEvent
 import org.racehorse.Plugin
 
 @SuppressLint("SetJavaScriptEnabled", "ViewConstructor")
-class AppWebView(val activity: ComponentActivity) : WebView(activity) {
+class AppWebView(context: Context) : WebView(context) {
 
     private val gson = Gson()
     private val eventBus = EventBus.getDefault()
     private val plugins = ArrayList<Plugin>()
-    private var fileChooser: FileChooser = FileChooserDelegate()
 
     init {
         val cookieManager = CookieManager.getInstance()
@@ -49,17 +48,32 @@ class AppWebView(val activity: ComponentActivity) : WebView(activity) {
         plugins.forEach(Plugin::onPause)
     }
 
+    /**
+     * Initializes plugin an calls [Plugin.onRegister].
+     *
+     * Plugins with [EventBusCapability] are also registered in the [eventBus].
+     */
     fun registerPlugin(plugin: Plugin): AppWebView {
+        if (plugins.contains(plugin)) {
+            return this
+        }
+
+        plugin.context = context
+        plugin.eventBus = eventBus
+
+        if (plugin is EventBusCapability) {
+            eventBus.register(plugin)
+        }
+
+        plugin.onRegister()
+
         plugins.add(plugin)
-        plugin.onRegister(activity, eventBus)
         return this
     }
 
-    fun setFileChooser(fileChooser: FileChooser): AppWebView {
-        this.fileChooser = fileChooser
-        return this
-    }
-
+    /**
+     * Pushes the event to the web.
+     */
     private fun pushEvent(requestId: Int?, event: Any) {
         val json = gson.toJson(gson.toJsonTree(event).asJsonObject.also {
             it.remove("requestId")
@@ -113,7 +127,9 @@ class AppWebView(val activity: ComponentActivity) : WebView(activity) {
             filePathCallback: ValueCallback<Array<Uri>>,
             fileChooserParams: FileChooserParams,
         ): Boolean {
-            return fileChooser?.onShow(this@AppWebView, filePathCallback, fileChooserParams) ?: false
+            return plugins.filterIsInstance<FileChooserCapability>().any {
+                it.onShowFileChooser(this@AppWebView, filePathCallback, fileChooserParams)
+            }
         }
     }
 }

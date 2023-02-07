@@ -7,6 +7,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.webview.AlertEvent
+import org.racehorse.webview.EventBusCapability
 import org.racehorse.webview.RequestEvent
 import org.racehorse.webview.ResponseEvent
 
@@ -27,13 +28,13 @@ class NetworkPlugin(
         .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
         .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
         .build()
-) : Plugin() {
+) : Plugin(), EventBusCapability {
 
     private val online get() = onlineStatuses.values.contains(true)
 
     private val onlineStatuses = HashMap<Network, Boolean>()
 
-    private val connectivityManager get() = activity.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
+    private val connectivityManager get() = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
@@ -52,13 +53,8 @@ class NetworkPlugin(
         connectivityManager?.registerNetworkCallback(networkRequest, networkCallback)
     }
 
-    override fun onPause() {
-        super.onPause()
-        connectivityManager?.unregisterNetworkCallback(networkCallback)
-    }
-
     @Subscribe
     fun onIsOnlineRequestEvent(event: IsOnlineRequestEvent) {
-        postResponse(event, IsOnlineResponseEvent(online))
+        postToChain(event, IsOnlineResponseEvent(online))
     }
 }

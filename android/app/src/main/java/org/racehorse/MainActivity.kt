@@ -2,9 +2,7 @@ package org.racehorse
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.webkit.WebViewAssetLoader
 import org.racehorse.webview.AppWebView
-import org.racehorse.webview.FileChooserDelegate
 
 class MainActivity : AppCompatActivity() {
 
@@ -14,12 +12,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         webView = AppWebView(this)
-            .registerPlugin(PermissionsPlugin())
+            .registerPlugin(PermissionsPlugin(this))
             .registerPlugin(NetworkPlugin())
             .registerPlugin(ConfigurationPlugin())
-            .registerPlugin(IntentsPlugin())
+            .registerPlugin(IntentsPlugin(this))
             .registerPlugin(GooglePlayReferrerPlugin())
-            .setFileChooser(FileChooserDelegate(this.externalCacheDir, this.packageName + ".provider"))
+            .registerPlugin(FileChooserPlugin(this, externalCacheDir, "$packageName.provider"))
 
         // 1️⃣ Debug in emulator with server on localhost:1234
         webView.start("http://10.0.2.2:1234")
