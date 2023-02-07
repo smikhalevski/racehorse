@@ -1,5 +1,6 @@
 package org.racehorse.webview
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
@@ -129,6 +130,14 @@ class AppWebView(context: Context) : WebView(context) {
         ): Boolean {
             return plugins.filterIsInstance<FileChooserCapability>().any {
                 it.onShowFileChooser(this@AppWebView, filePathCallback, fileChooserParams)
+            }
+        }
+
+        override fun onGeolocationPermissionsShowPrompt(origin: String, callback: GeolocationPermissions.Callback) {
+            plugins.filterIsInstance<PermissionsCapability>().any {
+                it.askForPermission(Manifest.permission.ACCESS_FINE_LOCATION) { granted ->
+                    callback.invoke(origin, granted, false)
+                }
             }
         }
     }

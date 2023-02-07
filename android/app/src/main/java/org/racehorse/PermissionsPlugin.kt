@@ -5,6 +5,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.webview.EventBusCapability
+import org.racehorse.webview.PermissionsCapability
 import org.racehorse.webview.RequestEvent
 import org.racehorse.webview.ResponseEvent
 
@@ -32,7 +33,27 @@ class AskForPermissionResponseEvent(val statuses: Map<String, Boolean>) : Respon
 /**
  * Responds to permission-related requests.
  */
-class PermissionsPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability {
+class PermissionsPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability, PermissionsCapability {
+
+    override fun askForPermissions(
+        permissions: Array<String>,
+        callback: (statuses: Map<String, Boolean>) -> Unit
+    ): Boolean {
+        val statuses = permissions.associateWith { true }
+        val notGrantedPermissions = statuses.keys.filterNot { isPermissionGranted(activity, it) }.toTypedArray()
+
+        return if (notGrantedPermissions.isEmpty()) {
+            callback(statuses)
+            true
+        } else {
+            activity.launchForActivityResult(
+                ActivityResultContracts.RequestMultiplePermissions(),
+                notGrantedPermissions
+            ) {
+                callback(statuses + it)
+            }
+        }
+    }
 
     @Subscribe
     fun onShouldShowRequestPermissionRationaleRequestEvent(event: ShouldShowRequestPermissionRationaleRequestEvent) {
@@ -54,16 +75,8 @@ class PermissionsPlugin(private val activity: ComponentActivity) : Plugin(), Eve
 
     @Subscribe
     fun onAskForPermissionRequestEvent(event: AskForPermissionRequestEvent) {
-        val result = event.permissions.associateWith { true }
-        val notGrantedPermissions = result.keys.filterNot { isPermissionGranted(activity, it) }.toTypedArray()
-
-        if (notGrantedPermissions.isEmpty()) {
-            postToChain(event, AskForPermissionResponseEvent(result))
-            return
-        }
-
-        activity.launchForActivityResult(ActivityResultContracts.RequestMultiplePermissions(), notGrantedPermissions) {
-            postToChain(event, AskForPermissionResponseEvent(result + it))
+        askForPermissions(event.permissions) {
+            postToChain(event, AskForPermissionResponseEvent(it))
         }
     }
 }
