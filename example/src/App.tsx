@@ -42,7 +42,10 @@ export function App() {
 
       <input
         type="file"
-        accept="*/*"
+        accept="image/*,video/*"
+        onChange={event => {
+          console.log(event);
+        }}
       />
 
       <hr />

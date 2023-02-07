@@ -11,18 +11,19 @@ import org.racehorse.OpenInExternalApplicationEvent
 import org.racehorse.Plugin
 
 @SuppressLint("SetJavaScriptEnabled", "ViewConstructor")
-class AppWebView(private val activity: ComponentActivity) : WebView(activity) {
+class AppWebView(val activity: ComponentActivity) : WebView(activity) {
 
     private val gson = Gson()
     private val eventBus = EventBus.getDefault()
     private val plugins = ArrayList<Plugin>()
+    private var fileChooser: FileChooser = FileChooserDelegate()
 
     init {
         val cookieManager = CookieManager.getInstance()
         cookieManager.setAcceptCookie(true)
         cookieManager.setAcceptThirdPartyCookies(this, true)
 
-        webChromeClient = AppWebChromeClient(activity)
+        webChromeClient = AppWebChromeClient()
 
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
@@ -48,10 +49,15 @@ class AppWebView(private val activity: ComponentActivity) : WebView(activity) {
         plugins.forEach(Plugin::onPause)
     }
 
-    fun registerPlugin(plugin: Plugin) {
+    fun registerPlugin(plugin: Plugin): AppWebView {
         plugins.add(plugin)
-        plugin.init(activity, eventBus)
-        plugin.onRegister()
+        plugin.onRegister(activity, eventBus)
+        return this
+    }
+
+    fun setFileChooser(fileChooser: FileChooser): AppWebView {
+        this.fileChooser = fileChooser
+        return this
     }
 
     private fun pushEvent(requestId: Int?, event: Any) {
@@ -99,37 +105,16 @@ class AppWebView(private val activity: ComponentActivity) : WebView(activity) {
             is RequestEvent -> eventBus.post(ExceptionResponseEvent(event.throwable).setRequestId(causingEvent.requestId))
         }
     }
-}
 
-internal class AppWebChromeClient(private val activity: ComponentActivity) : WebChromeClient() {
+    inner class AppWebChromeClient : WebChromeClient() {
 
-    override fun onShowFileChooser(
-        webView: WebView,
-        filePathCallback: ValueCallback<Array<Uri>>,
-        fileChooserParams: FileChooserParams,
-    ): Boolean {
-
-//        if (isPermissionGranted(activity, Manifest.permission.READ_EXTERNAL_STORAGE))
-
-
-
-//        fileChooserParams = fileChooserParams
-//        filePathCallback = filePathCallback
-//        if (Permissions.isGranted(activity, Manifest.permission.READ_EXTERNAL_STORAGE)) {
-//            if (Permissions.isUnknown(activity, Manifest.permission.CAMERA)) {
-//                Permissions.requestMissingPermissions(activity, STORAGE_RESULT_CODE, Manifest.permission.CAMERA)
-//            } else {
-//                openFileDialog()
-//            }
-//        } else {
-//            Permissions.requestMissingPermissions(
-//                activity,
-//                STORAGE_RESULT_CODE,
-//                Manifest.permission.READ_EXTERNAL_STORAGE,
-//                Manifest.permission.CAMERA
-//            )
-//        }
-        return true
+        override fun onShowFileChooser(
+            webView: WebView,
+            filePathCallback: ValueCallback<Array<Uri>>,
+            fileChooserParams: FileChooserParams,
+        ): Boolean {
+            return fileChooser?.onShow(this@AppWebView, filePathCallback, fileChooserParams) ?: false
+        }
     }
 }
 

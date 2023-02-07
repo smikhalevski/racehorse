@@ -49,8 +49,8 @@ open class Bootstrapper(cacheDir: File) {
         val masterReady = masterDir.exists()
 
         if (
-            (masterVersion == version && masterReady) ||
-            (updateVersion == version && applyUpdate())
+            (masterVersion == version && masterReady)
+            || (updateVersion == version && applyUpdate())
         ) {
             updateDownload?.stop()
             updateDownload = null

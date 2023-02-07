@@ -12,12 +12,10 @@ open class Plugin {
     private lateinit var _activity: ComponentActivity
     private lateinit var _eventBus: EventBus
 
-    fun init(activity: ComponentActivity, eventBus: EventBus) {
-        this._activity = activity
-        this._eventBus = eventBus
-    }
+    open fun onRegister(activity: ComponentActivity, eventBus: EventBus) {
+        _activity = activity
+        _eventBus = eventBus
 
-    open fun onRegister() {
         _eventBus.register(this)
     }
 

@@ -20,10 +20,8 @@ class IntentsPlugin : Plugin() {
         val uri = Uri.parse(event.url)
         val action = if (uri.scheme.equals("tel")) Intent.ACTION_DIAL else Intent.ACTION_VIEW
 
-        val intent = Intent(action, uri).excludePackage(
-            activity.packageManager,
-            arrayOf(activity::class.java.name)
-        ) ?: throw IllegalStateException("Cannot open $action $uri in any external application")
+        val intent = Intent(action, uri).excludePackage(activity.packageManager, arrayOf(activity.packageName))
+            ?: throw IllegalStateException("Cannot open $action $uri in any external application")
 
         ContextCompat.startActivity(activity, intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), null)
 

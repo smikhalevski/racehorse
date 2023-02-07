@@ -34,7 +34,7 @@ class PermissionsPlugin : Plugin() {
     @Subscribe
     fun onShouldShowRequestPermissionRationaleRequestEvent(event: ShouldShowRequestPermissionRationaleRequestEvent) {
         postResponse(event, ShouldShowTaskPermissionRationaleResponseEvent(
-            event.permissions.associateWith {
+            event.permissions.distinct().associateWith {
                 ActivityCompat.shouldShowRequestPermissionRationale(activity, it)
             }
         ))
@@ -42,16 +42,17 @@ class PermissionsPlugin : Plugin() {
 
     @Subscribe
     fun onIsPermissionGrantedRequestEvent(event: IsPermissionGrantedRequestEvent) {
-        postResponse(
-            event,
-            IsPermissionGrantedResponseEvent(event.permissions.associateWith { isPermissionGranted(activity, it) })
-        )
+        postResponse(event, IsPermissionGrantedResponseEvent(
+            event.permissions.distinct().associateWith {
+                isPermissionGranted(activity, it)
+            }
+        ))
     }
 
     @Subscribe
     fun onAskForPermissionRequestEvent(event: AskForPermissionRequestEvent) {
-        val notGrantedPermissions = event.permissions.filterNot { isPermissionGranted(activity, it) }.toTypedArray()
         val result = event.permissions.associateWith { true }
+        val notGrantedPermissions = result.keys.filterNot { isPermissionGranted(activity, it) }.toTypedArray()
 
         if (notGrantedPermissions.isEmpty()) {
             postResponse(event, AskForPermissionResponseEvent(result))

@@ -51,6 +51,18 @@
                     android:scheme="https" />
             </intent-filter>
         </activity>
+
+        <!-- Required by org.racehorse.FileChooserDelegate.apply -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:grantUriPermissions="true"
+            android:exported="false">
+            <!-- <project_root>/racehorse/android/app/src/main/res/xml/file_paths.xml -->
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
     <!-- Required by org.racehorse.Intents.constrainPackage -->
