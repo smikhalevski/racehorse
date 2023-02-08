@@ -26,7 +26,7 @@ open class Bootstrapper(private val bundlesDir: File) {
 
     protected open fun onUpdateStarted(mandatory: Boolean) {}
 
-    protected open fun onUpdateFailed(mandatory: Boolean, throwable: Throwable) {}
+    protected open fun onUpdateFailed(mandatory: Boolean, cause: Throwable) {}
 
     protected open fun onUpdateReady() {}
 

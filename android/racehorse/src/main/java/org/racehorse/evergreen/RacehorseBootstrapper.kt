@@ -6,7 +6,7 @@ import java.io.File
 
 class BundleReadyEvent(val appDir: File)
 
-class UpdateFailedAlertEvent(val mandatory: Boolean) : AlertEvent
+class UpdateFailedAlertEvent(val mandatory: Boolean, @Transient val cause: Throwable) : AlertEvent
 
 class UpdateProgressAlertEvent(val contentLength: Int, val readLength: Long) : AlertEvent
 
@@ -24,8 +24,8 @@ class RacehorseBootstrapper(bundlesDir: File, private val eventBus: EventBus) : 
         eventBus.post(UpdateStartedAlertEvent(mandatory))
     }
 
-    override fun onUpdateFailed(mandatory: Boolean, throwable: Throwable) {
-        eventBus.post(UpdateFailedAlertEvent(mandatory))
+    override fun onUpdateFailed(mandatory: Boolean, cause: Throwable) {
+        eventBus.post(UpdateFailedAlertEvent(mandatory, cause))
     }
 
     override fun onUpdateReady() {

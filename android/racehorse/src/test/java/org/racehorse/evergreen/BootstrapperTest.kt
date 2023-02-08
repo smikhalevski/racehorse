@@ -40,7 +40,7 @@ class BootstrapperTest {
             updateStartedCallIndex = callIndex.incrementAndGet()
         }
 
-        override fun onUpdateFailed(mandatory: Boolean, throwable: Throwable) {
+        override fun onUpdateFailed(mandatory: Boolean, cause: Throwable) {
             updateFailedCallIndex = callIndex.incrementAndGet()
         }
 

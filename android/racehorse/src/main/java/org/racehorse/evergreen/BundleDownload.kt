@@ -85,7 +85,9 @@ internal class BundleDownload(
                 else -> throw IOException()
             }
 
-            connection.getHeaderField("ETag")?.let(etagFile::writeText) ?: etagFile.delete()
+            if (connection.getHeaderField("Accept-Ranges")?.contains("bytes") == true) {
+                connection.getHeaderField("ETag")?.let(etagFile::writeText) ?: etagFile.delete()
+            }
 
             FileOutputStream(zipFile, readLength != 0L).use { outputStream ->
                 val contentLength = connection.contentLength
