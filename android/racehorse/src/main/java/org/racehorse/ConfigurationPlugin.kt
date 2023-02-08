@@ -17,6 +17,7 @@ class ConfigurationPlugin : Plugin(), EventBusCapability {
         val configuration = context.resources.configuration
 
         val locales = if (Build.VERSION.SDK_INT < 24) {
+            @Suppress("DEPRECATION")
             arrayOf(configuration.locale.toLanguageTag())
         } else {
             val locales = ArrayList<String>()

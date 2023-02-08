@@ -11,6 +11,7 @@ import android.os.Build
  */
 fun Intent.excludePackage(packageManager: PackageManager, excludedPackageNames: Array<String>): Intent? {
     val packageNames = if (Build.VERSION.SDK_INT < 33) {
+        @Suppress("DEPRECATION")
         packageManager.queryIntentActivities(this, 0)
     } else {
         packageManager.queryIntentActivities(this, PackageManager.ResolveInfoFlags.of(0L))
