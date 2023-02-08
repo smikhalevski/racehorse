@@ -23,7 +23,8 @@
     "url": "git+https://github.com/smikhalevski/racehorse.git"
   },
   "keywords": [
-    "android"
+    "android",
+    "react"
   ],
   "author": "Savva Mikhalevski <smikhalevski@gmail.com>",
   "license": "MIT",
