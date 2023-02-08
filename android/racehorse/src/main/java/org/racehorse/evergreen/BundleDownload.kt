@@ -75,7 +75,7 @@ internal class BundleDownload(
             connection.setRequestProperty("If-Range", etagFile.readText())
         }
 
-        BufferedInputStream(connection.inputStream).use { inputStream ->
+        connection.inputStream.buffered().use { inputStream ->
 
             when ((connection as HttpURLConnection).responseCode) {
 
