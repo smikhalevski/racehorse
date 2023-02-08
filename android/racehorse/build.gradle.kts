@@ -1,7 +1,12 @@
+import org.json.JSONObject
+
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
+    id("maven-publish")
 }
+
+val packageJson = JSONObject(File(projectDir, "../../package.json").readText())
 
 android {
     namespace = "org.racehorse"
@@ -29,6 +34,37 @@ android {
 
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
+}
+
+publishing {
+    publications {
+        register<MavenPublication>("release") {
+            groupId = "org.racehorse"
+            artifactId = "racehorse"
+            version = packageJson.getString("version")
+
+            afterEvaluate {
+                from(components["release"])
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "ghcr"
+            url = uri("https://maven.pkg.github.com/smikhalevski/racehorse")
+
+            credentials {
+                username = "smikhalevski"
+                password = System.getenv("GH_PAT")
+            }
+        }
     }
 }
 
