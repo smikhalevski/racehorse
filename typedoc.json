@@ -4,7 +4,7 @@
   "includeVersion": true,
   "cleanOutputDir": true,
   "entryPoints": [
-    "./packages/*"
+    "./web/*"
   ],
   "entryPointStrategy": "packages"
 }

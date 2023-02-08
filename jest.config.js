@@ -4,7 +4,7 @@ module.exports = {
   testEnvironment: 'jsdom',
   modulePathIgnorePatterns: ['/lib/'],
   moduleNameMapper: {
-    '^racehorse$': __dirname + '/packages/racehorse/src/main',
-    '^@racehorse/(.*)$': __dirname + '/packages/$1/src/main',
+    '^racehorse$': __dirname + '/web/racehorse/src/main',
+    '^@racehorse/(.*)$': __dirname + '/web/$1/src/main',
   },
 };

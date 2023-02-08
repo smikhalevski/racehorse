@@ -13,14 +13,14 @@
     "baseUrl": ".",
     "paths": {
       "racehorse": [
-        "./packages/racehorse/src/main"
+        "./web/racehorse/src/main"
       ],
       "@racehorse/*": [
-        "./packages/*/src/main"
+        "./web/*/src/main"
       ]
     }
   },
   "include": [
-    "./packages/*/src/main/**/*"
+    "./web/*/src/main/**/*"
   ]
 }
