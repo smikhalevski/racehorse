@@ -8,15 +8,15 @@ import java.net.URLConnection
  * Manages the app start process, downloads and unzips updates, handles mandatory and background updates, swaps app
  * bundles after restart.
  *
- * @param cacheDir The directory where bootstrapper sores app bundles.
+ * @param bundlesDir The directory where bootstrapper sores app bundles.
  */
-open class Bootstrapper(cacheDir: File) {
+open class Bootstrapper(bundlesDir: File) {
 
-    private var masterDir = File(cacheDir, "master")
-    private var masterVersionFile = File(cacheDir, "master.version")
+    private var masterDir = File(bundlesDir, "master")
+    private var masterVersionFile = File(bundlesDir, "master.version")
 
-    private var updateDir = File(cacheDir, "update")
-    private var updateVersionFile = File(cacheDir, "update.version")
+    private var updateDir = File(bundlesDir, "update")
+    private var updateVersionFile = File(bundlesDir, "update.version")
 
     private var updateDownload: BundleDownload? = null
 

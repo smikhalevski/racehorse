@@ -13,11 +13,13 @@ import org.racehorse.OpenInExternalApplicationEvent
 import org.racehorse.Plugin
 
 
-@SuppressLint("SetJavaScriptEnabled")
-class AppWebView(context: Context) : WebView(context) {
+@SuppressLint("SetJavaScriptEnabled", "ViewConstructor")
+class AppWebView(
+    context: Context,
+    private val eventBus: EventBus = EventBus.getDefault(),
+    private val gson: Gson = Gson()
+) : WebView(context) {
 
-    private val gson = Gson()
-    private val eventBus = EventBus.getDefault()
     private val plugins = ArrayList<Plugin>()
 
     init {

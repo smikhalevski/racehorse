@@ -2,6 +2,7 @@ package org.racehorse
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import org.greenrobot.eventbus.EventBus
 import org.racehorse.webview.AppWebView
 
 class MainActivity : AppCompatActivity() {
@@ -11,7 +12,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        webView = AppWebView(this)
+        val eventBus = EventBus.getDefault()
+
+        webView = AppWebView(this, eventBus)
             .registerPlugin(HttpsPlugin())
             .registerPlugin(PermissionsPlugin(this))
             .registerPlugin(NetworkPlugin())
@@ -30,6 +33,11 @@ class MainActivity : AppCompatActivity() {
 //                .addPathHandler("/", WebViewAssetLoader.AssetsPathHandler(this))
 //                .build()
 //        )
+//
+//        // 3️⃣ Bootstrapper
+//        RacehorseBootstrapper(cacheDir = File(filesDir, "app"), eventBus).start("0.0.0", false) {
+//            URL("http://example.com/app_bundle.zip").openConnection()
+//        }
 
         setContentView(webView)
     }
