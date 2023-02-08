@@ -135,8 +135,13 @@ class AppWebView(context: Context) : WebView(context) {
 
         override fun onGeolocationPermissionsShowPrompt(origin: String, callback: GeolocationPermissions.Callback) {
             plugins.filterIsInstance<PermissionsCapability>().any {
-                it.askForPermission(Manifest.permission.ACCESS_FINE_LOCATION) { granted ->
-                    callback.invoke(origin, granted, false)
+                it.askForPermissions(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                ) { statuses ->
+                    callback.invoke(origin, statuses.containsValue(true), false)
                 }
             }
         }
