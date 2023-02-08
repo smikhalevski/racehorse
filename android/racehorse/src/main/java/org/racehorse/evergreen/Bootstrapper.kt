@@ -1,7 +1,6 @@
 package org.racehorse.evergreen
 
 import java.io.File
-import java.io.IOException
 import java.net.URLConnection
 
 /**
@@ -10,7 +9,10 @@ import java.net.URLConnection
  *
  * @param bundlesDir The directory where bootstrapper sores app bundles.
  */
-open class Bootstrapper(bundlesDir: File) {
+open class Bootstrapper(private val bundlesDir: File) {
+
+    val masterVersion get() = masterVersionFile.takeIf { it.exists() }?.readText()
+    val updateVersion get() = updateVersionFile.takeIf { it.exists() }?.readText()
 
     private var masterDir = File(bundlesDir, "master")
     private var masterVersionFile = File(bundlesDir, "master.version")
@@ -24,7 +26,7 @@ open class Bootstrapper(bundlesDir: File) {
 
     protected open fun onUpdateStarted(mandatory: Boolean) {}
 
-    protected open fun onUpdateFailed(mandatory: Boolean, exception: IOException) {}
+    protected open fun onUpdateFailed(mandatory: Boolean, throwable: Throwable) {}
 
     protected open fun onUpdateReady() {}
 
@@ -43,15 +45,9 @@ open class Bootstrapper(bundlesDir: File) {
         mandatory: Boolean,
         openConnection: () -> URLConnection
     ) {
-        val masterVersion = masterVersionFile.takeIf { it.exists() }?.readText()
-        val updateVersion = updateVersionFile.takeIf { it.exists() }?.readText()
-
         val masterReady = masterDir.exists()
 
-        if (
-            (masterVersion == version && masterReady)
-            || (updateVersion == version && applyUpdate())
-        ) {
+        if ((masterVersion == version && masterReady) || (updateVersion == version && applyUpdate())) {
             updateDownload?.stop()
             updateDownload = null
             onBundleReady(masterDir)
@@ -65,9 +61,10 @@ open class Bootstrapper(bundlesDir: File) {
         onUpdateStarted(mandatory)
 
         updateDownload?.stop()
-        updateDownload = null
 
         try {
+            bundlesDir.mkdirs()
+
             updateDir.deleteRecursively()
             updateVersionFile.writeText(version)
 
@@ -76,9 +73,12 @@ open class Bootstrapper(bundlesDir: File) {
             updateDownload = download
 
             download.start()
-        } catch (exception: IOException) {
-            onUpdateFailed(mandatory, exception)
+        } catch (throwable: Throwable) {
+            throwable.printStackTrace()
+            onUpdateFailed(mandatory, throwable)
             return
+        } finally {
+            updateDownload = null
         }
 
         if (masterReady && !mandatory) {
@@ -95,7 +95,7 @@ open class Bootstrapper(bundlesDir: File) {
      * @return `true` is update was applied, or `false` if there is no update to apply.
      */
     private fun applyUpdate(): Boolean {
-        if (!updateDir.exists()) {
+        if (!updateDir.exists() || updateDownload != null) {
             return false
         }
 

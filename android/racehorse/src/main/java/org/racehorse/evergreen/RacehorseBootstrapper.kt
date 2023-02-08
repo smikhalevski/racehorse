@@ -3,7 +3,6 @@ package org.racehorse.evergreen
 import org.greenrobot.eventbus.EventBus
 import org.racehorse.webview.AlertEvent
 import java.io.File
-import java.io.IOException
 
 class BundleReadyEvent(val appDir: File)
 
@@ -25,7 +24,7 @@ class RacehorseBootstrapper(bundlesDir: File, private val eventBus: EventBus) : 
         eventBus.post(UpdateStartedAlertEvent(mandatory))
     }
 
-    override fun onUpdateFailed(mandatory: Boolean, exception: IOException) {
+    override fun onUpdateFailed(mandatory: Boolean, throwable: Throwable) {
         eventBus.post(UpdateFailedAlertEvent(mandatory))
     }
 

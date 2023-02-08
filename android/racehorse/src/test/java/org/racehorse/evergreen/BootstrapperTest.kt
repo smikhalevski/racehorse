@@ -9,7 +9,6 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.IOException
 import java.net.HttpURLConnection
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.zip.ZipEntry
@@ -41,7 +40,7 @@ class BootstrapperTest {
             updateStartedCallIndex = callIndex.incrementAndGet()
         }
 
-        override fun onUpdateFailed(mandatory: Boolean, exception: IOException) {
+        override fun onUpdateFailed(mandatory: Boolean, throwable: Throwable) {
             updateFailedCallIndex = callIndex.incrementAndGet()
         }
 
