@@ -4,7 +4,8 @@
   "includeVersion": true,
   "cleanOutputDir": true,
   "entryPoints": [
-    "./web/*"
+    "./web/racehorse",
+    "./web/react"
   ],
   "entryPointStrategy": "packages"
 }

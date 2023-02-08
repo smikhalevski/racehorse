@@ -6,7 +6,8 @@
   "module": "./lib/index.mjs",
   "types": "./lib/index.d.ts",
   "typedoc": {
-    "entryPoint": "./src/main/index.ts"
+    "entryPoint": "./src/main/index.ts",
+    "displayName": "Racehorse"
   },
   "sideEffects": false,
   "files": [

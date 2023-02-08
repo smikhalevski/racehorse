@@ -1,9 +1,5 @@
 import React, { useReducer } from 'react';
 
-module.hot?.accept(() => {
-  location.reload();
-});
-
 export function CookieExample() {
   const [, rerender] = useReducer(value => ++value, 0);
 

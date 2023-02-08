@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
 
-module.hot?.accept(() => {
-  location.reload();
-});
-
 export function GeolocationExample() {
   const [geolocation, setGeolocation] = useState<any>();
 

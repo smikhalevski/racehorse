@@ -1,10 +1,6 @@
 import React from 'react';
 import { useIntents } from '@racehorse/react';
 
-module.hot?.accept(() => {
-  location.reload();
-});
-
 export function UseIntentsExample() {
   const { openInExternalApplication } = useIntents();
 

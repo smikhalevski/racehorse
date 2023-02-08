@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useConfiguration } from '@racehorse/react';
 
-module.hot?.accept(() => {
-  location.reload();
-});
-
 export function UseConfigurationExample() {
   const [locales, setLocales] = useState<string[]>();
   const { getPreferredLocales } = useConfiguration();

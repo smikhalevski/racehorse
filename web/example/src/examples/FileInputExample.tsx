@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
 
-module.hot?.accept(() => {
-  location.reload();
-});
-
 export function FileInputExample() {
   const [accept, setAccept] = useState('image/*');
   const [multiple, setMultiple] = useState(false);

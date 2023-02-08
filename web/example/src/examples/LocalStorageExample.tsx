@@ -1,9 +1,5 @@
 import React, { useReducer } from 'react';
 
-module.hot?.accept(() => {
-  location.reload();
-});
-
 export function LocalStorageExample() {
   const [, rerender] = useReducer(value => ++value, 0);
 

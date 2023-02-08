@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
 import { usePermissions } from '@racehorse/react';
 
-module.hot?.accept(() => {
-  location.reload();
-});
-
 export function UsePermissionsExample() {
   const [permissions, setPermissions] = useState<any>();
 
