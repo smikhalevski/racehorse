@@ -158,6 +158,7 @@ class BundleDownloadTest {
         server.enqueue(
             MockResponse()
                 .setResponseCode(HttpURLConnection.HTTP_OK)
+                .setHeader("Accept-Ranges", "bytes")
                 .setHeader("ETag", "33a64df5514")
                 .setChunkedBody(byteArray, 1024)
                 .setBytesPerSecond(36)
