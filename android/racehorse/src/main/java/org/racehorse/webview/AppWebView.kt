@@ -9,11 +9,9 @@ import android.webkit.*
 import androidx.webkit.WebViewAssetLoader
 import com.google.gson.Gson
 import org.greenrobot.eventbus.*
-import org.racehorse.OpenInExternalApplicationEvent
 import org.racehorse.Plugin
 
-
-@SuppressLint("SetJavaScriptEnabled", "ViewConstructor")
+@SuppressLint("ViewConstructor")
 class AppWebView(
     context: Context,
     private val eventBus: EventBus = EventBus.getDefault(),
@@ -21,14 +19,13 @@ class AppWebView(
 ) : WebView(context) {
 
     private val plugins = ArrayList<Plugin>()
+    private val cookieManager = CookieManager.getInstance()
 
     init {
-        val cookieManager = CookieManager.getInstance()
         cookieManager.setAcceptCookie(true)
         cookieManager.setAcceptThirdPartyCookies(this, true)
 
-        webChromeClient = AppWebChromeClient()
-
+        @SuppressLint("SetJavaScriptEnabled")
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
         settings.setGeolocationEnabled(true)
@@ -38,7 +35,12 @@ class AppWebView(
         eventBus.register(this)
     }
 
+    /**
+     * Starts the application that is loaded from [appUrl]. Use IP `10.0.2.2` to load content from the host machine of
+     * the Android device emulator. [assetLoader] intercepts all requests
+     */
     fun start(appUrl: String, assetLoader: WebViewAssetLoader? = null) {
+        webChromeClient = AppWebChromeClient()
         webViewClient = AppWebViewClient(appUrl, assetLoader)
 
         loadUrl(appUrl)
@@ -46,15 +48,16 @@ class AppWebView(
         plugins.forEach(Plugin::onStart)
     }
 
+    /**
+     * Persists application data and pauses all plugins.
+     */
     fun pause() {
-        CookieManager.getInstance().flush()
+        cookieManager.flush()
         plugins.forEach(Plugin::onPause)
     }
 
     /**
-     * Initializes plugin an calls [Plugin.onRegister].
-     *
-     * Plugins with [EventBusCapability] are also registered in the [eventBus].
+     * Initializes the plugin an calls [Plugin.onRegister].
      */
     fun registerPlugin(plugin: Plugin): AppWebView {
         if (plugins.contains(plugin)) {
@@ -91,9 +94,7 @@ class AppWebView(
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onResponseEvent(event: ResponseEvent) {
-        if (event.requestId != -1) {
-            pushEvent(event.requestId, event)
-        }
+        pushEvent(event.requestId, event)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -123,25 +124,28 @@ class AppWebView(
         }
     }
 
-    inner class AppWebChromeClient : WebChromeClient() {
+    /**
+     * Calls plugins that implement a given capability. If [callback] returns `true` then the apply is a success,
+     * otherwise the next plugin is called.
+     */
+    private inline fun <reified T> applyPlugin(callback: (T) -> Boolean) = plugins.filterIsInstance<T>().any(callback)
+
+    private inner class AppWebChromeClient : WebChromeClient() {
 
         override fun onShowFileChooser(
             webView: WebView,
             filePathCallback: ValueCallback<Array<Uri>>,
             fileChooserParams: FileChooserParams,
         ): Boolean {
-            return plugins.filterIsInstance<FileChooserCapability>().any {
+            return applyPlugin<FileChooserCapability> {
                 it.onShowFileChooser(this@AppWebView, filePathCallback, fileChooserParams)
             }
         }
 
         override fun onGeolocationPermissionsShowPrompt(origin: String, callback: GeolocationPermissions.Callback) {
-            plugins.filterIsInstance<PermissionsCapability>().any {
-                it.askForPermissions(
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    )
+            applyPlugin<PermissionsCapability> {
+                it.onAskForPermissions(
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
                 ) { statuses ->
                     callback.invoke(origin, statuses.containsValue(true), false)
                 }
@@ -149,46 +153,52 @@ class AppWebView(
         }
     }
 
-    inner class AppWebViewClient(appUrl: String, private val assetLoader: WebViewAssetLoader?) :
+    private inner class AppWebViewClient(appUrl: String, private val assetLoader: WebViewAssetLoader?) :
         WebViewClient() {
 
-        private val appUri = Uri.parse(appUrl)
+        private val appAuthority = Uri.parse(appUrl).authority
 
         @SuppressLint("WebViewClientOnReceivedSslError")
         override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
-            if (!plugins.filterIsInstance<HttpsCapability>().any { it.onReceivedSslError(view, handler, error) }) {
+            if (!applyPlugin<HttpsCapability> { it.onReceivedSslError(view, handler, error) }) {
                 handler.cancel()
             }
         }
 
-        override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
-            return if (request.url.authority == appUri.authority) assetLoader?.shouldInterceptRequest(request.url) else null
+        /**
+         * Intercepts any requests, including `fetch` calls.
+         */
+        private fun shouldInterceptRequest(requestUri: Uri): WebResourceResponse? {
+            return if (assetLoader != null && requestUri.authority == appAuthority) {
+                assetLoader.shouldInterceptRequest(requestUri)
+            } else null
         }
+
+        /**
+         * Intercepts `window.location` updates and reloads.
+         */
+        private fun shouldOverrideUrlLoading(requestUri: Uri): Boolean {
+            if (requestUri.authority == appAuthority) {
+                return false
+            }
+            applyPlugin<OpenUrlCapability> { it.onOpenUrl(requestUri) }
+            return true
+        }
+
+        override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest) =
+            shouldInterceptRequest(request.url)
+
+        override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest) =
+            shouldOverrideUrlLoading(request.url)
 
         // Support API < 21
-        override fun shouldInterceptRequest(view: WebView, requestUrl: String): WebResourceResponse? {
-            val requestUri = Uri.parse(requestUrl)
-
-            return if (requestUri.authority == appUri.authority) assetLoader?.shouldInterceptRequest(requestUri) else null
-        }
-
-        override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-            if (request.url.authority === appUri.authority) {
-                return false
-            }
-            eventBus.post(OpenInExternalApplicationEvent(request.url.toString()))
-            return true
-        }
+        @Suppress("OVERRIDE_DEPRECATION")
+        override fun shouldInterceptRequest(view: WebView, requestUrl: String) =
+            shouldInterceptRequest(Uri.parse(requestUrl))
 
         // Support API < 24
-        override fun shouldOverrideUrlLoading(view: WebView, requestUrl: String): Boolean {
-            val requestUri = Uri.parse(requestUrl)
-
-            if (requestUri.authority === appUri.authority) {
-                return false
-            }
-            eventBus.post(OpenInExternalApplicationEvent(requestUrl))
-            return true
-        }
+        @Suppress("OVERRIDE_DEPRECATION")
+        override fun shouldOverrideUrlLoading(view: WebView, requestUrl: String) =
+            shouldOverrideUrlLoading(Uri.parse(requestUrl))
     }
 }
