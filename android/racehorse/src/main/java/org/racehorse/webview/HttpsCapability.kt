@@ -9,7 +9,5 @@ import android.webkit.WebView
  */
 interface HttpsCapability {
 
-    fun onReceivedSslError(webView: WebView, handler: SslErrorHandler, error: SslError): Boolean {
-        return false
-    }
+    fun onReceivedSslError(webView: WebView, handler: SslErrorHandler, error: SslError) = false
 }
