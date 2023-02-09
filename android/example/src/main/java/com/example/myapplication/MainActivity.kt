@@ -56,8 +56,8 @@ class MainActivity : AppCompatActivity() {
         // Run `num run start:bootstrapper` in `<racehorse>/web/example` then start the app in emulator.
         //
         // If the bundle is downloaded via a non-secure request, then add `android:usesCleartextTraffic="true"`
-        // attribute to `AndroidManifest.xml/manifest/application`. BundleReadyEvent is emitted after bundle is
-        // successfully downloaded, see onBundleReadyEvent below.
+        // attribute to `AndroidManifest.xml/manifest/application`. `BundleReadyEvent` is emitted after bundle is
+        // successfully downloaded, see `onBundleReadyEvent` below.
         eventBus.register(this)
         Thread {
             RacehorseBootstrapper(File(filesDir, "app"), eventBus).start("0.0.0", true) {
