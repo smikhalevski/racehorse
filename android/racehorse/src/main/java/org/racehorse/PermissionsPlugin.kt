@@ -35,12 +35,12 @@ class AskForPermissionResponseEvent(val statuses: Map<String, Boolean>) : Respon
  */
 class PermissionsPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability, PermissionsCapability {
 
-    override fun askForPermissions(
+    override fun onAskForPermissions(
         permissions: Array<String>,
         callback: (statuses: Map<String, Boolean>) -> Unit
     ): Boolean {
         val statuses = permissions.associateWith { true }
-        val notGrantedPermissions = statuses.keys.filterNot { isPermissionGranted(activity, it) }.toTypedArray()
+        val notGrantedPermissions = statuses.keys.filterNot(activity::isPermissionGranted).toTypedArray()
 
         return if (notGrantedPermissions.isEmpty()) {
             callback(statuses)
@@ -67,15 +67,13 @@ class PermissionsPlugin(private val activity: ComponentActivity) : Plugin(), Eve
     @Subscribe
     fun onIsPermissionGrantedRequestEvent(event: IsPermissionGrantedRequestEvent) {
         postToChain(event, IsPermissionGrantedResponseEvent(
-            event.permissions.distinct().associateWith {
-                isPermissionGranted(activity, it)
-            }
+            event.permissions.distinct().associateWith(activity::isPermissionGranted)
         ))
     }
 
     @Subscribe
     fun onAskForPermissionRequestEvent(event: AskForPermissionRequestEvent) {
-        askForPermissions(event.permissions) {
+        onAskForPermissions(event.permissions) {
             postToChain(event, AskForPermissionResponseEvent(it))
         }
     }
