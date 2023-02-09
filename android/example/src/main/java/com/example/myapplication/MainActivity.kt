@@ -32,12 +32,10 @@ class MainActivity : AppCompatActivity() {
             .registerPlugin(GooglePlayReferrerPlugin())
             .registerPlugin(FileChooserPlugin(this, externalCacheDir, "$packageName.provider"))
 
-/*
         // 1️⃣ Debug in emulator with a server running on the host machine on localhost:1234
         // Run `npm start` in `<racehorse>/web/example` then start the app in emulator.
         webView.start("https://10.0.2.2:1234")
         setContentView(webView)
-*/
 
 /*
         // 2️⃣ Load app bundle from src/main/assets folder
@@ -53,6 +51,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(webView)
 */
 
+/*
         // 3️⃣ Bootstrapper
         // Run `num run start:bootstrapper` in `<racehorse>/web/example` then start the app in emulator.
         //
@@ -65,6 +64,7 @@ class MainActivity : AppCompatActivity() {
                 URL("http://10.0.2.2:1234/dist.zip").openConnection()
             }
         }.start()
+*/
 
     }
 
