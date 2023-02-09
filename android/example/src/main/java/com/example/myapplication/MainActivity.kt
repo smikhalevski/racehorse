@@ -8,11 +8,8 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.*
 import org.racehorse.evergreen.BundleReadyEvent
-import org.racehorse.evergreen.RacehorseBootstrapper
 import org.racehorse.webview.AppWebView
 import org.racehorse.webview.StaticPathHandler
-import java.io.File
-import java.net.URL
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,7 +25,7 @@ class MainActivity : AppCompatActivity() {
             .registerPlugin(PermissionsPlugin(this))
             .registerPlugin(NetworkPlugin())
             .registerPlugin(ConfigurationPlugin())
-            .registerPlugin(IntentsPlugin(this))
+            .registerPlugin(ActionsPlugin(this))
             .registerPlugin(GooglePlayReferrerPlugin())
             .registerPlugin(FileChooserPlugin(this, externalCacheDir, "$packageName.provider"))
 

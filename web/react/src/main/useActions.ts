@@ -1,12 +1,12 @@
 import { useEventBridge } from './useEventBridge';
 import { useMemo } from 'react';
-import { createIntentsManager } from 'racehorse';
+import { createActionsManager } from 'racehorse';
 
 /**
  * Launches activities for various intents.
  */
-export function useIntents() {
+export function useActions() {
   const eventBridge = useEventBridge();
 
-  return useMemo(() => createIntentsManager(eventBridge), [eventBridge]);
+  return useMemo(() => createActionsManager(eventBridge), [eventBridge]);
 }

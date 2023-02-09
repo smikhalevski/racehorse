@@ -3,25 +3,25 @@ import { EventBridge } from './createEventBridge';
 /**
  * Launches activities for various intents.
  */
-export interface IntentsManager {
+export interface ActionsManager {
   /**
    * Opens a URL in an external application.
    *
    * @param url The URL to open.
    * @returns `true` if external browser was opened, or `false` otherwise.
    */
-  openInExternalApplication(url: string): Promise<boolean>;
+  openUrl(url: string): Promise<boolean>;
 }
 
 /**
- * Creates the new {@linkcode IntentsManager} instance.
+ * Creates the new {@linkcode ActionsManager} instance.
  *
  * @param eventBridge The event bridge to use for communication with Android device.
  */
-export function createIntentsManager(eventBridge: EventBridge): IntentsManager {
+export function createActionsManager(eventBridge: EventBridge): ActionsManager {
   return {
-    openInExternalApplication(url) {
-      return eventBridge.request({ type: 'org.racehorse.OpenInExternalApplicationEvent', url }).then(event => event.ok);
+    openUrl(url) {
+      return eventBridge.request({ type: 'org.racehorse.OpenUrlRequestEvent', url }).then(event => event.ok);
     },
   };
 }
