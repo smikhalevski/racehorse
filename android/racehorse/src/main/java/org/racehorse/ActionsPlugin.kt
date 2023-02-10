@@ -6,15 +6,14 @@ import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.webview.EventBusCapability
-import org.racehorse.webview.OpenUrlCapability
-import org.racehorse.webview.RequestEvent
-import org.racehorse.webview.VoidResponseEvent
+import org.racehorse.webview.*
 
 /**
  * Opens URL in the external application.
  */
 class OpenUrlRequestEvent(val url: String) : RequestEvent()
+
+class OpenUrlResponseEvent(val opened: Boolean) : ResponseEvent()
 
 open class ActionsPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability, OpenUrlCapability {
 
@@ -23,7 +22,7 @@ open class ActionsPlugin(private val activity: ComponentActivity) : Plugin(), Ev
      *
      * @return `true` if an external activity has started, or `false` otherwise.
      */
-    fun openUrl(uri: Uri): Boolean {
+    override fun onOpenUrl(uri: Uri): Boolean {
         val action = if (uri.scheme.equals("tel")) Intent.ACTION_DIAL else Intent.ACTION_VIEW
 
         val intent = Intent(action, uri).excludePackage(activity.packageManager, arrayOf(activity.packageName))
@@ -40,7 +39,6 @@ open class ActionsPlugin(private val activity: ComponentActivity) : Plugin(), Ev
 
     @Subscribe
     fun onOpenUrlRequestEvent(event: OpenUrlRequestEvent) {
-        openUrl(Uri.parse(event.url))
-        postToChain(event, VoidResponseEvent())
+        postToChain(event, OpenUrlResponseEvent(onOpenUrl(Uri.parse(event.url))))
     }
 }
