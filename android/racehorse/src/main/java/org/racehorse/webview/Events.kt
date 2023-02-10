@@ -34,14 +34,14 @@ open class BasicChainableEvent(override var requestId: Int) : ChainableEvent
  * An event in an event chain that originated from the web request. The chain expects a [ResponseEvent] to be posted to
  * fulfill the pending promise on the web side.
  */
-open class RequestEvent : BasicChainableEvent(-1), InboxEvent
+open class RequestEvent : BasicChainableEvent(-2), InboxEvent
 
 /**
  * An event that is pushed to web denoting an end of a request.
  *
  * @param ok If `true` then the request promise is fulfilled, otherwise it is rejected.
  */
-open class ResponseEvent(val ok: Boolean = true) : BasicChainableEvent(-1)
+open class ResponseEvent(val ok: Boolean = true) : BasicChainableEvent(-2)
 
 /**
  * Response with no payload.

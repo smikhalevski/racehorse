@@ -1,100 +1,98 @@
 import { PubSub, untilTruthy } from 'parallel-universe';
 import { Connection, Event, EventBridge, Plugin, ResponseEvent } from './shared-types';
-import { noop } from './utils';
+
+/**
+ * Creates an event bridge that transports events from and to Android through the connection.
+ */
+export function createEventBridge(): EventBridge;
 
 /**
  * Creates an event bridge that transports events from and to Android through the connection.
  *
- * @param connectionProvider returns the connection opened by Android. The callback is polled until the connection is
- * returned. By default, {@linkcode window.racehorseConnection} is awaited.
+ * @param plugin The plugin that enhances the event bridge with additional properties and methods.
  */
-export function createEventBridge(connectionProvider?: () => Connection | undefined): EventBridge;
+export function createEventBridge<M extends object>(plugin: Plugin<M>): EventBridge & M;
 
-/**
- * Creates an event bridge that transports events from and to Android through the connection.
- *
- * @param connectionProvider returns the connection opened by Android. The callback is polled until the connection is
- * returned. By default, {@linkcode window.racehorseConnection} is awaited.
- * @param plugin The plugin that is enhances the returned event bus.
- * @param listener The listener that is passed to the plugin, so it can notify external consumer about event bus changes.
- */
-export function createEventBridge<M>(
-  connectionProvider: (() => Connection | undefined) | undefined,
-  plugin: Plugin<M>,
-  listener?: () => void
-): EventBridge & M;
+export function createEventBridge(plugin?: Plugin<object>): EventBridge {
+  const bridgeChannel = new PubSub();
 
-export function createEventBridge(
-  connectionProvider = () => window.racehorseConnection,
-  plugin?: Plugin<unknown>,
-  listener = noop
-): EventBridge {
-  if (plugin) {
-    const eventBus = createEventBridge(connectionProvider);
-    plugin(eventBus, listener);
-    return eventBus;
-  }
+  let activeConnection = getConnection();
 
-  const pubSub = new PubSub<Event>();
-  const resolvers = new Map<number, (event: ResponseEvent) => void>();
+  const connectionPromise = untilTruthy(getConnection, 200).then(connection => (activeConnection = connection));
 
-  const inbox: Connection['inbox'] = {
-    push([requestId, event]) {
-      if (requestId === null) {
-        pubSub.publish(event);
-        return;
-      }
-
-      const resolver = resolvers.get(requestId);
-
-      if (resolver) {
-        resolvers.delete(requestId);
-        resolver(event as ResponseEvent);
-      }
-    },
-  };
-
-  let requestCount = 0;
-
-  let openConnection = (): Promise<Connection> => {
-    const connectionPromise = untilTruthy(connectionProvider, 100).then(connection => {
-      const responses = connection.inbox;
-
-      connection.inbox = inbox;
-
-      if (Array.isArray(responses)) {
-        for (const response of responses) {
-          inbox.push(response);
-        }
-      } else if (responses) {
-        throw new Error('Another event bridge is connected');
-      }
-
-      return connection;
-    });
-
-    openConnection = () => connectionPromise;
-
-    return connectionPromise;
-  };
-
-  return {
+  const eventBridge: EventBridge = {
     request(event) {
+      const json = JSON.stringify(event);
+
       return new Promise(resolve => {
-        const requestId = requestCount++;
-        const eventJson = JSON.stringify(event);
-
-        resolvers.set(requestId, resolve);
-
-        openConnection().then(connection => {
-          connection.post(requestId, eventJson);
+        connectionPromise.then(connection => {
+          post(connection, json, resolve);
         });
       });
     },
 
-    subscribeToAlerts(listener) {
-      void openConnection();
-      return pubSub.subscribe(listener);
+    requestSync(event) {
+      let responseEvent: ResponseEvent | undefined;
+      if (activeConnection) {
+        post(activeConnection, JSON.stringify(event), event => {
+          responseEvent = event;
+        });
+      }
+      return responseEvent;
     },
+
+    subscribeToAlerts(listener) {
+      const alertListener = (envelope: [requestId: number, event: Event]) => {
+        if (envelope[0] === -1) {
+          listener(envelope[1]);
+        }
+      };
+
+      if (activeConnection) {
+        return activeConnection.inboxChannel.subscribe(alertListener);
+      }
+
+      let unsubscribe: (() => void) | undefined;
+      let unsubscribed = false;
+
+      connectionPromise.then(connection => {
+        if (!unsubscribed) {
+          unsubscribe = connection.inboxChannel.subscribe(alertListener);
+        }
+      });
+
+      return () => {
+        unsubscribed = true;
+        unsubscribe?.();
+      };
+    },
+
+    subscribeToBridge: bridgeChannel.subscribe.bind(bridgeChannel),
   };
+
+  plugin?.(eventBridge, bridgeChannel.publish.bind(bridgeChannel));
+
+  return eventBridge;
+}
+
+function getConnection(): Required<Connection> | undefined {
+  const connection = window.racehorseConnection;
+  if (connection) {
+    connection.requestCount ||= 0;
+    connection.inboxChannel ||= new PubSub();
+  }
+  return connection as Required<Connection> | undefined;
+}
+
+function post(connection: Required<Connection>, json: string, callback: (event: ResponseEvent) => void): void {
+  const requestId = connection.requestCount++;
+
+  const unsubscribe = connection.inboxChannel.subscribe(envelope => {
+    if (envelope[0] === requestId) {
+      unsubscribe();
+      callback(envelope[1] as ResponseEvent);
+    }
+  });
+
+  connection.post(requestId, json);
 }

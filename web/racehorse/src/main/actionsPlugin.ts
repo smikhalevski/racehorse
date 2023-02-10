@@ -13,7 +13,7 @@ export interface ActionsMixin {
 /**
  * Launches activities for various intents.
  */
-export const actionPlugin: Plugin<ActionsMixin> = eventBridge => {
+export const actionsPlugin: Plugin<ActionsMixin> = eventBridge => {
   eventBridge.openUrl = url => {
     return eventBridge.request({ type: 'org.racehorse.OpenUrlRequestEvent', url }).then(event => event.opened);
   };

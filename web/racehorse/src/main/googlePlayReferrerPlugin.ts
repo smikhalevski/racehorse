@@ -11,7 +11,7 @@ export const googlePlayReferrerPlugin: Plugin<GooglePlayReferrerMixin> = eventBr
   let referrerPromise: Promise<string> | undefined;
 
   eventBridge.getGooglePlayReferrer = () => {
-    referrerPromise ||= new Promise(resolve => {
+    return (referrerPromise ||= new Promise(resolve => {
       const unsubscribe = eventBridge.subscribeToAlerts(event => {
         if (event.type === 'org.racehorse.GooglePlayReferrerDetectedAlertEvent') {
           resolve(event.referrer);
@@ -25,8 +25,6 @@ export const googlePlayReferrerPlugin: Plugin<GooglePlayReferrerMixin> = eventBr
           unsubscribe();
         }
       });
-    });
-
-    return referrerPromise;
+    }));
   };
 };

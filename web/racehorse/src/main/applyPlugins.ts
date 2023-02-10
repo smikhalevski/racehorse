@@ -1,25 +1,33 @@
 import { Plugin } from './shared-types';
-import { noop } from './utils';
 
 /**
  * Composes a plugin from multiple plugins.
  */
-export function applyPlugins<A, B>(a: Plugin<A>, b: Plugin<B>): Plugin<A & B>;
+export function applyPlugins<A extends object, B extends object>(a: Plugin<A>, b: Plugin<B>): Plugin<A & B>;
 
 /**
  * Composes a plugin from multiple plugins.
  */
-export function applyPlugins<A, B, C>(a: Plugin<A>, b: Plugin<B>, c: Plugin<C>): Plugin<A & B & C>;
+export function applyPlugins<A extends object, B extends object, C extends object>(
+  a: Plugin<A>,
+  b: Plugin<B>,
+  c: Plugin<C>
+): Plugin<A & B & C>;
 
 /**
  * Composes a plugin from multiple plugins.
  */
-export function applyPlugins<A, B, C, D>(a: Plugin<A>, b: Plugin<B>, c: Plugin<C>, d: Plugin<D>): Plugin<A & B & C & D>;
+export function applyPlugins<A extends object, B extends object, C extends object, D extends object>(
+  a: Plugin<A>,
+  b: Plugin<B>,
+  c: Plugin<C>,
+  d: Plugin<D>
+): Plugin<A & B & C & D>;
 
 /**
  * Composes a plugin from multiple plugins.
  */
-export function applyPlugins<A, B, C, D, E>(
+export function applyPlugins<A extends object, B extends object, C extends object, D extends object, E extends object>(
   a: Plugin<A>,
   b: Plugin<B>,
   c: Plugin<C>,
@@ -30,17 +38,24 @@ export function applyPlugins<A, B, C, D, E>(
 /**
  * Composes a plugin from multiple plugins.
  */
-export function applyPlugins<A, B, C, D, E, F>(
+export function applyPlugins<
+  A extends object,
+  B extends object,
+  C extends object,
+  D extends object,
+  E extends object,
+  F extends object
+>(
   a: Plugin<A>,
   b: Plugin<B>,
   c: Plugin<C>,
   d: Plugin<D>,
   e: Plugin<E>,
   f: Plugin<F>,
-  ...other: Plugin<unknown>[]
+  ...other: Plugin<object>[]
 ): Plugin<A & B & C & D & E & F>;
 
-export function applyPlugins(...plugins: Plugin<unknown>[]): Plugin<unknown> {
+export function applyPlugins(...plugins: Plugin<object>[]): Plugin<object> {
   return (eventBridge, listener) => {
     let unsubscribeArray: Array<() => void> | undefined;
 
@@ -51,11 +66,9 @@ export function applyPlugins(...plugins: Plugin<unknown>[]): Plugin<unknown> {
         (unsubscribeArray ||= []).push(unsubscribe);
       }
     }
-
     if (!unsubscribeArray) {
-      return noop;
+      return;
     }
-
     return () => {
       for (const unsubscribe of unsubscribeArray!) {
         unsubscribe();

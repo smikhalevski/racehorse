@@ -80,7 +80,7 @@ class AppWebView(
     /**
      * Pushes the event to the web.
      */
-    private fun pushEvent(requestId: Int?, event: Any) {
+    private fun pushEvent(requestId: Int, event: Any) {
         val json = gson.toJson(gson.toJsonTree(event).asJsonObject.also {
             it.remove("requestId")
             it.addProperty("type", event::class.java.name)
@@ -99,7 +99,7 @@ class AppWebView(
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onAlertEvent(event: AlertEvent) {
-        pushEvent(null, event)
+        pushEvent(-1, event)
     }
 
     @Subscribe

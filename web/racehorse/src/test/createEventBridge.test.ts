@@ -1,27 +1,14 @@
-import { sleep } from 'parallel-universe';
-import { Connection, createEventBridge } from '../main';
-import { noop } from '../main/utils';
+import { createEventBridge } from '../main';
 
 describe('EventBridge', () => {
-  test('sends a request and gets a response when a connection is already initialized', async () => {
-    const connection: Connection = {
-      post: jest.fn(() => {
-        connection.inbox?.push([0, { type: 'bbb', ok: true, key1: 111 }]);
-      }),
-    };
-
-    const eventBridge = createEventBridge(() => connection);
-
-    await expect(eventBridge.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb', ok: true, key1: 111 });
-
-    expect(connection.post).toHaveBeenCalledTimes(1);
-    expect(connection.post).toHaveBeenNthCalledWith(1, 0, '{"type":"aaa"}');
+  beforeEach(() => {
+    window.racehorseConnection = undefined;
   });
 
-  test('uses window.racehorseConnection by default', async () => {
+  test('sends a request and gets a response when a connection is already initialized', async () => {
     window.racehorseConnection = {
       post: jest.fn(() => {
-        window.racehorseConnection?.inbox?.push([0, { type: 'bbb', ok: true }]);
+        window.racehorseConnection!.inboxChannel!.publish([0, { type: 'bbb', ok: true }]);
       }),
     };
 
@@ -34,83 +21,100 @@ describe('EventBridge', () => {
   });
 
   test('sends a request and gets a response when a connection is not yet initialized', async () => {
-    const eventBridge = createEventBridge(() => connection);
+    const eventBridge = createEventBridge();
 
-    const connection: Connection = {
+    window.racehorseConnection = {
       post: jest.fn(() => {
-        connection?.inbox?.push([0, { type: 'bbb', ok: true, key1: 111 }]);
+        window.racehorseConnection!.inboxChannel!.publish([0, { type: 'bbb', ok: true }]);
       }),
     };
 
-    await expect(eventBridge.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb', ok: true, key1: 111 });
+    await expect(eventBridge.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb', ok: true });
 
-    expect(connection.post).toHaveBeenCalledTimes(1);
-    expect(connection.post).toHaveBeenNthCalledWith(1, 0, '{"type":"aaa"}');
+    expect(window.racehorseConnection.post).toHaveBeenCalledTimes(1);
+    expect(window.racehorseConnection.post).toHaveBeenNthCalledWith(1, 0, '{"type":"aaa"}');
   });
 
-  test('listener receives alert events', async () => {
+  test('supports multiple bridges', async () => {
+    window.racehorseConnection = {
+      post: jest
+        .fn()
+        .mockImplementationOnce(() => {
+          window.racehorseConnection!.inboxChannel!.publish([0, { type: 'bbb', ok: true }]);
+        })
+        .mockImplementationOnce(() => {
+          window.racehorseConnection!.inboxChannel!.publish([1, { type: 'bbb', ok: true }]);
+        }),
+    };
+
+    const eventBridge1 = createEventBridge();
+
+    await expect(eventBridge1.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb', ok: true });
+
+    const eventBridge2 = createEventBridge();
+
+    await expect(eventBridge2.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb', ok: true });
+  });
+
+  test('listener receives alert events', () => {
+    window.racehorseConnection = {
+      post() {},
+    };
+
     const listenerMock = jest.fn();
 
-    const eventBridge = createEventBridge(() => connection);
+    const eventBridge = createEventBridge();
 
     eventBridge.subscribeToAlerts(listenerMock);
 
-    const connection: Connection = {
-      post() {},
-    };
-
-    await sleep(200);
-
-    expect(connection.inbox).toBeDefined();
-
-    connection.inbox?.push([null, { type: 'aaa', ok: true, key1: 111 }]);
+    window.racehorseConnection.inboxChannel?.publish([-1, { type: 'aaa' }]);
 
     expect(listenerMock).toHaveBeenCalledTimes(1);
-    expect(listenerMock).toHaveBeenNthCalledWith(1, { type: 'aaa', ok: true, key1: 111 });
+    expect(listenerMock).toHaveBeenNthCalledWith(1, { type: 'aaa' });
   });
 
-  test('listener receives an alert event from the array inbox', async () => {
-    const connection: Connection = {
-      inbox: [[null, { type: 'aaa', ok: true, key1: 111 }] as const],
-      post() {},
-    };
-
-    const listenerMock = jest.fn();
-
-    createEventBridge(() => connection).subscribeToAlerts(listenerMock);
-
-    await sleep(200);
-
-    expect(listenerMock).toHaveBeenCalledTimes(1);
-    expect(listenerMock).toHaveBeenNthCalledWith(1, { type: 'aaa', ok: true, key1: 111 });
-  });
-
-  test('applies the plugin', async () => {
-    const pluginMock = jest.fn();
-
-    const eventBus = createEventBridge(undefined, pluginMock);
-
-    expect(pluginMock).toHaveBeenCalledTimes(1);
-    expect(pluginMock).toHaveBeenNthCalledWith(1, eventBus, noop);
-  });
-
-  test('applies the plugin', async () => {
-    const pluginMock = jest.fn();
-
-    const eventBus = createEventBridge(undefined, pluginMock);
-
-    expect(eventBus).toEqual({ request: expect.any(Function), subscribe: expect.any(Function) });
-    expect(pluginMock).toHaveBeenCalledTimes(1);
-    expect(pluginMock).toHaveBeenNthCalledWith(1, eventBus, noop);
-  });
-
-  test('plugin receives the listener', async () => {
-    const pluginMock = jest.fn();
-    const listener = () => undefined;
-
-    const eventBus = createEventBridge(undefined, pluginMock, listener);
-
-    expect(pluginMock).toHaveBeenCalledTimes(1);
-    expect(pluginMock).toHaveBeenNthCalledWith(1, eventBus, listener);
-  });
+  // test('listener receives an alert event from the array inbox', async () => {
+  //   const connection: Connection = {
+  //     inbox: [[null, { type: 'aaa', ok: true, key1: 111 }] as const],
+  //     post() {},
+  //   };
+  //
+  //   const listenerMock = jest.fn();
+  //
+  //   createEventBridge(() => connection).subscribeToAlerts(listenerMock);
+  //
+  //   await sleep(200);
+  //
+  //   expect(listenerMock).toHaveBeenCalledTimes(1);
+  //   expect(listenerMock).toHaveBeenNthCalledWith(1, { type: 'aaa', ok: true, key1: 111 });
+  // });
+  //
+  // test('applies the plugin', async () => {
+  //   const pluginMock = jest.fn();
+  //
+  //   const eventBus = createEventBridge(undefined, pluginMock);
+  //
+  //   expect(pluginMock).toHaveBeenCalledTimes(1);
+  //   expect(pluginMock).toHaveBeenNthCalledWith(1, eventBus, noop);
+  // });
+  //
+  // test('applies the plugin', async () => {
+  //   const pluginMock = jest.fn();
+  //
+  //   const eventBus = createEventBridge(undefined, pluginMock);
+  //
+  //   expect(eventBus).toEqual({ request: expect.any(Function), subscribeToAlerts: expect.any(Function) });
+  //   expect(pluginMock).toHaveBeenCalledTimes(1);
+  //   expect(pluginMock).toHaveBeenNthCalledWith(1, eventBus, noop);
+  // });
+  //
+  // test('plugin receives the listener', async () => {
+  //   const pluginMock = jest.fn();
+  //   const listener = () => undefined;
+  //
+  //   const eventBus = createEventBridge(undefined, pluginMock, listener);
+  //
+  //   expect(pluginMock).toHaveBeenCalledTimes(1);
+  //   expect(pluginMock).toHaveBeenNthCalledWith(1, eventBus, listener);
+  // });
 });

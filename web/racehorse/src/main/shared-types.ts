@@ -1,5 +1,7 @@
+import { PubSub } from 'parallel-universe';
+
 /**
- * The event transported through the {@linkcode EventBridge}.
+ * The event marshalled through the {@linkcode EventBridge}.
  */
 export interface Event {
   /**
@@ -25,26 +27,26 @@ export interface ResponseEvent extends Event {
 
 /**
  * The connection is added to the page as a
- * {@linkcode https://developer.android.com/reference/android/webkit/JavascriptInterface JavascriptInterface}
+ * {@linkcode https://developer.android.com/reference/android/webkit/JavascriptInterface JavascriptInterface}.
  */
 export interface Connection {
   /**
-   * An array of envelopes pushed by Android, or an inbox object created by the {@linkcode EventBridge}.
+   * The total number of requests marshalled through this connection.
    */
-  inbox?: {
-    /**
-     * Called by Android when an envelope is pushed through the connection.
-     */
-    push(response: readonly [requestId: number | null, event: Event]): void;
-  };
+  requestCount?: number;
+
+  /**
+   * The pub-sub channel that Android uses to push responses to web.
+   */
+  inboxChannel?: PubSub<[requestId: number, event: Event]>;
 
   /**
    * Delivers a serialized event to Android.
    *
    * @param requestId The unique request ID.
-   * @param eventJson The serialized event.
+   * @param json The serialized event.
    */
-  post(requestId: number, eventJson: string): void;
+  post(requestId: number, json: string): void;
 }
 
 declare global {
@@ -60,25 +62,34 @@ declare global {
  * The plugin that enhances the event bridge.
  *
  * @param eventBridge The event bridge that must be enhanced.
- * @param listener The callback that the plugin should invoke to notify the plugin consumer that the plugin updated some
- * fields of the event bridge.
- * @returns The callback that unsubscribes the listener, or `undefined` if there's nothing to unsubscribe.
  */
-export type Plugin<M> = (eventBridge: EventBridge & M, listener: () => void) => (() => void) | void;
+export type Plugin<M extends object> = (
+  eventBridge: EventBridge & Partial<M>,
+  listener: () => void
+) => (() => void) | void;
 
 /**
- * The event bridge that transports events between the Android and web realms.
+ * The event bridge that transports events between Android and web.
  */
 export interface EventBridge {
   /**
    * Sends an event through a connection to Android and returns a promise that is resolved when a response with a
-   * matching {@linkcode Envelope.requestId} is pushed to the {@link Connection.inbox connection inbox}. The returned
-   * promise is never rejected. Check {@linkcode ResponseEvent.ok} to detect that an error occurred.
+   * matching ID is published to the {@linkcode Connection.inboxChannel}. The returned promise is never rejected.
+   * Check {@linkcode ResponseEvent.ok} to detect that an error occurred.
    *
    * @param event The request event to send.
    * @returns The response event.
    */
   request(event: Event): Promise<ResponseEvent>;
+
+  /**
+   * Sends an event through a connection to Android and synchronously returns a response event, or `null` if a response
+   * cannot be produced synchronously.
+   *
+   * @param event The request event to send.
+   * @returns The response event.
+   */
+  requestSync(event: Event): ResponseEvent | undefined;
 
   /**
    * Subscribes a listener to alert events pushed by Android.
@@ -90,6 +101,14 @@ export interface EventBridge {
     /**
      * @param event The event pushed to the connection inbox.
      */
-    listener: (alertEvent: Event) => void
+    listener: (event: Event) => void
   ): () => void;
+
+  /**
+   * Subscribes listener to changes of the event bridge object.
+   *
+   * @param listener The listener to subscribe.
+   * @returns The callback that unsubscribes the listener.
+   */
+  subscribeToBridge(listener: () => void): () => void;
 }

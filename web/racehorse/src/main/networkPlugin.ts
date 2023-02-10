@@ -4,28 +4,18 @@ export interface NetworkMixin {
   /**
    * Returns the current online status or `undefined` if not yet known.
    */
-  readonly online: boolean | undefined;
+  online: boolean | undefined;
 }
 
 /**
  * Device network monitoring.
  */
 export const networkPlugin: Plugin<NetworkMixin> = (eventBridge, listener) => {
-  let online: boolean | undefined;
-
-  Object.defineProperty(eventBridge, 'online', {
-    enumerable: true,
-    get: () => online,
-  });
-
-  eventBridge.request({ type: 'org.racehorse.IsOnlineRequestEvent' }).then(event => {
-    online = event.online;
-    listener();
-  });
+  eventBridge.online = eventBridge.requestSync({ type: 'org.racehorse.IsOnlineRequestEvent' })?.online;
 
   return eventBridge.subscribeToAlerts(event => {
     if (event.type === 'org.racehorse.OnlineStatusChangedAlertEvent') {
-      online = event.online;
+      eventBridge.online = event.online;
       listener();
     }
   });
