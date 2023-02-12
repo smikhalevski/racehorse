@@ -5,13 +5,11 @@ package org.racehorse.webview
  */
 interface PermissionsCapability {
 
-    fun askForPermission(permission: String, callback: (granted: Boolean) -> Unit): Boolean {
-        return askForPermissions(arrayOf(permission)) {
+    fun onAskForPermission(permission: String, callback: (granted: Boolean) -> Unit): Boolean {
+        return onAskForPermissions(arrayOf(permission)) {
             callback(it.getValue(permission))
         }
     }
 
-    fun askForPermissions(permissions: Array<String>, callback: (statuses: Map<String, Boolean>) -> Unit): Boolean {
-        return false
-    }
+    fun onAskForPermissions(permissions: Array<String>, callback: (statuses: Map<String, Boolean>) -> Unit) = false
 }

@@ -14,7 +14,5 @@ interface FileChooserCapability {
         webView: WebView,
         filePathCallback: ValueCallback<Array<Uri>>,
         fileChooserParams: WebChromeClient.FileChooserParams
-    ): Boolean {
-        return false
-    }
+    ) = false
 }

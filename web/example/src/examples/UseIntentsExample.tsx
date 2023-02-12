@@ -1,16 +1,15 @@
 import React from 'react';
-import { useIntents } from '@racehorse/react';
+import { actionsPlugin } from 'racehorse';
+import { useEventBridge } from '@racehorse/react';
 
 export function UseIntentsExample() {
-  const { openInExternalApplication } = useIntents();
+  const { openUrl } = useEventBridge(actionsPlugin);
 
   return (
     <>
       <h2>{'UseIntentsExample'}</h2>
 
-      <button onClick={() => openInExternalApplication('https://github.com/smikhalevski/racehorse')}>
-        {'Open in browser'}
-      </button>
+      <button onClick={() => openUrl('https://github.com/smikhalevski/racehorse')}>{'Open in browser'}</button>
     </>
   );
 }

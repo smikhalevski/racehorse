@@ -14,7 +14,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import org.racehorse.webview.FileChooserCapability
 import java.io.File
-import java.io.IOException
 
 /**
  * The plugin allows user to choose a file on the device.
@@ -76,7 +75,7 @@ open class FileChooserPlugin(
                 return
             }
 
-            if (isPermissionGranted(activity, Manifest.permission.CAMERA)) {
+            if (activity.isPermissionGranted(Manifest.permission.CAMERA)) {
                 launchChooser(true)
                 return
             }

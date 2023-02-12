@@ -20,7 +20,7 @@ internal class Connection(private val gson: Gson, private val eventBus: EventBus
             jsonObject.remove("type")
 
             if (!InboxEvent::class.java.isAssignableFrom(eventClass)) {
-                throw IllegalArgumentException("Expected an event but found $eventClass")
+                throw IllegalArgumentException("Expected an event class but found $eventClass")
             }
 
             gson.fromJson(jsonObject, eventClass)

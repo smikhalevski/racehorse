@@ -1,166 +1,117 @@
-import { PubSub, untilTruthy } from 'parallel-universe';
+import { PubSub } from 'parallel-universe';
+import { Connection, Event, EventBridge, Plugin, ResponseEvent } from './shared-types';
+import { createConnectionProvider } from './createConnectionProvider';
+import { noop } from './utils';
+
+const racehorseConnectionProvider = createConnectionProvider();
 
 /**
- * The event transported through the {@linkcode EventBridge}.
+ * Creates an event bridge that transports events from and to Android through the connection.
  */
-export interface Event {
-  /**
-   * The event type (a qualified class name).
-   */
-  type: string;
-
-  /**
-   * The event payload.
-   */
-  [key: string]: any;
-}
+export function createEventBridge(
+  plugin?: undefined,
+  connectionProvider?: () => Connection | Promise<Connection>
+): EventBridge;
 
 /**
- * The response event pushed by Android as the result of a request.
- */
-export interface ResponseEvent extends Event {
-  /**
-   * `true` for a success response, or `false` for an error response.
-   */
-  ok: boolean;
-}
-
-/**
- * The connection is added to the page as a
- * {@linkcode https://developer.android.com/reference/android/webkit/JavascriptInterface JavascriptInterface}
- */
-export interface Connection {
-  /**
-   * An array of envelopes pushed by Android, or an inbox object created by the {@linkcode EventBridge}.
-   */
-  inbox?: {
-    /**
-     * Called by Android when an envelope is pushed through the connection.
-     */
-    push(response: readonly [requestId: number | null, event: ResponseEvent]): void;
-  };
-
-  /**
-   * Delivers a serialized event to Android.
-   *
-   * @param requestId The unique request ID.
-   * @param eventJson The serialized event.
-   */
-  post(requestId: number, eventJson: string): void;
-}
-
-declare global {
-  interface Window {
-    /**
-     * The connection object injected by Android.
-     */
-    racehorseConnection?: Connection;
-  }
-}
-
-/**
- * The event bridge that transports events between the Android and web realms.
- */
-export interface EventBridge {
-  /**
-   * Sends an event through a connection to Android and returns a promise that is resolved when a response with a
-   * matching {@linkcode Envelope.requestId} is pushed to the {@link Connection.inbox connection inbox}. The returned
-   * promise is never rejected. Check {@linkcode ResponseEvent.ok} to detect that an error occurred.
-   *
-   * @param event The request event to send.
-   * @returns The response event.
-   */
-  request(event: Event): Promise<ResponseEvent>;
-
-  /**
-   * Subscribes a listener to all events pushed to the inbox that don't have a consumer.
-   *
-   * @param listener The listener to subscribe.
-   * @returns The callback that unsubscribes the listener.
-   */
-  subscribe(
-    /**
-     * @param event The event pushed to the connection inbox.
-     */
-    listener: (event: Event) => void
-  ): () => void;
-}
-
-export interface EventBridgeOptions {
-  /**
-   * Returns the connection opened by Android. The callback is polled until the connection is returned. By default,
-   * {@linkcode window.racehorseConnection} is awaited.
-   */
-  connectionProvider?: () => Connection | undefined;
-}
-
-/**
- * Creates a message bus that transports messages from and to the native realm through the connection.
+ * Creates an event bridge that transports events from and to Android through the connection.
  *
- * @param options The message bus options.
+ * @param plugin The plugin that enhances the event bridge with additional properties and methods.
+ * @param connectionProvider The provider that returns the connection.
  */
-export function createEventBridge(options: EventBridgeOptions = {}): EventBridge {
-  const { connectionProvider = () => window.racehorseConnection } = options;
+export function createEventBridge<M extends object>(
+  plugin: Plugin<M>,
+  connectionProvider?: () => Connection | Promise<Connection>
+): EventBridge & M;
 
-  const pubSub = new PubSub<Event>();
-  const resolvers = new Map<number, (event: ResponseEvent) => void>();
+export function createEventBridge(
+  plugin?: Plugin<object>,
+  connectionProvider = racehorseConnectionProvider
+): EventBridge {
+  const pubSub = new PubSub();
 
-  const inbox: Connection['inbox'] = {
-    push([requestId, event]) {
-      if (requestId === null) {
-        pubSub.publish(event);
-        return;
-      }
-
-      const resolver = resolvers.get(requestId);
-
-      if (resolver !== undefined) {
-        resolvers.delete(requestId);
-        resolver(event as ResponseEvent);
-      }
+  const eventBridge: EventBridge = {
+    waitForConnection() {
+      return Promise.resolve(connectionProvider()).then(noop);
     },
-  };
 
-  let requestCount = 0;
-
-  let openConnection = (): Promise<Connection> => {
-    const connectionPromise = untilTruthy(connectionProvider, 100).then(connection => {
-      const responses = connection.inbox;
-
-      connection.inbox = inbox;
-
-      if (Array.isArray(responses)) {
-        for (const response of responses) {
-          inbox.push(response);
-        }
-      } else if (responses !== undefined) {
-        throw new Error('Connection should belong to a single event bridge');
-      }
-      return connection;
-    });
-
-    openConnection = () => connectionPromise;
-
-    return connectionPromise;
-  };
-
-  return {
     request(event) {
+      const eventJson = JSON.stringify(event);
+
       return new Promise(resolve => {
-        const requestId = requestCount++;
-        const eventJson = JSON.stringify(event);
-
-        resolvers.set(requestId, resolve);
-
-        openConnection().then(connection => {
-          connection.post(requestId, eventJson);
+        Promise.resolve(connectionProvider()).then(conn => {
+          postToConnection(conn, eventJson, resolve);
         });
       });
     },
 
-    subscribe(listener) {
-      openConnection();
-      return pubSub.subscribe(listener);
+    requestSync(event) {
+      const connection = connectionProvider();
+
+      let responseEvent: ResponseEvent | undefined;
+
+      if (!(connection instanceof Promise)) {
+        postToConnection(connection, JSON.stringify(event), event => {
+          responseEvent = event;
+        });
+      }
+      return responseEvent;
     },
+
+    watchForAlerts(listener) {
+      const connection = connectionProvider();
+
+      const alertListener = (envelope: [requestId: number, event: Event]) => {
+        if (envelope[0] === -1) {
+          listener(envelope[1]);
+        }
+      };
+
+      if (!(connection instanceof Promise)) {
+        prepareConnection(connection);
+        return connection.inboxPubSub.subscribe(alertListener);
+      }
+
+      let unsubscribe: (() => void) | undefined;
+      let unsubscribed = false;
+
+      connection.then(conn => {
+        if (!unsubscribed) {
+          prepareConnection(conn);
+          unsubscribe = conn.inboxPubSub.subscribe(alertListener);
+        }
+      });
+
+      return () => {
+        unsubscribed = true;
+        unsubscribe?.();
+      };
+    },
+
+    subscribe: pubSub.subscribe.bind(pubSub),
   };
+
+  plugin?.(eventBridge, pubSub.publish.bind(pubSub));
+
+  return eventBridge;
+}
+
+function prepareConnection(connection: Connection): asserts connection is Required<Connection> {
+  connection.requestCount ||= 0;
+  connection.inboxPubSub ||= new PubSub();
+}
+
+function postToConnection(connection: Connection, eventJson: string, callback: (event: ResponseEvent) => void): void {
+  prepareConnection(connection);
+
+  const requestId = connection.requestCount++;
+
+  const unsubscribe = connection.inboxPubSub.subscribe(envelope => {
+    if (envelope[0] === requestId) {
+      unsubscribe();
+      callback(envelope[1] as ResponseEvent);
+    }
+  });
+
+  connection.post(requestId, eventJson);
 }
