@@ -44,10 +44,15 @@ export interface Connection {
    * Delivers a serialized event to Android.
    *
    * @param requestId The unique request ID.
-   * @param json The serialized event.
+   * @param eventJson The serialized event.
    */
-  post(requestId: number, json: string): void;
+  post(requestId: number, eventJson: string): void;
 }
+
+/**
+ * Returns a connection object.
+ */
+export type ConnectionProvider = () => Connection | Promise<Connection>;
 
 declare global {
   interface Window {

@@ -1,29 +1,16 @@
-import { PubSub, untilTruthy } from 'parallel-universe';
+import { PubSub } from 'parallel-universe';
 import { Connection, Event, EventBridge, Plugin, ResponseEvent } from './shared-types';
+import { createConnectionProvider } from './createConnectionProvider';
 
-interface ConnectionProvider {
-  getConnection(): Connection | undefined;
-
-  getConnectionPromise(): Promise<Connection>;
-}
-
-const getConnection = () => window.racehorseConnection;
-
-const racehorseConnectionProvider: ConnectionProvider = {
-  getConnection() {
-    return window.racehorseConnection;
-  },
-  getConnectionPromise() {
-    const promise = untilTruthy(getConnection, 200);
-    racehorseConnectionProvider.getConnectionPromise = () => promise;
-    return promise;
-  },
-};
+const racehorseConnectionProvider = createConnectionProvider();
 
 /**
  * Creates an event bridge that transports events from and to Android through the connection.
  */
-export function createEventBridge(connectionProvider?: ConnectionProvider): EventBridge;
+export function createEventBridge(
+  plugin?: undefined,
+  connectionProvider?: () => Connection | Promise<Connection>
+): EventBridge;
 
 /**
  * Creates an event bridge that transports events from and to Android through the connection.
@@ -33,42 +20,33 @@ export function createEventBridge(connectionProvider?: ConnectionProvider): Even
  */
 export function createEventBridge<M extends object>(
   plugin: Plugin<M>,
-  connectionProvider?: ConnectionProvider
+  connectionProvider?: () => Connection | Promise<Connection>
 ): EventBridge & M;
 
 export function createEventBridge(
-  plugin?: Plugin<object> | ConnectionProvider,
+  plugin?: Plugin<object>,
   connectionProvider = racehorseConnectionProvider
 ): EventBridge {
-  if (typeof plugin === 'object') {
-    connectionProvider = plugin;
-  }
-
-  const bridgeChannel = new PubSub();
-
-  let connection = connectionProvider.getConnection();
-  let getConnectionPromise = connectionProvider.getConnectionPromise;
-
-  if (connection) {
-    prepareConnection(connection);
-  }
+  const eventBridgeChannel = new PubSub();
 
   const eventBridge: EventBridge = {
     request(event) {
-      const json = JSON.stringify(event);
+      const eventJson = JSON.stringify(event);
 
       return new Promise(resolve => {
-        getConnectionPromise().then(connection => {
-          post(connection, json, resolve);
+        Promise.resolve(connectionProvider()).then(conn => {
+          postToConnection(conn, eventJson, resolve);
         });
       });
     },
 
     requestSync(event) {
+      const connection = connectionProvider();
+
       let responseEvent: ResponseEvent | undefined;
 
-      if (connection) {
-        post(connection, JSON.stringify(event), event => {
+      if (!(connection instanceof Promise)) {
+        postToConnection(connection, JSON.stringify(event), event => {
           responseEvent = event;
         });
       }
@@ -76,22 +54,26 @@ export function createEventBridge(
     },
 
     subscribeToAlerts(listener) {
+      const connection = connectionProvider();
+
       const alertListener = (envelope: [requestId: number, event: Event]) => {
         if (envelope[0] === -1) {
           listener(envelope[1]);
         }
       };
 
-      if (connection) {
-        return connection.inboxChannel!.subscribe(alertListener);
+      if (!(connection instanceof Promise)) {
+        prepareConnection(connection);
+        return connection.inboxChannel.subscribe(alertListener);
       }
 
       let unsubscribe: (() => void) | undefined;
       let unsubscribed = false;
 
-      getConnectionPromise().then(connection => {
+      connection.then(conn => {
         if (!unsubscribed) {
-          unsubscribe = connection.inboxChannel!.subscribe(alertListener);
+          prepareConnection(conn);
+          unsubscribe = conn.inboxChannel.subscribe(alertListener);
         }
       });
 
@@ -101,36 +83,20 @@ export function createEventBridge(
       };
     },
 
-    subscribeToBridge: bridgeChannel.subscribe.bind(bridgeChannel),
+    subscribeToBridge: eventBridgeChannel.subscribe.bind(eventBridgeChannel),
   };
 
-  if (typeof plugin === 'function') {
-    plugin(eventBridge, bridgeChannel.publish.bind(bridgeChannel));
-  }
+  plugin?.(eventBridge, eventBridgeChannel.publish.bind(eventBridgeChannel));
 
   return eventBridge;
 }
-
-// const noopConnection: Connection = {
-//   requestCount: 0,
-//   inboxChannel: new PubSub(),
-//   post() {},
-// };
-//
-// function noop() {}
-//
-// noopConnection.inboxChannel!.subscribe = () => noop;
-//
-// function getConnection(): Connection | undefined {
-//   return window.racehorseConnection;
-// }
 
 function prepareConnection(connection: Connection): asserts connection is Required<Connection> {
   connection.requestCount ||= 0;
   connection.inboxChannel ||= new PubSub();
 }
 
-function post(connection: Connection, json: string, callback: (event: ResponseEvent) => void): void {
+function postToConnection(connection: Connection, eventJson: string, callback: (event: ResponseEvent) => void): void {
   prepareConnection(connection);
 
   const requestId = connection.requestCount++;
@@ -142,5 +108,5 @@ function post(connection: Connection, json: string, callback: (event: ResponseEv
     }
   });
 
-  connection.post(requestId, json);
+  connection.post(requestId, eventJson);
 }
