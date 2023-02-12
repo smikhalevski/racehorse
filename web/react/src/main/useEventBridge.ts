@@ -1,21 +1,21 @@
 import { createContext, useContext, useEffect, useMemo, useReducer } from 'react';
-import { createEventBridge, EventBridge, Plugin } from 'racehorse';
+import { createConnectionProvider, createEventBridge, EventBridge, Plugin } from 'racehorse';
 
-export const EventBridgeContext = createContext(createEventBridge());
+export const ConnectionProviderContext = createContext(createConnectionProvider());
 
-EventBridgeContext.displayName = 'EventBridgeContext';
+ConnectionProviderContext.displayName = 'ConnectionProviderContext';
 
 export function useEventBridge(): EventBridge;
 
-export function useEventBridge<M>(plugin: Plugin<M>): EventBridge & M;
+export function useEventBridge<M extends object>(plugin: Plugin<M>): EventBridge & M;
 
-export function useEventBridge(plugin?: Plugin<unknown>) {
+export function useEventBridge(plugin?: Plugin<object>) {
   const [, dispatch] = useReducer(reduceCount, 0);
-  const eventBridge = useContext(EventBridgeContext);
+  const connectionProvider = useContext(ConnectionProviderContext);
 
-  const unsubscribe = useMemo(() => plugin?.(Object.assign({}, eventBridge), dispatch), [eventBridge]);
+  const eventBridge = useMemo(() => createEventBridge(plugin!, connectionProvider), [connectionProvider]);
 
-  useEffect(() => unsubscribe, [eventBridge]);
+  useEffect(() => eventBridge.subscribe(dispatch), [eventBridge]);
 
   return Object.assign({}, eventBridge);
 }

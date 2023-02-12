@@ -1,5 +1,6 @@
 export * from './actionsPlugin';
 export * from './applyPlugins';
+export * from './createConnectionProvider';
 export * from './createEventBridge';
 export * from './devicePlugin';
 export * from './googlePlayReferrerPlugin';
