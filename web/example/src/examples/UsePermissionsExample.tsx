@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { usePermissions } from '@racehorse/react';
+import { permissionsPlugin } from 'racehorse';
+import { useEventBridge } from '@racehorse/react';
 
 export function UsePermissionsExample() {
   const [permissions, setPermissions] = useState<any>();
 
-  const { askForPermission } = usePermissions();
+  const { askForPermission } = useEventBridge(permissionsPlugin);
 
   return (
     <>

@@ -1,20 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { useConfiguration } from '@racehorse/react';
+import React from 'react';
+import { devicePlugin } from 'racehorse';
+import { useEventBridge } from '@racehorse/react';
 
 export function UseConfigurationExample() {
-  const [locales, setLocales] = useState<string[]>();
-  const { getPreferredLocales } = useConfiguration();
-
-  useEffect(() => {
-    getPreferredLocales().then(setLocales);
-  }, []);
+  const { getPreferredLocales } = useEventBridge(devicePlugin);
 
   return (
     <>
       <h2>{'UseConfigurationExample'}</h2>
 
       {'Locales: '}
-      {locales?.join(',')}
+      {getPreferredLocales().join(',')}
     </>
   );
 }
