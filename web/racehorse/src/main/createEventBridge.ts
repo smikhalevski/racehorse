@@ -1,6 +1,7 @@
 import { PubSub } from 'parallel-universe';
 import { Connection, Event, EventBridge, Plugin, ResponseEvent } from './shared-types';
 import { createConnectionProvider } from './createConnectionProvider';
+import { noop } from './utils';
 
 const racehorseConnectionProvider = createConnectionProvider();
 
@@ -27,9 +28,13 @@ export function createEventBridge(
   plugin?: Plugin<object>,
   connectionProvider = racehorseConnectionProvider
 ): EventBridge {
-  const eventBridgeChannel = new PubSub();
+  const pubSub = new PubSub();
 
   const eventBridge: EventBridge = {
+    waitForConnection() {
+      return Promise.resolve(connectionProvider()).then(noop);
+    },
+
     request(event) {
       const eventJson = JSON.stringify(event);
 
@@ -53,7 +58,7 @@ export function createEventBridge(
       return responseEvent;
     },
 
-    subscribeToAlerts(listener) {
+    watchForAlerts(listener) {
       const connection = connectionProvider();
 
       const alertListener = (envelope: [requestId: number, event: Event]) => {
@@ -64,7 +69,7 @@ export function createEventBridge(
 
       if (!(connection instanceof Promise)) {
         prepareConnection(connection);
-        return connection.inboxChannel.subscribe(alertListener);
+        return connection.inboxPubSub.subscribe(alertListener);
       }
 
       let unsubscribe: (() => void) | undefined;
@@ -73,7 +78,7 @@ export function createEventBridge(
       connection.then(conn => {
         if (!unsubscribed) {
           prepareConnection(conn);
-          unsubscribe = conn.inboxChannel.subscribe(alertListener);
+          unsubscribe = conn.inboxPubSub.subscribe(alertListener);
         }
       });
 
@@ -83,17 +88,17 @@ export function createEventBridge(
       };
     },
 
-    subscribeToBridge: eventBridgeChannel.subscribe.bind(eventBridgeChannel),
+    subscribe: pubSub.subscribe.bind(pubSub),
   };
 
-  plugin?.(eventBridge, eventBridgeChannel.publish.bind(eventBridgeChannel));
+  plugin?.(eventBridge, pubSub.publish.bind(pubSub));
 
   return eventBridge;
 }
 
 function prepareConnection(connection: Connection): asserts connection is Required<Connection> {
   connection.requestCount ||= 0;
-  connection.inboxChannel ||= new PubSub();
+  connection.inboxPubSub ||= new PubSub();
 }
 
 function postToConnection(connection: Connection, eventJson: string, callback: (event: ResponseEvent) => void): void {
@@ -101,7 +106,7 @@ function postToConnection(connection: Connection, eventJson: string, callback: (
 
   const requestId = connection.requestCount++;
 
-  const unsubscribe = connection.inboxChannel.subscribe(envelope => {
+  const unsubscribe = connection.inboxPubSub.subscribe(envelope => {
     if (envelope[0] === requestId) {
       unsubscribe();
       callback(envelope[1] as ResponseEvent);

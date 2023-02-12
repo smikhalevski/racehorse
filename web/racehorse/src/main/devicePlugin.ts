@@ -21,7 +21,7 @@ export interface DeviceMixin {
  */
 export const devicePlugin: Plugin<DeviceMixin> = eventBridge => {
   eventBridge.getPreferredLocales = () => {
-    return eventBridge.requestSync({ type: 'org.racehorse.GetPreferredLocalesRequestEvent' })?.locales;
+    return eventBridge.requestSync({ type: 'org.racehorse.GetPreferredLocalesRequestEvent' })?.locales || [];
   };
 
   eventBridge.pickLocale = (supportedLocales, defaultLocale) => {

@@ -36,9 +36,9 @@ export interface Connection {
   requestCount?: number;
 
   /**
-   * The pub-sub channel that Android uses to push responses to web.
+   * The pub-sub channel that Android uses to push responses to the web.
    */
-  inboxChannel?: PubSub<[requestId: number, event: Event]>;
+  inboxPubSub?: PubSub<[requestId: number, event: Event]>;
 
   /**
    * Delivers a serialized event to Android.
@@ -67,19 +67,23 @@ declare global {
  * The plugin that enhances the event bridge.
  *
  * @param eventBridge The event bridge that must be enhanced.
+ * @param listener The callback that plugin should use to notify the listeners that were attached to the event bridge
+ * via {@linkcode EventBridge.subscribe}
  */
-export type Plugin<M extends object> = (
-  eventBridge: EventBridge & Partial<M>,
-  listener: () => void
-) => (() => void) | void;
+export type Plugin<M extends object> = (eventBridge: EventBridge & Partial<M>, listener: () => void) => void;
 
 /**
  * The event bridge that transports events between Android and web.
  */
 export interface EventBridge {
   /**
+   * The promise that is resolved when a connection becomes available.
+   */
+  waitForConnection(): Promise<void>;
+
+  /**
    * Sends an event through a connection to Android and returns a promise that is resolved when a response with a
-   * matching ID is published to the {@linkcode Connection.inboxChannel}. The returned promise is never rejected.
+   * matching ID is published to the {@linkcode Connection.inboxPubSub}. The returned promise is never rejected.
    * Check {@linkcode ResponseEvent.ok} to detect that an error occurred.
    *
    * @param event The request event to send.
@@ -102,7 +106,7 @@ export interface EventBridge {
    * @param listener The listener to subscribe.
    * @returns The callback that unsubscribes the listener.
    */
-  subscribeToAlerts(
+  watchForAlerts(
     /**
      * @param event The event pushed to the connection inbox.
      */
@@ -115,5 +119,5 @@ export interface EventBridge {
    * @param listener The listener to subscribe.
    * @returns The callback that unsubscribes the listener.
    */
-  subscribeToBridge(listener: () => void): () => void;
+  subscribe(listener: () => void): () => void;
 }

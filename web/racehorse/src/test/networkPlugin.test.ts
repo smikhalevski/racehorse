@@ -1,66 +1,41 @@
-import { sleep } from 'parallel-universe';
-import { actionsPlugin, applyPlugins, createEventBridge, networkPlugin } from '../main';
+import { createEventBridge, networkPlugin } from '../main';
+import { createConnectionProvider } from '../main/createConnectionProvider';
 
 describe('networkPlugin', () => {
-  createEventBridge(applyPlugins(networkPlugin, actionsPlugin));
+  test('returns undefined if network status is unknown', () => {
+    expect(createEventBridge(networkPlugin, createConnectionProvider()).online).toBe(undefined);
+  });
 
-  // test('returns undefined if network status is unknown', () => {
-  //   expect(createEventBridge(() => undefined, networkPlugin).online).toBe(undefined);
-  // });
-  //
-  // test('updates online status and calls listener', async () => {
-  //   window.racehorseConnection = {
-  //     post: jest.fn(() => {
-  //       window.racehorseConnection?.inbox?.push([0, { type: '', ok: true, online: true }]);
-  //     }),
-  //   };
-  //
-  //   const listenerMock = jest.fn();
-  //   const eventBridge = createEventBridge(undefined, networkPlugin, listenerMock);
-  //
-  //   await sleep(100);
-  //
-  //   expect(listenerMock).toHaveBeenCalledTimes(1);
-  //   expect(eventBridge.online).toBe(true);
-  // });
-  //
-  // test('calls listener if a network alert arrives', async () => {
-  //   window.racehorseConnection = {
-  //     post: () => undefined,
-  //   };
-  //
-  //   const listenerMock = jest.fn();
-  //   const eventBridge = createEventBridge(undefined, networkPlugin, listenerMock);
-  //
-  //   await sleep(100);
-  //
-  //   window.racehorseConnection.inbox?.push([
-  //     null,
-  //     { type: 'org.racehorse.OnlineStatusChangedAlertEvent', online: true },
-  //   ]);
-  //
-  //   expect(listenerMock).toHaveBeenCalledTimes(1);
-  //   expect(eventBridge.online).toBe(true);
-  // });
-  //
-  // test('unsubscribes the listener', async () => {
-  //   window.racehorseConnection = {
-  //     post: () => undefined,
-  //   };
-  //
-  //   const listenerMock = jest.fn();
-  //   const eventBridge = createEventBridge();
-  //
-  //   networkPlugin(eventBridge as any, listenerMock)?.();
-  //
-  //   await sleep(100);
-  //
-  //   window.racehorseConnection.inbox?.push([
-  //     null,
-  //     { type: 'org.racehorse.OnlineStatusChangedAlertEvent', online: true },
-  //   ]);
-  //
-  //   expect(listenerMock).not.toHaveBeenCalled();
-  //   expect((eventBridge as any).online).toBe(undefined);
-  // });
+  test('reads initial online status', () => {
+    window.racehorseConnection = {
+      post: jest.fn(() => {
+        window.racehorseConnection!.inboxPubSub!.publish([0, { type: '', ok: true, online: true }]);
+      }),
+    };
+
+    const listenerMock = jest.fn();
+    const eventBridge = createEventBridge(networkPlugin, createConnectionProvider());
+
+    expect(listenerMock).not.toHaveBeenCalled();
+    expect(eventBridge.online).toBe(true);
+  });
+
+  test('calls listener if a network alert arrives', () => {
+    window.racehorseConnection = {
+      post: () => undefined,
+    };
+
+    const listenerMock = jest.fn();
+    const eventBridge = createEventBridge(networkPlugin, createConnectionProvider());
+
+    eventBridge.subscribe(listenerMock);
+
+    window.racehorseConnection.inboxPubSub!.publish([
+      -1,
+      { type: 'org.racehorse.OnlineStatusChangedAlertEvent', online: true },
+    ]);
+
+    expect(listenerMock).toHaveBeenCalledTimes(1);
+    expect(eventBridge.online).toBe(true);
+  });
 });

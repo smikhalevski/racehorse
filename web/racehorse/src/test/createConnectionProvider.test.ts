@@ -26,7 +26,7 @@ describe('createConnectionProvider', () => {
   });
 
   test('returns the noop connection after noop delay elapses', async () => {
-    const promise = createConnectionProvider(1, 10)();
+    const promise = createConnectionProvider(() => undefined, 1, 10)();
 
     await sleep(20);
 
@@ -34,8 +34,8 @@ describe('createConnectionProvider', () => {
 
     const listenerMock = jest.fn();
 
-    connection.inboxChannel!.subscribe(listenerMock);
-    connection.inboxChannel!.publish([0, { type: 'aaa' }]);
+    connection.inboxPubSub!.subscribe(listenerMock);
+    connection.inboxPubSub!.publish([0, { type: 'aaa' }]);
 
     expect(listenerMock).not.toHaveBeenCalled();
   });

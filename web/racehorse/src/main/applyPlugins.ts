@@ -57,22 +57,8 @@ export function applyPlugins<
 
 export function applyPlugins(...plugins: Plugin<object>[]): Plugin<object> {
   return (eventBridge, listener) => {
-    let unsubscribeArray: Array<() => void> | undefined;
-
     for (const plugin of plugins) {
-      const unsubscribe = plugin(eventBridge, listener);
-
-      if (unsubscribe) {
-        (unsubscribeArray ||= []).push(unsubscribe);
-      }
+      plugin(eventBridge, listener);
     }
-    if (!unsubscribeArray) {
-      return;
-    }
-    return () => {
-      for (const unsubscribe of unsubscribeArray!) {
-        unsubscribe();
-      }
-    };
   };
 }
