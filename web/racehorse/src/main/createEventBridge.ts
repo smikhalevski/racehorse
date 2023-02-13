@@ -27,6 +27,8 @@ export function createEventBridge(
 ): EventBridge {
   const pubSub = new PubSub();
 
+  let alertUnsubscribeCallbacks: Map<(event: Event) => void, () => void> | undefined;
+
   let connection: Required<Connection> | undefined;
   let connectionPromise: Promise<void> | undefined;
 
@@ -83,6 +85,12 @@ export function createEventBridge(
     },
 
     subscribeToAlerts(listener) {
+      let unsub = alertUnsubscribeCallbacks?.get(listener);
+
+      if (unsub) {
+        return unsub;
+      }
+
       ensureConnection();
 
       const alertListener = (envelope: [requestId: number, event: Event]) => {
@@ -92,22 +100,31 @@ export function createEventBridge(
       };
 
       if (connection) {
-        return connection.inboxPubSub.subscribe(alertListener);
+        const unsubscribe = connection.inboxPubSub.subscribe(alertListener);
+        unsub = () => {
+          alertUnsubscribeCallbacks!.delete(listener);
+          unsubscribe();
+        };
+      } else {
+        let unsubscribe: (() => void) | undefined;
+        let unsubscribed = false;
+
+        connectionPromise!.then(() => {
+          if (!unsubscribed) {
+            unsubscribe = connection!.inboxPubSub.subscribe(alertListener);
+          }
+        });
+
+        unsub = () => {
+          alertUnsubscribeCallbacks!.delete(listener);
+          unsubscribed = true;
+          unsubscribe?.();
+        };
       }
 
-      let unsubscribe: (() => void) | undefined;
-      let unsubscribed = false;
+      (alertUnsubscribeCallbacks ||= new Map())?.set(listener, unsub);
 
-      connectionPromise!.then(() => {
-        if (!unsubscribed) {
-          unsubscribe = connection!.inboxPubSub.subscribe(alertListener);
-        }
-      });
-
-      return () => {
-        unsubscribed = true;
-        unsubscribe?.();
-      };
+      return unsub;
     },
 
     subscribe: pubSub.subscribe.bind(pubSub),

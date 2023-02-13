@@ -34,7 +34,7 @@ export function useEventBridge(plugin?: Plugin<object>) {
 
   useEffect(manager.effect, [manager]);
 
-  return manager.eventBridge;
+  return Object.assign({}, manager.eventBridge);
 }
 
 function createEventBridgeManager(
@@ -50,12 +50,12 @@ function createEventBridgeManager(
 
   let internalSubscribeToAlerts: EventBridge['subscribeToAlerts'] = listener => {
     (alertListeners ||= []).push(listener);
-    return originalSubscribeToAlerts(listener);
+    return noop;
   };
 
   let internalSubscribe: EventBridge['subscribe'] = listener => {
     (listeners ||= []).push(listener);
-    return originalSubscribe(listener);
+    return noop;
   };
 
   const eventBridge = createEventBridge((eventBridge, notify) => {
@@ -90,7 +90,7 @@ function createEventBridgeManager(
     internalSubscribe(rerender);
 
     return () => {
-      internalSubscribeToAlerts = internalSubscribe = () => () => undefined;
+      internalSubscribeToAlerts = internalSubscribe = () => noop;
 
       if (unsubscribes) {
         for (const unsubscribe of unsubscribes) {
@@ -106,6 +106,8 @@ function createEventBridgeManager(
     effect,
   };
 }
+
+function noop() {}
 
 function reduceCount(count: number): number {
   return count + 1;

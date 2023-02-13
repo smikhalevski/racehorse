@@ -12,15 +12,14 @@ export const googlePlayReferrerPlugin: Plugin<GooglePlayReferrerMixin> = eventBr
 
   eventBridge.getGooglePlayReferrer = () => {
     return (referrerPromise ||= new Promise(resolve => {
+      const referrer = eventBridge.requestSync({ type: 'org.racehorse.GetGooglePlayReferrerRequestEvent' })?.referrer;
+
+      if (referrer) {
+        resolve(referrer);
+      }
+
       const unsubscribe = eventBridge.subscribeToAlerts(event => {
         if (event.type === 'org.racehorse.GooglePlayReferrerDetectedAlertEvent') {
-          resolve(event.referrer);
-          unsubscribe();
-        }
-      });
-
-      eventBridge.request({ type: 'org.racehorse.GetGooglePlayReferrerRequestEvent' }).then(event => {
-        if (event.referrer) {
           resolve(event.referrer);
           unsubscribe();
         }
