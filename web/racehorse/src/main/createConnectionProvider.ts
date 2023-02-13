@@ -1,46 +1,26 @@
-import { PubSub, repeatUntil } from 'parallel-universe';
+import { untilTruthy } from 'parallel-universe';
 import { Connection, ConnectionProvider } from './shared-types';
-import { noop } from './utils';
 
 /**
- * Creates a connection provider.
+ * Creates a callback that invokes `getConnection` until a {@linkcode Connection} object is returned. Exponentially
+ * increases delay between `getConnection` calls if `undefined` is returned.
  *
- * @param getConnection Returns a {@linkcode Connection} object or `undefined` if there's connection.
- * @param pollDelay The delay between connection availability checks.
- * @param noopDelay The delay after which the noop connection is returned.
+ * The returned connection provides is guaranteed to return the same promise so the connection is resolved
+ * simultaneously for all connection consumers.
+ *
+ * @param getConnection Returns a {@linkcode Connection} object or `undefined` if there's no connection available.
  */
-export function createConnectionProvider(
-  getConnection = () => window.racehorseConnection,
-  pollDelay = 100,
-  noopDelay = 60_000
-): ConnectionProvider {
+export function createConnectionProvider(getConnection: () => Connection | undefined): ConnectionProvider {
   let connection: Connection | undefined;
   let connectionPromise: Promise<Connection> | undefined;
-  let timestamp: number;
+  let tryCount = 0;
 
-  return () => {
-    timestamp ||= Date.now();
-
-    return (
-      connectionPromise ||
-      (connection ||= getConnection()) ||
-      (connectionPromise ||= repeatUntil(
-        getConnection,
-        result => result.result || Date.now() - timestamp > noopDelay,
-        pollDelay
-      ).then(conn => {
-        connection ||= conn || noopConnection;
-        connectionPromise = undefined;
-        return connection;
-      }))
-    );
-  };
+  return () =>
+    connectionPromise ||
+    (connection ||= getConnection()) ||
+    (connectionPromise ||= untilTruthy(getConnection, () => 2 ** tryCount++ * 100).then(conn => {
+      connection = conn;
+      connectionPromise = undefined;
+      return connection;
+    }));
 }
-
-const noopConnection: Connection = {
-  requestCount: 0,
-  inboxPubSub: new PubSub(),
-  post: noop,
-};
-
-noopConnection.inboxPubSub!.subscribe = () => noop;

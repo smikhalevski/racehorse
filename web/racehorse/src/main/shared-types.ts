@@ -1,7 +1,7 @@
 import { PubSub } from 'parallel-universe';
 
 /**
- * The event marshalled through the {@linkcode EventBridge}.
+ * The event transported through the {@linkcode EventBridge}.
  */
 export interface Event {
   /**
@@ -31,12 +31,12 @@ export interface ResponseEvent extends Event {
  */
 export interface Connection {
   /**
-   * The total number of requests marshalled through this connection.
+   * The total number of requests transported through this connection. Used as a request ID.
    */
   requestCount?: number;
 
   /**
-   * The pub-sub channel that Android uses to push responses to the web.
+   * The pub-sub to which Android publishes envelopes for the web to consume.
    */
   inboxPubSub?: PubSub<[requestId: number, event: Event]>;
 
@@ -50,7 +50,7 @@ export interface Connection {
 }
 
 /**
- * Returns a connection object.
+ * Returns a connection object or promise that resolves when a connection is available.
  */
 export type ConnectionProvider = () => Connection | Promise<Connection>;
 
@@ -106,7 +106,7 @@ export interface EventBridge {
    * @param listener The listener to subscribe.
    * @returns The callback that unsubscribes the listener.
    */
-  watchForAlerts(
+  subscribeToAlerts(
     /**
      * @param event The event pushed to the connection inbox.
      */

@@ -1,42 +1,40 @@
-import { sleep } from 'parallel-universe';
-import { createConnectionProvider } from '../main';
+import { Connection, createConnectionProvider } from '../main';
 
 describe('createConnectionProvider', () => {
-  beforeEach(() => {
-    delete window.racehorseConnection;
-  });
-
   test('returns the available connection', () => {
-    const connection = (window.racehorseConnection = {
+    const connection: Connection = {
       post() {},
-    });
-    expect(createConnectionProvider()()).toBe(connection);
+    };
+    expect(createConnectionProvider(() => connection)()).toBe(connection);
   });
 
   test('returns the deferred connection', async () => {
-    const promise = createConnectionProvider()();
+    let connection: Connection | undefined;
 
-    expect(promise).toBeInstanceOf(Promise);
+    const connectionPromise = createConnectionProvider(() => connection)();
 
-    const connection = (window.racehorseConnection = {
+    expect(connectionPromise).toBeInstanceOf(Promise);
+
+    connection = {
       post() {},
-    });
+    };
 
-    await expect(promise).resolves.toBe(connection);
+    await expect(connectionPromise).resolves.toBe(connection);
   });
 
-  test('returns the noop connection after noop delay elapses', async () => {
-    const promise = createConnectionProvider(() => undefined, 1, 10)();
+  test('returns the same promise even if connection is available before the promise resolves', async () => {
+    let connection: Connection | undefined;
 
-    await sleep(20);
+    const connectionProvider = createConnectionProvider(() => connection);
 
-    const connection = await promise;
+    const connectionPromise = connectionProvider();
 
-    const listenerMock = jest.fn();
+    connection = {
+      post() {},
+    };
 
-    connection.inboxPubSub!.subscribe(listenerMock);
-    connection.inboxPubSub!.publish([0, { type: 'aaa' }]);
+    expect(connectionProvider()).toBe(connectionPromise);
 
-    expect(listenerMock).not.toHaveBeenCalled();
+    await expect(connectionPromise).resolves.toBe(connection);
   });
 });

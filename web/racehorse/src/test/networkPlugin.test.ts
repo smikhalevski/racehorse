@@ -1,38 +1,46 @@
-import { createConnectionProvider, createEventBridge, networkPlugin } from '../main';
+import { Connection, createConnectionProvider, createEventBridge, networkPlugin } from '../main';
 
 describe('networkPlugin', () => {
   test('returns undefined if network status is unknown', () => {
-    expect(createEventBridge(networkPlugin, createConnectionProvider()).online).toBe(undefined);
+    const eventBridge = createEventBridge(
+      networkPlugin,
+      createConnectionProvider(() => undefined)
+    );
+
+    expect(eventBridge.online).toBe(undefined);
   });
 
   test('reads initial online status', () => {
-    window.racehorseConnection = {
+    const connection: Connection = {
       post: jest.fn(() => {
-        window.racehorseConnection!.inboxPubSub!.publish([0, { type: '', ok: true, online: true }]);
+        connection.inboxPubSub!.publish([0, { type: '', ok: true, online: true }]);
       }),
     };
 
     const listenerMock = jest.fn();
-    const eventBridge = createEventBridge(networkPlugin, createConnectionProvider());
+    const eventBridge = createEventBridge(
+      networkPlugin,
+      createConnectionProvider(() => connection)
+    );
 
     expect(listenerMock).not.toHaveBeenCalled();
     expect(eventBridge.online).toBe(true);
   });
 
   test('calls listener if a network alert arrives', () => {
-    window.racehorseConnection = {
+    const connection: Connection = {
       post: () => undefined,
     };
 
     const listenerMock = jest.fn();
-    const eventBridge = createEventBridge(networkPlugin, createConnectionProvider());
+    const eventBridge = createEventBridge(
+      networkPlugin,
+      createConnectionProvider(() => connection)
+    );
 
     eventBridge.subscribe(listenerMock);
 
-    window.racehorseConnection.inboxPubSub!.publish([
-      -1,
-      { type: 'org.racehorse.OnlineStatusChangedAlertEvent', online: true },
-    ]);
+    connection.inboxPubSub!.publish([-1, { type: 'org.racehorse.OnlineStatusChangedAlertEvent', online: true }]);
 
     expect(listenerMock).toHaveBeenCalledTimes(1);
     expect(eventBridge.online).toBe(true);
