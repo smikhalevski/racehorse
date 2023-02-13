@@ -10,13 +10,13 @@ export interface NetworkMixin {
 /**
  * Device network monitoring.
  */
-export const networkPlugin: Plugin<NetworkMixin> = (eventBridge, listener) => {
+export const networkPlugin: Plugin<NetworkMixin> = (eventBridge, notify) => {
   eventBridge.online = eventBridge.requestSync({ type: 'org.racehorse.IsOnlineRequestEvent' })?.online;
 
   eventBridge.subscribeToAlerts(event => {
     if (event.type === 'org.racehorse.OnlineStatusChangedAlertEvent') {
       eventBridge.online = event.online;
-      listener();
+      notify();
     }
   });
 };
