@@ -67,10 +67,14 @@ declare global {
  * The plugin that enhances the event bridge.
  *
  * @param eventBridge The event bridge that must be enhanced.
+ */
+export type Plugin<M extends object> = (eventBridge: EventBridge & Partial<M>) => PluginEffect | void;
+
+/**
  * @param notify The callback that plugin should use to notify the listeners that were attached to the event bridge
  * via {@linkcode EventBridge.subscribe}
  */
-export type Plugin<M extends object> = (eventBridge: EventBridge & Partial<M>, notify: () => void) => void;
+export type PluginEffect = (notify: () => void) => (() => void) | void;
 
 /**
  * The event bridge that transports events between Android and web.

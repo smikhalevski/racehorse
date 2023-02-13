@@ -130,7 +130,7 @@ export function createEventBridge(
     subscribe: pubSub.subscribe.bind(pubSub),
   };
 
-  plugin?.(eventBridge, pubSub.publish.bind(pubSub));
+  plugin?.(eventBridge)?.(pubSub.publish.bind(pubSub));
 
   return eventBridge;
 }
