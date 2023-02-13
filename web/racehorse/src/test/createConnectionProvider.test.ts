@@ -1,5 +1,5 @@
 import { sleep } from 'parallel-universe';
-import { createConnectionProvider } from '../main/createConnectionProvider';
+import { createConnectionProvider } from '../main';
 
 describe('createConnectionProvider', () => {
   beforeEach(() => {

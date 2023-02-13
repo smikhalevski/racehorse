@@ -1,5 +1,4 @@
-import { Connection, ConnectionProvider, createEventBridge, Plugin } from '../main';
-import { createConnectionProvider } from '../main/createConnectionProvider';
+import { Connection, ConnectionProvider, createConnectionProvider, createEventBridge, Plugin } from '../main';
 
 describe('EventBridge', () => {
   let connectionMock: Connection | undefined;

@@ -1,5 +1,4 @@
-import { createEventBridge, networkPlugin } from '../main';
-import { createConnectionProvider } from '../main/createConnectionProvider';
+import { createConnectionProvider, createEventBridge, networkPlugin } from '../main';
 
 describe('networkPlugin', () => {
   test('returns undefined if network status is unknown', () => {
