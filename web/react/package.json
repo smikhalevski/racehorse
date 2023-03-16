@@ -7,16 +7,16 @@
   "types": "./lib/index.d.ts",
   "typedoc": {
     "entryPoint": "./src/main/index.ts",
-    "displayName": "React integration"
+    "readmeFile": "none"
   },
   "sideEffects": false,
   "files": [
     "lib"
   ],
   "scripts": {
-    "build": "rollup --config --configPlugin typescript",
-    "clean": "rimraf lib",
-    "test": "jest"
+    "build": "rollup --config ../../rollup.config.mjs",
+    "clean": "rimraf ./lib",
+    "test": "jest --config ../../jest.config.js"
   },
   "repository": {
     "type": "git",
@@ -33,7 +33,11 @@
   },
   "homepage": "https://github.com/smikhalevski/racehorse#readme",
   "peerDependencies": {
+    "racehorse": "^0.0.1",
     "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
     "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^13.4.0"
   }
 }

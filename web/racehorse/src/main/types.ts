@@ -1,7 +1,7 @@
 import { PubSub } from 'parallel-universe';
 
 /**
- * The event marshalled through the {@linkcode EventBridge}.
+ * The event transported through the {@linkcode EventBridge}.
  */
 export interface Event {
   /**
@@ -27,16 +27,16 @@ export interface ResponseEvent extends Event {
 
 /**
  * The connection is added to the page as a
- * {@linkcode https://developer.android.com/reference/android/webkit/JavascriptInterface JavascriptInterface}.
+ * [`JavascriptInterface`](https://developer.android.com/reference/android/webkit/JavascriptInterface).
  */
 export interface Connection {
   /**
-   * The total number of requests marshalled through this connection.
+   * The total number of requests transported through this connection. Used as a request ID.
    */
   requestCount?: number;
 
   /**
-   * The pub-sub channel that Android uses to push responses to the web.
+   * The pub-sub to which Android publishes envelopes for the web to consume.
    */
   inboxPubSub?: PubSub<[requestId: number, event: Event]>;
 
@@ -44,42 +44,26 @@ export interface Connection {
    * Delivers a serialized event to Android.
    *
    * @param requestId The unique request ID.
-   * @param eventJson The serialized event.
+   * @param eventData The serialized event.
    */
-  post(requestId: number, eventJson: string): void;
+  post(requestId: number, eventData: string): void;
 }
 
 /**
- * Returns a connection object.
+ * Returns a connection object or promise that resolves when a connection is available.
  */
 export type ConnectionProvider = () => Connection | Promise<Connection>;
-
-declare global {
-  interface Window {
-    /**
-     * The connection object injected by Android.
-     */
-    racehorseConnection?: Connection;
-  }
-}
-
-/**
- * The plugin that enhances the event bridge.
- *
- * @param eventBridge The event bridge that must be enhanced.
- * @param listener The callback that plugin should use to notify the listeners that were attached to the event bridge
- * via {@linkcode EventBridge.subscribe}
- */
-export type Plugin<M extends object> = (eventBridge: EventBridge & Partial<M>, listener: () => void) => void;
 
 /**
  * The event bridge that transports events between Android and web.
  */
 export interface EventBridge {
   /**
-   * The promise that is resolved when a connection becomes available.
+   * Returns the promise that is resolved when a connection becomes available. You don't have to call this method
+   * manually, since the connection would be established automatically as soon as the first request or subscription is
+   * posted. Await the returned promise before the app starts, to ensure the connection availability.
    */
-  waitForConnection(): Promise<void>;
+  connect(): Promise<void>;
 
   /**
    * Sends an event through a connection to Android and returns a promise that is resolved when a response with a
@@ -106,18 +90,10 @@ export interface EventBridge {
    * @param listener The listener to subscribe.
    * @returns The callback that unsubscribes the listener.
    */
-  watchForAlerts(
+  subscribe(
     /**
      * @param event The event pushed to the connection inbox.
      */
     listener: (event: Event) => void
   ): () => void;
-
-  /**
-   * Subscribes listener to changes of the event bridge object.
-   *
-   * @param listener The listener to subscribe.
-   * @returns The callback that unsubscribes the listener.
-   */
-  subscribe(listener: () => void): () => void;
 }

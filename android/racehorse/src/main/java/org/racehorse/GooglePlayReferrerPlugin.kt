@@ -21,7 +21,7 @@ class GooglePlayReferrerDetectedAlertEvent(val referrer: String) : AlertEvent
 class GooglePlayReferrerPlugin : Plugin(), EventBusCapability {
 
     companion object {
-        const val REFERRER_KEY = "referrer"
+        const val GOOGLE_PLAY_REFERRER_KEY = "googlePlayReferrer"
     }
 
     private val preferences
@@ -38,7 +38,7 @@ class GooglePlayReferrerPlugin : Plugin(), EventBusCapability {
                 if (responseCode == InstallReferrerClient.InstallReferrerResponse.OK) {
                     val referrer = referrerClient.installReferrer.installReferrer
 
-                    preferences.edit().putString(REFERRER_KEY, referrer).apply()
+                    preferences.edit().putString(GOOGLE_PLAY_REFERRER_KEY, referrer).apply()
                     post(GooglePlayReferrerDetectedAlertEvent(referrer))
                 }
             }
@@ -49,6 +49,6 @@ class GooglePlayReferrerPlugin : Plugin(), EventBusCapability {
 
     @Subscribe
     fun onGetGooglePlayReferrerRequestEvent(event: GetGooglePlayReferrerRequestEvent) {
-        postToChain(event, GetGooglePlayReferrerResponseEvent(preferences.getString(REFERRER_KEY, null)))
+        postToChain(event, GetGooglePlayReferrerResponseEvent(preferences.getString(GOOGLE_PLAY_REFERRER_KEY, null)))
     }
 }

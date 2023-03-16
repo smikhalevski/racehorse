@@ -1,9 +1,8 @@
 import React from 'react';
-import { networkPlugin } from 'racehorse';
-import { useEventBridge } from '@racehorse/react';
+import { useOnline } from '@racehorse/react';
 
 export function UseOnlineExample() {
-  const { online } = useEventBridge(networkPlugin);
+  const online = useOnline();
 
   return (
     <>

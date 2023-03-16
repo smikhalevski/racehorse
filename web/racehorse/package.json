@@ -7,16 +7,16 @@
   "types": "./lib/index.d.ts",
   "typedoc": {
     "entryPoint": "./src/main/index.ts",
-    "displayName": "Racehorse"
+    "readmeFile": "none"
   },
   "sideEffects": false,
   "files": [
     "lib"
   ],
   "scripts": {
-    "build": "rollup --config --configPlugin typescript",
-    "clean": "rimraf lib",
-    "test": "jest"
+    "build": "rollup --config ../../rollup.config.mjs",
+    "clean": "rimraf ./lib",
+    "test": "jest --config ../../jest.config.js"
   },
   "repository": {
     "type": "git",

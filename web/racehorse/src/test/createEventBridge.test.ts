@@ -1,7 +1,6 @@
-import { Connection, ConnectionProvider, createEventBridge, Plugin } from '../main';
-import { createConnectionProvider } from '../main/createConnectionProvider';
+import { Connection, ConnectionProvider, createConnectionProvider, createEventBridge } from '../main';
 
-describe('EventBridge', () => {
+describe('createEventBridge', () => {
   let connectionMock: Connection | undefined;
   let provideConnection: () => void;
   let connectionProviderMock: ConnectionProvider;
@@ -17,18 +16,18 @@ describe('EventBridge', () => {
       };
     };
 
-    connectionProviderMock = jest.fn(createConnectionProvider(() => connectionMock, 0, Infinity));
+    connectionProviderMock = jest.fn(createConnectionProvider(() => connectionMock));
   });
 
   test('does not call provider during initialization', () => {
-    createEventBridge(undefined, connectionProviderMock);
+    createEventBridge(connectionProviderMock);
 
     expect(connectionProviderMock).not.toHaveBeenCalled();
   });
 
   test('sends async request if connection is available', async () => {
     provideConnection();
-    const eventBridge = createEventBridge(undefined, connectionProviderMock);
+    const eventBridge = createEventBridge(connectionProviderMock);
 
     await expect(eventBridge.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb', ok: true });
 
@@ -37,7 +36,7 @@ describe('EventBridge', () => {
   });
 
   test('sends async request if connection is deferred', async () => {
-    const eventBridge = createEventBridge(undefined, connectionProviderMock);
+    const eventBridge = createEventBridge(connectionProviderMock);
 
     provideConnection();
 
@@ -49,7 +48,7 @@ describe('EventBridge', () => {
 
   test('sends sync request if connection is available', () => {
     provideConnection();
-    const eventBridge = createEventBridge(undefined, connectionProviderMock);
+    const eventBridge = createEventBridge(connectionProviderMock);
 
     expect(eventBridge.requestSync({ type: 'aaa' })).toEqual({ type: 'bbb', ok: true });
 
@@ -58,7 +57,7 @@ describe('EventBridge', () => {
   });
 
   test('does not send sync request if connection is deferred', () => {
-    const eventBridge = createEventBridge(undefined, connectionProviderMock);
+    const eventBridge = createEventBridge(connectionProviderMock);
 
     expect(eventBridge.requestSync({ type: 'aaa' })).toBe(undefined);
 
@@ -76,7 +75,7 @@ describe('EventBridge', () => {
       });
     });
 
-    const eventBridge = createEventBridge(undefined, connectionProviderMock);
+    const eventBridge = createEventBridge(connectionProviderMock);
 
     expect(eventBridge.requestSync({ type: 'aaa' })).toBe(undefined);
 
@@ -88,9 +87,9 @@ describe('EventBridge', () => {
     provideConnection();
 
     const listenerMock = jest.fn();
-    const eventBridge = createEventBridge(undefined, connectionProviderMock);
+    const eventBridge = createEventBridge(connectionProviderMock);
 
-    eventBridge.watchForAlerts(listenerMock);
+    eventBridge.subscribe(listenerMock);
 
     connectionMock!.inboxPubSub!.publish([-1, { type: 'aaa' }]);
 
@@ -100,13 +99,13 @@ describe('EventBridge', () => {
 
   test('subscribes a listener to an inbox pubsub if connection is deferred', async () => {
     const listenerMock = jest.fn();
-    const eventBridge = createEventBridge(undefined, connectionProviderMock);
+    const eventBridge = createEventBridge(connectionProviderMock);
 
-    eventBridge.watchForAlerts(listenerMock);
+    eventBridge.subscribe(listenerMock);
 
     provideConnection();
 
-    await eventBridge.waitForConnection();
+    await eventBridge.connect();
 
     connectionMock!.inboxPubSub!.publish([-1, { type: 'aaa' }]);
 
@@ -118,9 +117,9 @@ describe('EventBridge', () => {
     provideConnection();
 
     const listenerMock = jest.fn();
-    const eventBridge = createEventBridge(undefined, connectionProviderMock);
+    const eventBridge = createEventBridge(connectionProviderMock);
 
-    eventBridge.watchForAlerts(listenerMock)();
+    eventBridge.subscribe(listenerMock)();
 
     connectionMock!.inboxPubSub!.publish([-1, { type: 'aaa' }]);
 
@@ -129,26 +128,28 @@ describe('EventBridge', () => {
 
   test('unsubscribes a listener from an inbox pubsub if connection is deferred', async () => {
     const listenerMock = jest.fn();
-    const eventBridge = createEventBridge(undefined, connectionProviderMock);
+    const eventBridge = createEventBridge(connectionProviderMock);
 
-    eventBridge.watchForAlerts(listenerMock)();
+    eventBridge.subscribe(listenerMock)();
 
     provideConnection();
 
-    await eventBridge.waitForConnection();
+    await eventBridge.connect();
 
-    expect(connectionMock!.inboxPubSub).toBe(undefined);
+    connectionMock!.inboxPubSub!.publish([-1, { type: 'aaa' }]);
+
+    expect(listenerMock).not.toHaveBeenCalled();
   });
 
   test('unsubscribes a listener from an inbox pubsub if connection was deferred', async () => {
     const listenerMock = jest.fn();
-    const eventBridge = createEventBridge(undefined, connectionProviderMock);
+    const eventBridge = createEventBridge(connectionProviderMock);
 
-    const unsubscribe = eventBridge.watchForAlerts(listenerMock);
+    const unsubscribe = eventBridge.subscribe(listenerMock);
 
     provideConnection();
 
-    await eventBridge.waitForConnection();
+    await eventBridge.connect();
 
     connectionMock!.inboxPubSub!.publish([-1, { type: 'aaa' }]);
 
@@ -172,70 +173,23 @@ describe('EventBridge', () => {
         connectionMock!.inboxPubSub!.publish([1, { type: 'bbb', ok: true }]);
       });
 
-    const eventBridge1 = createEventBridge(undefined, connectionProviderMock);
+    const eventBridge1 = createEventBridge(connectionProviderMock);
 
     await expect(eventBridge1.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb', ok: true });
 
-    const eventBridge2 = createEventBridge(undefined, connectionProviderMock);
+    const eventBridge2 = createEventBridge(connectionProviderMock);
 
     await expect(eventBridge2.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb', ok: true });
   });
 
-  test('applies a plugin', () => {
-    const pluginMock = jest.fn();
-
-    const eventBridge = createEventBridge(pluginMock, connectionProviderMock);
-
-    expect(pluginMock).toHaveBeenCalledTimes(1);
-    expect(pluginMock).toHaveBeenNthCalledWith(1, eventBridge, expect.any(Function));
-  });
-
-  test('plugin notifies bridge listeners', () => {
-    provideConnection();
-
-    const listenerMock = jest.fn();
-    const plugin: Plugin<object> = (eventBridge, listener) => {
-      eventBridge.watchForAlerts(() => {
-        listener();
-      });
-    };
-
-    const eventBridge = createEventBridge(plugin, connectionProviderMock);
-
-    eventBridge.subscribe(listenerMock);
-
-    connectionMock!.inboxPubSub!.publish([-1, { type: 'aaa' }]);
-
-    expect(listenerMock).toHaveBeenCalledTimes(1);
-  });
-
-  test('plugin does not notify unsubscribed bridge listeners', () => {
-    provideConnection();
-
-    const listenerMock = jest.fn();
-    const plugin: Plugin<object> = (eventBridge, listener) => {
-      eventBridge.watchForAlerts(() => {
-        listener();
-      });
-    };
-
-    const eventBridge = createEventBridge(plugin, connectionProviderMock);
-
-    eventBridge.subscribe(listenerMock)();
-
-    connectionMock!.inboxPubSub!.publish([-1, { type: 'aaa' }]);
-
-    expect(listenerMock).not.toHaveBeenCalled();
-  });
-
   test('waits for connection to be available', async () => {
-    const eventBridge = createEventBridge(undefined, connectionProviderMock);
+    const eventBridge = createEventBridge(connectionProviderMock);
 
     expect(eventBridge.requestSync({ type: 'aaa' })).toBe(undefined);
 
     provideConnection();
 
-    await eventBridge.waitForConnection();
+    await eventBridge.connect();
 
     expect(eventBridge.requestSync({ type: 'aaa' })).toEqual({ ok: true, type: 'bbb' });
 

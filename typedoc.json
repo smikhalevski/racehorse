@@ -1,11 +1,12 @@
 {
   "name": "Racehorse",
-  "out": "./docs",
-  "includeVersion": true,
-  "cleanOutputDir": true,
   "entryPoints": [
-    "./web/racehorse",
-    "./web/react"
+    "./web/*"
   ],
-  "entryPointStrategy": "packages"
+  "excludePrivate": true,
+  "excludeExternals": true,
+  "excludeInternal": true,
+  "entryPointStrategy": "packages",
+  "disableSources": true,
+  "readme": "none"
 }

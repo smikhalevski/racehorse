@@ -1,109 +1,108 @@
 import { PubSub } from 'parallel-universe';
-import { Connection, Event, EventBridge, Plugin, ResponseEvent } from './shared-types';
+import { Connection, Event, EventBridge, ResponseEvent } from './types';
 import { createConnectionProvider } from './createConnectionProvider';
-import { noop } from './utils';
 
-const racehorseConnectionProvider = createConnectionProvider();
+interface Window {
+  /**
+   * The connection object injected by Android.
+   */
+  racehorseConnection?: Connection;
+}
 
-/**
- * Creates an event bridge that transports events from and to Android through the connection.
- */
-export function createEventBridge(
-  plugin?: undefined,
-  connectionProvider?: () => Connection | Promise<Connection>
-): EventBridge;
+const racehorseConnectionProvider = createConnectionProvider(() => (window as any).racehorseConnection);
 
 /**
  * Creates an event bridge that transports events from and to Android through the connection.
  *
- * @param plugin The plugin that enhances the event bridge with additional properties and methods.
- * @param connectionProvider The provider that returns the connection.
+ * @param connectionProvider The provider that returns the connection. Consider using
+ * {@linkcode createConnectionProvider}. By default, the provider of `window.racehorseConnection` is used.
  */
-export function createEventBridge<M extends object>(
-  plugin: Plugin<M>,
-  connectionProvider?: () => Connection | Promise<Connection>
-): EventBridge & M;
+export function createEventBridge(connectionProvider = racehorseConnectionProvider): EventBridge {
+  const alertPubSub = new PubSub<Event>();
 
-export function createEventBridge(
-  plugin?: Plugin<object>,
-  connectionProvider = racehorseConnectionProvider
-): EventBridge {
-  const pubSub = new PubSub();
+  let connection: Required<Connection> | undefined;
+  let connectionPromise: Promise<void> | undefined;
 
-  const eventBridge: EventBridge = {
-    waitForConnection() {
-      return Promise.resolve(connectionProvider()).then(noop);
+  /**
+   * Ensures that the connection is established or being established.
+   */
+  const ensureConnection = () => {
+    if (connection || connectionPromise) {
+      return;
+    }
+
+    const conn = connectionProvider();
+
+    if (conn instanceof Promise) {
+      connectionPromise = conn.then(conn => {
+        prepareConnection(conn, alertPubSub);
+
+        connection = conn;
+      });
+    } else {
+      prepareConnection(conn, alertPubSub);
+
+      connection = conn;
+      connectionPromise = Promise.resolve();
+    }
+  };
+
+  return {
+    connect() {
+      ensureConnection();
+      return connectionPromise!;
     },
 
     request(event) {
-      const eventJson = JSON.stringify(event);
+      ensureConnection();
 
       return new Promise(resolve => {
-        Promise.resolve(connectionProvider()).then(conn => {
-          postToConnection(conn, eventJson, resolve);
+        const eventData = JSON.stringify(event);
+
+        connectionPromise!.then(() => {
+          postToConnection(connection!, eventData, resolve);
         });
       });
     },
 
     requestSync(event) {
-      const connection = connectionProvider();
+      ensureConnection();
 
       let responseEvent: ResponseEvent | undefined;
-
-      if (!(connection instanceof Promise)) {
+      if (connection) {
         postToConnection(connection, JSON.stringify(event), event => {
           responseEvent = event;
-        });
+        })();
       }
       return responseEvent;
     },
 
-    watchForAlerts(listener) {
-      const connection = connectionProvider();
-
-      const alertListener = (envelope: [requestId: number, event: Event]) => {
-        if (envelope[0] === -1) {
-          listener(envelope[1]);
-        }
-      };
-
-      if (!(connection instanceof Promise)) {
-        prepareConnection(connection);
-        return connection.inboxPubSub.subscribe(alertListener);
-      }
-
-      let unsubscribe: (() => void) | undefined;
-      let unsubscribed = false;
-
-      connection.then(conn => {
-        if (!unsubscribed) {
-          prepareConnection(conn);
-          unsubscribe = conn.inboxPubSub.subscribe(alertListener);
-        }
-      });
-
-      return () => {
-        unsubscribed = true;
-        unsubscribe?.();
-      };
+    subscribe(listener) {
+      ensureConnection();
+      return alertPubSub.subscribe(listener);
     },
-
-    subscribe: pubSub.subscribe.bind(pubSub),
   };
-
-  plugin?.(eventBridge, pubSub.publish.bind(pubSub));
-
-  return eventBridge;
 }
 
-function prepareConnection(connection: Connection): asserts connection is Required<Connection> {
+function prepareConnection(
+  connection: Connection,
+  alertPubSub: PubSub<Event>
+): asserts connection is Required<Connection> {
   connection.requestCount ||= 0;
   connection.inboxPubSub ||= new PubSub();
+
+  connection.inboxPubSub.subscribe(envelope => {
+    if (envelope[0] === -1) {
+      alertPubSub.publish(envelope[1]);
+    }
+  });
 }
 
-function postToConnection(connection: Connection, eventJson: string, callback: (event: ResponseEvent) => void): void {
-  prepareConnection(connection);
-
+function postToConnection(
+  connection: Required<Connection>,
+  eventData: string,
+  callback: (event: ResponseEvent) => void
+): () => void {
   const requestId = connection.requestCount++;
 
   const unsubscribe = connection.inboxPubSub.subscribe(envelope => {
@@ -113,5 +112,7 @@ function postToConnection(connection: Connection, eventJson: string, callback: (
     }
   });
 
-  connection.post(requestId, eventJson);
+  connection.post(requestId, eventData);
+
+  return unsubscribe;
 }

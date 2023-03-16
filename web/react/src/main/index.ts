@@ -1,1 +1,1 @@
-export * from './useEventBridge';
+export * from './useOnline';

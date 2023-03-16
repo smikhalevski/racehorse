@@ -11,9 +11,9 @@ import org.greenrobot.eventbus.EventBus
 internal class Connection(private val gson: Gson, private val eventBus: EventBus) {
 
     @JavascriptInterface
-    fun post(requestId: Int, eventJson: String) {
+    fun post(requestId: Int, eventData: String) {
         val event = try {
-            val jsonObject = gson.fromJson(eventJson, JsonObject::class.java)
+            val jsonObject = gson.fromJson(eventData, JsonObject::class.java)
             val eventClass = Class.forName(jsonObject["type"].asString)
 
             jsonObject.remove("requestId")
