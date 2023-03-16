@@ -6,42 +6,42 @@ package org.racehorse.webview
 interface InboxEvent
 
 /**
- * Event pushed to web that is provided to web subscribers.
+ * An event published to web that is provided to web subscribers.
  */
 interface AlertEvent
 
 /**
  * An event that is the part of request-response chain of events.
  */
-interface ChainableEvent {
+open class ChainableEvent {
+
     /**
-     * The original request ID.
+     * The ID of the original request that started the chain of events.
      */
-    var requestId: Int
-}
+    @Transient
+    var requestId: Int = -1
+        private set
 
-fun <T : ChainableEvent> T.setRequestId(requestId: Int): T {
-    this.requestId = requestId
-    return this
-}
+    fun setRequestId(requestId: Int): ChainableEvent {
+        require(requestId >= 0) { "Unexpected request ID" }
 
-/**
- * The event that participates in request-response chain of events initiated from the web.
- */
-open class BasicChainableEvent(override var requestId: Int) : ChainableEvent
+        this.requestId = requestId
+        return this
+    }
+}
 
 /**
  * An event in an event chain that originated from the web request. The chain expects a [ResponseEvent] to be posted to
  * fulfill the pending promise on the web side.
  */
-open class RequestEvent : BasicChainableEvent(-2), InboxEvent
+open class RequestEvent : ChainableEvent(), InboxEvent
 
 /**
- * An event that is pushed to web denoting an end of a request.
+ * An event that is published to the web, denoting an end of a request.
  *
  * @param ok If `true` then the request promise is fulfilled, otherwise it is rejected.
  */
-open class ResponseEvent(val ok: Boolean = true) : BasicChainableEvent(-2)
+open class ResponseEvent(val ok: Boolean = true) : ChainableEvent()
 
 /**
  * Response with no payload.

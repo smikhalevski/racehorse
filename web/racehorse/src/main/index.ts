@@ -1,6 +1,5 @@
 export * from './createActionsManager';
-export * from './createConnectionProvider';
-export * from './createDeviceManager';
+export * from './createConfigurationManager';
 export * from './createEventBridge';
 export * from './createGooglePlayReferrerManager';
 export * from './createNetworkManager';

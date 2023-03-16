@@ -22,12 +22,12 @@ export function createGooglePlayReferrerManager(eventBridge: EventBridge): Googl
           }
         });
 
-        const referrer = eventBridge.requestSync({ type: 'org.racehorse.GetGooglePlayReferrerRequestEvent' })?.referrer;
-
-        if (referrer) {
-          resolve(referrer);
-          unsubscribe();
-        }
+        eventBridge.request({ type: 'org.racehorse.GetGooglePlayReferrerRequestEvent' }).then(event => {
+          if (event.referrer) {
+            resolve(event.referrer);
+            unsubscribe();
+          }
+        });
       }));
     },
   };

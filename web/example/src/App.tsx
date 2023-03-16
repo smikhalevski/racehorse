@@ -2,7 +2,7 @@ import { CookieExample } from './examples/CookieExample';
 import { FileInputExample } from './examples/FileInputExample';
 import { GeolocationExample } from './examples/GeolocationExample';
 import { LocalStorageExample } from './examples/LocalStorageExample';
-import { DeviceManagerExample } from './examples/DeviceManagerExample';
+import { ConfigurationManagerExample } from './examples/ConfigurationManagerExample';
 import { ActionsManagerExample } from './examples/ActionsManagerExample';
 import { UseOnlineExample } from './examples/UseOnlineExample';
 import { PermissionsManagerExample } from './examples/PermissionsManagerExample';
@@ -18,7 +18,7 @@ export function App() {
       <FileInputExample />
       <GeolocationExample />
       <LocalStorageExample />
-      <DeviceManagerExample />
+      <ConfigurationManagerExample />
       <ActionsManagerExample />
       <UseOnlineExample />
       <PermissionsManagerExample />

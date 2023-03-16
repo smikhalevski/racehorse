@@ -29,7 +29,10 @@ export function createNetworkManager(eventBridge: EventBridge): NetworkManager {
       return;
     }
 
-    online = eventBridge.requestSync({ type: 'org.racehorse.IsOnlineRequestEvent' })?.online;
+    eventBridge.request({ type: 'org.racehorse.IsOnlineRequestEvent' }).then(event => {
+      online = event.online;
+      pubSub.publish();
+    });
 
     unsubscribeMonitor = eventBridge.subscribe(event => {
       if (event.type === 'org.racehorse.OnlineStatusChangedAlertEvent') {
@@ -49,6 +52,7 @@ export function createNetworkManager(eventBridge: EventBridge): NetworkManager {
   };
 
   Object.defineProperty(manager, 'online', {
+    enumerable: true,
     get() {
       ensureMonitor();
       return online;

@@ -15,7 +15,7 @@ NetworkManagerContext.displayName = 'NetworkManagerContext';
 export function useOnline(): boolean | undefined {
   const manager = useContext(NetworkManagerContext);
 
-  const [online, setOnline] = useState(() => manager.online);
+  const [online, setOnline] = useState<boolean>();
 
   useEffect(() => manager.subscribe(() => setOnline(manager.online)), [manager]);
 

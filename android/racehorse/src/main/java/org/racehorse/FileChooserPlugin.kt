@@ -18,6 +18,9 @@ import java.io.File
 /**
  * The plugin allows user to choose a file on the device.
  *
+ * If [cacheDir] or [authority] are omitted, camera becomes unavailable since [FileChooserPlugin] cannot save temporary
+ * files with captured images.
+ *
  * @param activity The activity that starts intents.
  * @param cacheDir The directory to store files captured by camera activity.
  * @param authority The [authority of the content provider](https://developer.android.com/guide/topics/providers/content-provider-basics#ContentURIs)

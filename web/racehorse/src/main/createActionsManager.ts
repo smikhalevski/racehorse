@@ -7,7 +7,7 @@ export interface ActionsManager {
    * @param url The URL to open.
    * @returns `true` if external application was opened, or `false` otherwise.
    */
-  openUrl(url: string): boolean;
+  openUrl(url: string): Promise<boolean>;
 }
 
 /**
@@ -18,7 +18,7 @@ export interface ActionsManager {
 export function createActionsManager(eventBridge: EventBridge): ActionsManager {
   return {
     openUrl(url) {
-      return eventBridge.requestSync({ type: 'org.racehorse.OpenUrlRequestEvent', url })?.opened || false;
+      return eventBridge.request({ type: 'org.racehorse.OpenUrlRequestEvent', url }).then(event => event.opened);
     },
   };
 }

@@ -18,6 +18,10 @@ class AppWebView(
     private val gson: Gson = Gson()
 ) : WebView(context) {
 
+    companion object {
+        const val CONNECTION_KEY = "racehorseConnection"
+    }
+
     private val plugins = ArrayList<Plugin>()
     private val cookieManager = CookieManager.getInstance()
 
@@ -30,7 +34,7 @@ class AppWebView(
         settings.domStorageEnabled = true
         settings.setGeolocationEnabled(true)
 
-        addJavascriptInterface(Connection(gson, eventBus), "racehorseConnection")
+        addJavascriptInterface(Connection(gson, eventBus), CONNECTION_KEY)
 
         eventBus.register(this)
     }
@@ -78,28 +82,29 @@ class AppWebView(
     }
 
     /**
-     * Pushes the event to the web.
+     * Publishes the event to the web.
      */
-    private fun pushEvent(requestId: Int, event: Any) {
+    private fun publishEvent(requestId: Int, event: Any) {
         val json = gson.toJson(gson.toJsonTree(event).asJsonObject.also {
-            it.remove("requestId")
             it.addProperty("type", event::class.java.name)
         })
 
         evaluateJavascript(
-            "(window.racehorseConnection.inbox||(window.racehorseConnection.inbox=[])).push([$requestId,$json])",
+            "(function(conn){conn && conn.inbox && conn.inbox.publish([$requestId, $json])})(window.$CONNECTION_KEY)",
             null
         )
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onResponseEvent(event: ResponseEvent) {
-        pushEvent(event.requestId, event)
+        require(event.requestId >= 0) { "Expected a request ID to be set for a response event" }
+
+        publishEvent(event.requestId, event)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onAlertEvent(event: AlertEvent) {
-        pushEvent(-1, event)
+        publishEvent(-1, event)
     }
 
     @Subscribe

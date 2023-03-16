@@ -1,11 +1,11 @@
 import { pickLocale } from 'locale-matcher';
 import { EventBridge } from './types';
 
-export interface DeviceManager {
+export interface ConfigurationManager {
   /**
    * Returns the array of preferred locales.
    */
-  getPreferredLocales(): string[];
+  getPreferredLocales(): Promise<string[]>;
 
   /**
    * Returns a locale from `supportedLocales` that best matches one of preferred locales, or returns a `defaultLocale`.
@@ -13,7 +13,7 @@ export interface DeviceManager {
    * @param supportedLocales The list of locales that your application supports.
    * @param defaultLocale The default locale that is returned if there's no matching locale among preferred.
    */
-  pickLocale(supportedLocales: string[], defaultLocale: string): string;
+  pickLocale(supportedLocales: string[], defaultLocale: string): Promise<string>;
 }
 
 /**
@@ -21,15 +21,15 @@ export interface DeviceManager {
  *
  * @param eventBridge The underlying event bridge.
  */
-export function createDeviceManager(eventBridge: EventBridge): DeviceManager {
+export function createConfigurationManager(eventBridge: EventBridge): ConfigurationManager {
   const getPreferredLocales = () =>
-    eventBridge.requestSync({ type: 'org.racehorse.GetPreferredLocalesRequestEvent' })?.locales || [];
+    eventBridge.request({ type: 'org.racehorse.GetPreferredLocalesRequestEvent' }).then(event => event.locales);
 
   return {
     getPreferredLocales,
 
     pickLocale(supportedLocales, defaultLocale) {
-      return pickLocale(getPreferredLocales(), supportedLocales, defaultLocale);
+      return getPreferredLocales().then(locales => pickLocale(locales, supportedLocales, defaultLocale));
     },
   };
 }

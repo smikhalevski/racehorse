@@ -1,7 +1,7 @@
 import { createEventBridge } from './createEventBridge';
 import { createNetworkManager } from './createNetworkManager';
 import { createActionsManager } from './createActionsManager';
-import { createDeviceManager } from './createDeviceManager';
+import { createConfigurationManager } from './createConfigurationManager';
 import { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager';
 import { createPermissionsManager } from './createPermissionsManager';
 
@@ -16,9 +16,9 @@ export const eventBridge = createEventBridge();
 export const actionsManager = createActionsManager(eventBridge);
 
 /**
- * The default {@linkcode DeviceManager}.
+ * The default {@linkcode ConfigurationManager}.
  */
-export const deviceManager = createDeviceManager(eventBridge);
+export const configurationManager = createConfigurationManager(eventBridge);
 
 /**
  * The default {@linkcode GooglePlayReferrerManager}.

@@ -1,118 +1,64 @@
-import { PubSub } from 'parallel-universe';
+import { PubSub, untilTruthy } from 'parallel-universe';
 import { Connection, Event, EventBridge, ResponseEvent } from './types';
-import { createConnectionProvider } from './createConnectionProvider';
 
-interface Window {
-  /**
-   * The connection object injected by Android.
-   */
-  racehorseConnection?: Connection;
+declare global {
+  interface Window {
+    /**
+     * The connection object injected by Android.
+     */
+    racehorseConnection?: Connection;
+  }
 }
-
-const racehorseConnectionProvider = createConnectionProvider(() => (window as any).racehorseConnection);
 
 /**
  * Creates an event bridge that transports events from and to Android through the connection.
  *
- * @param connectionProvider The provider that returns the connection. Consider using
- * {@linkcode createConnectionProvider}. By default, the provider of `window.racehorseConnection` is used.
+ * Exponentially increases delay between `connectionProvider` calls if `undefined` is returned.
+ *
+ * @param connectionProvider The provider that returns the connection. By default, the provider of
+ * `window.racehorseConnection` is used.
  */
-export function createEventBridge(connectionProvider = racehorseConnectionProvider): EventBridge {
-  const alertPubSub = new PubSub<Event>();
+export function createEventBridge(connectionProvider = () => window.racehorseConnection): EventBridge {
+  const alertsPubSub = new PubSub<Event>();
 
-  let connection: Required<Connection> | undefined;
-  let connectionPromise: Promise<void> | undefined;
+  let connectionPromise: Promise<Required<Connection>> | undefined;
+  let tryCount = 0;
 
-  /**
-   * Ensures that the connection is established or being established.
-   */
-  const ensureConnection = () => {
-    if (connection || connectionPromise) {
-      return;
-    }
-
-    const conn = connectionProvider();
-
-    if (conn instanceof Promise) {
-      connectionPromise = conn.then(conn => {
-        prepareConnection(conn, alertPubSub);
-
-        connection = conn;
+  const connect = (): Promise<Required<Connection>> =>
+    (connectionPromise ||= untilTruthy(connectionProvider, () => 2 ** tryCount++ * 100).then(connection => {
+      (connection.inbox ||= new PubSub()).subscribe(envelope => {
+        if (envelope[0] === -1) {
+          alertsPubSub.publish(envelope[1]);
+        }
       });
-    } else {
-      prepareConnection(conn, alertPubSub);
 
-      connection = conn;
-      connectionPromise = Promise.resolve();
-    }
-  };
+      return connection as Required<Connection>;
+    }));
 
   return {
-    connect() {
-      ensureConnection();
-      return connectionPromise!;
-    },
+    connect,
 
     request(event) {
-      ensureConnection();
+      const eventData = JSON.stringify(event);
 
-      return new Promise(resolve => {
-        const eventData = JSON.stringify(event);
+      return connect().then(
+        connection =>
+          new Promise(resolve => {
+            const requestId = connection.post(eventData);
 
-        connectionPromise!.then(() => {
-          postToConnection(connection!, eventData, resolve);
-        });
-      });
-    },
-
-    requestSync(event) {
-      ensureConnection();
-
-      let responseEvent: ResponseEvent | undefined;
-      if (connection) {
-        postToConnection(connection, JSON.stringify(event), event => {
-          responseEvent = event;
-        })();
-      }
-      return responseEvent;
+            const unsubscribe = connection.inbox.subscribe(envelope => {
+              if (envelope[0] === requestId) {
+                unsubscribe();
+                resolve(envelope[1] as ResponseEvent);
+              }
+            });
+          })
+      );
     },
 
     subscribe(listener) {
-      ensureConnection();
-      return alertPubSub.subscribe(listener);
+      void connect();
+      return alertsPubSub.subscribe(listener);
     },
   };
-}
-
-function prepareConnection(
-  connection: Connection,
-  alertPubSub: PubSub<Event>
-): asserts connection is Required<Connection> {
-  connection.requestCount ||= 0;
-  connection.inboxPubSub ||= new PubSub();
-
-  connection.inboxPubSub.subscribe(envelope => {
-    if (envelope[0] === -1) {
-      alertPubSub.publish(envelope[1]);
-    }
-  });
-}
-
-function postToConnection(
-  connection: Required<Connection>,
-  eventData: string,
-  callback: (event: ResponseEvent) => void
-): () => void {
-  const requestId = connection.requestCount++;
-
-  const unsubscribe = connection.inboxPubSub.subscribe(envelope => {
-    if (envelope[0] === requestId) {
-      unsubscribe();
-      callback(envelope[1] as ResponseEvent);
-    }
-  });
-
-  connection.post(requestId, eventData);
-
-  return unsubscribe;
 }

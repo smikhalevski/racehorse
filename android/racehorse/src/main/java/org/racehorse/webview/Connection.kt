@@ -4,14 +4,19 @@ import android.webkit.JavascriptInterface
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.greenrobot.eventbus.EventBus
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * The connection injected to the web page.
  */
 internal class Connection(private val gson: Gson, private val eventBus: EventBus) {
 
+    private var requestId = AtomicInteger()
+
     @JavascriptInterface
-    fun post(requestId: Int, eventData: String) {
+    fun post(eventData: String): Int {
+        val requestId = this.requestId.getAndIncrement()
+
         val event = try {
             val jsonObject = gson.fromJson(eventData, JsonObject::class.java)
             val eventClass = Class.forName(jsonObject["type"].asString)
@@ -19,21 +24,21 @@ internal class Connection(private val gson: Gson, private val eventBus: EventBus
             jsonObject.remove("requestId")
             jsonObject.remove("type")
 
-            if (!InboxEvent::class.java.isAssignableFrom(eventClass)) {
-                throw IllegalArgumentException("Expected an event class but found $eventClass")
-            }
+            require(InboxEvent::class.java.isAssignableFrom(eventClass)) { "Not an event: $eventClass" }
 
             gson.fromJson(jsonObject, eventClass)
         } catch (throwable: Throwable) {
             eventBus.post(ExceptionResponseEvent(throwable).setRequestId(requestId))
-            return
+            return requestId
         }
+
         if (event is ChainableEvent) {
             eventBus.post(event.setRequestId(requestId))
-            return
+            return requestId
         }
 
         eventBus.post(event)
         eventBus.post(VoidResponseEvent().setRequestId(requestId))
+        return requestId
     }
 }

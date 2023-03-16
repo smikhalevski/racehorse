@@ -10,7 +10,7 @@ export interface PermissionsManager {
    * @param permission A permission your app wants to request.
    * @returns Whether you should show permission rationale UI.
    */
-  shouldShowRequestPermissionRationale(permission: string): boolean;
+  shouldShowRequestPermissionRationale(permission: string): Promise<boolean>;
 
   /**
    * Gets whether you should show UI with rationale before requesting a permission.
@@ -18,21 +18,21 @@ export interface PermissionsManager {
    * @param permissions An array of permission your app wants to request.
    * @returns Mapping from permission name to a boolean indicating whether you should show permission rationale UI.
    */
-  shouldShowRequestPermissionRationale(permissions: string[]): { [permission: string]: boolean };
+  shouldShowRequestPermissionRationale(permissions: string[]): Promise<{ [permission: string]: boolean }>;
 
   /**
    * Returns `true` if you have been granted a particular permission, or `false` otherwise.
    *
    * @param permission The name of the permission being checked.
    */
-  isPermissionGranted(permission: string): boolean;
+  isPermissionGranted(permission: string): Promise<boolean>;
 
   /**
    * Returns a mapping from a permission name to a boolean indicating that you have been granted a particular permission.
    *
    * @param permissions An array of permission your app wants to request.
    */
-  isPermissionGranted(permissions: string[]): { [permission: string]: boolean };
+  isPermissionGranted(permissions: string[]): Promise<{ [permission: string]: boolean }>;
 
   /**
    * Requests a permission to be granted to this application. This permission must be requested in your manifest, and
@@ -59,15 +59,11 @@ export interface PermissionsManager {
 export function createPermissionsManager(eventBridge: EventBridge): PermissionsManager {
   return {
     shouldShowRequestPermissionRationale(permission) {
-      return runOperationSync(
-        'org.racehorse.ShouldShowRequestPermissionRationaleRequestEvent',
-        eventBridge,
-        permission
-      );
+      return runOperation('org.racehorse.ShouldShowRequestPermissionRationaleRequestEvent', eventBridge, permission);
     },
 
     isPermissionGranted(permission) {
-      return runOperationSync('org.racehorse.IsPermissionGrantedRequestEvent', eventBridge, permission);
+      return runOperation('org.racehorse.IsPermissionGrantedRequestEvent', eventBridge, permission);
     },
 
     askForPermission(permission) {
@@ -78,16 +74,8 @@ export function createPermissionsManager(eventBridge: EventBridge): PermissionsM
 
 function runOperation(type: string, eventBridge: EventBridge, permission: string | string[]): any {
   if (Array.isArray(permission)) {
-    return eventBridge.request({ type, permissions: permission }).then(event => event.statuses || {});
+    return eventBridge.request({ type, permissions: permission }).then(event => event.statuses);
   } else {
-    return eventBridge.request({ type, permissions: [permission] }).then(event => event.statuses?.[permission]);
-  }
-}
-
-function runOperationSync(type: string, eventBridge: EventBridge, permission: string | string[]): any {
-  if (Array.isArray(permission)) {
-    return eventBridge.requestSync({ type, permissions: permission })?.statuses || {};
-  } else {
-    return eventBridge.requestSync({ type, permissions: [permission] })?.statuses?.[permission];
+    return eventBridge.request({ type, permissions: [permission] }).then(event => event.statuses[permission]);
   }
 }
