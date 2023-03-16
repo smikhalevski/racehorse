@@ -9,7 +9,7 @@ module.hot?.accept(() => {
 const root = createRoot(document.body.appendChild(document.createElement('div')));
 
 createEventBridge()
-  .waitForConnection()
+  .connect()
   .then(() => {
     root.render(<App />);
   });

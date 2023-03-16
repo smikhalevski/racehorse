@@ -1,11 +1,11 @@
 import { untilTruthy } from 'parallel-universe';
-import { Connection, ConnectionProvider } from './shared-types';
+import { Connection, ConnectionProvider } from './types';
 
 /**
  * Creates a callback that invokes `getConnection` until a {@linkcode Connection} object is returned. Exponentially
  * increases delay between `getConnection` calls if `undefined` is returned.
  *
- * The returned connection provides is guaranteed to return the same promise so the connection is resolved
+ * The returned connection provider is guaranteed to return the same promise so the connection is resolved
  * simultaneously for all connection consumers.
  *
  * @param getConnection Returns a {@linkcode Connection} object or `undefined` if there's no connection available.

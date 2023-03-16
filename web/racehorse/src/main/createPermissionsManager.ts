@@ -1,9 +1,9 @@
-import { EventBridge, Plugin } from './shared-types';
+import { EventBridge } from './types';
 
 /**
  * Allows checking and requesting application permissions.
  */
-export interface PermissionsMixin {
+export interface PermissionsManager {
   /**
    * Gets whether you should show UI with rationale before requesting a permission.
    *
@@ -54,21 +54,27 @@ export interface PermissionsMixin {
 }
 
 /**
- * Check and ask for permissions.
+ * Check permission statuses and ask for permissions.
  */
-export const permissionsPlugin: Plugin<PermissionsMixin> = eventBridge => {
-  eventBridge.shouldShowRequestPermissionRationale = permission => {
-    return runOperationSync('org.racehorse.ShouldShowRequestPermissionRationaleRequestEvent', eventBridge, permission);
-  };
+export function createPermissionsManager(eventBridge: EventBridge): PermissionsManager {
+  return {
+    shouldShowRequestPermissionRationale(permission) {
+      return runOperationSync(
+        'org.racehorse.ShouldShowRequestPermissionRationaleRequestEvent',
+        eventBridge,
+        permission
+      );
+    },
 
-  eventBridge.isPermissionGranted = permission => {
-    return runOperationSync('org.racehorse.IsPermissionGrantedRequestEvent', eventBridge, permission);
-  };
+    isPermissionGranted(permission) {
+      return runOperationSync('org.racehorse.IsPermissionGrantedRequestEvent', eventBridge, permission);
+    },
 
-  eventBridge.askForPermission = permission => {
-    return runOperation('org.racehorse.AskForPermissionRequestEvent', eventBridge, permission);
+    askForPermission(permission) {
+      return runOperation('org.racehorse.AskForPermissionRequestEvent', eventBridge, permission);
+    },
   };
-};
+}
 
 function runOperation(type: string, eventBridge: EventBridge, permission: string | string[]): any {
   if (Array.isArray(permission)) {
