@@ -9,7 +9,6 @@ import android.webkit.*
 import androidx.webkit.WebViewAssetLoader
 import com.google.gson.Gson
 import org.greenrobot.eventbus.*
-import org.racehorse.Plugin
 
 @SuppressLint("ViewConstructor")
 class AppWebView(

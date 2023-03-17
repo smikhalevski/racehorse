@@ -12,7 +12,10 @@ import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
+import org.racehorse.utils.isPermissionGranted
+import org.racehorse.utils.launchForActivityResult
 import org.racehorse.webview.FileChooserCapability
+import org.racehorse.webview.Plugin
 import java.io.File
 
 /**

@@ -4,6 +4,7 @@ import android.net.http.SslError
 import android.webkit.SslErrorHandler
 import android.webkit.WebView
 import org.racehorse.webview.HttpsCapability
+import org.racehorse.webview.Plugin
 
 class HttpsPlugin : Plugin(), HttpsCapability {
 

@@ -3,6 +3,7 @@ package org.racehorse
 import android.os.Build
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.webview.EventBusCapability
+import org.racehorse.webview.Plugin
 import org.racehorse.webview.RequestEvent
 import org.racehorse.webview.ResponseEvent
 

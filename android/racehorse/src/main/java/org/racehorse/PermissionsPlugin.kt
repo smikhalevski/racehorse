@@ -4,10 +4,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.webview.EventBusCapability
-import org.racehorse.webview.PermissionsCapability
-import org.racehorse.webview.RequestEvent
-import org.racehorse.webview.ResponseEvent
+import org.racehorse.utils.isPermissionGranted
+import org.racehorse.utils.launchForActivityResult
+import org.racehorse.webview.*
 
 /**
  * Gets whether you should show UI with rationale before requesting a permission.

@@ -41,10 +41,10 @@ export interface Connection {
   /**
    * Delivers a serialized event to Android.
    *
-   * @param eventData The serialized event.
+   * @param eventJson The serialized event.
    * @return The unique request ID.
    */
-  post(eventData: string): number;
+  post(eventJson: string): number;
 }
 
 /**
@@ -52,9 +52,9 @@ export interface Connection {
  */
 export interface EventBridge {
   /**
-   * Returns the promise that is resolved when a connection becomes available. You don't have to call this method
-   * manually, since the connection would be established automatically as soon as the first request or subscription is
-   * posted. Await the returned promise before the app starts, to ensure the connection availability.
+   * Returns the promise that is resolved when a connection becomes available. Usually, you don't have to call this
+   * method manually, since the connection would be established automatically as soon as the first request is sent or
+   * the first listener is subscribed.
    */
   connect(): Promise<Required<Connection>>;
 

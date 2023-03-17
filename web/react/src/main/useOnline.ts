@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { networkManager } from 'racehorse';
 
 /**
- * Provides the {@linkcode NetworkManager} instance to underlying components.
+ * Provides the `NetworkManager` instance to underlying components.
  */
 export const NetworkManagerContext = createContext(networkManager);
 

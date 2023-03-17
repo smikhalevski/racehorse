@@ -6,6 +6,7 @@ import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
 import org.greenrobot.eventbus.Subscribe
+import org.racehorse.utils.excludePackage
 import org.racehorse.webview.*
 
 /**

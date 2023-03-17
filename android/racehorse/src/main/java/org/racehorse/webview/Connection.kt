@@ -14,11 +14,11 @@ internal class Connection(private val gson: Gson, private val eventBus: EventBus
     private var requestId = AtomicInteger()
 
     @JavascriptInterface
-    fun post(eventData: String): Int {
+    fun post(eventJson: String): Int {
         val requestId = this.requestId.getAndIncrement()
 
         val event = try {
-            val jsonObject = gson.fromJson(eventData, JsonObject::class.java)
+            val jsonObject = gson.fromJson(eventJson, JsonObject::class.java)
             val eventClass = Class.forName(jsonObject["type"].asString)
 
             jsonObject.remove("requestId")

@@ -39,12 +39,12 @@ export function createEventBridge(connectionProvider = () => window.racehorseCon
     connect,
 
     request(event) {
-      const eventData = JSON.stringify(event);
+      const eventJson = JSON.stringify(event);
 
       return connect().then(
         connection =>
           new Promise(resolve => {
-            const requestId = connection.post(eventData);
+            const requestId = connection.post(eventJson);
 
             const unsubscribe = connection.inbox.subscribe(envelope => {
               if (envelope[0] === requestId) {
