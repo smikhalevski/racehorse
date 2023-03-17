@@ -1,4 +1,5 @@
 import { EventBridge } from './types';
+import { ensureEvent } from './utils';
 
 export interface ActionsManager {
   /**
@@ -18,7 +19,9 @@ export interface ActionsManager {
 export function createActionsManager(eventBridge: EventBridge): ActionsManager {
   return {
     openUrl(url) {
-      return eventBridge.request({ type: 'org.racehorse.OpenUrlRequestEvent', url }).then(event => event.opened);
+      return eventBridge
+        .request({ type: 'org.racehorse.OpenUrlRequestEvent', url })
+        .then(event => ensureEvent(event).opened);
     },
   };
 }

@@ -1,5 +1,6 @@
 import { pickLocale } from 'locale-matcher';
 import { EventBridge } from './types';
+import { ensureEvent } from './utils';
 
 export interface ConfigurationManager {
   /**
@@ -23,7 +24,9 @@ export interface ConfigurationManager {
  */
 export function createConfigurationManager(eventBridge: EventBridge): ConfigurationManager {
   const getPreferredLocales = () =>
-    eventBridge.request({ type: 'org.racehorse.GetPreferredLocalesRequestEvent' }).then(event => event.locales);
+    eventBridge
+      .request({ type: 'org.racehorse.GetPreferredLocalesRequestEvent' })
+      .then(event => ensureEvent(event).locales);
 
   return {
     getPreferredLocales,

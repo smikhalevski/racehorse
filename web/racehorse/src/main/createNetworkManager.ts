@@ -1,5 +1,6 @@
 import { PubSub } from 'parallel-universe';
 import { EventBridge } from './types';
+import { ensureEvent } from './utils';
 
 export interface NetworkManager {
   /**
@@ -22,19 +23,19 @@ export function createNetworkManager(eventBridge: EventBridge): NetworkManager {
   const pubSub = new PubSub();
 
   let online: boolean | undefined;
-  let unsubscribeMonitor: (() => void) | undefined;
+  let unsubscribe: (() => void) | undefined;
 
-  const ensureMonitor = () => {
-    if (unsubscribeMonitor) {
+  const ensureSubscription = () => {
+    if (unsubscribe) {
       return;
     }
 
     eventBridge.request({ type: 'org.racehorse.IsOnlineRequestEvent' }).then(event => {
-      online = event.online;
+      online = ensureEvent(event).online;
       pubSub.publish();
     });
 
-    unsubscribeMonitor = eventBridge.subscribe(event => {
+    unsubscribe = eventBridge.subscribe(event => {
       if (event.type === 'org.racehorse.OnlineStatusChangedAlertEvent') {
         online = event.online;
         pubSub.publish();
@@ -46,15 +47,14 @@ export function createNetworkManager(eventBridge: EventBridge): NetworkManager {
     online: undefined,
 
     subscribe(listener) {
-      ensureMonitor();
+      ensureSubscription();
       return pubSub.subscribe(listener);
     },
   };
 
   Object.defineProperty(manager, 'online', {
-    enumerable: true,
     get() {
-      ensureMonitor();
+      ensureSubscription();
       return online;
     },
   });

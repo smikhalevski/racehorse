@@ -1,4 +1,5 @@
 import { EventBridge } from './types';
+import { ensureEvent } from './utils';
 
 export interface GooglePlayReferrerManager {
   getGooglePlayReferrer(): Promise<string>;
@@ -23,7 +24,7 @@ export function createGooglePlayReferrerManager(eventBridge: EventBridge): Googl
         });
 
         eventBridge.request({ type: 'org.racehorse.GetGooglePlayReferrerRequestEvent' }).then(event => {
-          if (event.referrer) {
+          if (ensureEvent(event).referrer) {
             resolve(event.referrer);
             unsubscribe();
           }

@@ -1,4 +1,5 @@
 import { EventBridge } from './types';
+import { ensureEvent } from './utils';
 
 /**
  * Allows checking and requesting application permissions.
@@ -59,23 +60,25 @@ export interface PermissionsManager {
 export function createPermissionsManager(eventBridge: EventBridge): PermissionsManager {
   return {
     shouldShowRequestPermissionRationale(permission) {
-      return runOperation('org.racehorse.ShouldShowRequestPermissionRationaleRequestEvent', eventBridge, permission);
+      return request('org.racehorse.ShouldShowRequestPermissionRationaleRequestEvent', eventBridge, permission);
     },
 
     isPermissionGranted(permission) {
-      return runOperation('org.racehorse.IsPermissionGrantedRequestEvent', eventBridge, permission);
+      return request('org.racehorse.IsPermissionGrantedRequestEvent', eventBridge, permission);
     },
 
     askForPermission(permission) {
-      return runOperation('org.racehorse.AskForPermissionRequestEvent', eventBridge, permission);
+      return request('org.racehorse.AskForPermissionRequestEvent', eventBridge, permission);
     },
   };
 }
 
-function runOperation(type: string, eventBridge: EventBridge, permission: string | string[]): any {
+function request(type: string, eventBridge: EventBridge, permission: string | string[]): any {
   if (Array.isArray(permission)) {
-    return eventBridge.request({ type, permissions: permission }).then(event => event.statuses);
-  } else {
-    return eventBridge.request({ type, permissions: [permission] }).then(event => event.statuses[permission]);
+    return eventBridge.request({ type, permissions: permission }).then(event => ensureEvent(event).statuses);
   }
+
+  return eventBridge
+    .request({ type, permissions: [permission] })
+    .then(event => ensureEvent(event).statuses[permission]);
 }
