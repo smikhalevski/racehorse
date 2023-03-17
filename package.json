@@ -1,6 +1,5 @@
 {
   "private": true,
-  "version": "0.0.1",
   "scripts": {
     "build": "npm run build --workspaces",
     "clean": "rimraf ./docs ./coverage && npm run clean --workspaces",

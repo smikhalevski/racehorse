@@ -11,7 +11,7 @@ tasks.dokkaHtml.configure {
     outputDirectory.set(file("../../docs/android"))
 }
 
-val packageJson = JSONObject(File(projectDir, "../../package.json").readText())
+val artifactJson = JSONObject(file("artifact.json").readText())
 
 android {
     namespace = "org.racehorse"
@@ -51,9 +51,9 @@ android {
 publishing {
     publications {
         register<MavenPublication>("release") {
-            groupId = "org.racehorse"
-            artifactId = "racehorse"
-            version = packageJson.getString("version")
+            groupId = artifactJson.getString("groupId")
+            artifactId = artifactJson.getString("artifactId")
+            version = artifactJson.getString("version")
 
             afterEvaluate {
                 from(components["release"])
