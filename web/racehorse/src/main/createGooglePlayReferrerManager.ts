@@ -5,7 +5,7 @@ export interface GooglePlayReferrerManager {
 }
 
 /**
- * Gets Google Play referrer information.
+ * Gets [Google Play referrer](https://developer.android.com/google/play/installreferrer/library) information.
  *
  * @param eventBridge The underlying event bridge.
  */

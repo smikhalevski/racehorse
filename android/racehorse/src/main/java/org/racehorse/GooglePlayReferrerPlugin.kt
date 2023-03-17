@@ -16,7 +16,7 @@ class GetGooglePlayReferrerResponseEvent(val referrer: String?) : ResponseEvent(
 class GooglePlayReferrerDetectedAlertEvent(val referrer: String) : AlertEvent
 
 /**
- * Resolves [Google Play referrer](https://developer.android.com/google/play/installreferrer/library).
+ * Gets [Google Play referrer](https://developer.android.com/google/play/installreferrer/library) information.
  */
 class GooglePlayReferrerPlugin : Plugin(), EventBusCapability {
 

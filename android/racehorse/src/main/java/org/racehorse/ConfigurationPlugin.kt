@@ -10,6 +10,9 @@ class GetPreferredLocalesRequestEvent : RequestEvent()
 
 class GetPreferredLocalesResponseEvent(val locales: Array<String>) : ResponseEvent()
 
+/**
+ * Device configuration and general information.
+ */
 class ConfigurationPlugin : Plugin(), EventBusCapability {
 
     @Subscribe

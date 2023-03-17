@@ -15,6 +15,9 @@ class OpenUrlRequestEvent(val url: String) : RequestEvent()
 
 class OpenUrlResponseEvent(val opened: Boolean) : ResponseEvent()
 
+/**
+ * Launches activities for various intents.
+ */
 open class ActionsPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability, OpenUrlCapability {
 
     /**

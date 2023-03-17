@@ -14,7 +14,7 @@ export interface NetworkManager {
 }
 
 /**
- * Monitors online status.
+ * Monitors network status.
  *
  * @param eventBridge The underlying event bridge.
  */

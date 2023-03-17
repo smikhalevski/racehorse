@@ -31,7 +31,7 @@ class AskForPermissionRequestEvent(val permissions: Array<String>) : RequestEven
 class AskForPermissionResponseEvent(val statuses: Map<String, Boolean>) : ResponseEvent()
 
 /**
- * Responds to permission-related requests.
+ * Check permission statuses and ask for permissions.
  */
 class PermissionsPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability, PermissionsCapability {
 
