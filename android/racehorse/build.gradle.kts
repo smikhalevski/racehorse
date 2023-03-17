@@ -4,6 +4,11 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("maven-publish")
+    id("org.jetbrains.dokka")
+}
+
+tasks.dokkaHtml.configure {
+    outputDirectory.set(file("../../docs/android"))
 }
 
 val packageJson = JSONObject(File(projectDir, "../../package.json").readText())

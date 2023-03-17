@@ -1,7 +1,8 @@
 {
   "name": "Racehorse",
   "entryPoints": [
-    "./web/*"
+    "./web/racehorse",
+    "./web/react"
   ],
   "excludePrivate": true,
   "excludeExternals": true,
