@@ -27,10 +27,9 @@ open class ActionsPlugin(private val activity: ComponentActivity) : Plugin(), Ev
      * @return `true` if an external activity has started, or `false` otherwise.
      */
     override fun onOpenUrl(uri: Uri): Boolean {
-        val action = if (uri.scheme.equals("tel")) Intent.ACTION_DIAL else Intent.ACTION_VIEW
-
-        val intent = Intent(action, uri).excludePackage(activity.packageManager, arrayOf(activity.packageName))
-            ?: return false
+        val intent =
+            Intent(getOpenAction(uri), uri).excludePackage(activity.packageManager, arrayOf(activity.packageName))
+                ?: return false
 
         @Suppress("UNREACHABLE_CODE")
         return try {
@@ -39,6 +38,22 @@ open class ActionsPlugin(private val activity: ComponentActivity) : Plugin(), Ev
         } catch (exception: ActivityNotFoundException) {
             return false
         }
+    }
+
+    protected open fun getOpenAction(uri: Uri): String = when (uri.scheme) {
+        // https://developer.android.com/guide/components/intents-common#Phone
+        "voicemail",
+        "tel" -> Intent.ACTION_DIAL
+
+        // https://developer.android.com/guide/components/intents-common#Messaging
+        // https://developer.android.com/guide/components/intents-common#Email
+        "sms",
+        "smsto",
+        "mms",
+        "mmsto",
+        "mailto" -> Intent.ACTION_SENDTO
+
+        else -> Intent.ACTION_VIEW
     }
 
     @Subscribe
