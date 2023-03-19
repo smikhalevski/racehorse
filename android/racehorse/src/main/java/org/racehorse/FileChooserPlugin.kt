@@ -68,8 +68,8 @@ open class FileChooserPlugin(
         private val mimeType = fileChooserParams.acceptTypes.joinToString(",")
 
         private val anyRequested = mimeType == "" || mimeType.contains("*/*")
-        private val imageRequested = mimeType.contains("image/")
-        private val videoRequested = mimeType.contains("video/")
+        private val imageRequested = anyRequested || mimeType.contains("image/")
+        private val videoRequested = anyRequested || mimeType.contains("video/")
 
         fun start() {
             if (
