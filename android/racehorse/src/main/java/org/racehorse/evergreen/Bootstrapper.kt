@@ -22,14 +22,29 @@ open class Bootstrapper(private val bundlesDir: File) {
 
     private var updateDownload: BundleDownload? = null
 
+    /**
+     * Application assets are ready to be used in [appDir].
+     */
     protected open fun onBundleReady(appDir: File) {}
 
+    /**
+     * The new update download has started.
+     */
     protected open fun onUpdateStarted(mandatory: Boolean) {}
 
+    /**
+     * Failed to download an update.
+     */
     protected open fun onUpdateFailed(mandatory: Boolean, cause: Throwable) {}
 
+    /**
+     * An update was successfully downloaded.
+     */
     protected open fun onUpdateReady() {}
 
+    /**
+     * A progress of a pending update download.
+     */
     protected open fun onUpdateProgress(contentLength: Int, readLength: Long) {}
 
     /**
