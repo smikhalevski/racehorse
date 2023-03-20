@@ -9,7 +9,8 @@ android {
 
     defaultConfig {
         applicationId = "com.example.myapplication"
-        minSdk = 21
+        // https://apilevels.com/
+        minSdk = 26
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"

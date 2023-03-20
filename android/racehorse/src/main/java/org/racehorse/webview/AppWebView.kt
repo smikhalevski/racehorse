@@ -194,15 +194,5 @@ class AppWebView(
 
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest) =
             shouldOverrideUrlLoading(request.url)
-
-        // Support API < 21
-        @Suppress("OVERRIDE_DEPRECATION")
-        override fun shouldInterceptRequest(view: WebView, requestUrl: String) =
-            shouldInterceptRequest(Uri.parse(requestUrl))
-
-        // Support API < 24
-        @Suppress("OVERRIDE_DEPRECATION")
-        override fun shouldOverrideUrlLoading(view: WebView, requestUrl: String) =
-            shouldOverrideUrlLoading(Uri.parse(requestUrl))
     }
 }

@@ -63,16 +63,13 @@ open class NetworkMonitor(
 
     private fun setNetworkOnline(network: Network, networkOnline: Boolean): Boolean {
         onlineMap[network] = networkOnline
-        return onlineMap.values.contains(true).also { online = it }
+        online = onlineMap.values.contains(true)
+        return online
     }
 
     fun start() {
         connectivityManager?.run {
-            online = if (Build.VERSION.SDK_INT < 23) {
-                activeNetworkInfo?.isConnected ?: false
-            } else {
-                getNetworkCapabilities(activeNetwork ?: return@run false) != null
-            }
+            online = activeNetwork != null && getNetworkCapabilities(activeNetwork) != null
             registerNetworkCallback(networkRequest, networkCallback)
         }
     }

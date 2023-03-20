@@ -20,17 +20,12 @@ class ConfigurationPlugin : Plugin(), EventBusCapability {
     fun onGetPreferredLocalesRequestEvent(event: GetPreferredLocalesRequestEvent) {
         val configuration = context.resources.configuration
 
-        val locales = if (Build.VERSION.SDK_INT < 24) {
-            @Suppress("DEPRECATION")
-            arrayOf(configuration.locale.toLanguageTag())
-        } else {
-            val locales = ArrayList<String>()
+        val locales = ArrayList<String>().apply {
             for (i in 0 until configuration.locales.size()) {
-                locales.add(configuration.locales.get(i).toLanguageTag())
+                add(configuration.locales.get(i).toLanguageTag())
             }
-            locales.toTypedArray()
         }
 
-        postToChain(event, GetPreferredLocalesResponseEvent(locales))
+        postToChain(event, GetPreferredLocalesResponseEvent(locales.toTypedArray()))
     }
 }
