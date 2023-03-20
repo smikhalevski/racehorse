@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 export function FileInputExample() {
-  const [accept, setAccept] = useState('image/*');
+  const [accept, setAccept] = useState('*/*');
   const [multiple, setMultiple] = useState(false);
 
   return (
@@ -11,6 +11,7 @@ export function FileInputExample() {
       <p>
         {'Accept: '}
         <select
+          value={accept}
           onChange={event => {
             setAccept(event.target.value);
           }}
@@ -19,6 +20,7 @@ export function FileInputExample() {
           <option value={'video/*'}>{'video/*'}</option>
           <option value={'image/*,video/*'}>{'image/*, video/*'}</option>
           <option value={'text/html'}>{'text/html'}</option>
+          <option value={'*/*'}>{'*/*'}</option>
         </select>
       </p>
 

@@ -13,21 +13,23 @@ import org.racehorse.webview.StaticPathHandler
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var webView: AppWebView
+    private val eventBus = EventBus.getDefault()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    private val networkMonitor = NetworkMonitor(eventBus, this)
 
-        val eventBus = EventBus.getDefault()
-
-        webView = AppWebView(this, eventBus)
+    private val webView: AppWebView by lazy {
+        AppWebView(this, eventBus)
             .registerPlugin(HttpsPlugin())
             .registerPlugin(PermissionsPlugin(this))
-            .registerPlugin(NetworkPlugin())
+            .registerPlugin(NetworkPlugin(networkMonitor))
             .registerPlugin(ConfigurationPlugin())
             .registerPlugin(ActionsPlugin(this))
             .registerPlugin(GooglePlayReferrerPlugin())
             .registerPlugin(FileChooserPlugin(this, externalCacheDir, "$packageName.provider"))
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
         // 1️⃣ Debug in emulator with a server running on the host machine on localhost:1234
         // Run `npm start` in `<racehorse>/web/example` then start the app in emulator.
@@ -65,8 +67,14 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    override fun onStart() {
+        super.onStart()
+        networkMonitor.start()
+    }
+
     override fun onPause() {
         super.onPause()
+        networkMonitor.stop()
         webView.pause()
     }
 
