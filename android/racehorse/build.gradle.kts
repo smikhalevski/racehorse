@@ -4,16 +4,22 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("maven-publish")
+    id("org.jetbrains.dokka")
 }
 
-val packageJson = JSONObject(File(projectDir, "../../package.json").readText())
+tasks.dokkaHtml.configure {
+    outputDirectory.set(file("../../docs/android"))
+}
+
+val artifactJson = JSONObject(file("artifact.json").readText())
 
 android {
     namespace = "org.racehorse"
     compileSdk = 33
 
     defaultConfig {
-        minSdk = 21
+        // https://apilevels.com/
+        minSdk = 26
         targetSdk = 33
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -46,9 +52,9 @@ android {
 publishing {
     publications {
         register<MavenPublication>("release") {
-            groupId = "org.racehorse"
-            artifactId = "racehorse"
-            version = packageJson.getString("version")
+            groupId = artifactJson.getString("groupId")
+            artifactId = artifactJson.getString("artifactId")
+            version = artifactJson.getString("version")
 
             afterEvaluate {
                 from(components["release"])
@@ -70,11 +76,12 @@ publishing {
 
 dependencies {
     implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.appcompat:appcompat:1.6.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.webkit:webkit:1.6.0")
     implementation("org.greenrobot:eventbus:3.3.1")
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("com.android.installreferrer:installreferrer:2.2")
+    implementation("com.google.firebase:firebase-messaging-ktx:23.1.2")
     testImplementation("junit:junit:4.13.2")
     testImplementation("com.squareup.okhttp:mockwebserver:1.2.1")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

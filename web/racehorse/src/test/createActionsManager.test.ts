@@ -1,36 +1,35 @@
 import { Connection, createActionsManager, createEventBridge } from '../main';
 
 describe('createActionsManager', () => {
-  test('returns true if opened', () => {
+  test('returns true if opened', async () => {
     const connection: Connection = {
       post: jest.fn(() => {
-        connection.inboxPubSub!.publish([0, { type: '', ok: true, opened: true }]);
+        setTimeout(() => connection.inbox!.publish([111, { type: '', ok: true, opened: true }]), 0);
+        return 111;
       }),
     };
 
     const eventBridge = createEventBridge(() => connection);
 
-    const requestSyncSpy = jest.spyOn(eventBridge, 'requestSync');
+    const requestSpy = jest.spyOn(eventBridge, 'request');
 
-    const actionsManager = createActionsManager(eventBridge);
+    await expect(createActionsManager(eventBridge).openUrl('aaa')).resolves.toBe(true);
 
-    const result = actionsManager.openUrl('aaa');
-
-    expect(result).toBe(true);
-
-    expect(requestSyncSpy).toHaveBeenCalledTimes(1);
-    expect(requestSyncSpy).toHaveBeenNthCalledWith(1, { type: 'org.racehorse.OpenUrlRequestEvent', url: 'aaa' });
+    expect(requestSpy).toHaveBeenCalledTimes(1);
+    expect(requestSpy).toHaveBeenNthCalledWith(1, {
+      type: 'org.racehorse.OpenUrlRequestEvent',
+      url: 'aaa',
+    });
   });
 
-  test('returns false if not opened', () => {
+  test('returns false if not opened', async () => {
     const connection: Connection = {
       post: jest.fn(() => {
-        connection.inboxPubSub!.publish([0, { type: '', ok: true, opened: false }]);
+        setTimeout(() => connection.inbox!.publish([111, { type: '', ok: true, opened: false }]), 0);
+        return 111;
       }),
     };
 
-    const result = createActionsManager(createEventBridge(() => connection)).openUrl('aaa');
-
-    expect(result).toBe(false);
+    await expect(createActionsManager(createEventBridge(() => connection)).openUrl('aaa')).resolves.toBe(false);
   });
 });

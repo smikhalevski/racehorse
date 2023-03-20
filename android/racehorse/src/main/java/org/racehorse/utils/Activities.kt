@@ -1,4 +1,4 @@
-package org.racehorse
+package org.racehorse.utils
 
 import android.content.ActivityNotFoundException
 import androidx.activity.ComponentActivity

@@ -4,10 +4,7 @@ import android.content.Context
 import com.android.installreferrer.api.InstallReferrerClient
 import com.android.installreferrer.api.InstallReferrerStateListener
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.webview.AlertEvent
-import org.racehorse.webview.EventBusCapability
-import org.racehorse.webview.RequestEvent
-import org.racehorse.webview.ResponseEvent
+import org.racehorse.webview.*
 
 class GetGooglePlayReferrerRequestEvent : RequestEvent()
 
@@ -16,7 +13,7 @@ class GetGooglePlayReferrerResponseEvent(val referrer: String?) : ResponseEvent(
 class GooglePlayReferrerDetectedAlertEvent(val referrer: String) : AlertEvent
 
 /**
- * Resolves [Google Play referrer](https://developer.android.com/google/play/installreferrer/library).
+ * Gets [Google Play referrer](https://developer.android.com/google/play/installreferrer/library) information.
  */
 class GooglePlayReferrerPlugin : Plugin(), EventBusCapability {
 

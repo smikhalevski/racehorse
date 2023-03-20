@@ -31,58 +31,42 @@ export interface ResponseEvent extends Event {
  */
 export interface Connection {
   /**
-   * The total number of requests transported through this connection. Used as a request ID.
-   */
-  requestCount?: number;
-
-  /**
    * The pub-sub to which Android publishes envelopes for the web to consume.
+   *
+   * Request ID is either a non-negative number returned from {@linkcode post}, or -1 if an event is an alert pushed by
+   * Android.
    */
-  inboxPubSub?: PubSub<[requestId: number, event: Event]>;
+  inbox?: PubSub<[requestId: number, event: Event]>;
 
   /**
    * Delivers a serialized event to Android.
    *
-   * @param requestId The unique request ID.
-   * @param eventData The serialized event.
+   * @param eventJson The serialized event.
+   * @return The unique request ID.
    */
-  post(requestId: number, eventData: string): void;
+  post(eventJson: string): number;
 }
-
-/**
- * Returns a connection object or promise that resolves when a connection is available.
- */
-export type ConnectionProvider = () => Connection | Promise<Connection>;
 
 /**
  * The event bridge that transports events between Android and web.
  */
 export interface EventBridge {
   /**
-   * Returns the promise that is resolved when a connection becomes available. You don't have to call this method
-   * manually, since the connection would be established automatically as soon as the first request or subscription is
-   * posted. Await the returned promise before the app starts, to ensure the connection availability.
+   * Returns the promise that is resolved when a connection becomes available. Usually, you don't have to call this
+   * method manually, since the connection would be established automatically as soon as the first request is sent or
+   * the first listener is subscribed.
    */
-  connect(): Promise<void>;
+  connect(): Promise<Required<Connection>>;
 
   /**
    * Sends an event through a connection to Android and returns a promise that is resolved when a response with a
-   * matching ID is published to the {@linkcode Connection.inboxPubSub}. The returned promise is never rejected.
+   * matching ID is published to the {@linkcode Connection.inbox}. The returned promise is never rejected.
    * Check {@linkcode ResponseEvent.ok} to detect that an error occurred.
    *
    * @param event The request event to send.
    * @returns The response event.
    */
   request(event: Event): Promise<ResponseEvent>;
-
-  /**
-   * Sends an event through a connection to Android and synchronously returns a response event, or `null` if a response
-   * cannot be produced synchronously.
-   *
-   * @param event The request event to send.
-   * @returns The response event.
-   */
-  requestSync(event: Event): ResponseEvent | undefined;
 
   /**
    * Subscribes a listener to alert events pushed by Android.

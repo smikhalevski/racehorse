@@ -12,11 +12,17 @@ import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
+import org.racehorse.utils.isPermissionGranted
+import org.racehorse.utils.launchForActivityResult
 import org.racehorse.webview.FileChooserCapability
+import org.racehorse.webview.Plugin
 import java.io.File
 
 /**
  * The plugin allows user to choose a file on the device.
+ *
+ * If [cacheDir] or [authority] are omitted, camera becomes unavailable since [FileChooserPlugin] cannot save temporary
+ * files with captured images.
  *
  * @param activity The activity that starts intents.
  * @param cacheDir The directory to store files captured by camera activity.
@@ -62,8 +68,8 @@ open class FileChooserPlugin(
         private val mimeType = fileChooserParams.acceptTypes.joinToString(",")
 
         private val anyRequested = mimeType == "" || mimeType.contains("*/*")
-        private val imageRequested = mimeType.contains("image/")
-        private val videoRequested = mimeType.contains("video/")
+        private val imageRequested = anyRequested || mimeType.contains("image/")
+        private val videoRequested = anyRequested || mimeType.contains("video/")
 
         fun start() {
             if (

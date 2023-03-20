@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { networkManager } from 'racehorse';
 
 /**
- * Provides the {@linkcode NetworkManager} instance to underlying components.
+ * Provides the `NetworkManager` instance to underlying components.
  */
 export const NetworkManagerContext = createContext(networkManager);
 
@@ -15,7 +15,7 @@ NetworkManagerContext.displayName = 'NetworkManagerContext';
 export function useOnline(): boolean | undefined {
   const manager = useContext(NetworkManagerContext);
 
-  const [online, setOnline] = useState(() => manager.online);
+  const [online, setOnline] = useState<boolean>();
 
   useEffect(() => manager.subscribe(() => setOnline(manager.online)), [manager]);
 

@@ -1,11 +1,12 @@
 import { EventBridge } from './types';
+import { ensureEvent } from './utils';
 
 export interface GooglePlayReferrerManager {
   getGooglePlayReferrer(): Promise<string>;
 }
 
 /**
- * Gets Google Play referrer information.
+ * Gets [Google Play referrer](https://developer.android.com/google/play/installreferrer/library) information.
  *
  * @param eventBridge The underlying event bridge.
  */
@@ -22,12 +23,12 @@ export function createGooglePlayReferrerManager(eventBridge: EventBridge): Googl
           }
         });
 
-        const referrer = eventBridge.requestSync({ type: 'org.racehorse.GetGooglePlayReferrerRequestEvent' })?.referrer;
-
-        if (referrer) {
-          resolve(referrer);
-          unsubscribe();
-        }
+        eventBridge.request({ type: 'org.racehorse.GetGooglePlayReferrerRequestEvent' }).then(event => {
+          if (ensureEvent(event).referrer) {
+            resolve(event.referrer);
+            unsubscribe();
+          }
+        });
       }));
     },
   };

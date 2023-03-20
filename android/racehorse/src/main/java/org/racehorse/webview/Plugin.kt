@@ -1,4 +1,4 @@
-package org.racehorse
+package org.racehorse.webview
 
 import android.content.Context
 import org.greenrobot.eventbus.EventBus

@@ -5,56 +5,76 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.os.Build
+import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.webview.AlertEvent
-import org.racehorse.webview.EventBusCapability
-import org.racehorse.webview.RequestEvent
-import org.racehorse.webview.ResponseEvent
-
-class OnlineStatusChangedAlertEvent(val online: Boolean) : AlertEvent
+import org.racehorse.webview.*
 
 class IsOnlineRequestEvent : RequestEvent()
 
 class IsOnlineResponseEvent(val online: Boolean) : ResponseEvent()
 
+class OnlineStatusChangedAlertEvent(val online: Boolean) : AlertEvent
+
 /**
  * Monitors network status.
  *
- * @param networkRequest The type of monitored network.
+ * @param networkMonitor The type of monitored network.
  */
-class NetworkPlugin(
+class NetworkPlugin(private val networkMonitor: NetworkMonitor) : Plugin(), EventBusCapability {
+
+    @Subscribe
+    fun onIsOnlineRequestEvent(event: IsOnlineRequestEvent) {
+        postToChain(event, IsOnlineResponseEvent(networkMonitor.online))
+    }
+}
+
+open class NetworkMonitor(
+    private val eventBus: EventBus,
+    private val context: Context,
     private val networkRequest: NetworkRequest = NetworkRequest.Builder()
         .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
         .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
         .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
         .build()
-) : Plugin(), EventBusCapability {
+) {
+    var online = false
+        private set
 
-    private val online get() = onlineStatuses.values.contains(true)
+    private val onlineMap = HashMap<Network, Boolean>()
 
-    private val onlineStatuses = HashMap<Network, Boolean>()
-
-    private val connectivityManager get() = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
+    private val connectivityManager by lazy {
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
+    }
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
-            onlineStatuses[network] = true
-            post(OnlineStatusChangedAlertEvent(true))
+            if (online != setNetworkOnline(network, true)) {
+                eventBus.post(OnlineStatusChangedAlertEvent(true))
+            }
         }
 
         override fun onLost(network: Network) {
-            onlineStatuses[network] = false
-            post(OnlineStatusChangedAlertEvent(online))
+            if (online != setNetworkOnline(network, false)) {
+                eventBus.post(OnlineStatusChangedAlertEvent(false))
+            }
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        connectivityManager?.registerNetworkCallback(networkRequest, networkCallback)
+    private fun setNetworkOnline(network: Network, networkOnline: Boolean): Boolean {
+        onlineMap[network] = networkOnline
+        online = onlineMap.values.contains(true)
+        return online
     }
 
-    @Subscribe
-    fun onIsOnlineRequestEvent(event: IsOnlineRequestEvent) {
-        postToChain(event, IsOnlineResponseEvent(online))
+    fun start() {
+        connectivityManager?.run {
+            online = activeNetwork != null && getNetworkCapabilities(activeNetwork) != null
+            registerNetworkCallback(networkRequest, networkCallback)
+        }
+    }
+
+    fun stop() {
+        connectivityManager?.unregisterNetworkCallback(networkCallback)
     }
 }
