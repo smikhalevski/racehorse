@@ -2,7 +2,16 @@ import { pickLocale } from 'locale-matcher';
 import { EventBridge } from './types';
 import { ensureEvent } from './utils';
 
+export interface Rect {
+  top: number;
+  left: number;
+  bottom: number;
+  right: number;
+}
+
 export interface ConfigurationManager {
+  getWindowInsets(): Promise<Rect>;
+
   /**
    * Returns the array of preferred locales.
    */
@@ -29,6 +38,12 @@ export function createConfigurationManager(eventBridge: EventBridge): Configurat
       .then(event => ensureEvent(event).locales);
 
   return {
+    getWindowInsets() {
+      return eventBridge
+        .request({ type: 'org.racehorse.GetWindowInsetsRequestEvent' })
+        .then(event => ensureEvent(event).rect);
+    },
+
     getPreferredLocales,
 
     pickLocale(supportedLocales, defaultLocale) {

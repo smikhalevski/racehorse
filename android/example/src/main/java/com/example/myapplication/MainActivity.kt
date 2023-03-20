@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
             .registerPlugin(HttpsPlugin())
             .registerPlugin(PermissionsPlugin(this))
             .registerPlugin(NetworkPlugin(networkMonitor))
-            .registerPlugin(ConfigurationPlugin())
+            .registerPlugin(ConfigurationPlugin(this))
             .registerPlugin(ActionsPlugin(this))
             .registerPlugin(GooglePlayReferrerPlugin())
             .registerPlugin(FileChooserPlugin(this, externalCacheDir, "$packageName.provider"))
