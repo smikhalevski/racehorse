@@ -4,6 +4,7 @@ import { createActionsManager } from './createActionsManager';
 import { createConfigurationManager } from './createConfigurationManager';
 import { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager';
 import { createPermissionsManager } from './createPermissionsManager';
+import { createFirebaseManager } from './createFirebaseManager';
 
 /**
  * The default {@linkcode EventBridge}.
@@ -19,6 +20,11 @@ export const actionsManager = createActionsManager(eventBridge);
  * The default {@linkcode ConfigurationManager}.
  */
 export const configurationManager = createConfigurationManager(eventBridge);
+
+/**
+ * The default {@linkcode FirebaseManager}.
+ */
+export const firebaseManager = createFirebaseManager(eventBridge);
 
 /**
  * The default {@linkcode GooglePlayReferrerManager}.

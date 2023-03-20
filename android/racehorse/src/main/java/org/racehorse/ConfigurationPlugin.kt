@@ -41,7 +41,7 @@ class ConfigurationPlugin(private val activity: ComponentActivity) : Plugin(), E
     fun onGetWindowInsetsRequestEvent(event: GetWindowInsetsRequestEvent) {
         val rect = try {
             getWindowInsets()
-        } catch (throwable: Throwable) {
+        } catch (_: Throwable) {
             Rect(0, 0, 0, 0)
         }
 
