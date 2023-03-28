@@ -17,7 +17,7 @@ export function useOnline(): boolean | undefined {
 
   const [online, setOnline] = useState<boolean>();
 
-  useEffect(() => manager.subscribe(() => setOnline(manager.online)), [manager]);
+  useEffect(() => manager.subscribe(() => setOnline(manager.isOnline)), [manager]);
 
   return online;
 }

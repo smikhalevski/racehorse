@@ -21,7 +21,7 @@ export function createActionsManager(eventBridge: EventBridge): ActionsManager {
     openUrl(url) {
       return eventBridge
         .request({ type: 'org.racehorse.OpenUrlRequestEvent', url })
-        .then(event => ensureEvent(event).opened);
+        .then(event => ensureEvent(event).isOpened);
     },
   };
 }

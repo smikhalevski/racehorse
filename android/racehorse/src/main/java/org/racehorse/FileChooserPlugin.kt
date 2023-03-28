@@ -67,13 +67,13 @@ open class FileChooserPlugin(
         private val multiple = fileChooserParams.mode == FileChooserParams.MODE_OPEN_MULTIPLE
         private val mimeType = fileChooserParams.acceptTypes.joinToString(",")
 
-        private val anyRequested = mimeType == "" || mimeType.contains("*/*")
-        private val imageRequested = anyRequested || mimeType.contains("image/")
-        private val videoRequested = anyRequested || mimeType.contains("video/")
+        private val isWildcard = mimeType == "" || mimeType.contains("*/*")
+        private val isImage = isWildcard || mimeType.contains("image/")
+        private val isVideo = isWildcard || mimeType.contains("video/")
 
         fun start() {
             if (
-                !imageRequested && !videoRequested ||
+                !isImage && !isVideo ||
                 !(cacheDir != null && authority != null && activity.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
             ) {
                 // No camera-related MIME types, camera isn't supported, or capture result cannot be saved
@@ -112,13 +112,13 @@ open class FileChooserPlugin(
 
                     val fileUri = FileProvider.getUriForFile(activity, authority, file)
 
-                    val imageIntent = if (anyRequested || imageRequested) {
+                    val imageIntent = if (isImage) {
                         Intent(MediaStore.ACTION_IMAGE_CAPTURE)
                             .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                             .putExtra(MediaStore.EXTRA_OUTPUT, fileUri)
                     } else null
 
-                    val videoIntent = if (anyRequested || videoRequested) {
+                    val videoIntent = if (isVideo) {
                         Intent(MediaStore.ACTION_VIDEO_CAPTURE)
                             .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                             .putExtra(MediaStore.EXTRA_OUTPUT, fileUri)

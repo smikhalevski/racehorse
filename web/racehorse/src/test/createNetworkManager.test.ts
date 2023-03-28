@@ -5,14 +5,14 @@ describe('createNetworkManager', () => {
   test('returns undefined if network status is unknown', () => {
     const eventBridge = createEventBridge(() => undefined);
 
-    expect(createNetworkManager(eventBridge).online).toBe(undefined);
+    expect(createNetworkManager(eventBridge).isOnline).toBe(undefined);
   });
 
   test('reads initial online status', async () => {
     const connection: Connection = {
       post: jest.fn(() => {
         setTimeout(() => {
-          connection.inbox!.publish([111, { type: '', ok: true, online: true }]);
+          connection.inbox!.publish([111, { type: '', ok: true, isOnline: true }]);
         }, 0);
 
         return 111;
@@ -24,11 +24,11 @@ describe('createNetworkManager', () => {
 
     const networkManager = createNetworkManager(eventBridge);
 
-    expect(networkManager.online).toBe(undefined);
+    expect(networkManager.isOnline).toBe(undefined);
 
     await sleep(100);
 
-    expect(networkManager.online).toBe(true);
+    expect(networkManager.isOnline).toBe(true);
   });
 
   test('calls listener if a network alert arrives', async () => {
@@ -45,10 +45,10 @@ describe('createNetworkManager', () => {
 
     networkManager.subscribe(listenerMock);
 
-    connection.inbox!.publish([-1, { type: 'org.racehorse.OnlineStatusChangedAlertEvent', online: true }]);
+    connection.inbox!.publish([-1, { type: 'org.racehorse.OnlineStatusChangedAlertEvent', isOnline: true }]);
 
     expect(listenerMock).toHaveBeenCalledTimes(1);
 
-    expect(networkManager.online).toBe(true);
+    expect(networkManager.isOnline).toBe(true);
   });
 });

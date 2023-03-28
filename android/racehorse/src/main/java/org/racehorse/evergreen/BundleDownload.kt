@@ -23,8 +23,8 @@ internal class BundleDownload(
     private val etagFile = File("$targetDir.etag")
     private val zipFile = File("$targetDir.zip")
 
-    private var pending = false
-    private var stopped = false
+    private var isPending = false
+    private var isStopped = false
 
     /**
      * Starts the download.
@@ -35,10 +35,10 @@ internal class BundleDownload(
      * before.
      */
     fun start() {
-        if (pending || stopped) {
+        if (isPending || isStopped) {
             throw IllegalStateException("Cannot be started")
         }
-        pending = true
+        isPending = true
 
         targetDir.deleteRecursively()
 
@@ -47,10 +47,10 @@ internal class BundleDownload(
 
         download()
 
-        if (!stopped) {
+        if (!isStopped) {
             unzip()
         }
-        if (!stopped) {
+        if (!isStopped) {
             zipFile.delete()
             etagFile.delete()
             outputDir.renameTo(targetDir)
@@ -61,7 +61,7 @@ internal class BundleDownload(
      * Stops the pending download.
      */
     fun stop() {
-        stopped = true
+        isStopped = true
     }
 
     private fun download() {
@@ -92,7 +92,7 @@ internal class BundleDownload(
                 val contentLength = connection.contentLength
                 val buffer = ByteArray(bufferSize)
 
-                while (!stopped) {
+                while (!isStopped) {
                     onProgress(contentLength, readLength)
 
                     val byteCount = inputStream.read(buffer)
@@ -111,7 +111,7 @@ internal class BundleDownload(
         val unzipDirPath = outputDir.canonicalPath + File.separator
 
         ZipInputStream(zipFile.inputStream()).use { inputStream ->
-            while (!stopped) {
+            while (!isStopped) {
                 val file = File(outputDir, inputStream.nextEntry?.name ?: break)
 
                 // https://snyk.io/research/zip-slip-vulnerability

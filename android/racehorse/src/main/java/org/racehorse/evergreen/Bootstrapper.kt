@@ -23,7 +23,7 @@ open class Bootstrapper(private val bundlesDir: File) {
     private var updateDownload: BundleDownload? = null
 
     /**
-     * Application assets are ready to be used in [appDir].
+     * The app assets are ready to be used in [appDir].
      */
     protected open fun onBundleReady(appDir: File) {}
 

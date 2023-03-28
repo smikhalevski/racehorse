@@ -5,16 +5,15 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import android.os.Build
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.webview.*
 
 class IsOnlineRequestEvent : RequestEvent()
 
-class IsOnlineResponseEvent(val online: Boolean) : ResponseEvent()
+class IsOnlineResponseEvent(val isOnline: Boolean) : ResponseEvent()
 
-class OnlineStatusChangedAlertEvent(val online: Boolean) : AlertEvent
+class OnlineStatusChangedAlertEvent(val isOnline: Boolean) : AlertEvent
 
 /**
  * Monitors network status.
@@ -25,7 +24,7 @@ class NetworkPlugin(private val networkMonitor: NetworkMonitor) : Plugin(), Even
 
     @Subscribe
     fun onIsOnlineRequestEvent(event: IsOnlineRequestEvent) {
-        postToChain(event, IsOnlineResponseEvent(networkMonitor.online))
+        postToChain(event, IsOnlineResponseEvent(networkMonitor.isOnline))
     }
 }
 
@@ -38,43 +37,50 @@ open class NetworkMonitor(
         .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
         .build()
 ) {
-    var online = false
-        private set
+    val isOnline get() = activeNetworks.isNotEmpty()
 
-    private val onlineMap = HashMap<Network, Boolean>()
+    private val activeNetworks = HashSet<Network>()
 
     private val connectivityManager by lazy {
-        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
     }
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
-            if (online != setNetworkOnline(network, true)) {
+            if (isOnline != updateOnlineStatus(network, true)) {
                 eventBus.post(OnlineStatusChangedAlertEvent(true))
             }
         }
 
         override fun onLost(network: Network) {
-            if (online != setNetworkOnline(network, false)) {
+            if (isOnline != updateOnlineStatus(network, false)) {
                 eventBus.post(OnlineStatusChangedAlertEvent(false))
             }
         }
     }
 
-    private fun setNetworkOnline(network: Network, networkOnline: Boolean): Boolean {
-        onlineMap[network] = networkOnline
-        online = onlineMap.values.contains(true)
-        return online
+    private fun updateOnlineStatus(network: Network, online: Boolean): Boolean {
+        if (online) {
+            activeNetworks.add(network)
+        } else {
+            activeNetworks.remove(network)
+        }
+        return activeNetworks.isNotEmpty()
     }
 
     fun start() {
         connectivityManager?.run {
-            online = activeNetwork != null && getNetworkCapabilities(activeNetwork) != null
             registerNetworkCallback(networkRequest, networkCallback)
+
+            activeNetwork?.let { activeNetworks.add(it) }
+
+            eventBus.post(OnlineStatusChangedAlertEvent(isOnline))
         }
     }
 
     fun stop() {
+        activeNetworks.clear()
+
         connectivityManager?.unregisterNetworkCallback(networkCallback)
     }
 }
