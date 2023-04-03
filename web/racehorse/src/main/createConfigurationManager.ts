@@ -24,6 +24,11 @@ export interface ConfigurationManager {
    * @param defaultLocale The default locale that is returned if there's no matching locale among preferred.
    */
   pickLocale(supportedLocales: string[], defaultLocale: string): Promise<string>;
+
+  /**
+   * Subscribes a listener to soft keyboard visibility changes.
+   */
+  subscribeToKeyboardVisibility(listener: (keyboardVisible: boolean) => void): () => void;
 }
 
 /**
@@ -42,6 +47,14 @@ export function createConfigurationManager(eventBridge: EventBridge): Configurat
       return eventBridge
         .request({ type: 'org.racehorse.GetWindowInsetsRequestEvent' })
         .then(event => ensureEvent(event).rect);
+    },
+
+    subscribeToKeyboardVisibility(listener) {
+      return eventBridge.subscribe(event => {
+        if (event.type === 'org.racehorse.KeyboardVisibilityChangedAlertEvent') {
+          listener(event.keyboardVisible);
+        }
+      });
     },
 
     getPreferredLocales,
