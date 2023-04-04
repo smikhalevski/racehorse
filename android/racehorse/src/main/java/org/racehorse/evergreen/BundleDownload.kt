@@ -10,7 +10,7 @@ import java.util.zip.ZipInputStream
 /**
  * Downloads ZIP archive through the [connection] and extracts its contents to [targetDir].
  *
- * [targetDir] is created only after all operations have bee completed and all contents are ready to be consumed.
+ * [targetDir] is created only after all operations have been completed and archive contents are ready to be consumed.
  */
 internal class BundleDownload(
     private val connection: URLConnection,
