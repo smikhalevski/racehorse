@@ -10,6 +10,7 @@ import org.racehorse.*
 import org.racehorse.evergreen.BundleReadyEvent
 import org.racehorse.webview.AppWebView
 import org.racehorse.webview.StaticPathHandler
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,6 +26,7 @@ class MainActivity : AppCompatActivity() {
             .registerPlugin(ConfigurationPlugin(this))
             .registerPlugin(ActionsPlugin(this))
             .registerPlugin(GooglePlayReferrerPlugin())
+            .registerPlugin(EncryptedKeyValueStoragePlugin(File(filesDir, "storage")))
             .registerPlugin(FileChooserPlugin(this, externalCacheDir, "$packageName.provider"))
     }
 

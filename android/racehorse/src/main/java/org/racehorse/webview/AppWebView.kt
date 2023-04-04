@@ -8,13 +8,14 @@ import android.net.http.SslError
 import android.webkit.*
 import androidx.webkit.WebViewAssetLoader
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import org.greenrobot.eventbus.*
 
 @SuppressLint("ViewConstructor")
 class AppWebView(
     context: Context,
     private val eventBus: EventBus = EventBus.getDefault(),
-    private val gson: Gson = Gson()
+    private val gson: Gson = GsonBuilder().serializeNulls().create()
 ) : WebView(context) {
 
     companion object {
