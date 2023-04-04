@@ -64,12 +64,12 @@ open class FileChooserPlugin(
         fileChooserParams: FileChooserParams,
     ) {
 
-        private val multiple = fileChooserParams.mode == FileChooserParams.MODE_OPEN_MULTIPLE
+        private val isMultiple = fileChooserParams.mode == FileChooserParams.MODE_OPEN_MULTIPLE
+
         private val mimeType = fileChooserParams.acceptTypes.joinToString(",")
 
-        private val isWildcard = mimeType == "" || mimeType.contains("*/*")
-        private val isImage = isWildcard || mimeType.contains("image/")
-        private val isVideo = isWildcard || mimeType.contains("video/")
+        private val isImage = mimeType.isEmpty() || mimeType.contains("*/*") || mimeType.contains("image/")
+        private val isVideo = mimeType.isEmpty() || mimeType.contains("*/*") || mimeType.contains("video/")
 
         fun start() {
             if (
@@ -101,7 +101,7 @@ open class FileChooserPlugin(
             var intent = Intent(Intent.ACTION_GET_CONTENT)
                 .setType(mimeType)
                 .addCategory(Intent.CATEGORY_OPENABLE)
-                .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, multiple)
+                .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, isMultiple)
 
             if (cameraEnabled && cacheDir != null && authority != null) {
                 try {
