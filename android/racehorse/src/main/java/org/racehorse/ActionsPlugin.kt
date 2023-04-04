@@ -10,11 +10,11 @@ import org.racehorse.utils.excludePackage
 import org.racehorse.webview.*
 
 /**
- * Opens URL in the external application.
+ * Opens URL in the external app.
  */
 class OpenUrlRequestEvent(val url: String) : RequestEvent()
 
-class OpenUrlResponseEvent(val opened: Boolean) : ResponseEvent()
+class OpenUrlResponseEvent(val isOpened: Boolean) : ResponseEvent()
 
 /**
  * Launches activities for various intents.
@@ -22,7 +22,7 @@ class OpenUrlResponseEvent(val opened: Boolean) : ResponseEvent()
 open class ActionsPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability, OpenUrlCapability {
 
     /**
-     * Tries to open [uri] in an external application.
+     * Tries to open [uri] in an external app.
      *
      * @return `true` if an external activity has started, or `false` otherwise.
      */

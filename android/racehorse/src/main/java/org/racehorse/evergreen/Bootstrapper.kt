@@ -4,10 +4,9 @@ import java.io.File
 import java.net.URLConnection
 
 /**
- * Manages the app start process, downloads and unzips updates, handles mandatory and background updates, swaps app
- * bundles after restart.
+ * Manages the app start process: downloads and unzips update bundles and handles mandatory and background updates.
  *
- * @param bundlesDir The directory where bootstrapper sores app bundles.
+ * @param bundlesDir The directory where bootstrapper stores app bundles.
  */
 open class Bootstrapper(private val bundlesDir: File) {
 
@@ -23,7 +22,7 @@ open class Bootstrapper(private val bundlesDir: File) {
     private var updateDownload: BundleDownload? = null
 
     /**
-     * Application assets are ready to be used in [appDir].
+     * App assets available in [appDir] and are ready to be used.
      */
     protected open fun onBundleReady(appDir: File) {}
 
@@ -38,7 +37,7 @@ open class Bootstrapper(private val bundlesDir: File) {
     protected open fun onUpdateFailed(mandatory: Boolean, cause: Throwable) {}
 
     /**
-     * An update was successfully downloaded.
+     * A non-mandatory update was successfully downloaded and ready to be applied.
      */
     protected open fun onUpdateReady() {}
 
@@ -51,8 +50,8 @@ open class Bootstrapper(private val bundlesDir: File) {
      * Starts/restarts the bundle provisioning process.
      *
      * @param version The expected version of the app bundle.
-     * @param mandatory If `true` then the app must not start if version isn't [version], otherwise the app can start
-     * if any bundle is available, and update is downloaded in the background.
+     * @param mandatory If `true` then the app must not start if available bundle version isn't [version], otherwise the
+     * app can start if any bundle is available, and update is downloaded in the background.
      * @param openConnection Returns connection that downloads the bundle ZIP archive.
      */
     fun start(
@@ -105,9 +104,9 @@ open class Bootstrapper(private val bundlesDir: File) {
     }
 
     /**
-     * Applies update it it is available.
+     * Applies update if it is available.
      *
-     * @return `true` is update was applied, or `false` if there is no update to apply.
+     * @return `true` if update was applied, or `false` if there is no update to apply.
      */
     private fun applyUpdate(): Boolean {
         if (!updateDir.exists() || updateDownload != null) {

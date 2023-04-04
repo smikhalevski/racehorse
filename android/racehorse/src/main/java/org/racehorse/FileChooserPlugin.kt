@@ -64,16 +64,16 @@ open class FileChooserPlugin(
         fileChooserParams: FileChooserParams,
     ) {
 
-        private val multiple = fileChooserParams.mode == FileChooserParams.MODE_OPEN_MULTIPLE
+        private val isMultiple = fileChooserParams.mode == FileChooserParams.MODE_OPEN_MULTIPLE
+
         private val mimeType = fileChooserParams.acceptTypes.joinToString(",")
 
-        private val anyRequested = mimeType == "" || mimeType.contains("*/*")
-        private val imageRequested = anyRequested || mimeType.contains("image/")
-        private val videoRequested = anyRequested || mimeType.contains("video/")
+        private val isImage = mimeType.isEmpty() || mimeType.contains("*/*") || mimeType.contains("image/")
+        private val isVideo = mimeType.isEmpty() || mimeType.contains("*/*") || mimeType.contains("video/")
 
         fun start() {
             if (
-                !imageRequested && !videoRequested ||
+                !isImage && !isVideo ||
                 !(cacheDir != null && authority != null && activity.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
             ) {
                 // No camera-related MIME types, camera isn't supported, or capture result cannot be saved
@@ -101,7 +101,7 @@ open class FileChooserPlugin(
             var intent = Intent(Intent.ACTION_GET_CONTENT)
                 .setType(mimeType)
                 .addCategory(Intent.CATEGORY_OPENABLE)
-                .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, multiple)
+                .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, isMultiple)
 
             if (cameraEnabled && cacheDir != null && authority != null) {
                 try {
@@ -112,13 +112,13 @@ open class FileChooserPlugin(
 
                     val fileUri = FileProvider.getUriForFile(activity, authority, file)
 
-                    val imageIntent = if (anyRequested || imageRequested) {
+                    val imageIntent = if (isImage) {
                         Intent(MediaStore.ACTION_IMAGE_CAPTURE)
                             .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                             .putExtra(MediaStore.EXTRA_OUTPUT, fileUri)
                     } else null
 
-                    val videoIntent = if (anyRequested || videoRequested) {
+                    val videoIntent = if (isVideo) {
                         Intent(MediaStore.ACTION_VIDEO_CAPTURE)
                             .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                             .putExtra(MediaStore.EXTRA_OUTPUT, fileUri)

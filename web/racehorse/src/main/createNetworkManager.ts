@@ -6,12 +6,12 @@ export interface NetworkManager {
   /**
    * The current online status, or `undefined` if not yet known.
    */
-  readonly online: boolean | undefined;
+  readonly isOnline: boolean | undefined;
 
   /**
    * Subscribes to network status changes.
    */
-  subscribe(listener: () => void): () => void;
+  subscribeToOnlineStatusChanges(listener: () => void): () => void;
 }
 
 /**
@@ -31,28 +31,28 @@ export function createNetworkManager(eventBridge: EventBridge): NetworkManager {
     }
 
     eventBridge.request({ type: 'org.racehorse.IsOnlineRequestEvent' }).then(event => {
-      online = ensureEvent(event).online;
+      online = ensureEvent(event).isOnline;
       pubSub.publish();
     });
 
     unsubscribe = eventBridge.subscribe(event => {
       if (event.type === 'org.racehorse.OnlineStatusChangedAlertEvent') {
-        online = event.online;
+        online = event.isOnline;
         pubSub.publish();
       }
     });
   };
 
   const manager: NetworkManager = {
-    online: undefined,
+    isOnline: undefined,
 
-    subscribe(listener) {
+    subscribeToOnlineStatusChanges(listener) {
       ensureSubscription();
       return pubSub.subscribe(listener);
     },
   };
 
-  Object.defineProperty(manager, 'online', {
+  Object.defineProperty(manager, 'isOnline', {
     get() {
       ensureSubscription();
       return online;

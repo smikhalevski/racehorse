@@ -33,14 +33,14 @@ class MainActivity : AppCompatActivity() {
 
         // 1️⃣ Debug in emulator with a server running on the host machine on localhost:1234
         // Run `npm start` in `<racehorse>/web/example` then start the app in emulator.
-        webView.start("https://10.0.2.2:1234")
+        webView.loadApp("https://10.0.2.2:1234")
         setContentView(webView)
 
 /*
         // 2️⃣ Load app bundle from src/main/assets folder
         // Run `num run build` in `<racehorse>/web/example`, copy files from `<racehorse>/web/example/dist` to
         // `<racehorse>/android/example/src/main/assets`, then start the app in emulator.
-        webView.start(
+        webView.loadApp(
             "http://example.com",
             WebViewAssetLoader.Builder()
                 .setDomain("example.com")
@@ -69,18 +69,21 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+
         networkMonitor.start()
+        webView.startPlugins()
     }
 
     override fun onPause() {
         super.onPause()
+
         networkMonitor.stop()
-        webView.pause()
+        webView.pausePlugins()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onBundleReadyEvent(event: BundleReadyEvent) {
-        webView.start(
+        webView.loadApp(
             "https://example.com",
             WebViewAssetLoader.Builder()
                 .setDomain("example.com")

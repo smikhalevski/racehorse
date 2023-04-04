@@ -13,7 +13,7 @@ class GetFirebaseTokenRequestEvent : RequestEvent()
 
 class GetFirebaseTokenResponseEvent(val token: String?) : ResponseEvent()
 
-class FirebasePlugin : Plugin(), EventBusCapability {
+open class FirebasePlugin : Plugin(), EventBusCapability {
 
     @Subscribe
     fun onGetFirebaseTokenRequestEvent(event: GetFirebaseTokenRequestEvent) {

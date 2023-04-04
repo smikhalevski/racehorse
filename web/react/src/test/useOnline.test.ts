@@ -14,7 +14,7 @@ describe('useOnline', () => {
   test('reads initial online status', async () => {
     const connection: Connection = {
       post: jest.fn(() => {
-        setTimeout(() => connection.inbox!.publish([111, { type: '', ok: true, online: true }]), 0);
+        setTimeout(() => connection.inbox!.publish([111, { type: '', ok: true, isOnline: true }]), 0);
         return 111;
       }),
     };
@@ -53,7 +53,7 @@ describe('useOnline', () => {
     });
 
     act(() => {
-      connection.inbox!.publish([-1, { type: 'org.racehorse.OnlineStatusChangedAlertEvent', online: true }]);
+      connection.inbox!.publish([-1, { type: 'org.racehorse.OnlineStatusChangedAlertEvent', isOnline: true }]);
     });
 
     expect(hookMock).toHaveBeenCalledTimes(2);

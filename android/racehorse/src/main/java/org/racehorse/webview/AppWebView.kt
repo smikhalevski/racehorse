@@ -21,6 +21,12 @@ class AppWebView(
         const val CONNECTION_KEY = "racehorseConnection"
     }
 
+    /**
+     * `true` if the [loadApp] was called, or `false` otherwise.
+     */
+    var isAppLoaded = false
+        private set
+
     private val plugins = ArrayList<Plugin>()
     private val cookieManager = CookieManager.getInstance()
 
@@ -39,22 +45,30 @@ class AppWebView(
     }
 
     /**
-     * Starts the application that is loaded from [appUrl]. Use IP `10.0.2.2` to load content from the host machine of
-     * the Android device emulator. [assetLoader] intercepts all requests
+     * Loads the app from [appUrl].
+     *
+     * Use IP `10.0.2.2` to load content from the host machine of the Android device emulator.
      */
-    fun start(appUrl: String, assetLoader: WebViewAssetLoader? = null) {
+    fun loadApp(appUrl: String, assetLoader: WebViewAssetLoader? = null) {
+        isAppLoaded = true
+
         webChromeClient = AppWebChromeClient()
         webViewClient = AppWebViewClient(appUrl, assetLoader)
 
         loadUrl(appUrl)
+    }
 
+    /**
+     * Starts all plugins.
+     */
+    fun startPlugins() {
         plugins.forEach(Plugin::onStart)
     }
 
     /**
-     * Persists application data and pauses all plugins.
+     * Persists app data and pauses all plugins.
      */
-    fun pause() {
+    fun pausePlugins() {
         cookieManager.flush()
         plugins.forEach(Plugin::onPause)
     }

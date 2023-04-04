@@ -4,7 +4,7 @@ describe('createActionsManager', () => {
   test('returns true if opened', async () => {
     const connection: Connection = {
       post: jest.fn(() => {
-        setTimeout(() => connection.inbox!.publish([111, { type: '', ok: true, opened: true }]), 0);
+        setTimeout(() => connection.inbox!.publish([111, { type: '', ok: true, isOpened: true }]), 0);
         return 111;
       }),
     };
@@ -25,7 +25,7 @@ describe('createActionsManager', () => {
   test('returns false if not opened', async () => {
     const connection: Connection = {
       post: jest.fn(() => {
-        setTimeout(() => connection.inbox!.publish([111, { type: '', ok: true, opened: false }]), 0);
+        setTimeout(() => connection.inbox!.publish([111, { type: '', ok: true, isOpened: false }]), 0);
         return 111;
       }),
     };

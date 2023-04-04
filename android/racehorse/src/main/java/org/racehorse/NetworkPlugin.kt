@@ -4,77 +4,80 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
-import android.net.NetworkRequest
-import android.os.Build
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.webview.*
 
 class IsOnlineRequestEvent : RequestEvent()
 
-class IsOnlineResponseEvent(val online: Boolean) : ResponseEvent()
+class IsOnlineResponseEvent(val isOnline: Boolean) : ResponseEvent()
 
-class OnlineStatusChangedAlertEvent(val online: Boolean) : AlertEvent
+class OnlineStatusChangedAlertEvent(val isOnline: Boolean) : AlertEvent
 
 /**
  * Monitors network status.
  *
  * @param networkMonitor The type of monitored network.
  */
-class NetworkPlugin(private val networkMonitor: NetworkMonitor) : Plugin(), EventBusCapability {
+open class NetworkPlugin(private val networkMonitor: NetworkMonitor) : Plugin(), EventBusCapability {
+
+    override fun onStart() {
+        networkMonitor.start()
+    }
+
+    override fun onPause() {
+        networkMonitor.stop()
+    }
 
     @Subscribe
     fun onIsOnlineRequestEvent(event: IsOnlineRequestEvent) {
-        postToChain(event, IsOnlineResponseEvent(networkMonitor.online))
+        postToChain(event, IsOnlineResponseEvent(networkMonitor.isOnline))
     }
 }
 
-open class NetworkMonitor(
-    private val eventBus: EventBus,
-    private val context: Context,
-    private val networkRequest: NetworkRequest = NetworkRequest.Builder()
-        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-        .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
-        .build()
-) {
-    var online = false
+/**
+ * Watches default app networks and posts [OnlineStatusChangedAlertEvent] when online status is changed.
+ */
+open class NetworkMonitor(private val eventBus: EventBus, private val context: Context) {
+    var isOnline = false
         private set
 
-    private val onlineMap = HashMap<Network, Boolean>()
-
     private val connectivityManager by lazy {
-        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     }
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+
         override fun onAvailable(network: Network) {
-            if (online != setNetworkOnline(network, true)) {
-                eventBus.post(OnlineStatusChangedAlertEvent(true))
-            }
+            isOnline = true
+            eventBus.post(OnlineStatusChangedAlertEvent(true))
         }
 
         override fun onLost(network: Network) {
-            if (online != setNetworkOnline(network, false)) {
-                eventBus.post(OnlineStatusChangedAlertEvent(false))
-            }
+            isOnline = false
+            eventBus.post(OnlineStatusChangedAlertEvent(false))
         }
     }
 
-    private fun setNetworkOnline(network: Network, networkOnline: Boolean): Boolean {
-        onlineMap[network] = networkOnline
-        online = onlineMap.values.contains(true)
-        return online
-    }
-
+    /**
+     * Enables network monitoring and posts [OnlineStatusChangedAlertEvent] when network state is changed.
+     */
     fun start() {
-        connectivityManager?.run {
-            online = activeNetwork != null && getNetworkCapabilities(activeNetwork) != null
-            registerNetworkCallback(networkRequest, networkCallback)
+        with(connectivityManager) {
+            val online =
+                getNetworkCapabilities(activeNetwork)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+
+            isOnline = online
+            eventBus.post(OnlineStatusChangedAlertEvent(online))
+
+            registerDefaultNetworkCallback(networkCallback)
         }
     }
 
+    /**
+     * Stops network monitoring.
+     */
     fun stop() {
-        connectivityManager?.unregisterNetworkCallback(networkCallback)
+        connectivityManager.unregisterNetworkCallback(networkCallback)
     }
 }

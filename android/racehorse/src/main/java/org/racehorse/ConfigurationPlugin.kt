@@ -1,28 +1,55 @@
 package org.racehorse
 
-import android.annotation.SuppressLint
-import android.os.Build
+import android.view.View
 import androidx.activity.ComponentActivity
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsCompat.toWindowInsetsCompat
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.webview.EventBusCapability
-import org.racehorse.webview.Plugin
-import org.racehorse.webview.RequestEvent
-import org.racehorse.webview.ResponseEvent
+import org.racehorse.webview.*
 
 class GetPreferredLocalesRequestEvent : RequestEvent()
 
 class GetPreferredLocalesResponseEvent(val locales: Array<String>) : ResponseEvent()
 
-class GetWindowInsetsRequestEvent : RequestEvent()
+class GetWindowInsetsRequestEvent(
+    val typeMask: Int =
+        WindowInsetsCompat.Type.displayCutout() or
+            WindowInsetsCompat.Type.navigationBars() or
+            WindowInsetsCompat.Type.statusBars()
+) : RequestEvent()
 
 class GetWindowInsetsResponseEvent(val rect: Rect) : ResponseEvent()
 
-class Rect(val top: Int, val right: Int, val bottom: Int, val left: Int)
+class KeyboardVisibilityChangedAlertEvent(val isKeyboardVisible: Boolean) : AlertEvent
+
+class Rect(val top: Float, val right: Float, val bottom: Float, val left: Float)
 
 /**
  * Device configuration and general information.
  */
-class ConfigurationPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability {
+open class ConfigurationPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability {
+
+    private var isKeyboardVisible = false
+
+    private val keyboardListener = View.OnApplyWindowInsetsListener { _, windowInsets ->
+        with(toWindowInsetsCompat(windowInsets).getInsets(WindowInsetsCompat.Type.ime())) {
+            if (isKeyboardVisible != (top + right + bottom + left != 0)) {
+                isKeyboardVisible = !isKeyboardVisible
+                eventBus.post(KeyboardVisibilityChangedAlertEvent(isKeyboardVisible))
+            }
+        }
+        windowInsets
+    }
+
+    override fun onStart() {
+        super.onStart()
+        activity.window.decorView.setOnApplyWindowInsetsListener(keyboardListener)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        activity.window.decorView.setOnApplyWindowInsetsListener(null)
+    }
 
     @Subscribe
     fun onGetPreferredLocalesRequestEvent(event: GetPreferredLocalesRequestEvent) {
@@ -39,41 +66,13 @@ class ConfigurationPlugin(private val activity: ComponentActivity) : Plugin(), E
 
     @Subscribe
     fun onGetWindowInsetsRequestEvent(event: GetWindowInsetsRequestEvent) {
-        val rect = try {
-            getWindowInsets()
-        } catch (_: Throwable) {
-            Rect(0, 0, 0, 0)
+        val density = activity.resources.displayMetrics.density
+        val insets = toWindowInsetsCompat(activity.window.decorView.rootWindowInsets).getInsets(event.typeMask)
+
+        val rect = with(insets) {
+            Rect(top / density, right / density, bottom / density, left / density)
         }
 
         postToChain(event, GetWindowInsetsResponseEvent(rect))
-    }
-
-    @SuppressLint("DiscouragedApi", "InternalInsetResource")
-    fun getWindowInsets(): Rect = with(activity.resources) {
-        val density = displayMetrics.density
-
-        var statusBarHeight = 0f
-        var navigationBarHeight = 0f
-
-        if (Build.VERSION.SDK_INT >= 28) {
-            activity.window.decorView.rootWindowInsets.displayCutout?.let {
-                statusBarHeight = it.safeInsetTop / density
-                navigationBarHeight = it.safeInsetBottom / density
-            }
-        }
-
-        if (statusBarHeight == 0f) {
-            statusBarHeight = getDimensionPixelSize(
-                getIdentifier("status_bar_height", "dimen", "android")
-            ) / density
-        }
-
-        if (navigationBarHeight == 0f) {
-            navigationBarHeight = getDimensionPixelSize(
-                getIdentifier("navigation_bar_height", "dimen", "android")
-            ) / density
-        }
-
-        Rect(statusBarHeight.toInt(), 0, navigationBarHeight.toInt(), 0)
     }
 }

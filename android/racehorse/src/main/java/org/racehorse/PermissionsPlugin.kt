@@ -23,7 +23,7 @@ class IsPermissionGrantedRequestEvent(val permissions: Array<String>) : RequestE
 class IsPermissionGrantedResponseEvent(val statuses: Map<String, Boolean>) : ResponseEvent()
 
 /**
- * Requests permissions to be granted to the application.
+ * Requests permissions to be granted to the app.
  */
 class AskForPermissionRequestEvent(val permissions: Array<String>) : RequestEvent()
 
@@ -32,7 +32,7 @@ class AskForPermissionResponseEvent(val statuses: Map<String, Boolean>) : Respon
 /**
  * Check permission statuses and ask for permissions.
  */
-class PermissionsPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability, PermissionsCapability {
+open class PermissionsPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability, PermissionsCapability {
 
     override fun onAskForPermissions(
         permissions: Array<String>,
