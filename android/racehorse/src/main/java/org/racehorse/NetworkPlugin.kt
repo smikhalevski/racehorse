@@ -21,6 +21,14 @@ class OnlineStatusChangedAlertEvent(val isOnline: Boolean) : AlertEvent
  */
 open class NetworkPlugin(private val networkMonitor: NetworkMonitor) : Plugin(), EventBusCapability {
 
+    override fun onStart() {
+        networkMonitor.start()
+    }
+
+    override fun onPause() {
+        networkMonitor.stop()
+    }
+
     @Subscribe
     fun onIsOnlineRequestEvent(event: IsOnlineRequestEvent) {
         postToChain(event, IsOnlineResponseEvent(networkMonitor.isOnline))
