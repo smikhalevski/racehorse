@@ -11,7 +11,7 @@ export interface NetworkManager {
   /**
    * Subscribes to network status changes.
    */
-  subscribe(listener: () => void): () => void;
+  subscribeToOnlineStatusChanges(listener: () => void): () => void;
 }
 
 /**
@@ -46,7 +46,7 @@ export function createNetworkManager(eventBridge: EventBridge): NetworkManager {
   const manager: NetworkManager = {
     isOnline: undefined,
 
-    subscribe(listener) {
+    subscribeToOnlineStatusChanges(listener) {
       ensureSubscription();
       return pubSub.subscribe(listener);
     },

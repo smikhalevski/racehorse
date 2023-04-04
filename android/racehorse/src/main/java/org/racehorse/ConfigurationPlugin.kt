@@ -20,22 +20,22 @@ class GetWindowInsetsRequestEvent(
 
 class GetWindowInsetsResponseEvent(val rect: Rect) : ResponseEvent()
 
-class KeyboardVisibilityChangedAlertEvent(val keyboardVisible: Boolean) : AlertEvent
+class KeyboardVisibilityChangedAlertEvent(val isKeyboardVisible: Boolean) : AlertEvent
 
 class Rect(val top: Float, val right: Float, val bottom: Float, val left: Float)
 
 /**
  * Device configuration and general information.
  */
-class ConfigurationPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability {
+open class ConfigurationPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability {
 
-    private var keyboardVisible = false
+    private var isKeyboardVisible = false
 
     private val keyboardListener = View.OnApplyWindowInsetsListener { _, windowInsets ->
         with(toWindowInsetsCompat(windowInsets).getInsets(WindowInsetsCompat.Type.ime())) {
-            if (keyboardVisible != (top + right + bottom + left != 0)) {
-                keyboardVisible = !keyboardVisible
-                eventBus.post(KeyboardVisibilityChangedAlertEvent(keyboardVisible))
+            if (isKeyboardVisible != (top + right + bottom + left != 0)) {
+                isKeyboardVisible = !isKeyboardVisible
+                eventBus.post(KeyboardVisibilityChangedAlertEvent(isKeyboardVisible))
             }
         }
         windowInsets

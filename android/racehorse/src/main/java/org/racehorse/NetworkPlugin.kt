@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
-import android.net.NetworkRequest
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.webview.*
@@ -20,7 +19,7 @@ class OnlineStatusChangedAlertEvent(val isOnline: Boolean) : AlertEvent
  *
  * @param networkMonitor The type of monitored network.
  */
-class NetworkPlugin(private val networkMonitor: NetworkMonitor) : Plugin(), EventBusCapability {
+open class NetworkPlugin(private val networkMonitor: NetworkMonitor) : Plugin(), EventBusCapability {
 
     @Subscribe
     fun onIsOnlineRequestEvent(event: IsOnlineRequestEvent) {
@@ -28,59 +27,49 @@ class NetworkPlugin(private val networkMonitor: NetworkMonitor) : Plugin(), Even
     }
 }
 
-open class NetworkMonitor(
-    private val eventBus: EventBus,
-    private val context: Context,
-    private val networkRequest: NetworkRequest = NetworkRequest.Builder()
-        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-        .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
-        .build()
-) {
-    val isOnline get() = activeNetworks.isNotEmpty()
-
-    private val activeNetworks = HashSet<Network>()
+/**
+ * Watches default app networks and posts [OnlineStatusChangedAlertEvent] when online status is changed.
+ */
+open class NetworkMonitor(private val eventBus: EventBus, private val context: Context) {
+    var isOnline = false
+        private set
 
     private val connectivityManager by lazy {
-        context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     }
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+
         override fun onAvailable(network: Network) {
-            if (isOnline != updateOnlineStatus(network, true)) {
-                eventBus.post(OnlineStatusChangedAlertEvent(true))
-            }
+            isOnline = true
+            eventBus.post(OnlineStatusChangedAlertEvent(true))
         }
 
         override fun onLost(network: Network) {
-            if (isOnline != updateOnlineStatus(network, false)) {
-                eventBus.post(OnlineStatusChangedAlertEvent(false))
-            }
+            isOnline = false
+            eventBus.post(OnlineStatusChangedAlertEvent(false))
         }
     }
 
-    private fun updateOnlineStatus(network: Network, online: Boolean): Boolean {
-        if (online) {
-            activeNetworks.add(network)
-        } else {
-            activeNetworks.remove(network)
-        }
-        return activeNetworks.isNotEmpty()
-    }
-
+    /**
+     * Enables network monitoring and posts [OnlineStatusChangedAlertEvent] when network state is changed.
+     */
     fun start() {
-        connectivityManager?.run {
-            registerNetworkCallback(networkRequest, networkCallback)
+        with(connectivityManager) {
+            val online =
+                getNetworkCapabilities(activeNetwork)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
 
-            activeNetwork?.let { activeNetworks.add(it) }
+            isOnline = online
+            eventBus.post(OnlineStatusChangedAlertEvent(online))
 
-            eventBus.post(OnlineStatusChangedAlertEvent(isOnline))
+            registerDefaultNetworkCallback(networkCallback)
         }
     }
 
+    /**
+     * Stops network monitoring.
+     */
     fun stop() {
-        activeNetworks.clear()
-
-        connectivityManager?.unregisterNetworkCallback(networkCallback)
+        connectivityManager.unregisterNetworkCallback(networkCallback)
     }
 }

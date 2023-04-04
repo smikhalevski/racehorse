@@ -32,7 +32,7 @@ class AskForPermissionResponseEvent(val statuses: Map<String, Boolean>) : Respon
 /**
  * Check permission statuses and ask for permissions.
  */
-class PermissionsPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability, PermissionsCapability {
+open class PermissionsPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability, PermissionsCapability {
 
     override fun onAskForPermissions(
         permissions: Array<String>,

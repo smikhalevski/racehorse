@@ -6,7 +6,7 @@ import android.webkit.WebView
 import org.racehorse.webview.HttpsCapability
 import org.racehorse.webview.Plugin
 
-class HttpsPlugin : Plugin(), HttpsCapability {
+open class HttpsPlugin : Plugin(), HttpsCapability {
 
     override fun onReceivedSslError(webView: WebView, handler: SslErrorHandler, error: SslError): Boolean {
         // TODO Validate public keys
