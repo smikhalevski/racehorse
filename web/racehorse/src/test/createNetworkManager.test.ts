@@ -43,7 +43,7 @@ describe('createNetworkManager', () => {
 
     const networkManager = createNetworkManager(eventBridge);
 
-    networkManager.subscribe(listenerMock);
+    networkManager.subscribeToOnlineStatusChanges(listenerMock);
 
     connection.inbox!.publish([-1, { type: 'org.racehorse.OnlineStatusChangedAlertEvent', isOnline: true }]);
 
