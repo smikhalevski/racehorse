@@ -151,6 +151,12 @@ class AppWebView(
 
     private inner class AppWebChromeClient : WebChromeClient() {
 
+        override fun onJsBeforeUnload(view: WebView, url: String, message: String, result: JsResult): Boolean {
+            // Never show "Confirm navigation" popup
+            result.confirm()
+            return true
+        }
+
         override fun onShowFileChooser(
             webView: WebView,
             filePathCallback: ValueCallback<Array<Uri>>,
