@@ -38,6 +38,7 @@ class AppWebView(
         @SuppressLint("SetJavaScriptEnabled")
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
+        settings.mediaPlaybackRequiresUserGesture = false
         settings.setGeolocationEnabled(true)
 
         addJavascriptInterface(Connection(gson, eventBus), CONNECTION_KEY)
