@@ -178,23 +178,21 @@ class AppWebView(
         }
 
         override fun onPermissionRequest(request: PermissionRequest) {
-            val resources = HashSet<String>()
-
             val applied = applyPlugin<PermissionsCapability> {
-                resources.clear()
+                val permissions = HashSet<String>()
 
                 if (request.resources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
-                    resources.add(Manifest.permission.CAMERA)
+                    permissions.add(Manifest.permission.CAMERA)
                 }
                 if (request.resources.contains(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
-                    resources.add(Manifest.permission.RECORD_AUDIO)
+                    permissions.add(Manifest.permission.RECORD_AUDIO)
                 }
-                if (resources.isEmpty()) {
+                if (permissions.isEmpty()) {
                     return@applyPlugin false
                 }
 
-                onAskForPermissions(resources.toTypedArray()) { statuses ->
-                    resources.clear()
+                onAskForPermissions(permissions.toTypedArray()) { statuses ->
+                    val resources = HashSet<String>()
 
                     if (statuses[Manifest.permission.CAMERA] == true) {
                         resources.add(PermissionRequest.RESOURCE_VIDEO_CAPTURE)
@@ -205,7 +203,7 @@ class AppWebView(
                     if (resources.isEmpty()) {
                         request.deny()
                     } else {
-                        request.grant(request.resources)
+                        request.grant(resources.toTypedArray())
                     }
                 }
             }
