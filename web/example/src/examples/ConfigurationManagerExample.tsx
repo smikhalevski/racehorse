@@ -18,10 +18,9 @@ export function ConfigurationManagerExample() {
         {'Locales: '}
         {preferredLocales.join(',')}
       </p>
-      <p>
-        {'Insets: '}
-        <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(insets, null, 2)}</pre>
-      </p>
+
+      {'Insets: '}
+      <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(insets, null, 2)}</pre>
     </>
   );
 }
