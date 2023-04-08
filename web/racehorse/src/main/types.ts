@@ -1,7 +1,7 @@
 import { PubSub } from 'parallel-universe';
 
 /**
- * The event transported through the {@linkcode EventBridge}.
+ * The event transported through the {@link EventBridge}.
  */
 export interface Event {
   /**
@@ -33,7 +33,7 @@ export interface Connection {
   /**
    * The pub-sub to which Android publishes envelopes for the web to consume.
    *
-   * Request ID is either a non-negative number returned from {@linkcode post}, or -1 if an event is an alert pushed by
+   * Request ID is either a non-negative number returned from {@link post}, or -1 if an event is an alert pushed by
    * Android.
    */
   inbox?: PubSub<[requestId: number, event: Event]>;
@@ -60,8 +60,8 @@ export interface EventBridge {
 
   /**
    * Sends an event through a connection to Android and returns a promise that is resolved when a response with a
-   * matching ID is published to the {@linkcode Connection.inbox}. The returned promise is never rejected.
-   * Check {@linkcode ResponseEvent.ok} to detect that an error occurred.
+   * matching ID is published to the {@link Connection.inbox}. The returned promise is never rejected.
+   * Check {@link ResponseEvent.ok} to detect that an error occurred.
    *
    * @param event The request event to send.
    * @returns The response event.
