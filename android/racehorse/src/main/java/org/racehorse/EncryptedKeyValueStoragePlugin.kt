@@ -1,8 +1,10 @@
 package org.racehorse
 
 import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.webview.*
 import java.io.File
+import java.security.MessageDigest
 import javax.crypto.BadPaddingException
 import javax.crypto.Cipher
 import javax.crypto.SecretKeyFactory
@@ -69,47 +71,49 @@ open class EncryptedKeyValueStoragePlugin(private val storageDir: File) : Plugin
         return File(storageDir, "$key.ekv")
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onSetEncryptedValueRequestEvent(event: SetEncryptedValueRequestEvent) {
+        val valueBytes = event.value.toByteArray()
+
         val cipher = getCipher()
+        val digest = MessageDigest.getInstance("SHA-512")
 
         cipher.init(Cipher.ENCRYPT_MODE, getSecret(event.password))
 
-        val bytes = cipher.iv + cipher.doFinal(event.value.toByteArray())
-
-        getFile(event.key).writeBytes(bytes)
+        getFile(event.key).writeBytes(cipher.iv + cipher.doFinal(digest.digest(valueBytes) + valueBytes))
 
         postToChain(event, VoidResponseEvent())
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onGetEncryptedValueRequestEvent(event: GetEncryptedValueRequestEvent) {
-        val file = getFile(event.key);
+        val file = getFile(event.key)
 
         val value = if (file.exists()) {
+            val fileBytes = file.readBytes()
+
             val cipher = getCipher()
 
-            val bytes = file.readBytes()
-            val iv = IvParameterSpec(bytes.copyOfRange(0, 16))
+            cipher.init(Cipher.DECRYPT_MODE, getSecret(event.password), IvParameterSpec(fileBytes.copyOf(16)))
 
-            cipher.init(Cipher.DECRYPT_MODE, getSecret(event.password), iv)
-
-            try {
-                String(cipher.doFinal(bytes.copyOfRange(16, bytes.size)))
+            val bytes = try {
+                cipher.doFinal(fileBytes.copyOfRange(16, fileBytes.size))
             } catch (_: BadPaddingException) {
                 throw IllegalArgumentException("Cannot decrypt a value")
             }
+
+            String(bytes.copyOfRange(64, bytes.size))
         } else null
 
         postToChain(event, GetEncryptedValueResponseEvent(value))
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onHasEncryptedValueRequestEvent(event: HasEncryptedValueRequestEvent) {
         postToChain(event, HasEncryptedValueResponseEvent(getFile(event.key).exists()))
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onDeleteEncryptedValueRequestEvent(event: DeleteEncryptedValueRequestEvent) {
         getFile(event.key).delete()
 

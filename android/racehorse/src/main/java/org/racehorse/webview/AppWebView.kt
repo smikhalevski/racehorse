@@ -38,6 +38,7 @@ class AppWebView(
         @SuppressLint("SetJavaScriptEnabled")
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
+        settings.mediaPlaybackRequiresUserGesture = false
         settings.setGeolocationEnabled(true)
 
         addJavascriptInterface(Connection(gson, eventBus), CONNECTION_KEY)
@@ -147,9 +148,15 @@ class AppWebView(
      * Calls plugins that implement a given capability. If [callback] returns `true` then the apply is a success,
      * otherwise the next plugin is called.
      */
-    private inline fun <reified T> applyPlugin(callback: (T) -> Boolean) = plugins.filterIsInstance<T>().any(callback)
+    private inline fun <reified T> applyPlugin(callback: T.() -> Boolean) = plugins.filterIsInstance<T>().any { it.callback() }
 
     private inner class AppWebChromeClient : WebChromeClient() {
+
+        override fun onJsBeforeUnload(view: WebView, url: String, message: String, result: JsResult): Boolean {
+            // Never show "Confirm navigation" popup
+            result.confirm()
+            return true
+        }
 
         override fun onShowFileChooser(
             webView: WebView,
@@ -157,17 +164,53 @@ class AppWebView(
             fileChooserParams: FileChooserParams,
         ): Boolean {
             return applyPlugin<FileChooserCapability> {
-                it.onShowFileChooser(this@AppWebView, filePathCallback, fileChooserParams)
+                onShowFileChooser(this@AppWebView, filePathCallback, fileChooserParams)
             }
         }
 
         override fun onGeolocationPermissionsShowPrompt(origin: String, callback: GeolocationPermissions.Callback) {
             applyPlugin<PermissionsCapability> {
-                it.onAskForPermissions(
+                onAskForPermissions(
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
                 ) { statuses ->
                     callback.invoke(origin, statuses.containsValue(true), false)
                 }
+            }
+        }
+
+        override fun onPermissionRequest(request: PermissionRequest) {
+            val applied = applyPlugin<PermissionsCapability> {
+                val permissions = HashSet<String>()
+
+                if (request.resources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
+                    permissions.add(Manifest.permission.CAMERA)
+                }
+                if (request.resources.contains(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
+                    permissions.add(Manifest.permission.RECORD_AUDIO)
+                }
+                if (permissions.isEmpty()) {
+                    return@applyPlugin false
+                }
+
+                onAskForPermissions(permissions.toTypedArray()) { statuses ->
+                    val resources = HashSet<String>()
+
+                    if (statuses[Manifest.permission.CAMERA] == true) {
+                        resources.add(PermissionRequest.RESOURCE_VIDEO_CAPTURE)
+                    }
+                    if (statuses[Manifest.permission.RECORD_AUDIO] == true) {
+                        resources.add(PermissionRequest.RESOURCE_AUDIO_CAPTURE)
+                    }
+                    if (resources.isEmpty()) {
+                        request.deny()
+                    } else {
+                        request.grant(resources.toTypedArray())
+                    }
+                }
+            }
+
+            if (!applied) {
+                request.deny()
             }
         }
     }
@@ -179,7 +222,7 @@ class AppWebView(
 
         @SuppressLint("WebViewClientOnReceivedSslError")
         override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
-            if (!applyPlugin<HttpsCapability> { it.onReceivedSslError(view, handler, error) }) {
+            if (!applyPlugin<HttpsCapability> { onReceivedSslError(view, handler, error) }) {
                 handler.cancel()
             }
         }
@@ -200,7 +243,7 @@ class AppWebView(
             if (requestUri.authority == appAuthority) {
                 return false
             }
-            applyPlugin<OpenUrlCapability> { it.onOpenUrl(requestUri) }
+            applyPlugin<OpenUrlCapability> { onOpenUrl(requestUri) }
             return true
         }
 
