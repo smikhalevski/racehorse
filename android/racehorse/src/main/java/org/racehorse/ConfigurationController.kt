@@ -45,11 +45,11 @@ open class ConfigurationController(
         windowInsets
     }
 
-    open fun start() {
+    open fun enable() {
         activity.window.decorView.setOnApplyWindowInsetsListener(keyboardListener)
     }
 
-    open fun stop() {
+    open fun disable() {
         activity.window.decorView.setOnApplyWindowInsetsListener(null)
     }
 

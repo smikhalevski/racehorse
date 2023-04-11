@@ -30,20 +30,24 @@ open class NetworkController(private val context: Context, private val eventBus:
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
 
         override fun onAvailable(network: Network) {
-            isOnline = true
-            eventBus.post(OnlineStatusChangedEvent(true))
+            if (!isOnline) {
+                isOnline = true
+                eventBus.post(OnlineStatusChangedEvent(true))
+            }
         }
 
         override fun onLost(network: Network) {
-            isOnline = false
-            eventBus.post(OnlineStatusChangedEvent(false))
+            if (isOnline) {
+                isOnline = false
+                eventBus.post(OnlineStatusChangedEvent(false))
+            }
         }
     }
 
     /**
      * Enables network monitoring and posts [OnlineStatusChangedEvent] when network state is changed.
      */
-    fun start() {
+    fun enable() {
         connectivityManager.apply {
             val online =
                 getNetworkCapabilities(activeNetwork)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
@@ -58,7 +62,7 @@ open class NetworkController(private val context: Context, private val eventBus:
     /**
      * Stops network monitoring.
      */
-    fun stop() {
+    fun disable() {
         connectivityManager.unregisterNetworkCallback(networkCallback)
     }
 

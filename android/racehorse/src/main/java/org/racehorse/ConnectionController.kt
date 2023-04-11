@@ -18,7 +18,7 @@ open class ConnectionController(
 
     private var requestId = AtomicInteger()
 
-    fun start() {
+    fun enable() {
         webView.addJavascriptInterface(this, CONNECTION_KEY)
     }
 

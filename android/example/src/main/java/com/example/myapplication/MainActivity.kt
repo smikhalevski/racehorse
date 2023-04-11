@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
 
     private val connectionController: ConnectionController by lazy {
         ConnectionController(webView).apply {
-            start()
+            enable()
         }
     }
 
@@ -118,15 +118,15 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        configurationController.start()
-        networkController.start()
+        configurationController.enable()
+        networkController.enable()
     }
 
     override fun onPause() {
         super.onPause()
         cookieManager.flush()
-        configurationController.stop()
-        networkController.stop()
+        configurationController.disable()
+        networkController.disable()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
