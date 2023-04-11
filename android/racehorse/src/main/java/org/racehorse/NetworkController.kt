@@ -6,39 +6,20 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.webview.*
+import org.racehorse.utils.postToChain
 
 class IsOnlineRequestEvent : RequestEvent()
 
 class IsOnlineResponseEvent(val isOnline: Boolean) : ResponseEvent()
 
-class OnlineStatusChangedAlertEvent(val isOnline: Boolean) : AlertEvent
+class OnlineStatusChangedAlertEvent(val isOnline: Boolean) : OutboundEvent
 
 /**
- * Monitors network status.
- *
- * @param networkMonitor The type of monitored network.
+ * Monitors network status, watches default app networks and posts [OnlineStatusChangedAlertEvent] when online status is
+ * changed.
  */
-open class NetworkPlugin(private val networkMonitor: NetworkMonitor) : Plugin(), EventBusCapability {
+open class NetworkController(private val context: Context, private val eventBus: EventBus = EventBus.getDefault()) {
 
-    override fun onStart() {
-        networkMonitor.start()
-    }
-
-    override fun onPause() {
-        networkMonitor.stop()
-    }
-
-    @Subscribe
-    fun onIsOnlineRequestEvent(event: IsOnlineRequestEvent) {
-        postToChain(event, IsOnlineResponseEvent(networkMonitor.isOnline))
-    }
-}
-
-/**
- * Watches default app networks and posts [OnlineStatusChangedAlertEvent] when online status is changed.
- */
-open class NetworkMonitor(private val eventBus: EventBus, private val context: Context) {
     var isOnline = false
         private set
 
@@ -63,7 +44,7 @@ open class NetworkMonitor(private val eventBus: EventBus, private val context: C
      * Enables network monitoring and posts [OnlineStatusChangedAlertEvent] when network state is changed.
      */
     fun start() {
-        with(connectivityManager) {
+        connectivityManager.apply {
             val online =
                 getNetworkCapabilities(activeNetwork)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
 
@@ -79,5 +60,10 @@ open class NetworkMonitor(private val eventBus: EventBus, private val context: C
      */
     fun stop() {
         connectivityManager.unregisterNetworkCallback(networkCallback)
+    }
+
+    @Subscribe
+    fun onIsOnline(event: IsOnlineRequestEvent) {
+        eventBus.postToChain(event, IsOnlineResponseEvent(isOnline))
     }
 }

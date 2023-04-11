@@ -1,7 +1,10 @@
 package org.racehorse.evergreen
 
 import org.greenrobot.eventbus.EventBus
-import org.racehorse.webview.AlertEvent
+import org.greenrobot.eventbus.Subscribe
+import org.racehorse.OutboundEvent
+import org.racehorse.RequestEvent
+import org.racehorse.ResponseEvent
 import java.io.File
 
 /**
@@ -12,22 +15,26 @@ class BundleReadyEvent(val appDir: File)
 /**
  * The new update download has started.
  */
-class UpdateStartedAlertEvent(val mandatory: Boolean) : AlertEvent
+class UpdateStartedAlertEvent(val mandatory: Boolean) : OutboundEvent
 
 /**
  * Failed to download an update.
  */
-class UpdateFailedAlertEvent(val mandatory: Boolean, @Transient val cause: Throwable) : AlertEvent
+class UpdateFailedAlertEvent(val mandatory: Boolean, @Transient val cause: Throwable) : OutboundEvent
 
 /**
  * A non-mandatory update was successfully downloaded and ready to be applied.
  */
-class UpdateReadyAlertEvent : AlertEvent
+class UpdateReadyAlertEvent(val version: String) : OutboundEvent
 
 /**
  * A progress of a pending update download.
  */
-class UpdateProgressAlertEvent(val contentLength: Int, val readLength: Long) : AlertEvent
+class UpdateProgressAlertEvent(val contentLength: Int, val readLength: Long) : OutboundEvent
+
+class GetUpdateVersionRequestEvent : RequestEvent()
+
+class GetUpdateVersionResponseEvent(val version: String?) : ResponseEvent()
 
 /**
  * The [Bootstrapper] that posts status events to the [eventBus].
@@ -35,7 +42,10 @@ class UpdateProgressAlertEvent(val contentLength: Int, val readLength: Long) : A
  * @param bundlesDir The directory where bootstrapper stores app bundles.
  * @param eventBus The event bus to which status events are posted
  */
-class RacehorseBootstrapper(bundlesDir: File, private val eventBus: EventBus) : Bootstrapper(bundlesDir) {
+open class EvergreenController(
+    bundlesDir: File,
+    private val eventBus: EventBus = EventBus.getDefault()
+) : Bootstrapper(bundlesDir) {
 
     override fun onBundleReady(appDir: File) {
         eventBus.post(BundleReadyEvent(appDir))
@@ -49,11 +59,16 @@ class RacehorseBootstrapper(bundlesDir: File, private val eventBus: EventBus) : 
         eventBus.post(UpdateFailedAlertEvent(mandatory, cause))
     }
 
-    override fun onUpdateReady() {
-        eventBus.post(UpdateReadyAlertEvent())
+    override fun onUpdateReady(version: String) {
+        eventBus.post(UpdateReadyAlertEvent(version))
     }
 
     override fun onUpdateProgress(contentLength: Int, readLength: Long) {
         eventBus.post(UpdateProgressAlertEvent(contentLength, readLength))
+    }
+
+    @Subscribe
+    open fun onGetUpdateVersion(event: GetUpdateVersionRequestEvent) {
+        eventBus.post(GetUpdateVersionResponseEvent(updateVersion))
     }
 }

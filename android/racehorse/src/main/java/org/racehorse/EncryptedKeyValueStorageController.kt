@@ -1,8 +1,10 @@
 package org.racehorse
 
+import android.content.Context
+import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.racehorse.webview.*
+import org.racehorse.utils.postToChain
 import java.io.File
 import java.security.MessageDigest
 import javax.crypto.BadPaddingException
@@ -43,7 +45,60 @@ class HasEncryptedValueResponseEvent(val exists: Boolean) : ResponseEvent()
  */
 class DeleteEncryptedValueRequestEvent(val key: String) : RequestEvent()
 
-open class EncryptedKeyValueStoragePlugin(private val storageDir: File) : Plugin(), EventBusCapability {
+open class EncryptedKeyValueStorageController(
+    private val context: Context,
+    private val storageDir: File,
+    private val eventBus: EventBus = EventBus.getDefault()
+) {
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    open fun onSetEncryptedValue(event: SetEncryptedValueRequestEvent) {
+        val valueBytes = event.value.toByteArray()
+
+        val cipher = getCipher()
+        val digest = MessageDigest.getInstance("SHA-512")
+
+        cipher.init(Cipher.ENCRYPT_MODE, getSecret(event.password))
+
+        getFile(event.key).writeBytes(cipher.iv + cipher.doFinal(digest.digest(valueBytes) + valueBytes))
+
+        eventBus.postToChain(event, VoidResponseEvent())
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    open fun onGetEncryptedValue(event: GetEncryptedValueRequestEvent) {
+        val file = getFile(event.key)
+
+        val value = if (file.exists()) {
+            val fileBytes = file.readBytes()
+
+            val cipher = getCipher()
+
+            cipher.init(Cipher.DECRYPT_MODE, getSecret(event.password), IvParameterSpec(fileBytes.copyOf(16)))
+
+            val bytes = try {
+                cipher.doFinal(fileBytes.copyOfRange(16, fileBytes.size))
+            } catch (_: BadPaddingException) {
+                throw IllegalArgumentException("Cannot decrypt a value")
+            }
+
+            String(bytes.copyOfRange(64, bytes.size))
+        } else null
+
+        eventBus.postToChain(event, GetEncryptedValueResponseEvent(value))
+    }
+
+    @Subscribe
+    open fun onHasEncryptedValue(event: HasEncryptedValueRequestEvent) {
+        eventBus.postToChain(event, HasEncryptedValueResponseEvent(getFile(event.key).exists()))
+    }
+
+    @Subscribe
+    open fun onDeleteEncryptedValue(event: DeleteEncryptedValueRequestEvent) {
+        getFile(event.key).delete()
+
+        eventBus.postToChain(event, VoidResponseEvent())
+    }
 
     /**
      * Returns the [Cipher] instance that is used for encoding/decoding.
@@ -69,54 +124,5 @@ open class EncryptedKeyValueStoragePlugin(private val storageDir: File) : Plugin
         storageDir.mkdirs()
 
         return File(storageDir, "$key.ekv")
-    }
-
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    fun onSetEncryptedValueRequestEvent(event: SetEncryptedValueRequestEvent) {
-        val valueBytes = event.value.toByteArray()
-
-        val cipher = getCipher()
-        val digest = MessageDigest.getInstance("SHA-512")
-
-        cipher.init(Cipher.ENCRYPT_MODE, getSecret(event.password))
-
-        getFile(event.key).writeBytes(cipher.iv + cipher.doFinal(digest.digest(valueBytes) + valueBytes))
-
-        postToChain(event, VoidResponseEvent())
-    }
-
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    fun onGetEncryptedValueRequestEvent(event: GetEncryptedValueRequestEvent) {
-        val file = getFile(event.key)
-
-        val value = if (file.exists()) {
-            val fileBytes = file.readBytes()
-
-            val cipher = getCipher()
-
-            cipher.init(Cipher.DECRYPT_MODE, getSecret(event.password), IvParameterSpec(fileBytes.copyOf(16)))
-
-            val bytes = try {
-                cipher.doFinal(fileBytes.copyOfRange(16, fileBytes.size))
-            } catch (_: BadPaddingException) {
-                throw IllegalArgumentException("Cannot decrypt a value")
-            }
-
-            String(bytes.copyOfRange(64, bytes.size))
-        } else null
-
-        postToChain(event, GetEncryptedValueResponseEvent(value))
-    }
-
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    fun onHasEncryptedValueRequestEvent(event: HasEncryptedValueRequestEvent) {
-        postToChain(event, HasEncryptedValueResponseEvent(getFile(event.key).exists()))
-    }
-
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    fun onDeleteEncryptedValueRequestEvent(event: DeleteEncryptedValueRequestEvent) {
-        getFile(event.key).delete()
-
-        postToChain(event, VoidResponseEvent())
     }
 }

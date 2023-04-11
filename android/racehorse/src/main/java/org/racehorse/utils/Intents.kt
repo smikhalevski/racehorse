@@ -7,7 +7,7 @@ import android.os.Build
 /**
  * Returns the new intent that wouldn't be applied to the apps with given package names.
  */
-fun Intent.excludePackage(packageManager: PackageManager, excludedPackageNames: Array<String>): Intent? {
+fun Intent.excludePackages(packageManager: PackageManager, excludedPackageNames: Array<String>): Intent? {
 
     // Package names of activities that support this intent
     val activityPackageNames = if (Build.VERSION.SDK_INT < 33) {

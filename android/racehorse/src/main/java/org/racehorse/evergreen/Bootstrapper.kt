@@ -39,7 +39,7 @@ open class Bootstrapper(private val bundlesDir: File) {
     /**
      * A non-mandatory update was successfully downloaded and ready to be applied.
      */
-    protected open fun onUpdateReady() {}
+    protected open fun onUpdateReady(version: String) {}
 
     /**
      * A progress of a pending update download.
@@ -96,7 +96,7 @@ open class Bootstrapper(private val bundlesDir: File) {
         }
 
         if (masterReady && !mandatory) {
-            onUpdateReady()
+            onUpdateReady(version)
         } else {
             applyUpdate()
             onBundleReady(masterDir)

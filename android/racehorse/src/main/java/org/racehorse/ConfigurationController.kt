@@ -4,8 +4,9 @@ import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsCompat.toWindowInsetsCompat
+import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.webview.*
+import org.racehorse.utils.postToChain
 
 class GetPreferredLocalesRequestEvent : RequestEvent()
 
@@ -20,14 +21,17 @@ class GetWindowInsetsRequestEvent(
 
 class GetWindowInsetsResponseEvent(val rect: Rect) : ResponseEvent()
 
-class KeyboardVisibilityChangedAlertEvent(val isKeyboardVisible: Boolean) : AlertEvent
+class KeyboardVisibilityChangedAlertEvent(val isKeyboardVisible: Boolean) : OutboundEvent
 
 class Rect(val top: Float, val right: Float, val bottom: Float, val left: Float)
 
 /**
  * Device configuration and general information.
  */
-open class ConfigurationPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability {
+open class ConfigurationController(
+    private val activity: ComponentActivity,
+    private val eventBus: EventBus = EventBus.getDefault()
+) {
 
     private var isKeyboardVisible = false
 
@@ -41,19 +45,17 @@ open class ConfigurationPlugin(private val activity: ComponentActivity) : Plugin
         windowInsets
     }
 
-    override fun onStart() {
-        super.onStart()
+    open fun start() {
         activity.window.decorView.setOnApplyWindowInsetsListener(keyboardListener)
     }
 
-    override fun onPause() {
-        super.onPause()
+    open fun stop() {
         activity.window.decorView.setOnApplyWindowInsetsListener(null)
     }
 
     @Subscribe
-    fun onGetPreferredLocalesRequestEvent(event: GetPreferredLocalesRequestEvent) {
-        val configuration = context.resources.configuration
+    fun onGetPreferredLocales(event: GetPreferredLocalesRequestEvent) {
+        val configuration = activity.resources.configuration
 
         val locales = ArrayList<String>().apply {
             for (i in 0 until configuration.locales.size()) {
@@ -61,11 +63,11 @@ open class ConfigurationPlugin(private val activity: ComponentActivity) : Plugin
             }
         }
 
-        postToChain(event, GetPreferredLocalesResponseEvent(locales.toTypedArray()))
+        eventBus.postToChain(event, GetPreferredLocalesResponseEvent(locales.toTypedArray()))
     }
 
     @Subscribe
-    fun onGetWindowInsetsRequestEvent(event: GetWindowInsetsRequestEvent) {
+    fun onGetWindowInsets(event: GetWindowInsetsRequestEvent) {
         val density = activity.resources.displayMetrics.density
         val insets = toWindowInsetsCompat(activity.window.decorView.rootWindowInsets).getInsets(event.typeMask)
 
@@ -73,6 +75,6 @@ open class ConfigurationPlugin(private val activity: ComponentActivity) : Plugin
             Rect(top / density, right / density, bottom / density, left / density)
         }
 
-        postToChain(event, GetWindowInsetsResponseEvent(rect))
+        eventBus.postToChain(event, GetWindowInsetsResponseEvent(rect))
     }
 }

@@ -1,14 +1,14 @@
-package org.racehorse.webview
+package org.racehorse
 
 /**
- * Any event posted from web.
+ * Any event posted from web view.
  */
-interface InboxEvent
+interface InboundEvent
 
 /**
- * An event published to web that is provided to web subscribers.
+ * An event published to web view that is provided its subscribers.
  */
-interface AlertEvent
+interface OutboundEvent
 
 /**
  * An event that is the part of request-response chain of events.
@@ -34,7 +34,7 @@ open class ChainableEvent {
  * An event in an event chain that originated from the web request. The chain expects a [ResponseEvent] to be posted to
  * fulfill the pending promise on the web side.
  */
-open class RequestEvent : ChainableEvent(), InboxEvent
+open class RequestEvent : ChainableEvent(), InboundEvent
 
 /**
  * An event that is published to the web, denoting an end of a request.

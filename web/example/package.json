@@ -3,7 +3,7 @@
   "scripts": {
     "build": "parcel build src/index.html",
     "start": "parcel serve src/index.html --https",
-    "start:bootstrapper": "npm run clean && npm run build && cd dist && zip -r dist.zip . && serve -p 1234",
+    "start:evergreen": "npm run clean && npm run build && cd dist && zip -r dist.zip . && serve -p 1234",
     "clean": "rimraf dist .parcel-cache",
     "test": "exit 0"
   },
