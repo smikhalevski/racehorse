@@ -15,22 +15,22 @@ class BundleReadyEvent(val appDir: File)
 /**
  * The new update download has started.
  */
-class UpdateStartedAlertEvent(val mandatory: Boolean) : OutboundEvent
+class UpdateStartedEvent(val mandatory: Boolean) : OutboundEvent
 
 /**
  * Failed to download an update.
  */
-class UpdateFailedAlertEvent(val mandatory: Boolean, @Transient val cause: Throwable) : OutboundEvent
+class UpdateFailedEvent(val mandatory: Boolean, @Transient val cause: Throwable) : OutboundEvent
 
 /**
  * A non-mandatory update was successfully downloaded and ready to be applied.
  */
-class UpdateReadyAlertEvent(val version: String) : OutboundEvent
+class UpdateReadyEvent(val version: String) : OutboundEvent
 
 /**
  * A progress of a pending update download.
  */
-class UpdateProgressAlertEvent(val contentLength: Int, val readLength: Long) : OutboundEvent
+class UpdateProgressEvent(val contentLength: Int, val readLength: Long) : OutboundEvent
 
 class GetUpdateVersionRequestEvent : RequestEvent()
 
@@ -52,19 +52,19 @@ open class EvergreenController(
     }
 
     override fun onUpdateStarted(mandatory: Boolean) {
-        eventBus.post(UpdateStartedAlertEvent(mandatory))
+        eventBus.post(UpdateStartedEvent(mandatory))
     }
 
     override fun onUpdateFailed(mandatory: Boolean, cause: Throwable) {
-        eventBus.post(UpdateFailedAlertEvent(mandatory, cause))
+        eventBus.post(UpdateFailedEvent(mandatory, cause))
     }
 
     override fun onUpdateReady(version: String) {
-        eventBus.post(UpdateReadyAlertEvent(version))
+        eventBus.post(UpdateReadyEvent(version))
     }
 
     override fun onUpdateProgress(contentLength: Int, readLength: Long) {
-        eventBus.post(UpdateProgressAlertEvent(contentLength, readLength))
+        eventBus.post(UpdateProgressEvent(contentLength, readLength))
     }
 
     @Subscribe

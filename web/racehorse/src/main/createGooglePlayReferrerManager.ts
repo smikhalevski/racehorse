@@ -17,7 +17,7 @@ export function createGooglePlayReferrerManager(eventBridge: EventBridge): Googl
     getGooglePlayReferrer() {
       return (referrerPromise ||= new Promise(resolve => {
         const unsubscribe = eventBridge.subscribe(event => {
-          if (event.type === 'org.racehorse.GooglePlayReferrerDetectedAlertEvent') {
+          if (event.type === 'org.racehorse.GooglePlayReferrerDetectedEvent') {
             resolve(event.referrer);
             unsubscribe();
           }

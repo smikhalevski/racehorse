@@ -21,7 +21,7 @@ class GetWindowInsetsRequestEvent(
 
 class GetWindowInsetsResponseEvent(val rect: Rect) : ResponseEvent()
 
-class KeyboardVisibilityChangedAlertEvent(val isKeyboardVisible: Boolean) : OutboundEvent
+class KeyboardVisibilityChangedEvent(val isKeyboardVisible: Boolean) : OutboundEvent
 
 class Rect(val top: Float, val right: Float, val bottom: Float, val left: Float)
 
@@ -39,7 +39,7 @@ open class ConfigurationController(
         with(toWindowInsetsCompat(windowInsets).getInsets(WindowInsetsCompat.Type.ime())) {
             if (isKeyboardVisible != (top + right + bottom + left != 0)) {
                 isKeyboardVisible = !isKeyboardVisible
-                eventBus.post(KeyboardVisibilityChangedAlertEvent(isKeyboardVisible))
+                eventBus.post(KeyboardVisibilityChangedEvent(isKeyboardVisible))
             }
         }
         windowInsets

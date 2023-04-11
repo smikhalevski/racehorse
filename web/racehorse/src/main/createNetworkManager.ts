@@ -36,7 +36,7 @@ export function createNetworkManager(eventBridge: EventBridge): NetworkManager {
     });
 
     unsubscribe = eventBridge.subscribe(event => {
-      if (event.type === 'org.racehorse.OnlineStatusChangedAlertEvent') {
+      if (event.type === 'org.racehorse.OnlineStatusChangedEvent') {
         online = event.isOnline;
         pubSub.publish();
       }

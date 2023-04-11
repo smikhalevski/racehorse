@@ -12,7 +12,7 @@ class GetGooglePlayReferrerRequestEvent : RequestEvent()
 
 class GetGooglePlayReferrerResponseEvent(val referrer: String?) : ResponseEvent()
 
-class GooglePlayReferrerDetectedAlertEvent(val referrer: String) : OutboundEvent
+class GooglePlayReferrerDetectedEvent(val referrer: String) : OutboundEvent
 
 const val GOOGLE_PLAY_REFERRER_KEY = "googlePlayReferrer"
 
@@ -35,7 +35,7 @@ open class GooglePlayReferrerController(
                 override fun onInstallReferrerSetupFinished(responseCode: Int) {
                     if (responseCode == InstallReferrerClient.InstallReferrerResponse.OK) {
                         preferences.edit().putString(GOOGLE_PLAY_REFERRER_KEY, installReferrer.installReferrer).apply()
-                        eventBus.post(GooglePlayReferrerDetectedAlertEvent(installReferrer.installReferrer))
+                        eventBus.post(GooglePlayReferrerDetectedEvent(installReferrer.installReferrer))
                     }
                 }
 

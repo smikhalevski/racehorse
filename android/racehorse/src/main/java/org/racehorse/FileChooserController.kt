@@ -19,7 +19,7 @@ import java.io.File
 import java.io.IOException
 
 /**
- * The plugin allows user to choose a file on the device.
+ * Allows the user to choose a file on the device.
  *
  * If [cacheDir] or [authority] are omitted, camera becomes unavailable since [FileChooserController] cannot save
  * temporary files with captured images.

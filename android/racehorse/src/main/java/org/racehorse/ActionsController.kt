@@ -50,6 +50,9 @@ open class ActionsController(
         }
     }
 
+    /**
+     * Returns the action name that is most suitable for the [uri].
+     */
     protected open fun getOpenAction(uri: Uri): String = when (uri.scheme) {
         // https://developer.android.com/guide/components/intents-common#Phone
         "voicemail",

@@ -51,7 +51,7 @@ export function createConfigurationManager(eventBridge: EventBridge): Configurat
 
     subscribeToKeyboardVisibility(listener) {
       return eventBridge.subscribe(event => {
-        if (event.type === 'org.racehorse.KeyboardVisibilityChangedAlertEvent') {
+        if (event.type === 'org.racehorse.KeyboardVisibilityChangedEvent') {
           listener(event.isKeyboardVisible);
         }
       });

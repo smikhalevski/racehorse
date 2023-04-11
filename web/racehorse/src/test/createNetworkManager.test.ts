@@ -45,7 +45,7 @@ describe('createNetworkManager', () => {
 
     networkManager.subscribeToOnlineStatusChanges(listenerMock);
 
-    connection.inbox!.publish([-1, { type: 'org.racehorse.OnlineStatusChangedAlertEvent', isOnline: true }]);
+    connection.inbox!.publish([-1, { type: 'org.racehorse.OnlineStatusChangedEvent', isOnline: true }]);
 
     expect(listenerMock).toHaveBeenCalledTimes(1);
 

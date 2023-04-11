@@ -12,10 +12,10 @@ class IsOnlineRequestEvent : RequestEvent()
 
 class IsOnlineResponseEvent(val isOnline: Boolean) : ResponseEvent()
 
-class OnlineStatusChangedAlertEvent(val isOnline: Boolean) : OutboundEvent
+class OnlineStatusChangedEvent(val isOnline: Boolean) : OutboundEvent
 
 /**
- * Monitors network status, watches default app networks and posts [OnlineStatusChangedAlertEvent] when online status is
+ * Monitors network status, watches default app networks and posts [OnlineStatusChangedEvent] when online status is
  * changed.
  */
 open class NetworkController(private val context: Context, private val eventBus: EventBus = EventBus.getDefault()) {
@@ -31,17 +31,17 @@ open class NetworkController(private val context: Context, private val eventBus:
 
         override fun onAvailable(network: Network) {
             isOnline = true
-            eventBus.post(OnlineStatusChangedAlertEvent(true))
+            eventBus.post(OnlineStatusChangedEvent(true))
         }
 
         override fun onLost(network: Network) {
             isOnline = false
-            eventBus.post(OnlineStatusChangedAlertEvent(false))
+            eventBus.post(OnlineStatusChangedEvent(false))
         }
     }
 
     /**
-     * Enables network monitoring and posts [OnlineStatusChangedAlertEvent] when network state is changed.
+     * Enables network monitoring and posts [OnlineStatusChangedEvent] when network state is changed.
      */
     fun start() {
         connectivityManager.apply {
@@ -49,7 +49,7 @@ open class NetworkController(private val context: Context, private val eventBus:
                 getNetworkCapabilities(activeNetwork)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
 
             isOnline = online
-            eventBus.post(OnlineStatusChangedAlertEvent(online))
+            eventBus.post(OnlineStatusChangedEvent(online))
 
             registerDefaultNetworkCallback(networkCallback)
         }

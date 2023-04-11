@@ -53,7 +53,7 @@ describe('useOnline', () => {
     });
 
     act(() => {
-      connection.inbox!.publish([-1, { type: 'org.racehorse.OnlineStatusChangedAlertEvent', isOnline: true }]);
+      connection.inbox!.publish([-1, { type: 'org.racehorse.OnlineStatusChangedEvent', isOnline: true }]);
     });
 
     expect(hookMock).toHaveBeenCalledTimes(2);
