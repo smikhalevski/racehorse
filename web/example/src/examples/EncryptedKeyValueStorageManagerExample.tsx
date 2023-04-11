@@ -9,9 +9,9 @@ export function EncryptedKeyValueStorageManagerExample() {
 
   return (
     <>
-      <h2>{'EncryptedKeyValueStorageManagerExample'}</h2>
+      <h2>{'Encrypted storage'}</h2>
       <p>
-        {'Value: '}
+        {'Value:'}
         <br />
         <input
           type="text"
@@ -23,7 +23,7 @@ export function EncryptedKeyValueStorageManagerExample() {
       </p>
 
       <p>
-        {'Password: '}
+        {'Password:'}
         <br />
         <input
           type="text"

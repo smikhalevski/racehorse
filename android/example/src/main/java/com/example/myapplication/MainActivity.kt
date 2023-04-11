@@ -67,6 +67,8 @@ class MainActivity : AppCompatActivity() {
             it.register(HttpsController())
             it.register(networkController)
             it.register(PermissionsController(this))
+
+            it.register(ToastController(this))
         }
 
         // 1️⃣ Debug in emulator with a server running on the host machine on localhost:1234

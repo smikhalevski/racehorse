@@ -6,7 +6,7 @@ export function UseOnlineExample() {
 
   return (
     <>
-      <h2>{'UseOnlineExample'}</h2>
+      <h2>{'useOnline hook'}</h2>
 
       {'Online: '}
       {online === undefined ? '🟡' : online ? '🟢' : '🔴'}

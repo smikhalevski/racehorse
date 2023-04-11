@@ -7,6 +7,7 @@ import { ActionsManagerExample } from './examples/ActionsManagerExample';
 import { UseOnlineExample } from './examples/UseOnlineExample';
 import { PermissionsManagerExample } from './examples/PermissionsManagerExample';
 import { EncryptedKeyValueStorageManagerExample } from './examples/EncryptedKeyValueStorageManagerExample';
+import { ToastExample } from './examples/ToastExample';
 
 module.hot?.accept(() => {
   location.reload();
@@ -15,6 +16,7 @@ module.hot?.accept(() => {
 export function App() {
   return (
     <>
+      <ToastExample />
       <EncryptedKeyValueStorageManagerExample />
       <CookieExample />
       <FileInputExample />

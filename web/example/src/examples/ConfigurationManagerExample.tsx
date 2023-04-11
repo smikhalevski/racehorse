@@ -12,7 +12,7 @@ export function ConfigurationManagerExample() {
 
   return (
     <>
-      <h2>{'ConfigurationManagerExample'}</h2>
+      <h2>{'Configuration'}</h2>
 
       <p>
         {'Locales: '}

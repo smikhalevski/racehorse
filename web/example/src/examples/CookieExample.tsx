@@ -5,7 +5,7 @@ export function CookieExample() {
 
   return (
     <>
-      <h2>{'CookieExample'}</h2>
+      <h2>{'Cookies'}</h2>
 
       <p>
         <button
