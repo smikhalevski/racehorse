@@ -62,7 +62,7 @@ open class EncryptedKeyValueStorageController(
 
         getFile(event.key).writeBytes(cipher.iv + cipher.doFinal(digest.digest(valueBytes) + valueBytes))
 
-        eventBus.postToChain(event, VoidResponseEvent())
+        eventBus.postToChain(event, VoidEvent())
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
@@ -97,7 +97,7 @@ open class EncryptedKeyValueStorageController(
     open fun onDeleteEncryptedValue(event: DeleteEncryptedValueRequestEvent) {
         getFile(event.key).delete()
 
-        eventBus.postToChain(event, VoidResponseEvent())
+        eventBus.postToChain(event, VoidEvent())
     }
 
     /**

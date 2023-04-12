@@ -3,9 +3,9 @@ package com.example.myapplication
 import android.content.Context
 import android.widget.Toast
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.InboundEvent
+import org.racehorse.WebEvent
 
-class ShowToastEvent(val message: String) : InboundEvent
+class ShowToastEvent(val message: String) : WebEvent
 
 class ToastController(private val context: Context) {
 

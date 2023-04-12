@@ -8,18 +8,73 @@ import com.google.gson.JsonObject
 import org.greenrobot.eventbus.*
 import java.util.concurrent.atomic.AtomicInteger
 
-const val CONNECTION_KEY = "racehorseConnection"
+/**
+ * An event posted from the web view. Only events that implement this interface are allowed to pass trough the event
+ * bridge.
+ */
+interface WebEvent
+
+/**
+ * An event published by Android for subscribers in web view.
+ */
+interface NoticeEvent
+
+/**
+ * An event that is the part of request-response chain of events.
+ */
+open class ChainableEvent {
+
+    /**
+     * The ID of the original request that started the chain of events.
+     */
+    @Transient
+    var requestId: Int = -1
+        private set
+
+    fun setRequestId(requestId: Int): ChainableEvent {
+        require(requestId >= 0) { "Unexpected request ID" }
+
+        this.requestId = requestId
+        return this
+    }
+}
+
+/**
+ * An event in an event chain that originated from the web request. The chain expects a [ResponseEvent] to be posted to
+ * fulfill the pending promise on the web side.
+ */
+abstract class RequestEvent : ChainableEvent(), WebEvent
+
+/**
+ * An event that is published to the web, denoting an end of a request.
+ *
+ * @param ok If `true` then the request promise is fulfilled, otherwise it is rejected.
+ */
+abstract class ResponseEvent(val ok: Boolean = true) : ChainableEvent()
+
+/**
+ * Response with no payload.
+ */
+class VoidEvent : ResponseEvent()
+
+/**
+ * Response that describes an occurred exception.
+ */
+class ExceptionEvent(@Transient val cause: Throwable) : ResponseEvent(false) {
+    val stackTrace = cause.stackTraceToString()
+}
 
 open class ConnectionController(
     private val webView: WebView,
     private val eventBus: EventBus = EventBus.getDefault(),
-    private val gson: Gson = GsonBuilder().serializeNulls().create()
+    private val gson: Gson = GsonBuilder().serializeNulls().create(),
+    private val connectionKey: String = "racehorseConnection"
 ) {
 
     private var requestId = AtomicInteger()
 
     fun enable() {
-        webView.addJavascriptInterface(this, CONNECTION_KEY)
+        webView.addJavascriptInterface(this, connectionKey)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -37,7 +92,7 @@ open class ConnectionController(
     @Subscribe
     fun onNoSubscriber(event: NoSubscriberEvent) {
         (event.originalEvent as? RequestEvent)?.let {
-            eventBus.post(ExceptionResponseEvent(IllegalStateException("No subscribers for $it")).setRequestId(it.requestId))
+            eventBus.post(ExceptionEvent(IllegalStateException("No subscribers for $it")).setRequestId(it.requestId))
         }
     }
 
@@ -45,9 +100,9 @@ open class ConnectionController(
     fun onSubscriberException(event: SubscriberExceptionEvent) {
         when (val causingEvent = event.causingEvent) {
 
-            is ExceptionResponseEvent -> causingEvent.cause.printStackTrace()
+            is ExceptionEvent -> causingEvent.cause.printStackTrace()
 
-            is RequestEvent -> eventBus.post(ExceptionResponseEvent(event.throwable).setRequestId(causingEvent.requestId))
+            is RequestEvent -> eventBus.post(ExceptionEvent(event.throwable).setRequestId(causingEvent.requestId))
         }
     }
 
@@ -66,7 +121,7 @@ open class ConnectionController(
 
             gson.fromJson(jsonObject, eventClass)
         } catch (throwable: Throwable) {
-            eventBus.post(ExceptionResponseEvent(throwable).setRequestId(requestId))
+            eventBus.post(ExceptionEvent(throwable).setRequestId(requestId))
             return requestId
         }
 
@@ -76,7 +131,7 @@ open class ConnectionController(
         }
 
         eventBus.post(event)
-        eventBus.post(VoidResponseEvent().setRequestId(requestId))
+        eventBus.post(VoidEvent().setRequestId(requestId))
         return requestId
     }
 
@@ -89,7 +144,7 @@ open class ConnectionController(
         })
 
         webView.evaluateJavascript(
-            "(function(conn){conn && conn.inbox && conn.inbox.publish([$requestId, $json])})(window.$CONNECTION_KEY)",
+            "(function(conn){conn && conn.inbox && conn.inbox.publish([$requestId, $json])})(window.$connectionKey)",
             null
         )
     }
