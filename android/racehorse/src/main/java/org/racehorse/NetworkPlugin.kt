@@ -4,18 +4,35 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
+import com.google.gson.annotations.SerializedName
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.postToChain
 
-class IsOnlineRequestEvent : RequestEvent()
+class GetNetworkStatusRequestEvent : RequestEvent()
 
-class IsOnlineResponseEvent(val isOnline: Boolean) : ResponseEvent()
+class GetNetworkStatusResponseEvent(val status: NetworkStatus) : ResponseEvent()
 
-class OnlineStatusChangedEvent(val isOnline: Boolean) : NoticeEvent
+class NetworkStatusChangedEvent(val status: NetworkStatus) : NoticeEvent
+
+data class NetworkStatus(val type: NetworkType, val isConnected: Boolean)
+
+enum class NetworkType {
+    @SerializedName("wifi")
+    WIFI,
+
+    @SerializedName("cellular")
+    CELLULAR,
+
+    @SerializedName("none")
+    NONE,
+
+    @SerializedName("unknown")
+    UNKNOWN
+}
 
 /**
- * Monitors network status, watches default app networks and posts [OnlineStatusChangedEvent] when online status is
+ * Monitors network status, watches default app networks and posts [NetworkStatusChangedEvent] when online status is
  * changed.
  *
  * @param context The context that provides access to [ConnectivityManager].
@@ -23,54 +40,55 @@ class OnlineStatusChangedEvent(val isOnline: Boolean) : NoticeEvent
  */
 open class NetworkPlugin(private val context: Context, private val eventBus: EventBus = EventBus.getDefault()) {
 
-    var isOnline = false
-        private set
+    private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-    private val connectivityManager by lazy {
-        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    }
+    private val capabilities get() = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+
+    private var networkStatus = getNetworkStatus(capabilities)
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
 
-        override fun onAvailable(network: Network) {
-            if (!isOnline) {
-                isOnline = true
-                eventBus.post(OnlineStatusChangedEvent(true))
+        override fun onAvailable(network: Network) =
+            handleChange(capabilities)
+
+        override fun onLost(network: Network) =
+            handleChange(capabilities)
+
+        override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) =
+            handleChange(capabilities)
+
+        private fun handleChange(capabilities: NetworkCapabilities?) = synchronized(this) {
+            val status = getNetworkStatus(capabilities)
+            if (status == networkStatus) {
+                return
             }
-        }
-
-        override fun onLost(network: Network) {
-            if (isOnline) {
-                isOnline = false
-                eventBus.post(OnlineStatusChangedEvent(false))
-            }
+            networkStatus = status
+            eventBus.post(NetworkStatusChangedEvent(status))
         }
     }
 
-    /**
-     * Enables network monitoring and posts [OnlineStatusChangedEvent] when network state is changed.
-     */
-    fun enable() {
-        connectivityManager.apply {
-            val online =
-                getNetworkCapabilities(activeNetwork)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+    open fun enable() = connectivityManager.registerDefaultNetworkCallback(networkCallback)
 
-            isOnline = online
-            eventBus.post(OnlineStatusChangedEvent(online))
-
-            registerDefaultNetworkCallback(networkCallback)
-        }
-    }
-
-    /**
-     * Disables network monitoring.
-     */
-    fun disable() {
-        connectivityManager.unregisterNetworkCallback(networkCallback)
-    }
+    open fun disable() = connectivityManager.unregisterNetworkCallback(networkCallback)
 
     @Subscribe
-    fun onIsOnline(event: IsOnlineRequestEvent) {
-        eventBus.postToChain(event, IsOnlineResponseEvent(isOnline))
+    open fun onGetNetworkStatus(event: GetNetworkStatusRequestEvent) {
+        eventBus.postToChain(event, GetNetworkStatusResponseEvent(networkStatus))
+    }
+
+    protected fun getNetworkStatus(capabilities: NetworkCapabilities?): NetworkStatus {
+        if (capabilities == null) {
+            return NetworkStatus(NetworkType.NONE, false)
+        }
+
+        return NetworkStatus(
+            when {
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> NetworkType.WIFI
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> NetworkType.CELLULAR
+                else -> NetworkType.UNKNOWN
+            },
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) &&
+                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        )
     }
 }

@@ -1,1 +1,1 @@
-export * from './useOnline';
+export * from './useNetworkStatus';

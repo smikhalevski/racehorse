@@ -60,13 +60,9 @@ open class DevicePlugin(
         windowInsets
     }
 
-    open fun enable() {
-        activity.window.decorView.setOnApplyWindowInsetsListener(keyboardListener)
-    }
+    open fun enable() = activity.window.decorView.setOnApplyWindowInsetsListener(keyboardListener)
 
-    open fun disable() {
-        activity.window.decorView.setOnApplyWindowInsetsListener(null)
-    }
+    open fun disable() = activity.window.decorView.setOnApplyWindowInsetsListener(null)
 
     @Subscribe
     fun onGetPreferredLocales(event: GetPreferredLocalesRequestEvent) {

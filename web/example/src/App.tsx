@@ -4,7 +4,7 @@ import { GeolocationExample } from './examples/GeolocationExample';
 import { LocalStorageExample } from './examples/LocalStorageExample';
 import { ConfigurationManagerExample } from './examples/ConfigurationManagerExample';
 import { ActionsManagerExample } from './examples/ActionsManagerExample';
-import { UseOnlineExample } from './examples/UseOnlineExample';
+import { NetworkExample } from './examples/NetworkExample';
 import { PermissionsManagerExample } from './examples/PermissionsManagerExample';
 import { EncryptedKeyValueStorageManagerExample } from './examples/EncryptedKeyValueStorageManagerExample';
 import { ToastExample } from './examples/ToastExample';
@@ -24,7 +24,7 @@ export function App() {
       <LocalStorageExample />
       <ConfigurationManagerExample />
       <ActionsManagerExample />
-      <UseOnlineExample />
+      <NetworkExample />
       <PermissionsManagerExample />
     </>
   );
