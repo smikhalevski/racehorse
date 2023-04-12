@@ -1,25 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { configurationManager, Rect } from 'racehorse';
+import { deviceManager, Rect } from 'racehorse';
 
-export function ConfigurationManagerExample() {
+export function DeviceExample() {
   const [preferredLocales, setPreferredLocales] = useState<string[]>([]);
   const [insets, setInsets] = useState<Rect>();
 
   useEffect(() => {
-    configurationManager.getPreferredLocales().then(setPreferredLocales);
-    configurationManager.getWindowInsets().then(setInsets);
+    deviceManager.getPreferredLocales().then(setPreferredLocales);
+    deviceManager.getWindowInsets().then(setInsets);
   }, []);
 
   return (
     <>
-      <h2>{'Configuration'}</h2>
+      <h2>{'Device'}</h2>
 
       <p>
         {'Locales: '}
         {preferredLocales.join(',')}
       </p>
 
-      {'Insets: '}
+      {'Insets:'}
       <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(insets, null, 2)}</pre>
     </>
   );

@@ -5,7 +5,7 @@
     <!-- Required by org.racehorse.NetworkPlugin -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <!-- Required by org.racehorse.Intents.constrainPackage -->
+    <!-- Required by org.racehorse.Intents.excludePackages -->
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />

@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { encryptedKeyValueStorageManager } from 'racehorse';
+import { encryptedStorageManager } from 'racehorse';
 
-export function EncryptedKeyValueStorageManagerExample() {
+export function EncryptedStorageExample() {
   const [value, setValue] = useState('test');
   const [password, setPassword] = useState('test');
-
   const [persistedValue, setPersistedValue] = useState<string | null>(null);
 
   return (
@@ -37,14 +36,14 @@ export function EncryptedKeyValueStorageManagerExample() {
       <p>
         <button
           onClick={() => {
-            encryptedKeyValueStorageManager.set('test', value, password);
+            encryptedStorageManager.set('test', value, password);
           }}
         >
           {'Set'}
         </button>{' '}
         <button
           onClick={() => {
-            encryptedKeyValueStorageManager.delete('test');
+            encryptedStorageManager.delete('test');
           }}
         >
           {'Delete'}
@@ -56,7 +55,7 @@ export function EncryptedKeyValueStorageManagerExample() {
 
       <button
         onClick={() => {
-          encryptedKeyValueStorageManager.get('test', password).then(setPersistedValue);
+          encryptedStorageManager.get('test', password).then(setPersistedValue);
         }}
       >
         {'Get'}

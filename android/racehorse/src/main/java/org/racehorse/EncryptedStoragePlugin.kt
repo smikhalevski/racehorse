@@ -45,15 +45,17 @@ class HasEncryptedValueResponseEvent(val exists: Boolean) : ResponseEvent()
 class DeleteEncryptedValueRequestEvent(val key: String) : RequestEvent()
 
 /**
- * The plugin that adds support for an encrypted key-value file-based storage.
+ * An encrypted key-value file-based storage.
  *
  * @param storageDir The directory to write files to.
  * @param salt The salt required to generate the encryption key.
+ * @param iterationCount The number of iterations to generate an encryption key.
  * @param eventBus The event bus to which events are posted.
  */
 open class EncryptedStoragePlugin(
     private val storageDir: File,
     private val salt: ByteArray,
+    private val iterationCount: Int = 10_000,
     private val eventBus: EventBus = EventBus.getDefault()
 ) {
 
@@ -118,7 +120,7 @@ open class EncryptedStoragePlugin(
      */
     protected open fun getSecret(password: String): SecretKeySpec {
         val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-        val spec = PBEKeySpec(password.toCharArray(), salt, 2048, 256)
+        val spec = PBEKeySpec(password.toCharArray(), salt, iterationCount, 256)
 
         return SecretKeySpec(factory.generateSecret(spec).encoded, "AES")
     }

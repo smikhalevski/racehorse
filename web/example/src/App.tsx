@@ -2,11 +2,11 @@ import { CookieExample } from './examples/CookieExample';
 import { FileInputExample } from './examples/FileInputExample';
 import { GeolocationExample } from './examples/GeolocationExample';
 import { LocalStorageExample } from './examples/LocalStorageExample';
-import { ConfigurationManagerExample } from './examples/ConfigurationManagerExample';
-import { ActionsManagerExample } from './examples/ActionsManagerExample';
+import { DeviceExample } from './examples/DeviceExample';
+import { OpenUrlExample } from './examples/OpenUrlExample';
 import { NetworkExample } from './examples/NetworkExample';
-import { PermissionsManagerExample } from './examples/PermissionsManagerExample';
-import { EncryptedKeyValueStorageManagerExample } from './examples/EncryptedKeyValueStorageManagerExample';
+import { PermissionsExample } from './examples/PermissionsExample';
+import { EncryptedStorageExample } from './examples/EncryptedStorageExample';
 import { ToastExample } from './examples/ToastExample';
 
 module.hot?.accept(() => {
@@ -17,15 +17,15 @@ export function App() {
   return (
     <>
       <ToastExample />
-      <EncryptedKeyValueStorageManagerExample />
+      <EncryptedStorageExample />
       <CookieExample />
       <FileInputExample />
       <GeolocationExample />
       <LocalStorageExample />
-      <ConfigurationManagerExample />
-      <ActionsManagerExample />
+      <DeviceExample />
+      <OpenUrlExample />
       <NetworkExample />
-      <PermissionsManagerExample />
+      <PermissionsExample />
     </>
   );
 }

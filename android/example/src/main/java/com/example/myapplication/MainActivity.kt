@@ -39,16 +39,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val devicePlugin: DevicePlugin by lazy {
-        DevicePlugin(this)
-    }
-
-    private val eventBridge: EventBridge by lazy {
-        EventBridge(webView).apply {
-            enable()
-        }
-    }
-
     private val networkPlugin: NetworkPlugin by lazy {
         NetworkPlugin(this)
     }
@@ -57,15 +47,16 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         EventBus.getDefault().let {
-            it.register(OpenUrlPlugin(this))
-            it.register(devicePlugin)
-            it.register(eventBridge)
-            it.register(EncryptedStoragePlugin(File(filesDir, "storage"), packageName.toByteArray()))
+            it.register(EventBridge(webView))
+            it.register(DevicePlugin(this))
+            it.register(EncryptedStoragePlugin(File(filesDir, "storage"), BuildConfig.APPLICATION_ID.toByteArray()))
             it.register(FileChooserPlugin(this, externalCacheDir, "$packageName.provider"))
             it.register(FirebasePlugin())
             it.register(GooglePlayReferrerPlugin(this))
             it.register(HttpsPlugin())
             it.register(networkPlugin)
+            it.register(KeyboardPlugin(this))
+            it.register(OpenUrlPlugin(this))
             it.register(PermissionsPlugin(this))
 
             it.register(ToastPlugin(this))
@@ -119,14 +110,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        devicePlugin.enable()
+
         networkPlugin.enable()
     }
 
     override fun onPause() {
         super.onPause()
+
         cookieManager.flush()
-        devicePlugin.disable()
         networkPlugin.disable()
     }
 

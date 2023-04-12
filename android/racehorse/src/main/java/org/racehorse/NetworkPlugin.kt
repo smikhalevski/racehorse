@@ -40,8 +40,6 @@ enum class NetworkType {
  */
 open class NetworkPlugin(private val context: Context, private val eventBus: EventBus = EventBus.getDefault()) {
 
-    var networkStatus = getNetworkStatus(capabilities)
-
     private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
     private val capabilities get() = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
@@ -66,6 +64,8 @@ open class NetworkPlugin(private val context: Context, private val eventBus: Eve
             eventBus.post(NetworkStatusChangedEvent(status))
         }
     }
+
+    var networkStatus = getNetworkStatus(capabilities)
 
     open fun enable() = connectivityManager.registerDefaultNetworkCallback(networkCallback)
 

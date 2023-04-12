@@ -24,8 +24,7 @@ class KeyboardVisibilityChangedEvent(val isKeyboardVisible: Boolean) : NoticeEve
  */
 open class KeyboardPlugin(activity: ComponentActivity, private val eventBus: EventBus = EventBus.getDefault()) {
 
-    private val lastVisible =
-        AtomicBoolean(toWindowInsetsCompat(activity.window.decorView.rootWindowInsets).isVisible(WindowInsetsCompat.Type.ime()))
+    private val lastVisible = AtomicBoolean()
 
     init {
         activity.window.decorView.setOnApplyWindowInsetsListener { _, insets ->

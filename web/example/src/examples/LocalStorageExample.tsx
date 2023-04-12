@@ -26,7 +26,7 @@ export function LocalStorageExample() {
         </button>
       </p>
 
-      {'Value: '}
+      {'Value:'}
       <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(localStorage.getItem('example'), null, 2)}</pre>
     </>
   );

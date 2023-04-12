@@ -5,7 +5,7 @@ export function CookieExample() {
 
   return (
     <>
-      <h2>{'Cookies'}</h2>
+      <h2>{'Cookie'}</h2>
 
       <p>
         <button
@@ -28,7 +28,7 @@ export function CookieExample() {
         </button>
       </p>
 
-      {'Value: '}
+      {'Value:'}
       <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(document.cookie, null, 2)}</pre>
     </>
   );
