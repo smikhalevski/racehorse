@@ -10,6 +10,9 @@ import org.racehorse.utils.HandlerEvent
 import org.racehorse.utils.postForHandler
 import org.racehorse.utils.postForSubscriber
 
+/**
+ * Handlers of this event must be called on the posting thread, and should update the [response] field.
+ */
 class ShouldInterceptRequestEvent(
     val view: WebView,
     val request: WebResourceRequest,

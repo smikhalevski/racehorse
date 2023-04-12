@@ -32,6 +32,13 @@ class UpdateReadyEvent(val version: String) : NoticeEvent
  */
 class UpdateProgressEvent(val contentLength: Int, val readLength: Long) : NoticeEvent
 
+class GetMasterVersionRequestEvent : RequestEvent()
+
+class GetMasterVersionResponseEvent(val version: String?) : ResponseEvent()
+
+/**
+ * Get the version of the update that would be applied on the next app restart.
+ */
 class GetUpdateVersionRequestEvent : RequestEvent()
 
 class GetUpdateVersionResponseEvent(val version: String?) : ResponseEvent()
@@ -65,6 +72,11 @@ open class EvergreenPlugin(
 
     override fun onUpdateProgress(contentLength: Int, readLength: Long) {
         eventBus.post(UpdateProgressEvent(contentLength, readLength))
+    }
+
+    @Subscribe
+    open fun onGetMasterVersion(event: GetMasterVersionRequestEvent) {
+        eventBus.post(GetMasterVersionResponseEvent(masterVersion))
     }
 
     @Subscribe
