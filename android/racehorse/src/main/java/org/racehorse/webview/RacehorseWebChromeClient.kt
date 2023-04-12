@@ -83,50 +83,76 @@ class ShowFileChooserEvent(
 
 open class RacehorseWebChromeClient(val eventBus: EventBus = EventBus.getDefault()) : WebChromeClient() {
 
-    override fun onProgressChanged(view: WebView, progress: Int) =
+    override fun onProgressChanged(view: WebView, progress: Int) {
         eventBus.postForSubscriber { ProgressChangedEvent(view, progress) }
+    }
 
-    override fun onReceivedTitle(view: WebView, title: String) =
+    override fun onReceivedTitle(view: WebView, title: String) {
         eventBus.postForSubscriber { ReceivedTitleEvent(view, title) }
+    }
 
-    override fun onReceivedIcon(view: WebView, icon: Bitmap) =
+    override fun onReceivedIcon(view: WebView, icon: Bitmap) {
         eventBus.postForSubscriber { ReceivedIconEvent(view, icon) }
+    }
 
-    override fun onReceivedTouchIconUrl(view: WebView, url: String, precomposed: Boolean) =
+    override fun onReceivedTouchIconUrl(view: WebView, url: String, precomposed: Boolean) {
         eventBus.postForSubscriber { ReceivedTouchIconUrlEvent(view, url, precomposed) }
+    }
 
-    override fun onShowCustomView(view: View, callback: CustomViewCallback) =
+    override fun onShowCustomView(view: View, callback: CustomViewCallback) {
         eventBus.postForSubscriber { ShowCustomViewEvent(view, callback) }
+    }
 
-    override fun onHideCustomView() =
+    override fun onHideCustomView() {
         eventBus.postForSubscriber { HideCustomViewEvent() }
+    }
 
-    override fun onCreateWindow(view: WebView, isDialog: Boolean, isUserGesture: Boolean, resultMessage: Message) =
-        eventBus.postForHandler { CreateWindowEvent(view, isDialog, isUserGesture, resultMessage) }
+    override fun onCreateWindow(
+        view: WebView,
+        isDialog: Boolean,
+        isUserGesture: Boolean,
+        resultMessage: Message
+    ): Boolean {
+        return eventBus.postForHandler { CreateWindowEvent(view, isDialog, isUserGesture, resultMessage) }
+    }
 
-    override fun onRequestFocus(view: WebView) =
+    override fun onRequestFocus(view: WebView) {
         eventBus.postForSubscriber { RequestFocusEvent(view) }
+    }
 
-    override fun onCloseWindow(window: WebView) =
+    override fun onCloseWindow(window: WebView) {
         eventBus.postForSubscriber { CloseWindowEvent(window) }
+    }
 
-    override fun onJsAlert(view: WebView, url: String, message: String, result: JsResult) =
-        eventBus.postForHandler { JsAlertEvent(view, url, message, result) }
+    override fun onJsAlert(view: WebView, url: String, message: String, result: JsResult): Boolean {
+        return eventBus.postForHandler { JsAlertEvent(view, url, message, result) }
+    }
 
-    override fun onJsConfirm(view: WebView, url: String, message: String, result: JsResult) =
-        eventBus.postForHandler { JsConfirmEvent(view, url, message, result) }
+    override fun onJsConfirm(view: WebView, url: String, message: String, result: JsResult): Boolean {
+        return eventBus.postForHandler { JsConfirmEvent(view, url, message, result) }
+    }
 
-    override fun onJsPrompt(view: WebView, url: String, message: String, defaultValue: String, result: JsPromptResult) =
-        eventBus.postForHandler { JsPromptEvent(view, url, message, defaultValue, result) }
+    override fun onJsPrompt(
+        view: WebView,
+        url: String,
+        message: String,
+        defaultValue: String,
+        result: JsPromptResult
+    ): Boolean {
+        return eventBus.postForHandler { JsPromptEvent(view, url, message, defaultValue, result) }
+    }
 
-    override fun onJsBeforeUnload(view: WebView, url: String, message: String, result: JsResult) =
-        eventBus.postForHandler { JsBeforeUnloadEvent(view, url, message, result) }
+    override fun onJsBeforeUnload(view: WebView, url: String, message: String, result: JsResult): Boolean {
+        return eventBus.postForHandler { JsBeforeUnloadEvent(view, url, message, result) }
+    }
 
-    override fun onGeolocationPermissionsShowPrompt(origin: String, callback: GeolocationPermissions.Callback) =
+    override fun onGeolocationPermissionsShowPrompt(origin: String, callback: GeolocationPermissions.Callback) {
         eventBus.postForSubscriber { GeolocationPermissionsShowPromptEvent(origin, callback) }
+    }
 
-    override fun onGeolocationPermissionsHidePrompt() =
+    override fun onGeolocationPermissionsHidePrompt() {
         eventBus.postForSubscriber { GeolocationPermissionsHidePromptEvent() }
+    }
 
     override fun onPermissionRequest(request: PermissionRequest) {
         if (!eventBus.postForHandler { PermissionRequestEvent(request) }) {
@@ -134,15 +160,19 @@ open class RacehorseWebChromeClient(val eventBus: EventBus = EventBus.getDefault
         }
     }
 
-    override fun onPermissionRequestCanceled(request: PermissionRequest) =
+    override fun onPermissionRequestCanceled(request: PermissionRequest) {
         eventBus.postForSubscriber { PermissionRequestCanceledEvent(request) }
+    }
 
-    override fun onConsoleMessage(consoleMessage: ConsoleMessage) =
-        eventBus.postForHandler { ConsoleMessageEvent(consoleMessage) }
+    override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
+        return eventBus.postForHandler { ConsoleMessageEvent(consoleMessage) }
+    }
 
     override fun onShowFileChooser(
         view: WebView,
         filePathCallback: ValueCallback<Array<Uri>>,
         fileChooserParams: FileChooserParams
-    ) = eventBus.postForHandler { ShowFileChooserEvent(view, filePathCallback, fileChooserParams) }
+    ): Boolean {
+        return eventBus.postForHandler { ShowFileChooserEvent(view, filePathCallback, fileChooserParams) }
+    }
 }

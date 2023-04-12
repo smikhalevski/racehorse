@@ -16,19 +16,11 @@ open class HandlerEvent {
     }
 }
 
-fun EventBus.postToChain(previousEvent: ChainableEvent, nextEvent: ChainableEvent) {
+fun EventBus.postToChain(previousEvent: ChainableEvent, nextEvent: ChainableEvent) =
     post(nextEvent.setRequestId(previousEvent.requestId))
-}
 
-inline fun <reified T> EventBus.postForSubscriber(eventFactory: () -> T) {
-    if (hasSubscriberForEvent(T::class.java)) {
-        post(eventFactory())
-    }
-}
+inline fun <reified T> EventBus.postForSubscriber(eventFactory: () -> T): T? =
+    if (hasSubscriberForEvent(T::class.java)) eventFactory().apply(::post)  else null
 
 inline fun <reified T : HandlerEvent> EventBus.postForHandler(eventFactory: () -> T) =
-    if (hasSubscriberForEvent(T::class.java)) {
-        val event = eventFactory()
-        post(event)
-        event.isHandled
-    } else false
+    if (hasSubscriberForEvent(T::class.java)) eventFactory().apply(::post).isHandled else false

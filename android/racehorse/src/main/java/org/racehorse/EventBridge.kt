@@ -48,7 +48,7 @@ abstract class RequestEvent : ChainableEvent(), WebEvent
 /**
  * An event that is published to the web, denoting an end of a request.
  *
- * @param ok If `true` then the request promise is fulfilled, otherwise it is rejected.
+ * @param ok Indicates that the response is successful or not.
  */
 abstract class ResponseEvent(val ok: Boolean = true) : ChainableEvent()
 
@@ -64,7 +64,15 @@ class ExceptionEvent(@Transient val cause: Throwable) : ResponseEvent(false) {
     val stackTrace = cause.stackTraceToString()
 }
 
-open class ConnectionController(
+/**
+ * The event bridge enables communication between the app in the web view and Android-native code.
+ *
+ * @param webView The [WebView] to which the event bridge will add the connection Javascript interface.
+ * @param eventBus The event bus to which events are posted.
+ * @param gson The [Gson] instance that is used for event serialization.
+ * @param connectionKey The key of the `window` that exposes the connection Javascript interface.
+ */
+open class EventBridge(
     private val webView: WebView,
     private val eventBus: EventBus = EventBus.getDefault(),
     private val gson: Gson = GsonBuilder().serializeNulls().create(),

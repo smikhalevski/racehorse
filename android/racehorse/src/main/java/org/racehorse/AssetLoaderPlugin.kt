@@ -11,29 +11,31 @@ import java.io.File
 import java.io.FileInputStream
 import java.net.URLConnection
 
-open class StaticAssetsController(
-    private val authority: String,
+/**
+ * Intercepts requests and serves the responses using an [assetLoader]. If a URL cannot be handled by the [assetLoader]
+ * then it is opened in an external app by posting an [OpenUrlRequestEvent].
+ *
+ * @param assetLoader The asset loader that resolves the URL.
+ * @param eventBus The event bus to which events are posted.
+ */
+open class AssetLoaderPlugin(
     private val assetLoader: WebViewAssetLoader,
     private val eventBus: EventBus = EventBus.getDefault()
 ) {
 
     @Subscribe
     open fun onShouldInterceptRequest(event: ShouldInterceptRequestEvent) {
-        val url = event.request.url
-
-        if (url.authority == authority) {
-            event.result.value = assetLoader.shouldInterceptRequest(url)
+        if (event.response == null) {
+            event.response = assetLoader.shouldInterceptRequest(event.request.url)
         }
     }
 
     @Subscribe
     open fun onShouldOverrideUrlLoading(event: ShouldOverrideUrlLoadingEvent) {
-        val url = event.request.url
-
-        if (url.authority == authority || !event.shouldHandle()) {
+        if (assetLoader.shouldInterceptRequest(event.request.url) == null || !event.shouldHandle()) {
             return
         }
-        eventBus.post(OpenUrlRequestEvent(url.toString()))
+        eventBus.post(OpenUrlRequestEvent(event.request.url.toString()))
     }
 }
 

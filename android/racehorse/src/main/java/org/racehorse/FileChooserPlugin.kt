@@ -21,7 +21,7 @@ import java.io.IOException
 /**
  * Allows the user to choose a file on the device.
  *
- * If [cacheDir] or [authority] are omitted, camera becomes unavailable since [FileChooserController] cannot save
+ * If [cacheDir] or [authority] are omitted, camera becomes unavailable since [FileChooserPlugin] cannot save
  * temporary files with captured images.
  *
  * @param activity The activity that starts intents.
@@ -29,7 +29,7 @@ import java.io.IOException
  * @param authority The [authority of the content provider](https://developer.android.com/guide/topics/providers/content-provider-basics#ContentURIs)
  * that provides access to [cacheDir] for camera app.
  */
-open class FileChooserController(
+open class FileChooserPlugin(
     private val activity: ComponentActivity,
     private val cacheDir: File? = null,
     private val authority: String? = null

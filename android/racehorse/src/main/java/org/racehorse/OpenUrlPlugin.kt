@@ -12,16 +12,19 @@ import org.racehorse.utils.postToChain
 import org.racehorse.webview.*
 
 /**
- * Opens URL in the external app.
+ * Opens URL in an external app.
  */
 class OpenUrlRequestEvent(val url: String) : RequestEvent()
 
 class OpenUrlResponseEvent(val isOpened: Boolean) : ResponseEvent()
 
 /**
- * Launches activities for various intents.
+ * Opens URL in an external app.
+ *
+ * @param activity The activity that launches the intent to open a URL.
+ * @param eventBus The event bus to which events are posted.
  */
-open class ActionsController(
+open class OpenUrlPlugin(
     private val activity: ComponentActivity,
     private val eventBus: EventBus = EventBus.getDefault()
 ) {

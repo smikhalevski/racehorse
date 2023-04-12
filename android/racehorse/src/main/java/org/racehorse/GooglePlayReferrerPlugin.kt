@@ -19,13 +19,13 @@ const val GOOGLE_PLAY_REFERRER_KEY = "googlePlayReferrer"
 /**
  * Gets [Google Play referrer](https://developer.android.com/google/play/installreferrer/library) information.
  */
-open class GooglePlayReferrerController(
+open class GooglePlayReferrerPlugin(
     private val context: Context,
     private val eventBus: EventBus = EventBus.getDefault()
 ) {
 
     private val preferences: SharedPreferences by lazy {
-        context.getSharedPreferences("GooglePlayReferrerController", Context.MODE_PRIVATE)
+        context.getSharedPreferences("org.racehorse.GooglePlayReferrerPlugin", Context.MODE_PRIVATE)
     }
 
     private val referrerClient: InstallReferrerClient by lazy {
@@ -34,8 +34,10 @@ open class GooglePlayReferrerController(
 
                 override fun onInstallReferrerSetupFinished(responseCode: Int) {
                     if (responseCode == InstallReferrerClient.InstallReferrerResponse.OK) {
-                        preferences.edit().putString(GOOGLE_PLAY_REFERRER_KEY, installReferrer.installReferrer).apply()
-                        eventBus.post(GooglePlayReferrerDetectedEvent(installReferrer.installReferrer))
+                        val referrer = installReferrer.installReferrer
+
+                        preferences.edit().putString(GOOGLE_PLAY_REFERRER_KEY, referrer).apply()
+                        eventBus.post(GooglePlayReferrerDetectedEvent(referrer))
                     }
                 }
 
@@ -46,10 +48,9 @@ open class GooglePlayReferrerController(
 
     @Subscribe
     open fun onGetGooglePlayReferrerRequestEvent(event: GetGooglePlayReferrerRequestEvent) {
-        eventBus.postToChain(
-            event,
-            GetGooglePlayReferrerResponseEvent(preferences.getString(GOOGLE_PLAY_REFERRER_KEY, null))
-        )
+        val referrer = preferences.getString(GOOGLE_PLAY_REFERRER_KEY, null)
+
+        eventBus.postToChain(event, GetGooglePlayReferrerResponseEvent(referrer))
         referrerClient.isReady
     }
 }

@@ -17,8 +17,11 @@ class OnlineStatusChangedEvent(val isOnline: Boolean) : NoticeEvent
 /**
  * Monitors network status, watches default app networks and posts [OnlineStatusChangedEvent] when online status is
  * changed.
+ *
+ * @param context The context that provides access to [ConnectivityManager].
+ * @param eventBus The event bus to which events are posted.
  */
-open class NetworkController(private val context: Context, private val eventBus: EventBus = EventBus.getDefault()) {
+open class NetworkPlugin(private val context: Context, private val eventBus: EventBus = EventBus.getDefault()) {
 
     var isOnline = false
         private set
@@ -60,7 +63,7 @@ open class NetworkController(private val context: Context, private val eventBus:
     }
 
     /**
-     * Stops network monitoring.
+     * Disables network monitoring.
      */
     fun disable() {
         connectivityManager.unregisterNetworkCallback(networkCallback)

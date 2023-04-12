@@ -36,8 +36,11 @@ class AskForPermissionResponseEvent(val statuses: Map<String, Boolean>) : Respon
 
 /**
  * Check permission statuses and ask for permissions.
+ *
+ * @param activity The activity that launches permission request intents.
+ * @param eventBus The event bus to which events are posted.
  */
-open class PermissionsController(
+open class PermissionsPlugin(
     private val activity: ComponentActivity,
     private val eventBus: EventBus = EventBus.getDefault()
 ) {

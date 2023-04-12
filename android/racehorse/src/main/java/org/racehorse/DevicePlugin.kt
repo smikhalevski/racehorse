@@ -8,10 +8,19 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.postToChain
 
+/**
+ * Get the list of locales that user picked in the device settings.
+ */
 class GetPreferredLocalesRequestEvent : RequestEvent()
 
 class GetPreferredLocalesResponseEvent(val locales: Array<String>) : ResponseEvent()
 
+/**
+ * Get the rect that describes the window insets that overlap with system UI.
+ *
+ * @param typeMask Bit mask of [WindowInsetsCompat.Type]s to query the insets for. By default, display cutout,
+ * navigation and status bars are included.
+ */
 class GetWindowInsetsRequestEvent(
     val typeMask: Int =
         WindowInsetsCompat.Type.displayCutout() or
@@ -21,14 +30,20 @@ class GetWindowInsetsRequestEvent(
 
 class GetWindowInsetsResponseEvent(val rect: Rect) : ResponseEvent()
 
+/**
+ * Notifies the web app that the keyboard visibility has changed.
+ */
 class KeyboardVisibilityChangedEvent(val isKeyboardVisible: Boolean) : NoticeEvent
 
 class Rect(val top: Float, val right: Float, val bottom: Float, val left: Float)
 
 /**
  * Device configuration and general information.
+ *
+ * @param activity The activity that provides access to window and resources.
+ * @param eventBus The event bus to which events are posted.
  */
-open class ConfigurationController(
+open class DevicePlugin(
     private val activity: ComponentActivity,
     private val eventBus: EventBus = EventBus.getDefault()
 ) {

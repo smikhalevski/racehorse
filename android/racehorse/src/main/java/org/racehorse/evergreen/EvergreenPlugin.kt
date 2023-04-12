@@ -40,9 +40,9 @@ class GetUpdateVersionResponseEvent(val version: String?) : ResponseEvent()
  * The [Bootstrapper] that posts status events to the [eventBus].
  *
  * @param bundlesDir The directory where bootstrapper stores app bundles.
- * @param eventBus The event bus to which status events are posted
+ * @param eventBus The event bus to which events are posted.
  */
-open class EvergreenController(
+open class EvergreenPlugin(
     bundlesDir: File,
     private val eventBus: EventBus = EventBus.getDefault()
 ) : Bootstrapper(bundlesDir) {

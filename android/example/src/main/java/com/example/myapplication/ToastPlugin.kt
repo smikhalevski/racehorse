@@ -7,7 +7,7 @@ import org.racehorse.WebEvent
 
 class ShowToastEvent(val message: String) : WebEvent
 
-class ToastController(private val context: Context) {
+class ToastPlugin(private val context: Context) {
 
     @Subscribe
     fun onShowToast(event: ShowToastEvent) {

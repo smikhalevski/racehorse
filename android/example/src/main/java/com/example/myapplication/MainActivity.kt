@@ -39,36 +39,36 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val configurationController: ConfigurationController by lazy {
-        ConfigurationController(this)
+    private val devicePlugin: DevicePlugin by lazy {
+        DevicePlugin(this)
     }
 
-    private val connectionController: ConnectionController by lazy {
-        ConnectionController(webView).apply {
+    private val eventBridge: EventBridge by lazy {
+        EventBridge(webView).apply {
             enable()
         }
     }
 
-    private val networkController: NetworkController by lazy {
-        NetworkController(this)
+    private val networkPlugin: NetworkPlugin by lazy {
+        NetworkPlugin(this)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         EventBus.getDefault().let {
-            it.register(ActionsController(this))
-            it.register(configurationController)
-            it.register(connectionController)
-            it.register(EncryptedKeyValueStorageController(this, File(filesDir, "storage")))
-            it.register(FileChooserController(this, externalCacheDir, "$packageName.provider"))
-            it.register(FirebaseController())
-            it.register(GooglePlayReferrerController(this))
-            it.register(HttpsController())
-            it.register(networkController)
-            it.register(PermissionsController(this))
+            it.register(OpenUrlPlugin(this))
+            it.register(devicePlugin)
+            it.register(eventBridge)
+            it.register(EncryptedStoragePlugin(File(filesDir, "storage"), packageName.toByteArray()))
+            it.register(FileChooserPlugin(this, externalCacheDir, "$packageName.provider"))
+            it.register(FirebasePlugin())
+            it.register(GooglePlayReferrerPlugin(this))
+            it.register(HttpsPlugin())
+            it.register(networkPlugin)
+            it.register(PermissionsPlugin(this))
 
-            it.register(ToastController(this))
+            it.register(ToastPlugin(this))
         }
 
         // 1️⃣ Debug in emulator with a server running on the host machine on localhost:1234
@@ -83,8 +83,7 @@ class MainActivity : AppCompatActivity() {
         // `<racehorse>/android/example/src/main/assets`, then start the app in emulator.
 
         EventBus.getDefault().register(
-            StaticAssetsController(
-                "http://example.com",
+            AssetLoaderPlugin(
                 WebViewAssetLoader.Builder()
                     .setDomain("example.com")
                     .addPathHandler("/", WebViewAssetLoader.AssetsPathHandler(this))
@@ -105,37 +104,36 @@ class MainActivity : AppCompatActivity() {
         // attribute to `AndroidManifest.xml/manifest/application`. `BundleReadyEvent` is emitted after bundle is
         // successfully downloaded, see `onBundleReadyEvent` below.
 
-        val evergreenController = EvergreenController(File(filesDir, "app"))
+        val evergreenPlugin = EvergreenPlugin(File(filesDir, "app"))
 
         EventBus.getDefault().let {
             it.register(this)
-            it.register(evergreenController)
+            it.register(evergreenPlugin)
         }
 
         Thread {
-            evergreenController.start("0.0.0", true) { URL("http://10.0.2.2:1234/dist.zip").openConnection() }
+            evergreenPlugin.start("0.0.0", true) { URL("http://10.0.2.2:1234/dist.zip").openConnection() }
         }.start()
 */
     }
 
     override fun onStart() {
         super.onStart()
-        configurationController.enable()
-        networkController.enable()
+        devicePlugin.enable()
+        networkPlugin.enable()
     }
 
     override fun onPause() {
         super.onPause()
         cookieManager.flush()
-        configurationController.disable()
-        networkController.disable()
+        devicePlugin.disable()
+        networkPlugin.disable()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onBundleReadyEvent(event: BundleReadyEvent) {
         EventBus.getDefault().register(
-            StaticAssetsController(
-                "http://example.com",
+            AssetLoaderPlugin(
                 WebViewAssetLoader.Builder()
                     .setDomain("example.com")
                     .addPathHandler("/", StaticPathHandler(event.appDir))

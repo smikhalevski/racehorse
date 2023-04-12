@@ -9,7 +9,12 @@ class GetFirebaseTokenRequestEvent : RequestEvent()
 
 class GetFirebaseTokenResponseEvent(val token: String?) : ResponseEvent()
 
-open class FirebaseController(private val eventBus: EventBus = EventBus.getDefault()) {
+/**
+ * Enables Firebase integration.
+ *
+ * @param eventBus The event bus to which events are posted.
+ */
+open class FirebasePlugin(private val eventBus: EventBus = EventBus.getDefault()) {
 
     @Subscribe
     open fun onGetFirebaseToken(event: GetFirebaseTokenRequestEvent) {
