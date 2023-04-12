@@ -2,7 +2,7 @@ package org.racehorse.evergreen
 
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.OutboundEvent
+import org.racehorse.NoticeEvent
 import org.racehorse.RequestEvent
 import org.racehorse.ResponseEvent
 import java.io.File
@@ -15,22 +15,22 @@ class BundleReadyEvent(val appDir: File)
 /**
  * The new update download has started.
  */
-class UpdateStartedEvent(val mandatory: Boolean) : OutboundEvent
+class UpdateStartedEvent(val mandatory: Boolean) : NoticeEvent
 
 /**
  * Failed to download an update.
  */
-class UpdateFailedEvent(val mandatory: Boolean, @Transient val cause: Throwable) : OutboundEvent
+class UpdateFailedEvent(val mandatory: Boolean, @Transient val cause: Throwable) : NoticeEvent
 
 /**
  * A non-mandatory update was successfully downloaded and ready to be applied.
  */
-class UpdateReadyEvent(val version: String) : OutboundEvent
+class UpdateReadyEvent(val version: String) : NoticeEvent
 
 /**
  * A progress of a pending update download.
  */
-class UpdateProgressEvent(val contentLength: Int, val readLength: Long) : OutboundEvent
+class UpdateProgressEvent(val contentLength: Int, val readLength: Long) : NoticeEvent
 
 class GetUpdateVersionRequestEvent : RequestEvent()
 

@@ -12,7 +12,7 @@ class GetGooglePlayReferrerRequestEvent : RequestEvent()
 
 class GetGooglePlayReferrerResponseEvent(val referrer: String?) : ResponseEvent()
 
-class GooglePlayReferrerDetectedEvent(val referrer: String) : OutboundEvent
+class GooglePlayReferrerDetectedEvent(val referrer: String) : NoticeEvent
 
 const val GOOGLE_PLAY_REFERRER_KEY = "googlePlayReferrer"
 

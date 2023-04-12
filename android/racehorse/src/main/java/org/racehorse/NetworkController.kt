@@ -12,7 +12,7 @@ class IsOnlineRequestEvent : RequestEvent()
 
 class IsOnlineResponseEvent(val isOnline: Boolean) : ResponseEvent()
 
-class OnlineStatusChangedEvent(val isOnline: Boolean) : OutboundEvent
+class OnlineStatusChangedEvent(val isOnline: Boolean) : NoticeEvent
 
 /**
  * Monitors network status, watches default app networks and posts [OnlineStatusChangedEvent] when online status is

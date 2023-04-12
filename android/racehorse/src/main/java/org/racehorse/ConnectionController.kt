@@ -26,12 +26,12 @@ open class ConnectionController(
     fun onResponse(event: ResponseEvent) {
         require(event.requestId >= 0) { "Expected a request ID to be set for a response event" }
 
-        publishEvent(event.requestId, event)
+        publish(event.requestId, event)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onOutbound(event: OutboundEvent) {
-        publishEvent(-1, event)
+    fun onNotice(event: NoticeEvent) {
+        publish(-1, event)
     }
 
     @Subscribe
@@ -62,7 +62,7 @@ open class ConnectionController(
             jsonObject.remove("requestId")
             jsonObject.remove("type")
 
-            require(InboundEvent::class.java.isAssignableFrom(eventClass)) { "Not an event: $eventClass" }
+            require(WebEvent::class.java.isAssignableFrom(eventClass)) { "Not an event: $eventClass" }
 
             gson.fromJson(jsonObject, eventClass)
         } catch (throwable: Throwable) {
@@ -83,7 +83,7 @@ open class ConnectionController(
     /**
      * Publishes the event to the web.
      */
-    private fun publishEvent(requestId: Int, event: Any) {
+    private fun publish(requestId: Int, event: Any) {
         val json = gson.toJson(gson.toJsonTree(event).asJsonObject.also {
             it.addProperty("type", event::class.java.name)
         })

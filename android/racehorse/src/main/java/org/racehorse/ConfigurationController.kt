@@ -21,7 +21,7 @@ class GetWindowInsetsRequestEvent(
 
 class GetWindowInsetsResponseEvent(val rect: Rect) : ResponseEvent()
 
-class KeyboardVisibilityChangedEvent(val isKeyboardVisible: Boolean) : OutboundEvent
+class KeyboardVisibilityChangedEvent(val isKeyboardVisible: Boolean) : NoticeEvent
 
 class Rect(val top: Float, val right: Float, val bottom: Float, val left: Float)
 

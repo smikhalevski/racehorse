@@ -1,14 +1,15 @@
 package org.racehorse
 
 /**
- * Any event posted from web view.
+ * An event posted from the web view. Only events that implement this interface are allowed to pass trough the event
+ * bridge.
  */
-interface InboundEvent
+interface WebEvent
 
 /**
- * An event published to web view that is provided its subscribers.
+ * An event published by Android for subscribers in web view.
  */
-interface OutboundEvent
+interface NoticeEvent
 
 /**
  * An event that is the part of request-response chain of events.
@@ -34,7 +35,7 @@ open class ChainableEvent {
  * An event in an event chain that originated from the web request. The chain expects a [ResponseEvent] to be posted to
  * fulfill the pending promise on the web side.
  */
-open class RequestEvent : ChainableEvent(), InboundEvent
+open class RequestEvent : ChainableEvent(), WebEvent
 
 /**
  * An event that is published to the web, denoting an end of a request.
