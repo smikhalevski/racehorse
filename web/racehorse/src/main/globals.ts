@@ -1,48 +1,30 @@
 import { createEventBridge } from './createEventBridge';
-import { createNetworkManager } from './createNetworkManager';
-import { createActionsManager } from './createActionsManager';
-import { createConfigurationManager } from './createConfigurationManager';
-import { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager';
-import { createPermissionsManager } from './createPermissionsManager';
+import { createDeepLinkManager } from './createDeepLinkManager';
+import { createDeviceManager } from './createDeviceManager';
+import { createEncryptedStorageManager } from './createEncryptedStorageManager';
 import { createFirebaseManager } from './createFirebaseManager';
-import { createEncryptedKeyValueStorageManager } from './createEncryptedKeyValueStorageManager';
+import { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager';
+import { createKeyboardManager } from './createKeyboardManager';
+import { createNetworkManager } from './createNetworkManager';
+import { createOpenUrlManager } from './createOpenUrlManager';
+import { createPermissionsManager } from './createPermissionsManager';
 
-/**
- * The default {@link EventBridge}.
- */
 export const eventBridge = createEventBridge();
 
-/**
- * The default {@link ActionsManager}.
- */
-export const actionsManager = createActionsManager(eventBridge);
+export const deepLinkManager = createDeepLinkManager(eventBridge);
 
-/**
- * The default {@link ConfigurationManager}.
- */
-export const configurationManager = createConfigurationManager(eventBridge);
+export const deviceManager = createDeviceManager(eventBridge);
 
-/**
- * The default {@link EncryptedKeyValueStorageManager}.
- */
-export const encryptedKeyValueStorageManager = createEncryptedKeyValueStorageManager(eventBridge);
+export const encryptedStorageManager = createEncryptedStorageManager(eventBridge);
 
-/**
- * The default {@link FirebaseManager}.
- */
 export const firebaseManager = createFirebaseManager(eventBridge);
 
-/**
- * The default {@link GooglePlayReferrerManager}.
- */
 export const googlePlayReferrerManager = createGooglePlayReferrerManager(eventBridge);
 
-/**
- * The default {@link NetworkManager}.
- */
+export const keyboardManager = createKeyboardManager(eventBridge);
+
 export const networkManager = createNetworkManager(eventBridge);
 
-/**
- * The default {@link PermissionsManager}.
- */
+export const openUrlManager = createOpenUrlManager(eventBridge);
+
 export const permissionsManager = createPermissionsManager(eventBridge);

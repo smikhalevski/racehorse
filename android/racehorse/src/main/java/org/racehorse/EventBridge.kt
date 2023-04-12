@@ -81,7 +81,9 @@ open class EventBridge(
 
     private var requestId = AtomicInteger()
 
-    open fun enable() = webView.addJavascriptInterface(this, connectionKey)
+    init {
+        webView.addJavascriptInterface(this, connectionKey)
+    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onResponse(event: ResponseEvent) {

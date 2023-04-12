@@ -22,6 +22,9 @@ class OpenDeepLinkEvent(val url: String) : NoticeEvent
 /**
  * Provides access to app deep links.
  *
+ * You should post [OpenDeepLinkEvent] in [androidx.appcompat.app.AppCompatActivity.onCreate] and
+ * [androidx.appcompat.app.AppCompatActivity.onNewIntent] to make this plugin work.
+ *
  * @param eventBus The event bus to which events are posted.
  */
 open class DeepLinkPlugin(private val eventBus: EventBus = EventBus.getDefault()) {

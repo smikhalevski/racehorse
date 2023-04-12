@@ -1,4 +1,3 @@
-import { PubSub } from 'parallel-universe';
 import { EventBridge } from './types';
 import { ensureEvent } from './utils';
 
@@ -27,25 +26,17 @@ export interface NetworkManager {
  * @param eventBridge The underlying event bridge.
  */
 export function createNetworkManager(eventBridge: EventBridge): NetworkManager {
-  let pubSub: PubSub<NetworkStatus>;
-
   return {
-    getStatus() {
-      return eventBridge
+    getStatus: () =>
+      eventBridge
         .request({ type: 'org.racehorse.GetNetworkStatusRequestEvent' })
-        .then(event => ensureEvent(event).status);
-    },
+        .then(event => ensureEvent(event).status),
 
-    subscribe(listener) {
-      pubSub ||=
-        (eventBridge.subscribe(event => {
-          if (event.type === 'org.racehorse.NetworkStatusChangedEvent') {
-            pubSub.publish(event.status);
-          }
-        }),
-        new PubSub());
-
-      return pubSub.subscribe(listener);
-    },
+    subscribe: listener =>
+      eventBridge.subscribe(event => {
+        if (event.type === 'org.racehorse.NetworkStatusChangedEvent') {
+          listener(event.status);
+        }
+      }),
   };
 }

@@ -1,7 +1,7 @@
 import { EventBridge } from './types';
 import { ensureEvent } from './utils';
 
-export interface ActionsManager {
+export interface OpenUrlManager {
   /**
    * Opens a URL in an external application.
    *
@@ -16,12 +16,11 @@ export interface ActionsManager {
  *
  * @param eventBridge The underlying event bridge.
  */
-export function createActionsManager(eventBridge: EventBridge): ActionsManager {
+export function createOpenUrlManager(eventBridge: EventBridge): OpenUrlManager {
   return {
-    openUrl(url) {
-      return eventBridge
+    openUrl: url =>
+      eventBridge
         .request({ type: 'org.racehorse.OpenUrlRequestEvent', url })
-        .then(event => ensureEvent(event).isOpened);
-    },
+        .then(event => ensureEvent(event).isOpened),
   };
 }

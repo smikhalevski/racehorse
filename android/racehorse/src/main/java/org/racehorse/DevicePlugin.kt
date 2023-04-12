@@ -1,12 +1,13 @@
 package org.racehorse
 
-import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsCompat.toWindowInsetsCompat
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.postToChain
+
+class Rect(val top: Float, val right: Float, val bottom: Float, val left: Float)
 
 /**
  * Get the list of locales that user picked in the device settings.
@@ -31,13 +32,6 @@ class GetWindowInsetsRequestEvent(
 class GetWindowInsetsResponseEvent(val rect: Rect) : ResponseEvent()
 
 /**
- * Notifies the web app that the keyboard visibility has changed.
- */
-class KeyboardVisibilityChangedEvent(val isKeyboardVisible: Boolean) : NoticeEvent
-
-class Rect(val top: Float, val right: Float, val bottom: Float, val left: Float)
-
-/**
  * Device configuration and general information.
  *
  * @param activity The activity that provides access to window and resources.
@@ -47,22 +41,6 @@ open class DevicePlugin(
     private val activity: ComponentActivity,
     private val eventBus: EventBus = EventBus.getDefault()
 ) {
-
-    private var isKeyboardVisible = false
-
-    private val keyboardListener = View.OnApplyWindowInsetsListener { _, windowInsets ->
-        with(toWindowInsetsCompat(windowInsets).getInsets(WindowInsetsCompat.Type.ime())) {
-            if (isKeyboardVisible != (top + right + bottom + left != 0)) {
-                isKeyboardVisible = !isKeyboardVisible
-                eventBus.post(KeyboardVisibilityChangedEvent(isKeyboardVisible))
-            }
-        }
-        windowInsets
-    }
-
-    open fun enable() = activity.window.decorView.setOnApplyWindowInsetsListener(keyboardListener)
-
-    open fun disable() = activity.window.decorView.setOnApplyWindowInsetsListener(null)
 
     @Subscribe
     fun onGetPreferredLocales(event: GetPreferredLocalesRequestEvent) {

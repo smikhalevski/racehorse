@@ -21,15 +21,7 @@ export const InsetType = {
   WINDOW_DECOR: 1 << 8,
 } as const;
 
-export interface ConfigurationManager {
-  /**
-   * Get the rect that describes the window insets that overlap with system UI.
-   *
-   * @param typeMask Bit mask of {@link InsetType}s to query the insets for. By default, display cutout, navigation and
-   * status bars are included.
-   */
-  getWindowInsets(typeMask?: number): Promise<Rect>;
-
+export interface DeviceManager {
   /**
    * Returns the array of preferred locales.
    */
@@ -44,41 +36,34 @@ export interface ConfigurationManager {
   pickLocale(supportedLocales: string[], defaultLocale: string): Promise<string>;
 
   /**
-   * Subscribes a listener to soft keyboard visibility changes.
+   * Get the rect that describes the window insets that overlap with system UI.
+   *
+   * @param typeMask Bit mask of {@link InsetType}s to query the insets for. By default, display cutout, navigation and
+   * status bars are included.
    */
-  subscribeToKeyboardVisibility(listener: (keyboardVisible: boolean) => void): () => void;
+  getWindowInsets(typeMask?: number): Promise<Rect>;
 }
 
 /**
- * Device configuration and general information.
+ * Device configuration and general device information.
  *
  * @param eventBridge The underlying event bridge.
  */
-export function createConfigurationManager(eventBridge: EventBridge): ConfigurationManager {
+export function createDeviceManager(eventBridge: EventBridge): DeviceManager {
   const getPreferredLocales = () =>
     eventBridge
       .request({ type: 'org.racehorse.GetPreferredLocalesRequestEvent' })
       .then(event => ensureEvent(event).locales);
 
   return {
-    getWindowInsets(typeMask) {
-      return eventBridge
-        .request({ type: 'org.racehorse.GetWindowInsetsRequestEvent', typeMask })
-        .then(event => ensureEvent(event).rect);
-    },
-
-    subscribeToKeyboardVisibility(listener) {
-      return eventBridge.subscribe(event => {
-        if (event.type === 'org.racehorse.KeyboardVisibilityChangedEvent') {
-          listener(event.isKeyboardVisible);
-        }
-      });
-    },
-
     getPreferredLocales,
 
-    pickLocale(supportedLocales, defaultLocale) {
-      return getPreferredLocales().then(locales => pickLocale(locales, supportedLocales, defaultLocale));
-    },
+    pickLocale: (supportedLocales, defaultLocale) =>
+      getPreferredLocales().then(locales => pickLocale(locales, supportedLocales, defaultLocale)),
+
+    getWindowInsets: typeMask =>
+      eventBridge
+        .request({ type: 'org.racehorse.GetWindowInsetsRequestEvent', typeMask })
+        .then(event => ensureEvent(event).rect),
   };
 }

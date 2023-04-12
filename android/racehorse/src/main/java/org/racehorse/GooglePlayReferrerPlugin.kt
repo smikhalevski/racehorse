@@ -1,7 +1,6 @@
 package org.racehorse
 
 import android.content.Context
-import android.content.SharedPreferences
 import com.android.installreferrer.api.InstallReferrerClient
 import com.android.installreferrer.api.InstallReferrerStateListener
 import org.greenrobot.eventbus.EventBus
@@ -12,10 +11,6 @@ class GetGooglePlayReferrerRequestEvent : RequestEvent()
 
 class GetGooglePlayReferrerResponseEvent(val referrer: String?) : ResponseEvent()
 
-class GooglePlayReferrerDetectedEvent(val referrer: String) : NoticeEvent
-
-const val GOOGLE_PLAY_REFERRER_KEY = "googlePlayReferrer"
-
 /**
  * Gets [Google Play referrer](https://developer.android.com/google/play/installreferrer/library) information.
  */
@@ -24,33 +19,23 @@ open class GooglePlayReferrerPlugin(
     private val eventBus: EventBus = EventBus.getDefault()
 ) {
 
-    private val preferences: SharedPreferences by lazy {
-        context.getSharedPreferences("org.racehorse.GooglePlayReferrerPlugin", Context.MODE_PRIVATE)
-    }
-
-    private val referrerClient: InstallReferrerClient by lazy {
-        InstallReferrerClient.newBuilder(context).build().apply {
-            startConnection(object : InstallReferrerStateListener {
-
-                override fun onInstallReferrerSetupFinished(responseCode: Int) {
-                    if (responseCode == InstallReferrerClient.InstallReferrerResponse.OK) {
-                        val referrer = installReferrer.installReferrer
-
-                        preferences.edit().putString(GOOGLE_PLAY_REFERRER_KEY, referrer).apply()
-                        eventBus.post(GooglePlayReferrerDetectedEvent(referrer))
-                    }
-                }
-
-                override fun onInstallReferrerServiceDisconnected() {}
-            })
-        }
-    }
-
     @Subscribe
     open fun onGetGooglePlayReferrerRequestEvent(event: GetGooglePlayReferrerRequestEvent) {
-        val referrer = preferences.getString(GOOGLE_PLAY_REFERRER_KEY, null)
+        val referrerClient = InstallReferrerClient.newBuilder(context).build()
 
-        eventBus.postToChain(event, GetGooglePlayReferrerResponseEvent(referrer))
-        referrerClient.isReady
+        referrerClient.startConnection(object : InstallReferrerStateListener {
+            override fun onInstallReferrerSetupFinished(responseCode: Int) = handleResponse(responseCode)
+
+            override fun onInstallReferrerServiceDisconnected() =
+                handleResponse(InstallReferrerClient.InstallReferrerResponse.SERVICE_DISCONNECTED)
+
+            private fun handleResponse(responseCode: Int) {
+                val referrer = if (responseCode == InstallReferrerClient.InstallReferrerResponse.OK) {
+                    referrerClient.installReferrer.installReferrer
+                } else null
+
+                eventBus.postToChain(event, GetGooglePlayReferrerResponseEvent(referrer))
+            }
+        })
     }
 }

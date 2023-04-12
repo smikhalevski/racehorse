@@ -40,11 +40,11 @@ enum class NetworkType {
  */
 open class NetworkPlugin(private val context: Context, private val eventBus: EventBus = EventBus.getDefault()) {
 
+    var networkStatus = getNetworkStatus(capabilities)
+
     private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
     private val capabilities get() = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-
-    private var networkStatus = getNetworkStatus(capabilities)
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
 
