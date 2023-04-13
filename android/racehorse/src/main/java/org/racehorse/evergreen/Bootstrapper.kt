@@ -13,6 +13,11 @@ open class Bootstrapper(private val bundlesDir: File) {
     val masterVersion get() = masterVersionFile.takeIf { it.exists() }?.readText()
     val updateVersion get() = updateVersionFile.takeIf { it.exists() }?.readText()
 
+    /**
+     * `true` if update was downloaded and ready to be applied.
+     */
+    val isUpdateReady get() = updateDir.exists()
+
     private var masterDir = File(bundlesDir, "master")
     private var masterVersionFile = File(bundlesDir, "master.version")
 

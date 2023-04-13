@@ -5,6 +5,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.racehorse.NoticeEvent
 import org.racehorse.RequestEvent
 import org.racehorse.ResponseEvent
+import org.racehorse.utils.postToChain
 import java.io.File
 
 /**
@@ -39,9 +40,18 @@ class GetMasterVersionResponseEvent(val version: String?) : ResponseEvent()
 /**
  * Get the version of the update that would be applied on the next app restart.
  */
-class GetUpdateVersionRequestEvent : RequestEvent()
+class GetUpdateStatusRequestEvent : RequestEvent()
 
-class GetUpdateVersionResponseEvent(val version: String?) : ResponseEvent()
+/**
+ * @param status The status of the update or `null` if there's no update available.
+ */
+class GetUpdateStatusResponseEvent(val status: UpdateStatus?) : ResponseEvent()
+
+/**
+ * @param version The version of the update.
+ * @param isReady `true` if the update is fully downloaded and ready to be applied.
+ */
+class UpdateStatus(val version: String, val isReady: Boolean)
 
 /**
  * The [Bootstrapper] that posts status events to the [eventBus].
@@ -76,11 +86,11 @@ open class EvergreenPlugin(
 
     @Subscribe
     open fun onGetMasterVersion(event: GetMasterVersionRequestEvent) {
-        eventBus.post(GetMasterVersionResponseEvent(masterVersion))
+        eventBus.postToChain(event, GetMasterVersionResponseEvent(masterVersion))
     }
 
     @Subscribe
-    open fun onGetUpdateVersion(event: GetUpdateVersionRequestEvent) {
-        eventBus.post(GetUpdateVersionResponseEvent(updateVersion))
+    open fun onGetUpdateStatus(event: GetUpdateStatusRequestEvent) {
+        eventBus.postToChain(event, GetUpdateStatusResponseEvent(updateVersion?.let { UpdateStatus(it, isUpdateReady) }))
     }
 }

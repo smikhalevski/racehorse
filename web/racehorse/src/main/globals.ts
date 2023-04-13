@@ -2,6 +2,7 @@ import { createEventBridge } from './createEventBridge';
 import { createDeepLinkManager } from './createDeepLinkManager';
 import { createDeviceManager } from './createDeviceManager';
 import { createEncryptedStorageManager } from './createEncryptedStorageManager';
+import { createEvergreenManager } from './createEvergreenManager';
 import { createFirebaseManager } from './createFirebaseManager';
 import { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager';
 import { createKeyboardManager } from './createKeyboardManager';
@@ -14,6 +15,8 @@ export const eventBridge = createEventBridge();
 export const deepLinkManager = createDeepLinkManager(eventBridge);
 
 export const deviceManager = createDeviceManager(eventBridge);
+
+export const evergreenManager = createEvergreenManager(eventBridge);
 
 export const encryptedStorageManager = createEncryptedStorageManager(eventBridge);
 
