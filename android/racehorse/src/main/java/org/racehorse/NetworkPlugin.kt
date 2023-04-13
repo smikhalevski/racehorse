@@ -40,6 +40,10 @@ enum class NetworkType {
  */
 open class NetworkPlugin(private val context: Context, private val eventBus: EventBus = EventBus.getDefault()) {
 
+    val status get() = lastStatus ?: getNetworkStatus(capabilities)
+
+    private var lastStatus: NetworkStatus? = null
+
     private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
     private val capabilities get() = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
@@ -57,23 +61,27 @@ open class NetworkPlugin(private val context: Context, private val eventBus: Eve
 
         private fun handleChange(capabilities: NetworkCapabilities?) = synchronized(this) {
             val status = getNetworkStatus(capabilities)
-            if (status == networkStatus) {
+            if (status == lastStatus) {
                 return
             }
-            networkStatus = status
+            lastStatus = status
             eventBus.post(NetworkStatusChangedEvent(status))
         }
     }
 
-    var networkStatus = getNetworkStatus(capabilities)
+    open fun enable() {
+        connectivityManager.registerDefaultNetworkCallback(networkCallback)
+        lastStatus = getNetworkStatus(capabilities)
+    }
 
-    open fun enable() = connectivityManager.registerDefaultNetworkCallback(networkCallback)
-
-    open fun disable() = connectivityManager.unregisterNetworkCallback(networkCallback)
+    open fun disable() {
+        connectivityManager.unregisterNetworkCallback(networkCallback)
+        lastStatus = null
+    }
 
     @Subscribe
     open fun onGetNetworkStatus(event: GetNetworkStatusRequestEvent) {
-        eventBus.postToChain(event, GetNetworkStatusResponseEvent(networkStatus))
+        eventBus.postToChain(event, GetNetworkStatusResponseEvent(status))
     }
 
     protected fun getNetworkStatus(capabilities: NetworkCapabilities?): NetworkStatus {
