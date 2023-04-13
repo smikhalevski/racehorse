@@ -32,10 +32,9 @@ open class AssetLoaderPlugin(
 
     @Subscribe
     open fun onShouldOverrideUrlLoading(event: ShouldOverrideUrlLoadingEvent) {
-        if (assetLoader.shouldInterceptRequest(event.request.url) == null || !event.shouldHandle()) {
-            return
+        if (assetLoader.shouldInterceptRequest(event.request.url) == null && event.shouldHandle()) {
+            eventBus.post(OpenUrlRequestEvent(event.request.url.toString()))
         }
-        eventBus.post(OpenUrlRequestEvent(event.request.url.toString()))
     }
 }
 
