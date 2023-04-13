@@ -36,11 +36,11 @@ class BootstrapperTest {
             bundleReadyCallIndex = callIndex.incrementAndGet()
         }
 
-        override fun onUpdateStarted(mandatory: Boolean) {
+        override fun onUpdateStarted(updateMode: UpdateMode) {
             updateStartedCallIndex = callIndex.incrementAndGet()
         }
 
-        override fun onUpdateFailed(mandatory: Boolean, cause: Throwable) {
+        override fun onUpdateFailed(updateMode: UpdateMode, cause: Throwable) {
             updateFailedCallIndex = callIndex.incrementAndGet()
         }
 
@@ -94,7 +94,7 @@ class BootstrapperTest {
                 .setChunkedBody(byteArrayOutputStream.toByteArray(), 1024)
         )
 
-        MockBootstrapper().start("0.0.0", false) {
+        MockBootstrapper().start("0.0.0", UpdateMode.OPTIONAL) {
             server.getUrl("/").openConnection()
         }
 
@@ -118,7 +118,7 @@ class BootstrapperTest {
         File(updateDir, "file.txt").writeText("value")
         updateVersionFile.writeText("1.1.1")
 
-        MockBootstrapper().start("1.1.1", false) {
+        MockBootstrapper().start("1.1.1", UpdateMode.OPTIONAL) {
             throw Exception()
         }
 
@@ -156,7 +156,7 @@ class BootstrapperTest {
                 .setChunkedBody(byteArrayOutputStream.toByteArray(), 1024)
         )
 
-        MockBootstrapper().start("2.2.2", false) {
+        MockBootstrapper().start("2.2.2", UpdateMode.OPTIONAL) {
             server.getUrl("/").openConnection()
         }
 

@@ -16,15 +16,15 @@ class BundleReadyEvent(val appDir: File)
 /**
  * The new update download has started.
  */
-class UpdateStartedEvent(val mandatory: Boolean) : NoticeEvent
+class UpdateStartedEvent(val updateMode: UpdateMode) : NoticeEvent
 
 /**
  * Failed to download an update.
  */
-class UpdateFailedEvent(val mandatory: Boolean, @Transient val cause: Throwable) : NoticeEvent
+class UpdateFailedEvent(val updateMode: UpdateMode, @Transient val cause: Throwable) : NoticeEvent
 
 /**
- * A non-mandatory update was successfully downloaded and ready to be applied.
+ * An update was successfully downloaded and ready to be applied.
  */
 class UpdateReadyEvent(val version: String) : NoticeEvent
 
@@ -68,12 +68,12 @@ open class EvergreenPlugin(
         eventBus.post(BundleReadyEvent(appDir))
     }
 
-    override fun onUpdateStarted(mandatory: Boolean) {
-        eventBus.post(UpdateStartedEvent(mandatory))
+    override fun onUpdateStarted(updateMode: UpdateMode) {
+        eventBus.post(UpdateStartedEvent(updateMode))
     }
 
-    override fun onUpdateFailed(mandatory: Boolean, cause: Throwable) {
-        eventBus.post(UpdateFailedEvent(mandatory, cause))
+    override fun onUpdateFailed(updateMode: UpdateMode, cause: Throwable) {
+        eventBus.post(UpdateFailedEvent(updateMode, cause))
     }
 
     override fun onUpdateReady(version: String) {
