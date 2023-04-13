@@ -10,7 +10,6 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.*
 import org.racehorse.evergreen.BundleReadyEvent
-import org.racehorse.StaticPathHandler
 import org.racehorse.webview.RacehorseWebChromeClient
 import org.racehorse.webview.RacehorseWebViewClient
 import java.io.File
@@ -50,7 +49,7 @@ class MainActivity : AppCompatActivity() {
             it.register(EventBridge(webView))
             it.register(DevicePlugin(this))
             it.register(EncryptedStoragePlugin(File(filesDir, "storage"), BuildConfig.APPLICATION_ID.toByteArray()))
-            it.register(FileChooserPlugin(this, externalCacheDir, "$packageName.provider"))
+            it.register(FileChooserPlugin(this, externalCacheDir, "${BuildConfig.APPLICATION_ID}.provider"))
             it.register(FirebasePlugin())
             it.register(GooglePlayReferrerPlugin(this))
             it.register(HttpsPlugin())
