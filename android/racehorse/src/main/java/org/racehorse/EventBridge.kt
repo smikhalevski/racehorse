@@ -147,8 +147,8 @@ open class EventBridge(
      * Publishes the event to the web.
      */
     private fun publish(requestId: Int, event: Any) {
-        val json = gson.toJson(gson.toJsonTree(event).asJsonObject.also {
-            it.addProperty("type", event::class.java.name)
+        val json = gson.toJson(gson.toJsonTree(event).asJsonObject.apply {
+            addProperty("type", event::class.java.name)
         })
 
         webView.evaluateJavascript(

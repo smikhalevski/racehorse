@@ -62,7 +62,7 @@ class BootstrapperTest {
         updateDir = File(tempDir.root, "update")
         updateVersionFile = File(tempDir.root, "update.version")
 
-        server = MockWebServer().also { it.play() }
+        server = MockWebServer().apply { play() }
 
         callIndex.set(0)
         bundleReadyCallIndex = -1
