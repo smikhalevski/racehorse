@@ -10,10 +10,9 @@ export interface FirebaseManager {
 
 export function createFirebaseManager(eventBridge: EventBridge): FirebaseManager {
   return {
-    getFirebaseToken() {
-      return eventBridge
+    getFirebaseToken: () =>
+      eventBridge
         .request({ type: 'org.racehorse.GetFirebaseTokenRequestEvent' })
-        .then(event => ensureEvent(event).token);
-    },
+        .then(event => ensureEvent(event).token),
   };
 }

@@ -5,7 +5,7 @@ export function GeolocationExample() {
 
   return (
     <>
-      <h2>{'GeolocationExample'}</h2>
+      <h2>{'Geolocation'}</h2>
 
       <button
         onClick={() => {

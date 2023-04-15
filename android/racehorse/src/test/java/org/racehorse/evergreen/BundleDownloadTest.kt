@@ -32,7 +32,7 @@ class BundleDownloadTest {
         etagFile = File("$targetDir.etag")
         zipFile = File("$targetDir.zip")
 
-        server = MockWebServer().also { it.play() }
+        server = MockWebServer().apply { play() }
     }
 
     @After

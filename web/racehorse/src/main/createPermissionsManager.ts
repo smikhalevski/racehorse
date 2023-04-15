@@ -59,17 +59,13 @@ export interface PermissionsManager {
  */
 export function createPermissionsManager(eventBridge: EventBridge): PermissionsManager {
   return {
-    shouldShowRequestPermissionRationale(permission) {
-      return request('org.racehorse.ShouldShowRequestPermissionRationaleRequestEvent', eventBridge, permission);
-    },
+    shouldShowRequestPermissionRationale: permission =>
+      request('org.racehorse.ShouldShowRequestPermissionRationaleRequestEvent', eventBridge, permission),
 
-    isPermissionGranted(permission) {
-      return request('org.racehorse.IsPermissionGrantedRequestEvent', eventBridge, permission);
-    },
+    isPermissionGranted: permission =>
+      request('org.racehorse.IsPermissionGrantedRequestEvent', eventBridge, permission),
 
-    askForPermission(permission) {
-      return request('org.racehorse.AskForPermissionRequestEvent', eventBridge, permission);
-    },
+    askForPermission: permission => request('org.racehorse.AskForPermissionRequestEvent', eventBridge, permission),
   };
 }
 

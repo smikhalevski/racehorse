@@ -1,16 +1,17 @@
 package org.racehorse
 
-import android.net.http.SslError
-import android.webkit.SslErrorHandler
-import android.webkit.WebView
-import org.racehorse.webview.HttpsCapability
-import org.racehorse.webview.Plugin
+import org.greenrobot.eventbus.Subscribe
+import org.racehorse.webview.ReceivedSslErrorEvent
 
-open class HttpsPlugin : Plugin(), HttpsCapability {
+/**
+ * SSL termination and certificate error handling.
+ */
+open class HttpsPlugin {
 
-    override fun onReceivedSslError(webView: WebView, handler: SslErrorHandler, error: SslError): Boolean {
-        // TODO Validate public keys
-        handler.proceed()
-        return true
+    @Subscribe
+    open fun onReceivedSslError(event: ReceivedSslErrorEvent) {
+        if (event.shouldHandle()) {
+            event.handler.proceed()
+        }
     }
 }

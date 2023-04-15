@@ -5,7 +5,7 @@ export function LocalStorageExample() {
 
   return (
     <>
-      <h2>{'LocalStorageExample'}</h2>
+      <h2>{'Local storage'}</h2>
 
       <p>
         <button
@@ -26,7 +26,7 @@ export function LocalStorageExample() {
         </button>
       </p>
 
-      {'Value: '}
+      {'Value:'}
       <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(localStorage.getItem('example'), null, 2)}</pre>
     </>
   );

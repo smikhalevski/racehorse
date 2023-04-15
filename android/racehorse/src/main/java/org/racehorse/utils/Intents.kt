@@ -7,14 +7,14 @@ import android.os.Build
 /**
  * Returns the new intent that wouldn't be applied to the apps with given package names.
  */
-fun Intent.excludePackage(packageManager: PackageManager, excludedPackageNames: Array<String>): Intent? {
+fun Intent.excludePackages(packageManager: PackageManager, excludedPackageNames: Array<String>): Intent? {
 
     // Package names of activities that support this intent
-    val activityPackageNames = if (Build.VERSION.SDK_INT < 33) {
+    val activityPackageNames = if (Build.VERSION.SDK_INT >= 33) {
+        packageManager.queryIntentActivities(this, PackageManager.ResolveInfoFlags.of(0L))
+    } else {
         @Suppress("DEPRECATION")
         packageManager.queryIntentActivities(this, 0)
-    } else {
-        packageManager.queryIntentActivities(this, PackageManager.ResolveInfoFlags.of(0L))
     }.map { it.activityInfo.packageName }
 
     val packageNames = activityPackageNames.filter { packageName ->

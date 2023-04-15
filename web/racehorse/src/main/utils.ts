@@ -6,7 +6,7 @@ import { ResponseEvent } from './types';
  * @param event The event to ensure isn't an exception.
  */
 export function ensureEvent(event: ResponseEvent): ResponseEvent {
-  if (event.type === 'org.racehorse.webview.ExceptionResponseEvent') {
+  if (event.type === 'org.racehorse.ExceptionEvent') {
     throw new Error(event.stackTrace);
   }
   return event;

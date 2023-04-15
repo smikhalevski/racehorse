@@ -2,11 +2,12 @@ import { CookieExample } from './examples/CookieExample';
 import { FileInputExample } from './examples/FileInputExample';
 import { GeolocationExample } from './examples/GeolocationExample';
 import { LocalStorageExample } from './examples/LocalStorageExample';
-import { ConfigurationManagerExample } from './examples/ConfigurationManagerExample';
-import { ActionsManagerExample } from './examples/ActionsManagerExample';
-import { UseOnlineExample } from './examples/UseOnlineExample';
-import { PermissionsManagerExample } from './examples/PermissionsManagerExample';
-import { EncryptedKeyValueStorageManagerExample } from './examples/EncryptedKeyValueStorageManagerExample';
+import { DeviceExample } from './examples/DeviceExample';
+import { OpenUrlExample } from './examples/OpenUrlExample';
+import { NetworkExample } from './examples/NetworkExample';
+import { PermissionsExample } from './examples/PermissionsExample';
+import { EncryptedStorageExample } from './examples/EncryptedStorageExample';
+import { ToastExample } from './examples/ToastExample';
 
 module.hot?.accept(() => {
   location.reload();
@@ -15,15 +16,16 @@ module.hot?.accept(() => {
 export function App() {
   return (
     <>
-      <EncryptedKeyValueStorageManagerExample />
+      <ToastExample />
+      <EncryptedStorageExample />
       <CookieExample />
       <FileInputExample />
       <GeolocationExample />
       <LocalStorageExample />
-      <ConfigurationManagerExample />
-      <ActionsManagerExample />
-      <UseOnlineExample />
-      <PermissionsManagerExample />
+      <DeviceExample />
+      <OpenUrlExample />
+      <NetworkExample />
+      <PermissionsExample />
     </>
   );
 }

@@ -14,22 +14,12 @@ export function createGooglePlayReferrerManager(eventBridge: EventBridge): Googl
   let referrerPromise: Promise<string> | undefined;
 
   return {
-    getGooglePlayReferrer() {
-      return (referrerPromise ||= new Promise(resolve => {
-        const unsubscribe = eventBridge.subscribe(event => {
-          if (event.type === 'org.racehorse.GooglePlayReferrerDetectedAlertEvent') {
-            resolve(event.referrer);
-            unsubscribe();
-          }
-        });
-
-        eventBridge.request({ type: 'org.racehorse.GetGooglePlayReferrerRequestEvent' }).then(event => {
-          if (ensureEvent(event).referrer) {
-            resolve(event.referrer);
-            unsubscribe();
-          }
-        });
-      }));
-    },
+    getGooglePlayReferrer: () =>
+      (referrerPromise ||= eventBridge
+        .request({ type: 'org.racehorse.GetGooglePlayReferrerRequestEvent' })
+        .then(event => {
+          referrerPromise = undefined;
+          return ensureEvent(event).referrer;
+        })),
   };
 }

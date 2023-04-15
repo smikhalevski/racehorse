@@ -1,17 +1,23 @@
-import { PubSub } from 'parallel-universe';
 import { EventBridge } from './types';
 import { ensureEvent } from './utils';
 
+export type NetworkType = 'wifi' | 'cellular' | 'none' | 'unknown';
+
+export interface NetworkStatus {
+  type: NetworkType;
+  isConnected: boolean;
+}
+
 export interface NetworkManager {
   /**
-   * The current online status, or `undefined` if not yet known.
+   * Returns the status of the active network.
    */
-  readonly isOnline: boolean | undefined;
+  getStatus(): Promise<NetworkStatus>;
 
   /**
    * Subscribes to network status changes.
    */
-  subscribeToOnlineStatusChanges(listener: () => void): () => void;
+  subscribe(listener: (status: NetworkStatus) => void): () => void;
 }
 
 /**
@@ -20,44 +26,17 @@ export interface NetworkManager {
  * @param eventBridge The underlying event bridge.
  */
 export function createNetworkManager(eventBridge: EventBridge): NetworkManager {
-  const pubSub = new PubSub();
+  return {
+    getStatus: () =>
+      eventBridge
+        .request({ type: 'org.racehorse.GetNetworkStatusRequestEvent' })
+        .then(event => ensureEvent(event).status),
 
-  let online: boolean | undefined;
-  let unsubscribe: (() => void) | undefined;
-
-  const ensureSubscription = () => {
-    if (unsubscribe) {
-      return;
-    }
-
-    eventBridge.request({ type: 'org.racehorse.IsOnlineRequestEvent' }).then(event => {
-      online = ensureEvent(event).isOnline;
-      pubSub.publish();
-    });
-
-    unsubscribe = eventBridge.subscribe(event => {
-      if (event.type === 'org.racehorse.OnlineStatusChangedAlertEvent') {
-        online = event.isOnline;
-        pubSub.publish();
-      }
-    });
+    subscribe: listener =>
+      eventBridge.subscribe(event => {
+        if (event.type === 'org.racehorse.NetworkStatusChangedEvent') {
+          listener(event.status);
+        }
+      }),
   };
-
-  const manager: NetworkManager = {
-    isOnline: undefined,
-
-    subscribeToOnlineStatusChanges(listener) {
-      ensureSubscription();
-      return pubSub.subscribe(listener);
-    },
-  };
-
-  Object.defineProperty(manager, 'isOnline', {
-    get() {
-      ensureSubscription();
-      return online;
-    },
-  });
-
-  return manager;
 }

@@ -1,12 +1,17 @@
 package org.racehorse
 
+import android.Manifest
+import android.webkit.PermissionRequest
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
+import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.isPermissionGranted
 import org.racehorse.utils.launchForActivityResult
-import org.racehorse.webview.*
+import org.racehorse.utils.postToChain
+import org.racehorse.webview.GeolocationPermissionsShowPromptEvent
+import org.racehorse.webview.PermissionRequestEvent
 
 /**
  * Gets whether you should show UI with rationale before requesting a permission.
@@ -31,32 +36,58 @@ class AskForPermissionResponseEvent(val statuses: Map<String, Boolean>) : Respon
 
 /**
  * Check permission statuses and ask for permissions.
+ *
+ * @param activity The activity that launches permission request intents.
+ * @param eventBus The event bus to which events are posted.
  */
-open class PermissionsPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability, PermissionsCapability {
+open class PermissionsPlugin(
+    private val activity: ComponentActivity,
+    private val eventBus: EventBus = EventBus.getDefault()
+) {
 
-    override fun onAskForPermissions(
-        permissions: Array<String>,
-        callback: (statuses: Map<String, Boolean>) -> Unit
-    ): Boolean {
-        val statuses = permissions.associateWith { true }
-        val notGrantedPermissions = statuses.keys.filterNot(activity::isPermissionGranted).toTypedArray()
+    @Subscribe
+    open fun onGeolocationPermissionsShowPrompt(event: GeolocationPermissionsShowPromptEvent) {
+        askForPermissions(
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+        ) {
+            event.callback.invoke(event.origin, it.containsValue(true), false)
+        }
+    }
 
-        return if (notGrantedPermissions.isEmpty()) {
-            callback(statuses)
-            true
-        } else {
-            activity.launchForActivityResult(
-                ActivityResultContracts.RequestMultiplePermissions(),
-                notGrantedPermissions
-            ) {
-                callback(statuses + it)
+    @Subscribe
+    open fun onPermissionRequest(event: PermissionRequestEvent) {
+        val permissions = HashSet<String>()
+
+        if (event.request.resources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
+            permissions.add(Manifest.permission.CAMERA)
+        }
+        if (event.request.resources.contains(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
+            permissions.add(Manifest.permission.RECORD_AUDIO)
+        }
+        if (permissions.isEmpty() || !event.shouldHandle()) {
+            return
+        }
+
+        askForPermissions(permissions.toTypedArray()) {
+            val resources = HashSet<String>()
+
+            if (it[Manifest.permission.CAMERA] == true) {
+                resources.add(PermissionRequest.RESOURCE_VIDEO_CAPTURE)
+            }
+            if (it[Manifest.permission.RECORD_AUDIO] == true) {
+                resources.add(PermissionRequest.RESOURCE_AUDIO_CAPTURE)
+            }
+            if (resources.isEmpty()) {
+                event.request.deny()
+            } else {
+                event.request.grant(resources.toTypedArray())
             }
         }
     }
 
     @Subscribe
-    fun onShouldShowRequestPermissionRationaleRequestEvent(event: ShouldShowRequestPermissionRationaleRequestEvent) {
-        postToChain(event, ShouldShowTaskPermissionRationaleResponseEvent(
+    open fun onShouldShowRequestPermissionRationale(event: ShouldShowRequestPermissionRationaleRequestEvent) {
+        eventBus.postToChain(event, ShouldShowTaskPermissionRationaleResponseEvent(
             event.permissions.distinct().associateWith {
                 ActivityCompat.shouldShowRequestPermissionRationale(activity, it)
             }
@@ -64,16 +95,37 @@ open class PermissionsPlugin(private val activity: ComponentActivity) : Plugin()
     }
 
     @Subscribe
-    fun onIsPermissionGrantedRequestEvent(event: IsPermissionGrantedRequestEvent) {
-        postToChain(event, IsPermissionGrantedResponseEvent(
-            event.permissions.distinct().associateWith(activity::isPermissionGranted)
-        ))
+    open fun onIsPermissionGranted(event: IsPermissionGrantedRequestEvent) {
+        eventBus.postToChain(
+            event,
+            IsPermissionGrantedResponseEvent(event.permissions.distinct().associateWith(activity::isPermissionGranted))
+        )
     }
 
     @Subscribe
-    fun onAskForPermissionRequestEvent(event: AskForPermissionRequestEvent) {
-        onAskForPermissions(event.permissions) {
-            postToChain(event, AskForPermissionResponseEvent(it))
+    open fun onAskForPermission(event: AskForPermissionRequestEvent) {
+        askForPermissions(event.permissions) {
+            eventBus.postToChain(event, AskForPermissionResponseEvent(it))
+        }
+    }
+
+    protected fun askForPermissions(
+        permissions: Array<String>,
+        callback: (statuses: Map<String, Boolean>) -> Unit
+    ): Boolean {
+        val statuses = permissions.associateWith { true }
+        val missingPermissions = permissions.filterNot(activity::isPermissionGranted).toTypedArray()
+
+        if (missingPermissions.isEmpty()) {
+            callback(statuses)
+            return true
+        }
+
+        return activity.launchForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions(),
+            missingPermissions
+        ) {
+            callback(statuses + it)
         }
     }
 }

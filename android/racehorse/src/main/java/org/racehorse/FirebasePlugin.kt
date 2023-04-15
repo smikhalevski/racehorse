@@ -1,24 +1,25 @@
 package org.racehorse
 
 import com.google.firebase.messaging.FirebaseMessaging
+import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.webview.EventBusCapability
-import org.racehorse.webview.Plugin
-import org.racehorse.webview.RequestEvent
-import org.racehorse.webview.ResponseEvent
-
-class NewFirebaseTokenEvent(val token: String)
+import org.racehorse.utils.postToChain
 
 class GetFirebaseTokenRequestEvent : RequestEvent()
 
 class GetFirebaseTokenResponseEvent(val token: String?) : ResponseEvent()
 
-open class FirebasePlugin : Plugin(), EventBusCapability {
+/**
+ * Enables Firebase integration.
+ *
+ * @param eventBus The event bus to which events are posted.
+ */
+open class FirebasePlugin(private val eventBus: EventBus = EventBus.getDefault()) {
 
     @Subscribe
-    fun onGetFirebaseTokenRequestEvent(event: GetFirebaseTokenRequestEvent) {
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            postToChain(event, GetFirebaseTokenResponseEvent(if (task.isSuccessful) task.result else null))
+    open fun onGetFirebaseToken(event: GetFirebaseTokenRequestEvent) {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener {
+            eventBus.postToChain(event, GetFirebaseTokenResponseEvent(if (it.isSuccessful) it.result else null))
         }
     }
 }

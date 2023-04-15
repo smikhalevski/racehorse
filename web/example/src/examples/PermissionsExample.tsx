@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { permissionsManager } from 'racehorse';
 
-export function PermissionsManagerExample() {
+export function PermissionsExample() {
   const [permissions, setPermissions] = useState<any>();
 
   return (
     <>
-      <h2>{'PermissionsManagerExample'}</h2>
+      <h2>{'Permissions'}</h2>
 
       <button
         onClick={() => {

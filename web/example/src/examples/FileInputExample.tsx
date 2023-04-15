@@ -6,7 +6,7 @@ export function FileInputExample() {
 
   return (
     <>
-      <h2>{'FileInputExample'}</h2>
+      <h2>{'File input'}</h2>
 
       <p>
         {'Accept: '}

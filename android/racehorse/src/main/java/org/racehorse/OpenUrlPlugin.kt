@@ -5,30 +5,43 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
+import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.utils.excludePackage
+import org.racehorse.utils.excludePackages
+import org.racehorse.utils.postToChain
 import org.racehorse.webview.*
 
 /**
- * Opens URL in the external app.
+ * Opens URL in an external app.
  */
 class OpenUrlRequestEvent(val url: String) : RequestEvent()
 
 class OpenUrlResponseEvent(val isOpened: Boolean) : ResponseEvent()
 
 /**
- * Launches activities for various intents.
+ * Opens URL in an external app.
+ *
+ * @param activity The activity that launches the intent to open a URL.
+ * @param eventBus The event bus to which events are posted.
  */
-open class ActionsPlugin(private val activity: ComponentActivity) : Plugin(), EventBusCapability, OpenUrlCapability {
+open class OpenUrlPlugin(
+    private val activity: ComponentActivity,
+    private val eventBus: EventBus = EventBus.getDefault()
+) {
+
+    @Subscribe
+    open fun onOpenUrl(event: OpenUrlRequestEvent) {
+        eventBus.postToChain(event, OpenUrlResponseEvent(openUri(Uri.parse(event.url))))
+    }
 
     /**
      * Tries to open [uri] in an external app.
      *
      * @return `true` if an external activity has started, or `false` otherwise.
      */
-    override fun onOpenUrl(uri: Uri): Boolean {
+    protected open fun openUri(uri: Uri): Boolean {
         val intent =
-            Intent(getOpenAction(uri), uri).excludePackage(activity.packageManager, arrayOf(activity.packageName))
+            Intent(getOpenAction(uri), uri).excludePackages(activity.packageManager, arrayOf(activity.packageName))
                 ?: return false
 
         @Suppress("UNREACHABLE_CODE")
@@ -40,6 +53,9 @@ open class ActionsPlugin(private val activity: ComponentActivity) : Plugin(), Ev
         }
     }
 
+    /**
+     * Returns the action name that is most suitable for the [uri].
+     */
     protected open fun getOpenAction(uri: Uri): String = when (uri.scheme) {
         // https://developer.android.com/guide/components/intents-common#Phone
         "voicemail",
@@ -54,10 +70,5 @@ open class ActionsPlugin(private val activity: ComponentActivity) : Plugin(), Ev
         "mailto" -> Intent.ACTION_SENDTO
 
         else -> Intent.ACTION_VIEW
-    }
-
-    @Subscribe
-    fun onOpenUrlRequestEvent(event: OpenUrlRequestEvent) {
-        postToChain(event, OpenUrlResponseEvent(onOpenUrl(Uri.parse(event.url))))
     }
 }
