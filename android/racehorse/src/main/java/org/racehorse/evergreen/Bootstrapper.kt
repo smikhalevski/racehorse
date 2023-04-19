@@ -101,7 +101,7 @@ open class Bootstrapper(private val bundlesDir: File) {
 
         if (isUpdateReady && updateVersion == version) {
             if (!isMasterReady || updateMode != UpdateMode.POSTPONED) {
-                moveUpdateToMaster()
+                applyUpdate()
             }
             onBundleReady(masterDir)
             return
@@ -137,16 +137,25 @@ open class Bootstrapper(private val bundlesDir: File) {
         if (isMasterReady && updateMode != UpdateMode.MANDATORY) {
             onUpdateReady(version)
         } else {
-            moveUpdateToMaster()
+            applyUpdate()
             onBundleReady(masterDir)
         }
     }
 
-    private fun moveUpdateToMaster() {
+    /**
+     * Applies the available update bundle to master.
+     */
+    fun applyUpdate(): Boolean {
+        if (!isUpdateReady) {
+            return false
+        }
+
         masterVersionFile.delete()
         masterDir.deleteRecursively()
 
         updateDir.renameTo(masterDir)
         updateVersionFile.renameTo(masterVersionFile)
+
+        return true
     }
 }
