@@ -2,6 +2,7 @@ package org.racehorse.evergreen
 
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.NoticeEvent
 import org.racehorse.RequestEvent
 import org.racehorse.ResponseEvent
@@ -11,7 +12,7 @@ import java.io.File
 /**
  * App assets available in [appDir] and are ready to be used.
  */
-class BundleReadyEvent(val appDir: File)
+class BundleReadyEvent(val appDir: File) : NoticeEvent
 
 /**
  * The new update download has started.
@@ -54,6 +55,16 @@ class GetUpdateStatusResponseEvent(val status: UpdateStatus?) : ResponseEvent()
 class UpdateStatus(val version: String, val isReady: Boolean)
 
 /**
+ * Applies the available update bundle, see [UpdateStatus.isReady].
+ */
+class ApplyUpdateRequestEvent : RequestEvent()
+
+/**
+ * @param version The version of the applied update or `null` if there's no update to apply.
+ */
+class ApplyUpdateResponseEvent(val version: String?) : ResponseEvent()
+
+/**
  * The [Bootstrapper] that posts status events to the [eventBus].
  *
  * @param bundlesDir The directory where bootstrapper stores app bundles.
@@ -91,6 +102,14 @@ open class EvergreenPlugin(
 
     @Subscribe
     open fun onGetUpdateStatus(event: GetUpdateStatusRequestEvent) {
-        eventBus.postToChain(event, GetUpdateStatusResponseEvent(updateVersion?.let { UpdateStatus(it, isUpdateReady) }))
+        eventBus.postToChain(
+            event,
+            GetUpdateStatusResponseEvent(updateVersion?.let { UpdateStatus(it, isUpdateReady) })
+        )
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    open fun onApplyUpdate(event: ApplyUpdateRequestEvent) {
+        eventBus.postToChain(event, ApplyUpdateResponseEvent(if (applyUpdate()) masterVersion else null))
     }
 }

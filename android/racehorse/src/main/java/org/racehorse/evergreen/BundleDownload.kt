@@ -10,7 +10,14 @@ import java.util.zip.ZipInputStream
 /**
  * Downloads ZIP archive through the [connection] and extracts its contents to [targetDir].
  *
- * [targetDir] is created only after all operations have been completed and archive contents are ready to be consumed.
+ * - [targetDir] is _always_ deleted when [start] is called.
+ * - [targetDir] is created only after all operations have been completed and archive contents are ready to be consumed.
+ * - If there are temporary artifacts from the previous download, then the download is resumed.
+ *
+ * @param connection The connection from which ZIP archive bytes are read.
+ * @param targetDir The directory to which contents of the ZIP archive are written.
+ * @param bufferSize The size of the buffer into which data is read from the [connection] stream.
+ * @param onProgress The callback that reports progress of the download.
  */
 internal class BundleDownload(
     private val connection: URLConnection,
@@ -19,8 +26,19 @@ internal class BundleDownload(
     private val onProgress: (contentLength: Int, readLength: Long) -> Unit,
 ) {
 
-    private val outputDir = File("$targetDir.output")
+    /**
+     * The directory to which archive contents are unzipped.
+     */
+    private val unzipDir = File("$targetDir.unzip")
+
+    /**
+     * The file with the ETag of the [zipFile] that is being downloaded.
+     */
     private val etagFile = File("$targetDir.etag")
+
+    /**
+     * The file that is being downloaded.
+     */
     private val zipFile = File("$targetDir.zip")
 
     private var isPending = false
@@ -28,8 +46,6 @@ internal class BundleDownload(
 
     /**
      * Starts the download.
-     * - If [targetDir] exists it is removed and download is restarted from scratch.
-     * - If there are temporary artifacts from the previous download, then the download is resumed.
      *
      * @throws IllegalStateException If the download cannot be started after it was stopped, or because it was started
      * before.
@@ -42,8 +58,8 @@ internal class BundleDownload(
 
         targetDir.deleteRecursively()
 
-        outputDir.deleteRecursively()
-        outputDir.mkdirs()
+        unzipDir.deleteRecursively()
+        unzipDir.mkdirs()
 
         download()
 
@@ -53,7 +69,7 @@ internal class BundleDownload(
         if (!isStopped) {
             zipFile.delete()
             etagFile.delete()
-            outputDir.renameTo(targetDir)
+            unzipDir.renameTo(targetDir)
         }
     }
 
@@ -108,15 +124,15 @@ internal class BundleDownload(
     }
 
     private fun unzip() {
-        val unzipDirPath = outputDir.canonicalPath + File.separator
+        val unzipDirPath = unzipDir.canonicalPath + File.separator
 
         ZipInputStream(zipFile.inputStream()).use { inputStream ->
             while (!isStopped) {
-                val file = File(outputDir, inputStream.nextEntry?.name ?: break)
+                val file = File(unzipDir, inputStream.nextEntry?.name ?: break)
 
                 // https://snyk.io/research/zip-slip-vulnerability
                 if (file.canonicalPath.startsWith(unzipDirPath)) {
-                    file.parentFile?.mkdirs()
+                    file.parentFile!!.mkdirs()
                     inputStream.copyTo(FileOutputStream(file))
                 }
 
