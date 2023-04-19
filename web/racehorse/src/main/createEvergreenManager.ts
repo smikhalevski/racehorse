@@ -17,7 +17,7 @@ export interface EvergreenManager {
   /**
    * The current version of the app bundle.
    */
-  getMasterVersion(): Promise<string>;
+  getMasterVersion(): Promise<string | null>;
 
   /**
    * Get the version of the update that would be applied on the next app restart.
@@ -36,6 +36,8 @@ export interface EvergreenManager {
  * @param eventBridge The underlying event bridge.
  */
 export function createEvergreenManager(eventBridge: EventBridge): EvergreenManager {
+  let updatePromise: Promise<string> | undefined;
+
   return {
     getMasterVersion: () =>
       eventBridge
@@ -48,8 +50,11 @@ export function createEvergreenManager(eventBridge: EventBridge): EvergreenManag
         .then(event => ensureEvent(event).status),
 
     applyUpdate: () =>
-      eventBridge
+      (updatePromise ||= eventBridge
         .request({ type: 'org.racehorse.evergreen.ApplyUpdateRequestEvent' })
-        .then(event => ensureEvent(event).version),
+        .then(event => {
+          updatePromise = undefined;
+          return ensureEvent(event).version;
+        })),
   };
 }

@@ -17,9 +17,6 @@ export function createGooglePlayReferrerManager(eventBridge: EventBridge): Googl
     getGooglePlayReferrer: () =>
       (referrerPromise ||= eventBridge
         .request({ type: 'org.racehorse.GetGooglePlayReferrerRequestEvent' })
-        .then(event => {
-          referrerPromise = undefined;
-          return ensureEvent(event).referrer;
-        })),
+        .then(event => ensureEvent(event).referrer)),
   };
 }
