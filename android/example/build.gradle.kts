@@ -39,9 +39,9 @@ android {
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.appcompat:appcompat:1.6.0")
-    implementation("androidx.webkit:webkit:1.6.0")
+    implementation("androidx.core:core-ktx:1.10.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("androidx.webkit:webkit:1.6.1")
     implementation("org.greenrobot:eventbus:3.3.1")
     implementation("com.google.code.gson:gson:2.8.9")
     implementation(project(":racehorse"))

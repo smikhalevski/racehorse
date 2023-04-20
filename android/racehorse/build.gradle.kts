@@ -78,7 +78,7 @@ publishing {
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.9.0")
+    implementation("androidx.core:core-ktx:1.10.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.webkit:webkit:1.6.1")
     implementation("org.greenrobot:eventbus:3.3.1")
