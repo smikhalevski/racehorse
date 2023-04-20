@@ -1,5 +1,3 @@
-import org.json.JSONObject
-
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
@@ -10,8 +8,6 @@ plugins {
 tasks.dokkaHtml.configure {
     outputDirectory.set(file("../../docs/android"))
 }
-
-val artifactJson = JSONObject(file("artifact.json").readText())
 
 android {
     namespace = "org.racehorse"
@@ -55,9 +51,9 @@ android {
 publishing {
     publications {
         register<MavenPublication>("release") {
-            groupId = artifactJson.getString("groupId")
-            artifactId = artifactJson.getString("artifactId")
-            version = artifactJson.getString("version")
+            groupId = "org.racehorse"
+            artifactId = "racehorse"
+            version = "0.0.3"
 
             afterEvaluate {
                 from(components["release"])
@@ -78,7 +74,7 @@ publishing {
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.9.0")
+    implementation("androidx.core:core-ktx:1.10.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.webkit:webkit:1.6.1")
     implementation("org.greenrobot:eventbus:3.3.1")
