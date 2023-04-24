@@ -1,6 +1,6 @@
 {
   "name": "@racehorse/react",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "React hooks for Racehorse.",
   "main": "./lib/index.js",
   "module": "./lib/index.mjs",
@@ -16,7 +16,7 @@
   "scripts": {
     "build": "rollup --config ../../rollup.config.mjs",
     "clean": "rimraf ./lib",
-    "test": "jest --config ../../jest.config.js"
+    "test": "jest --config ../../jest.config.js --passWithNoTests"
   },
   "repository": {
     "type": "git",
@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/smikhalevski/racehorse#readme",
   "peerDependencies": {
-    "racehorse": "0.0.3",
+    "racehorse": "0.0.4",
     "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
     "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0"
   },
