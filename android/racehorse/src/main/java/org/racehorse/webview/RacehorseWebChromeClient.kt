@@ -1,6 +1,7 @@
 package org.racehorse.webview
 
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.net.Uri
 import android.os.Message
 import android.view.View
@@ -82,6 +83,13 @@ class ShowFileChooserEvent(
 ) : HandlerEvent()
 
 open class RacehorseWebChromeClient(val eventBus: EventBus = EventBus.getDefault()) : WebChromeClient() {
+
+    private val transparentPoster = Bitmap.createBitmap(1, 1, Bitmap.Config.ALPHA_8).apply {
+        Canvas(this).drawARGB(255, 0, 0, 0)
+    }
+
+    // Replace ugly default poster with a transparent image
+    override fun getDefaultVideoPoster(): Bitmap? = transparentPoster
 
     override fun onProgressChanged(view: WebView, progress: Int) {
         eventBus.postForSubscriber { ProgressChangedEvent(view, progress) }
