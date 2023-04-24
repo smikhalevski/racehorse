@@ -1,11 +1,14 @@
 package org.racehorse
 
-import androidx.activity.ComponentActivity
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsCompat.toWindowInsetsCompat
+import android.app.Activity
+import android.graphics.Rect
+import android.os.Build
+import android.view.ViewTreeObserver
+import android.view.WindowInsets
+import android.widget.FrameLayout
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 class IsKeyboardVisibleRequestEvent : RequestEvent()
 
@@ -22,31 +25,60 @@ class KeyboardVisibilityChangedEvent(val isKeyboardVisible: Boolean) : NoticeEve
  * @param activity The activity to which insets listener is attached.
  * @param eventBus The event bus to which events are posted.
  */
-open class KeyboardPlugin(activity: ComponentActivity, private val eventBus: EventBus = EventBus.getDefault()) {
+open class KeyboardPlugin(activity: Activity, private val eventBus: EventBus = EventBus.getDefault()) {
 
-    private val lastVisible = AtomicBoolean()
-
-    init {
-        var initialHeight = -1
-
-        activity.window.decorView.setOnApplyWindowInsetsListener { _, windowInsets ->
-            val height = toWindowInsetsCompat(windowInsets).getInsets(WindowInsetsCompat.Type.ime()).bottom
-
-            if (initialHeight == -1) {
-                initialHeight = height
-            }
-
-            val visible = height - initialHeight > 0
-
-            if (lastVisible.compareAndSet(!visible, visible)) {
-                eventBus.post(KeyboardVisibilityChangedEvent(visible))
-            }
-            windowInsets
-        }
+    private val keyboardObserver = KeyboardObserver(activity) { keyboardHeight ->
+        eventBus.post(KeyboardVisibilityChangedEvent(keyboardHeight > 0))
     }
 
     @Subscribe
     open fun onIsKeyboardVisible(event: IsKeyboardVisibleRequestEvent) {
-        eventBus.post(IsKeyboardVisibleResponseEvent(lastVisible.get()))
+        eventBus.post(IsKeyboardVisibleResponseEvent(keyboardObserver.keyboardHeight > 0))
+    }
+}
+
+/**
+ * Observes the keyboard height.
+ *
+ * @param activity The activity for which the keyboard is observed.
+ * @param listener The listener that receives keyboard updates.
+ */
+class KeyboardObserver(activity: Activity, private val listener: (keyboardHeight: Int) -> Unit) {
+
+    /**
+     * The height that the keyboard currently occupies on the screen.
+     */
+    val keyboardHeight get() = lastKeyboardHeight.get()
+
+    private var lastKeyboardHeight = AtomicInteger()
+
+    private val rootView = activity.window.decorView.findViewById<FrameLayout>(android.R.id.content).rootView
+
+    private val layoutListener = ViewTreeObserver.OnGlobalLayoutListener {
+        val frameBottom = Rect().apply { rootView.getWindowVisibleDisplayFrame(this) }.bottom
+
+        val insetBottom = if (Build.VERSION.SDK_INT >= 30) {
+            rootView.rootWindowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars()).bottom
+        } else {
+            @Suppress("DEPRECATION")
+            rootView.rootWindowInsets.stableInsetBottom
+        }
+
+        val height = rootView.rootView.height - frameBottom - insetBottom
+
+        if (lastKeyboardHeight.getAndSet(height) != height) {
+            listener(height)
+        }
+    }
+
+    init {
+        rootView.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
+    }
+
+    /**
+     * Unregisters listener so it won't receive keyboard updates anymore.
+     */
+    fun unregister() {
+        rootView.viewTreeObserver.removeOnGlobalLayoutListener(layoutListener)
     }
 }
