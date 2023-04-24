@@ -27,13 +27,21 @@ open class KeyboardPlugin(activity: ComponentActivity, private val eventBus: Eve
     private val lastVisible = AtomicBoolean()
 
     init {
-        activity.window.decorView.setOnApplyWindowInsetsListener { _, insets ->
-            val visible = toWindowInsetsCompat(insets).isVisible(WindowInsetsCompat.Type.ime())
+        var initialHeight = -1
+
+        activity.window.decorView.setOnApplyWindowInsetsListener { _, windowInsets ->
+            val height = toWindowInsetsCompat(windowInsets).getInsets(WindowInsetsCompat.Type.ime()).bottom
+
+            if (initialHeight == -1) {
+                initialHeight = height
+            }
+
+            val visible = height - initialHeight > 0
 
             if (lastVisible.compareAndSet(!visible, visible)) {
                 eventBus.post(KeyboardVisibilityChangedEvent(visible))
             }
-            insets
+            windowInsets
         }
     }
 

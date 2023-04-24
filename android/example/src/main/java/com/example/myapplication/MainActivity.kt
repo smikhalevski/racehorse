@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.webkit.CookieManager
 import android.webkit.WebView
@@ -14,6 +15,7 @@ import org.racehorse.webview.RacehorseWebChromeClient
 import org.racehorse.webview.RacehorseWebViewClient
 import java.io.File
 
+@SuppressLint("SetJavaScriptEnabled")
 class MainActivity : AppCompatActivity() {
 
     private val webView: WebView by lazy {
