@@ -13,7 +13,7 @@ describe('createEventBridge', () => {
     provideConnection = () => {
       connectionMock = {
         post: jest.fn(() => {
-          setTimeout(() => connectionMock!.inbox!.publish([111, { type: 'bbb', ok: true }]), 0);
+          setTimeout(() => connectionMock!.inbox!.publish([111, { type: 'bbb' }]), 0);
           return 111;
         }),
       };
@@ -30,7 +30,7 @@ describe('createEventBridge', () => {
     provideConnection();
     const eventBridge = createEventBridge(connectionProviderMock);
 
-    await expect(eventBridge.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb', ok: true });
+    await expect(eventBridge.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb' });
 
     expect(connectionMock!.post).toHaveBeenCalledTimes(1);
     expect(connectionMock!.post).toHaveBeenNthCalledWith(1, '{"type":"aaa"}');
@@ -43,7 +43,7 @@ describe('createEventBridge', () => {
 
     setTimeout(provideConnection, 100);
 
-    await expect(promise).resolves.toEqual({ type: 'bbb', ok: true });
+    await expect(promise).resolves.toEqual({ type: 'bbb' });
 
     expect(connectionMock!.post).toHaveBeenCalledTimes(1);
     expect(connectionMock!.post).toHaveBeenNthCalledWith(1, '{"type":"aaa"}');
@@ -86,11 +86,11 @@ describe('createEventBridge', () => {
     connectionMock!.post = jest
       .fn()
       .mockImplementationOnce(() => {
-        setTimeout(() => connectionMock!.inbox!.publish([111, { type: 'bbb', ok: true }]), 0);
+        setTimeout(() => connectionMock!.inbox!.publish([111, { type: 'bbb' }]), 0);
         return 111;
       })
       .mockImplementationOnce(() => {
-        setTimeout(() => connectionMock!.inbox!.publish([222, { type: 'bbb', ok: true }]), 0);
+        setTimeout(() => connectionMock!.inbox!.publish([222, { type: 'bbb' }]), 0);
         return 222;
       });
 
@@ -98,12 +98,12 @@ describe('createEventBridge', () => {
 
     await eventBridge1.connect();
 
-    await expect(eventBridge1.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb', ok: true });
+    await expect(eventBridge1.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb' });
 
     const eventBridge2 = createEventBridge(connectionProviderMock);
 
     await eventBridge2.connect();
 
-    await expect(eventBridge2.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb', ok: true });
+    await expect(eventBridge2.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb' });
   });
 });

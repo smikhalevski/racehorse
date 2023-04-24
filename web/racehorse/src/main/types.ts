@@ -16,16 +16,6 @@ export interface Event {
 }
 
 /**
- * The response event pushed by Android as the result of a request.
- */
-export interface ResponseEvent extends Event {
-  /**
-   * `true` for a success response, or `false` for an error response.
-   */
-  ok: boolean;
-}
-
-/**
  * The connection is added to the page as a
  * [`JavascriptInterface`](https://developer.android.com/reference/android/webkit/JavascriptInterface).
  */
@@ -61,12 +51,11 @@ export interface EventBridge {
   /**
    * Sends an event through a connection to Android and returns a promise that is resolved when a response with a
    * matching ID is published to the {@link Connection.inbox}. The returned promise is never rejected.
-   * Check {@link ResponseEvent.ok} to detect that an error occurred.
    *
    * @param event The request event to send.
    * @returns The response event.
    */
-  request(event: Event): Promise<ResponseEvent>;
+  request(event: Event): Promise<Event>;
 
   /**
    * Subscribes a listener to alert events pushed by Android.

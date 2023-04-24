@@ -13,8 +13,12 @@ import org.racehorse.webview.*
 
 /**
  * Opens URL in an external app.
+ *
+ * @param url The URL to open.
+ * @param excludedPackageNames The array of package names that shouldn't be used to open the [url]. If used then the
+ * `android.permission.QUERY_ALL_PACKAGES` should be granted, otherwise no activity would be started.
  */
-class OpenUrlRequestEvent(val url: String) : RequestEvent()
+class OpenUrlRequestEvent(val url: String, val excludedPackageNames: Array<String>? = null) : RequestEvent()
 
 class OpenUrlResponseEvent(val isOpened: Boolean) : ResponseEvent()
 
@@ -39,14 +43,18 @@ open class OpenUrlPlugin(
      *
      * @return `true` if an external activity has started, or `false` otherwise.
      */
-    protected open fun openUri(uri: Uri): Boolean {
-        val intent =
-            Intent(getOpenAction(uri), uri).excludePackages(activity.packageManager, arrayOf(activity.packageName))
-                ?: return false
+    protected open fun openUri(uri: Uri, excludedPackageNames: Array<String>? = null): Boolean {
+        var intent = Intent(getOpenAction(uri), uri)
+
+        if (!excludedPackageNames.isNullOrEmpty()) {
+            intent = intent.excludePackages(activity.packageManager, excludedPackageNames) ?: return false
+        }
+
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
         @Suppress("UNREACHABLE_CODE")
         return try {
-            ContextCompat.startActivity(activity, intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), null)
+            ContextCompat.startActivity(activity, intent, null)
             return true
         } catch (exception: ActivityNotFoundException) {
             return false

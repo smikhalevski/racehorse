@@ -2,9 +2,6 @@ package org.racehorse
 
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.NoticeEvent
-import org.racehorse.RequestEvent
-import org.racehorse.ResponseEvent
 import org.racehorse.utils.postToChain
 
 /**

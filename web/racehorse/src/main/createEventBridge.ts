@@ -1,5 +1,5 @@
 import { PubSub, untilTruthy } from 'parallel-universe';
-import { Connection, Event, EventBridge, ResponseEvent } from './types';
+import { Connection, Event, EventBridge } from './types';
 
 declare global {
   interface Window {
@@ -49,7 +49,7 @@ export function createEventBridge(connectionProvider = () => window.racehorseCon
             const unsubscribe = connection.inbox.subscribe(envelope => {
               if (envelope[0] === requestId) {
                 unsubscribe();
-                resolve(envelope[1] as ResponseEvent);
+                resolve(envelope[1]);
               }
             });
           })

@@ -47,10 +47,8 @@ abstract class RequestEvent : ChainableEvent(), WebEvent
 
 /**
  * An event that is published to the web, denoting an end of a request.
- *
- * @param ok Indicates that the response is successful or not.
  */
-abstract class ResponseEvent(val ok: Boolean = true) : ChainableEvent()
+abstract class ResponseEvent : ChainableEvent()
 
 /**
  * Response with no payload.
@@ -60,7 +58,7 @@ class VoidEvent : ResponseEvent()
 /**
  * Response that describes an occurred exception.
  */
-class ExceptionEvent(@Transient val cause: Throwable) : ResponseEvent(false) {
+class ExceptionEvent(@Transient val cause: Throwable) : ResponseEvent() {
     val stackTrace = cause.stackTraceToString()
 }
 

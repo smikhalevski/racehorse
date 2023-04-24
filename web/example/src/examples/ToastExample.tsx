@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { eventBridge } from 'racehorse/src/main';
+import { eventBridge } from 'racehorse';
 
 export function ToastExample() {
   const [message, setMessage] = useState('Hello');
