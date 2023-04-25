@@ -1,16 +1,16 @@
-import { EventBridge } from './types';
+import { EventBridge, WebIntent } from './types';
 import { ensureEvent } from './utils';
 
 export interface DeepLinkManager {
   /**
-   * Returns the last deep link that was requested.
+   * Returns the last deep link intent that was requested.
    */
-  getLastDeepLink(): Promise<string | null>;
+  getLastDeepLink(): Promise<WebIntent | null>;
 
   /**
-   * Subscribes to incoming deep links.
+   * Subscribes to incoming deep link intents.
    */
-  subscribe(listener: (url: string) => void): () => void;
+  subscribe(listener: (intent: WebIntent) => void): () => void;
 }
 
 /**
@@ -21,12 +21,14 @@ export interface DeepLinkManager {
 export function createDeepLinkManager(eventBridge: EventBridge): DeepLinkManager {
   return {
     getLastDeepLink: () =>
-      eventBridge.request({ type: 'org.racehorse.GetLastDeepLinkRequestEvent' }).then(event => ensureEvent(event).url),
+      eventBridge
+        .request({ type: 'org.racehorse.GetLastDeepLinkRequestEvent' })
+        .then(event => ensureEvent(event).intent),
 
     subscribe: listener =>
       eventBridge.subscribe(event => {
         if (event.type === 'org.racehorse.OpenDeepLinkEvent') {
-          listener(event.url);
+          listener(event.intent);
         }
       }),
   };

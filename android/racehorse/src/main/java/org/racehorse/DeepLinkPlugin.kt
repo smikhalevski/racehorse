@@ -1,20 +1,26 @@
 package org.racehorse
 
+import android.content.Intent
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.racehorse.utils.WebIntent
 import org.racehorse.utils.postToChain
+import org.racehorse.utils.toWebIntent
 
 /**
  * Triggered by the web to retrieve the latest deep link.
  */
 class GetLastDeepLinkRequestEvent : RequestEvent()
 
-class GetLastDeepLinkResponseEvent(val url: String?) : ResponseEvent()
+class GetLastDeepLinkResponseEvent(val intent: WebIntent?) : ResponseEvent()
 
 /**
  * Post this event to notify web that the new deep link intent has arrived.
  */
-class OpenDeepLinkEvent(val url: String) : NoticeEvent
+class OpenDeepLinkEvent(val intent: WebIntent) : NoticeEvent {
+
+    constructor(intent: Intent) : this(intent.toWebIntent())
+}
 
 /**
  * Provides access to app deep links.
@@ -26,15 +32,15 @@ class OpenDeepLinkEvent(val url: String) : NoticeEvent
  */
 open class DeepLinkPlugin(private val eventBus: EventBus = EventBus.getDefault()) {
 
-    private var lastUrl: String? = null
+    private var lastIntent: WebIntent? = null
 
     @Subscribe
     open fun onOpenDeepLink(event: OpenDeepLinkEvent) {
-        lastUrl = event.url
+        lastIntent = event.intent
     }
 
     @Subscribe
     open fun onGetLastDeepLink(event: GetLastDeepLinkRequestEvent) {
-        eventBus.postToChain(event, GetLastDeepLinkResponseEvent(lastUrl))
+        eventBus.postToChain(event, GetLastDeepLinkResponseEvent(lastIntent))
     }
 }

@@ -5,7 +5,13 @@ import android.webkit.WebView
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
-import org.greenrobot.eventbus.*
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.NoSubscriberEvent
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.SubscriberExceptionEvent
+import org.greenrobot.eventbus.ThreadMode
+import org.racehorse.utils.SerializableJsonDeserializer
+import java.io.Serializable
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -73,7 +79,13 @@ class ExceptionEvent(@Transient val cause: Throwable) : ResponseEvent() {
 open class EventBridge(
     private val webView: WebView,
     private val eventBus: EventBus = EventBus.getDefault(),
-    private val gson: Gson = GsonBuilder().serializeNulls().create(),
+
+    private val gson: Gson =
+        GsonBuilder()
+            .serializeNulls()
+            .registerTypeAdapter(Serializable::class.java, SerializableJsonDeserializer())
+            .create(),
+
     private val connectionKey: String = "racehorseConnection"
 ) {
 

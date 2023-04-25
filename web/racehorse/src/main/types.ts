@@ -70,3 +70,53 @@ export interface EventBridge {
     listener: (event: Event) => void
   ): () => void;
 }
+
+/**
+ * The intent that can be passed from and to web application.
+ */
+export interface WebIntent {
+  /**
+   * The general action to be performed, such as
+   * [`Intent.ACTION_VIEW`](https://developer.android.com/reference/android/content/Intent#ACTION_VIEW).
+   *
+   * The action describes the general way the rest of the information in the intent should be interpreted — most
+   * importantly, what to do with the [uri].
+   */
+  action?: string;
+
+  /**
+   * The data this intent is operating on. This URI specifies the name of the data; often it uses the content: scheme,
+   * specifying data in a content provider. Other schemes may be handled by specific activities, such as http: by the
+   * web browser.
+   */
+  uri?: string;
+
+  /**
+   * Any special flags associated with this intent, such as
+   * [`Intent.FLAG_ACTIVITY_NEW_TASK`](https://developer.android.com/reference/android/content/Intent#FLAG_ACTIVITY_NEW_TASK).
+   */
+  flags?: number;
+
+  /**
+   * A map of extended data from the intent.
+   */
+  extras?: Record<string, any>;
+}
+
+/**
+ * The result of an activity.
+ *
+ * @template T The data returned from the activity.
+ */
+export interface WebActivityResult<T> {
+  /**
+   * The result code of a completed activity, such as
+   * [Activity.RESULT_OK](https://developer.android.com/reference/android/app/Activity#RESULT_OK)
+   */
+  resultCode: number;
+
+  /**
+   * The data returned from the activity.
+   */
+  data: T;
+}

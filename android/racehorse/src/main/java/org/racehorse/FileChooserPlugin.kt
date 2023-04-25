@@ -13,7 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.isPermissionGranted
-import org.racehorse.utils.launchForActivityResult
+import org.racehorse.utils.startActivityForResult
 import org.racehorse.webview.ShowFileChooserEvent
 import java.io.File
 import java.io.IOException
@@ -72,7 +72,7 @@ private class FileChooserLauncher(
         }
 
         // Ask for camera permission
-        activity.launchForActivityResult(
+        activity.startActivityForResult(
             ActivityResultContracts.RequestPermission(),
             Manifest.permission.CAMERA,
             this::launchChooser
@@ -127,7 +127,7 @@ private class FileChooserLauncher(
             }
         }
 
-        val launched = activity.launchForActivityResult(ActivityResultContracts.StartActivityForResult(), intent) {
+        val started = activity.startActivityForResult(intent) {
             val uris = parseFileChooserResult(it.resultCode, it.data)
 
             filePathCallback.onReceiveValue(
@@ -147,7 +147,7 @@ private class FileChooserLauncher(
             )
         }
 
-        if (!launched) {
+        if (!started) {
             // No activity that can provide files
             filePathCallback.onReceiveValue(arrayOf())
         }

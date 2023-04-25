@@ -5,10 +5,10 @@ import { createEncryptedStorageManager } from './createEncryptedStorageManager';
 import { createEvergreenManager } from './createEvergreenManager';
 import { createFirebaseManager } from './createFirebaseManager';
 import { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager';
+import { createIntentsManager } from './createIntentsManager';
 import { createKeyboardManager } from './createKeyboardManager';
 import { createNetworkManager } from './createNetworkManager';
 import { createNotificationsManager } from './createNotificationsManager';
-import { createOpenUrlManager } from './createOpenUrlManager';
 import { createPermissionsManager } from './createPermissionsManager';
 
 export const eventBridge = createEventBridge();
@@ -25,12 +25,12 @@ export const firebaseManager = createFirebaseManager(eventBridge);
 
 export const googlePlayReferrerManager = createGooglePlayReferrerManager(eventBridge);
 
+export const intentsManager = createIntentsManager(eventBridge);
+
 export const keyboardManager = createKeyboardManager(eventBridge);
 
 export const networkManager = createNetworkManager(eventBridge);
 
 export const notificationsManager = createNotificationsManager(eventBridge);
-
-export const openUrlManager = createOpenUrlManager(eventBridge);
 
 export const permissionsManager = createPermissionsManager(eventBridge);

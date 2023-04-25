@@ -3,7 +3,7 @@ import { FileInputExample } from './examples/FileInputExample';
 import { GeolocationExample } from './examples/GeolocationExample';
 import { LocalStorageExample } from './examples/LocalStorageExample';
 import { DeviceExample } from './examples/DeviceExample';
-import { OpenUrlExample } from './examples/OpenUrlExample';
+import { IntentsExample } from './examples/IntentsExample';
 import { NetworkExample } from './examples/NetworkExample';
 import { NotificationsExample } from './examples/NotificationsExample';
 import { PermissionsExample } from './examples/PermissionsExample';
@@ -25,7 +25,7 @@ export function App() {
       <GeolocationExample />
       <LocalStorageExample />
       <DeviceExample />
-      <OpenUrlExample />
+      <IntentsExample />
       <NetworkExample />
       <PermissionsExample />
     </>
