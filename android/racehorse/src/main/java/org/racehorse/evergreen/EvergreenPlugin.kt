@@ -26,40 +26,60 @@ class UpdateFailedEvent(val updateMode: UpdateMode, @Transient val cause: Throwa
 
 /**
  * An update was successfully downloaded and ready to be applied.
+ *
+ * @param version The version of the update bundle that is ready to be applied.
  */
 class UpdateReadyEvent(val version: String) : NoticeEvent
 
 /**
  * A progress of a pending update download.
+ *
+ * @param contentLength The length of downloaded content in bytes, or -1 if content length cannot be detected.
+ * @param readLength The number of bytes that are already downloaded.
  */
 class UpdateProgressEvent(val contentLength: Int, val readLength: Long) : NoticeEvent
 
+/**
+ * Get the version of the available master bundle.
+ */
 class GetMasterVersionRequestEvent : RequestEvent()
 
+/**
+ * Response to [GetMasterVersionRequestEvent].
+ *
+ * @param version The version of the master bundle or `null` if there's no master bundle.
+ */
 class GetMasterVersionResponseEvent(val version: String?) : ResponseEvent()
 
 /**
- * Get the version of the update that would be applied on the next app restart.
+ * Get the version of the update bundle that would be applied on the next app restart.
  */
 class GetUpdateStatusRequestEvent : RequestEvent()
 
 /**
- * @param status The status of the update or `null` if there's no update available.
+ * Response to [GetUpdateStatusRequestEvent].
+ *
+ * @param status The status of the update or `null` if there's no update bundle.
  */
 class GetUpdateStatusResponseEvent(val status: UpdateStatus?) : ResponseEvent()
 
 /**
+ * The status of the update bundle.
+ *
  * @param version The version of the update.
- * @param isReady `true` if the update is fully downloaded and ready to be applied.
+ * @param isReady `true` if the update is fully downloaded and ready to be applied, or `false` if update is being
+ * downloaded.
  */
 class UpdateStatus(val version: String, val isReady: Boolean)
 
 /**
- * Applies the available update bundle, see [UpdateStatus.isReady].
+ * Applies the available update bundle to master, see [UpdateStatus.isReady].
  */
 class ApplyUpdateRequestEvent : RequestEvent()
 
 /**
+ * Response to [ApplyUpdateRequestEvent].
+ *
  * @param version The version of the applied update or `null` if there's no update to apply.
  */
 class ApplyUpdateResponseEvent(val version: String?) : ResponseEvent()

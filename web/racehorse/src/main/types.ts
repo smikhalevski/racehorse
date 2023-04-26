@@ -78,21 +78,16 @@ export interface WebIntent {
   /**
    * The general action to be performed, such as
    * [`Intent.ACTION_VIEW`](https://developer.android.com/reference/android/content/Intent#ACTION_VIEW).
-   *
-   * The action describes the general way the rest of the information in the intent should be interpreted — most
-   * importantly, what to do with the [uri].
    */
   action?: string;
 
   /**
-   * The data this intent is operating on. This URI specifies the name of the data; often it uses the content: scheme,
-   * specifying data in a content provider. Other schemes may be handled by specific activities, such as http: by the
-   * web browser.
+   * The URI-encoded data that intent is operating on.
    */
-  uri?: string;
+  data?: string;
 
   /**
-   * Any special flags associated with this intent, such as
+   * Special flags associated with this intent, such as
    * [`Intent.FLAG_ACTIVITY_NEW_TASK`](https://developer.android.com/reference/android/content/Intent#FLAG_ACTIVITY_NEW_TASK).
    */
   flags?: number;

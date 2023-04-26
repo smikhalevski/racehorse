@@ -25,7 +25,7 @@ export interface EvergreenManager {
   getUpdateStatus(): Promise<UpdateStatus | null>;
 
   /**
-   * Applies the available update bundle and returns its version, or returns `null` if there's no update available.
+   * Applies the available update bundle and returns its version, or returns `null` if there's no update bundle.
    */
   applyUpdate(): Promise<string | null>;
 }

@@ -8,7 +8,7 @@ import java.lang.reflect.Type
 import java.util.LinkedList
 
 /**
- * Gson deserializer that converts [Serializable] of an object to [LinkedHashMap] and an array to [LinkedList].
+ * Gson deserializer that converts objects to [LinkedHashMap] and arrays to [LinkedList].
  */
 class SerializableJsonDeserializer : JsonDeserializer<Serializable?> {
     override fun deserialize(json: JsonElement, type: Type, context: JsonDeserializationContext): Serializable? = when {

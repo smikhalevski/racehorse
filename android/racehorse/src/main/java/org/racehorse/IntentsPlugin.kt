@@ -14,11 +14,20 @@ import org.racehorse.utils.postToChain
 import org.racehorse.utils.startActivityForResult
 import org.racehorse.utils.toIntent
 import org.racehorse.utils.toWebActivityResult
-import org.racehorse.utils.toWebIntent
 import org.racehorse.webview.*
 
+/**
+ * Starts an activity and doesn't wait for its result.
+ *
+ * @param intent The intent that starts an activity.
+ */
 class StartActivityRequestEvent(val intent: WebIntent) : RequestEvent()
 
+/**
+ * Response to [StartActivityRequestEvent].
+ *
+ * @param isStarted `true` if an activity has started, or `false` otherwise.
+ */
 class StartActivityResponseEvent(val isStarted: Boolean) : ResponseEvent()
 
 /**
@@ -26,17 +35,25 @@ class StartActivityResponseEvent(val isStarted: Boolean) : ResponseEvent()
  */
 class StartActivityForResultRequestEvent(val intent: WebIntent) : RequestEvent()
 
+/**
+ * Response to [StartActivityForResultRequestEvent].
+ *
+ * @param result The result of an activity, or `null` if there was no activity that can handle the intent.
+ */
 class StartActivityForResultResponseEvent(val result: WebActivityResult<WebIntent?>?) : ResponseEvent()
 
 /**
- * Opens URL in an external app.
+ * Opens a URI in an external app.
  *
- * @param uri The URL to open.
+ * @param uri The URI to open.
  * @param excludedPackageNames The array of package names that shouldn't be used to open the [uri]. If used then the
  * `android.permission.QUERY_ALL_PACKAGES` should be granted, otherwise no activity would be started.
  */
 class OpenApplicationRequestEvent(val uri: String, val excludedPackageNames: Array<String>? = null) : RequestEvent()
 
+/**
+ * Response to [OpenApplicationRequestEvent].
+ */
 class OpenApplicationResponseEvent(val isOpened: Boolean) : ResponseEvent()
 
 /**

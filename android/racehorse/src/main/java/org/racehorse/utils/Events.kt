@@ -20,7 +20,7 @@ fun EventBus.postToChain(previousEvent: ChainableEvent, nextEvent: ChainableEven
     post(nextEvent.setRequestId(previousEvent.requestId))
 
 inline fun <reified T> EventBus.postForSubscriber(eventFactory: () -> T): T? =
-    if (hasSubscriberForEvent(T::class.java)) eventFactory().apply(::post)  else null
+    if (hasSubscriberForEvent(T::class.java)) eventFactory().apply(::post) else null
 
 inline fun <reified T : HandlerEvent> EventBus.postForHandler(eventFactory: () -> T) =
     if (hasSubscriberForEvent(T::class.java)) eventFactory().apply(::post).isHandled else false
