@@ -124,7 +124,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onBundleReadyEvent(event: BundleReadyEvent) {
+    fun onBundleReady(event: BundleReadyEvent) {
         EventBus.getDefault().register(
             AssetLoaderPlugin(
                 WebViewAssetLoader.Builder()

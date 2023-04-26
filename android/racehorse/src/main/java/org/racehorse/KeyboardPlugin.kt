@@ -10,9 +10,9 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.util.concurrent.atomic.AtomicInteger
 
-class IsKeyboardVisibleRequestEvent : RequestEvent()
-
-class IsKeyboardVisibleResponseEvent(val isKeyboardVisible: Boolean) : ResponseEvent()
+class IsKeyboardVisibleEvent : RequestEvent() {
+    class ResultEvent(val isKeyboardVisible: Boolean) : ResponseEvent()
+}
 
 /**
  * Notifies the web app that the keyboard visibility has changed.
@@ -32,8 +32,8 @@ open class KeyboardPlugin(activity: Activity, private val eventBus: EventBus = E
     }
 
     @Subscribe
-    open fun onIsKeyboardVisible(event: IsKeyboardVisibleRequestEvent) {
-        eventBus.post(IsKeyboardVisibleResponseEvent(keyboardObserver.keyboardHeight > 0))
+    open fun onIsKeyboardVisible(event: IsKeyboardVisibleEvent) {
+        eventBus.post(IsKeyboardVisibleEvent.ResultEvent(keyboardObserver.keyboardHeight > 0))
     }
 }
 

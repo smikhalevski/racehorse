@@ -73,20 +73,18 @@ class ExceptionEvent(@Transient val cause: Throwable) : ResponseEvent() {
  *
  * @param webView The [WebView] to which the event bridge will add the connection Javascript interface.
  * @param eventBus The event bus to which events are posted.
- * @param gson The [Gson] instance that is used for event serialization.
  * @param connectionKey The key of the `window` that exposes the connection Javascript interface.
+ * @param gson The [Gson] instance that is used for event serialization.
  */
 open class EventBridge(
-    private val webView: WebView,
-    private val eventBus: EventBus = EventBus.getDefault(),
-
-    private val gson: Gson =
+    val webView: WebView,
+    val eventBus: EventBus = EventBus.getDefault(),
+    val connectionKey: String = "racehorseConnection",
+    val gson: Gson =
         GsonBuilder()
             .serializeNulls()
             .registerTypeAdapter(Serializable::class.java, SerializableJsonDeserializer())
             .create(),
-
-    private val connectionKey: String = "racehorseConnection"
 ) {
 
     private var requestId = AtomicInteger()

@@ -13,7 +13,7 @@ import java.net.URLConnection
 
 /**
  * Intercepts requests and serves the responses using an [assetLoader]. If a URL cannot be handled by the [assetLoader]
- * then it is opened in an external app by posting an [OpenApplicationRequestEvent].
+ * then it is opened in an external app by posting an [OpenInExternalApplicationEvent].
  *
  * @param assetLoader The asset loader that resolves the URL.
  * @param eventBus The event bus to which events are posted.
@@ -33,7 +33,7 @@ open class AssetLoaderPlugin(
     @Subscribe
     open fun onShouldOverrideUrlLoading(event: ShouldOverrideUrlLoadingEvent) {
         if (assetLoader.shouldInterceptRequest(event.request.url) == null && event.shouldHandle()) {
-            eventBus.post(OpenApplicationRequestEvent(event.request.url.toString()))
+            eventBus.post(OpenInExternalApplicationEvent(event.request.url.toString()))
         }
     }
 }

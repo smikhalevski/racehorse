@@ -18,16 +18,16 @@ export function App() {
   return (
     <>
       <ToastExample />
+      <PermissionsExample />
       <NotificationsExample />
+      <NetworkExample />
       <EncryptedStorageExample />
       <CookieExample />
       <FileInputExample />
       <GeolocationExample />
       <LocalStorageExample />
-      <DeviceExample />
       <IntentsExample />
-      <NetworkExample />
-      <PermissionsExample />
+      <DeviceExample />
     </>
   );
 }

@@ -41,20 +41,18 @@ export function createEvergreenManager(eventBridge: EventBridge): EvergreenManag
   return {
     getMasterVersion: () =>
       eventBridge
-        .request({ type: 'org.racehorse.evergreen.GetMasterVersionRequestEvent' })
+        .request({ type: 'org.racehorse.evergreen.GetMasterVersionEvent' })
         .then(event => ensureEvent(event).version),
 
     getUpdateStatus: () =>
       eventBridge
-        .request({ type: 'org.racehorse.evergreen.GetUpdateStatusRequestEvent' })
+        .request({ type: 'org.racehorse.evergreen.GetUpdateStatusEvent' })
         .then(event => ensureEvent(event).status),
 
     applyUpdate: () =>
-      (updatePromise ||= eventBridge
-        .request({ type: 'org.racehorse.evergreen.ApplyUpdateRequestEvent' })
-        .then(event => {
-          updatePromise = undefined;
-          return ensureEvent(event).version;
-        })),
+      (updatePromise ||= eventBridge.request({ type: 'org.racehorse.evergreen.ApplyUpdateEvent' }).then(event => {
+        updatePromise = undefined;
+        return ensureEvent(event).version;
+      })),
   };
 }

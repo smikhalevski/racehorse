@@ -9,9 +9,9 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.postToChain
 
-class GetNetworkStatusRequestEvent : RequestEvent()
-
-class GetNetworkStatusResponseEvent(val status: NetworkStatus) : ResponseEvent()
+class GetNetworkStatusEvent : RequestEvent() {
+    class ResultEvent(val status: NetworkStatus) : ResponseEvent()
+}
 
 class NetworkStatusChangedEvent(val status: NetworkStatus) : NoticeEvent
 
@@ -80,8 +80,8 @@ open class NetworkPlugin(private val context: Context, private val eventBus: Eve
     }
 
     @Subscribe
-    open fun onGetNetworkStatus(event: GetNetworkStatusRequestEvent) {
-        eventBus.postToChain(event, GetNetworkStatusResponseEvent(status))
+    open fun onGetNetworkStatus(event: GetNetworkStatusEvent) {
+        eventBus.postToChain(event, GetNetworkStatusEvent.ResultEvent(status))
     }
 
     protected fun getNetworkStatus(capabilities: NetworkCapabilities?): NetworkStatus {

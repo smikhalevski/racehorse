@@ -7,14 +7,14 @@ import java.net.URLConnection
 enum class UpdateMode {
     /**
      * If master bundle has a non-matching version, then update bundle is always downloaded and applied before
-     * [Bootstrapper.onBundleReady] is posted.
+     * [Bootstrapper.onBundleReady] is called.
      */
     @SerializedName("mandatory")
     MANDATORY,
 
     /**
      * 1. If there's no master bundle available, then update bundle is downloaded and applied before
-     * [Bootstrapper.onBundleReady] is posted.
+     * [Bootstrapper.onBundleReady] is called.
      *
      * 2. If master bundle has a non-matching version, and update bundle with a matching version is downloaded, then
      * update is applied.
@@ -28,7 +28,7 @@ enum class UpdateMode {
 
     /**
      * 1. If there's no master bundle available, then update bundle is downloaded and applied before
-     * [Bootstrapper.onBundleReady] is posted.
+     * [Bootstrapper.onBundleReady] is called.
      *
      * 2. If master bundle is available then [Bootstrapper.onBundleReady] is always called with master directory. Update
      * is downloaded in the background.

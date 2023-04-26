@@ -10,6 +10,15 @@ import org.racehorse.utils.postToChain
 import java.io.File
 
 /**
+ * The status of the update bundle.
+ *
+ * @param version The version of the update.
+ * @param isReady `true` if the update is fully downloaded and ready to be applied, or `false` if update is being
+ * downloaded.
+ */
+class UpdateStatus(val version: String, val isReady: Boolean)
+
+/**
  * App assets available in [appDir] and are ready to be used.
  */
 class BundleReadyEvent(val appDir: File) : NoticeEvent
@@ -42,47 +51,35 @@ class UpdateProgressEvent(val contentLength: Int, val readLength: Long) : Notice
 /**
  * Get the version of the available master bundle.
  */
-class GetMasterVersionRequestEvent : RequestEvent()
+class GetMasterVersionEvent : RequestEvent() {
 
-/**
- * Response to [GetMasterVersionRequestEvent].
- *
- * @param version The version of the master bundle or `null` if there's no master bundle.
- */
-class GetMasterVersionResponseEvent(val version: String?) : ResponseEvent()
+    /**
+     * @param version The version of the master bundle or `null` if there's no master bundle.
+     */
+    class ResultEvent(val version: String?) : ResponseEvent()
+}
 
 /**
  * Get the version of the update bundle that would be applied on the next app restart.
  */
-class GetUpdateStatusRequestEvent : RequestEvent()
+class GetUpdateStatusEvent : RequestEvent() {
 
-/**
- * Response to [GetUpdateStatusRequestEvent].
- *
- * @param status The status of the update or `null` if there's no update bundle.
- */
-class GetUpdateStatusResponseEvent(val status: UpdateStatus?) : ResponseEvent()
-
-/**
- * The status of the update bundle.
- *
- * @param version The version of the update.
- * @param isReady `true` if the update is fully downloaded and ready to be applied, or `false` if update is being
- * downloaded.
- */
-class UpdateStatus(val version: String, val isReady: Boolean)
+    /**
+     * @param status The status of the update or `null` if there's no update bundle.
+     */
+    class ResultEvent(val status: UpdateStatus?) : ResponseEvent()
+}
 
 /**
  * Applies the available update bundle to master, see [UpdateStatus.isReady].
  */
-class ApplyUpdateRequestEvent : RequestEvent()
+class ApplyUpdateEvent : RequestEvent() {
 
-/**
- * Response to [ApplyUpdateRequestEvent].
- *
- * @param version The version of the applied update or `null` if there's no update to apply.
- */
-class ApplyUpdateResponseEvent(val version: String?) : ResponseEvent()
+    /**
+     * @param version The version of the applied update or `null` if there's no update to apply.
+     */
+    class ResultEvent(val version: String?) : ResponseEvent()
+}
 
 /**
  * The [Bootstrapper] that posts status events to the [eventBus].
@@ -116,20 +113,20 @@ open class EvergreenPlugin(
     }
 
     @Subscribe
-    open fun onGetMasterVersion(event: GetMasterVersionRequestEvent) {
-        eventBus.postToChain(event, GetMasterVersionResponseEvent(masterVersion))
+    open fun onGetMasterVersion(event: GetMasterVersionEvent) {
+        eventBus.postToChain(event, GetMasterVersionEvent.ResultEvent(masterVersion))
     }
 
     @Subscribe
-    open fun onGetUpdateStatus(event: GetUpdateStatusRequestEvent) {
+    open fun onGetUpdateStatus(event: GetUpdateStatusEvent) {
         eventBus.postToChain(
             event,
-            GetUpdateStatusResponseEvent(updateVersion?.let { UpdateStatus(it, isUpdateReady) })
+            GetUpdateStatusEvent.ResultEvent(updateVersion?.let { UpdateStatus(it, isUpdateReady) })
         )
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    open fun onApplyUpdate(event: ApplyUpdateRequestEvent) {
-        eventBus.postToChain(event, ApplyUpdateResponseEvent(if (applyUpdate()) masterVersion else null))
+    open fun onApplyUpdate(event: ApplyUpdateEvent) {
+        eventBus.postToChain(event, ApplyUpdateEvent.ResultEvent(if (applyUpdate()) masterVersion else null))
     }
 }

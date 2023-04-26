@@ -10,9 +10,13 @@ import org.racehorse.utils.toWebIntent
 /**
  * Triggered by the web to retrieve the latest deep link.
  */
-class GetLastDeepLinkRequestEvent : RequestEvent()
+class GetLastDeepLinkEvent : RequestEvent() {
 
-class GetLastDeepLinkResponseEvent(val intent: WebIntent?) : ResponseEvent()
+    /**
+     * @param intent The most recent intent that was dispatched via [OpenDeepLinkEvent].
+     */
+    class ResultEvent(val intent: WebIntent?) : ResponseEvent()
+}
 
 /**
  * Post this event to notify web that the new deep link intent has arrived.
@@ -40,7 +44,7 @@ open class DeepLinkPlugin(private val eventBus: EventBus = EventBus.getDefault()
     }
 
     @Subscribe
-    open fun onGetLastDeepLink(event: GetLastDeepLinkRequestEvent) {
-        eventBus.postToChain(event, GetLastDeepLinkResponseEvent(lastIntent))
+    open fun onGetLastDeepLink(event: GetLastDeepLinkEvent) {
+        eventBus.postToChain(event, GetLastDeepLinkEvent.ResultEvent(lastIntent))
     }
 }

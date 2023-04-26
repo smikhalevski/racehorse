@@ -36,17 +36,17 @@ export function createIntentsManager(eventBridge: EventBridge): IntentsManager {
   return {
     startActivityForResult: intent =>
       eventBridge
-        .request({ type: 'org.racehorse.StartActivityForResultRequestEvent', intent })
+        .request({ type: 'org.racehorse.StartActivityForResultEvent', intent })
         .then(event => ensureEvent(event).result),
 
     startActivity: intent =>
       eventBridge
-        .request({ type: 'org.racehorse.StartActivityRequestEvent', intent })
+        .request({ type: 'org.racehorse.StartActivityEvent', intent })
         .then(event => ensureEvent(event).isStarted),
 
     openApplication: uri =>
       eventBridge
-        .request({ type: 'org.racehorse.OpenApplicationRequestEvent', uri })
+        .request({ type: 'org.racehorse.OpenApplicationEvent', uri })
         .then(event => ensureEvent(event).isOpened),
   };
 }

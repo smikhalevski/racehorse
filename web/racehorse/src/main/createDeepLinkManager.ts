@@ -21,9 +21,7 @@ export interface DeepLinkManager {
 export function createDeepLinkManager(eventBridge: EventBridge): DeepLinkManager {
   return {
     getLastDeepLink: () =>
-      eventBridge
-        .request({ type: 'org.racehorse.GetLastDeepLinkRequestEvent' })
-        .then(event => ensureEvent(event).intent),
+      eventBridge.request({ type: 'org.racehorse.GetLastDeepLinkEvent' }).then(event => ensureEvent(event).intent),
 
     subscribe: listener =>
       eventBridge.subscribe(event => {
