@@ -5,6 +5,7 @@ import { LocalStorageExample } from './examples/LocalStorageExample';
 import { DeviceExample } from './examples/DeviceExample';
 import { OpenUrlExample } from './examples/OpenUrlExample';
 import { NetworkExample } from './examples/NetworkExample';
+import { NotificationsExample } from './examples/NotificationsExample';
 import { PermissionsExample } from './examples/PermissionsExample';
 import { EncryptedStorageExample } from './examples/EncryptedStorageExample';
 import { ToastExample } from './examples/ToastExample';
@@ -17,6 +18,7 @@ export function App() {
   return (
     <>
       <ToastExample />
+      <NotificationsExample />
       <EncryptedStorageExample />
       <CookieExample />
       <FileInputExample />

@@ -1,5 +1,6 @@
 package org.racehorse
 
+import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsCompat.toWindowInsetsCompat
@@ -8,6 +9,15 @@ import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.postToChain
 
 class Rect(val top: Float, val right: Float, val bottom: Float, val left: Float)
+
+class DeviceInfo(val apiLevel: Int, val brand: String, val model: String)
+
+/**
+ * Get OS and device versions.
+ */
+class GetDeviceInfoRequestEvent : RequestEvent()
+
+class GetDeviceInfoResponseEvent(val deviceInfo: DeviceInfo) : ResponseEvent()
 
 /**
  * Get the list of locales that user picked in the device settings.
@@ -19,15 +29,9 @@ class GetPreferredLocalesResponseEvent(val locales: Array<String>) : ResponseEve
 /**
  * Get the rect that describes the window insets that overlap with system UI.
  *
- * @param typeMask Bit mask of [WindowInsetsCompat.Type]s to query the insets for. By default, display cutout,
- * navigation and status bars are included.
+ * @param typeMask Bit mask of [WindowInsetsCompat.Type]s to query the insets for.
  */
-class GetWindowInsetsRequestEvent(
-    val typeMask: Int =
-        WindowInsetsCompat.Type.displayCutout() or
-            WindowInsetsCompat.Type.navigationBars() or
-            WindowInsetsCompat.Type.statusBars()
-) : RequestEvent()
+class GetWindowInsetsRequestEvent(val typeMask: Int) : RequestEvent()
 
 class GetWindowInsetsResponseEvent(val rect: Rect) : ResponseEvent()
 
@@ -41,6 +45,16 @@ open class DevicePlugin(
     private val activity: ComponentActivity,
     private val eventBus: EventBus = EventBus.getDefault()
 ) {
+
+    @Subscribe
+    fun onGetDeviceInfo(event: GetDeviceInfoRequestEvent) {
+        eventBus.postToChain(
+            event,
+            GetDeviceInfoResponseEvent(
+                DeviceInfo(apiLevel = Build.VERSION.SDK_INT, brand = Build.BRAND, model = Build.MODEL)
+            )
+        )
+    }
 
     @Subscribe
     fun onGetPreferredLocales(event: GetPreferredLocalesRequestEvent) {

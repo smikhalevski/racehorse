@@ -7,6 +7,7 @@ import { createFirebaseManager } from './createFirebaseManager';
 import { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager';
 import { createKeyboardManager } from './createKeyboardManager';
 import { createNetworkManager } from './createNetworkManager';
+import { createNotificationsManager } from './createNotificationsManager';
 import { createOpenUrlManager } from './createOpenUrlManager';
 import { createPermissionsManager } from './createPermissionsManager';
 
@@ -27,6 +28,8 @@ export const googlePlayReferrerManager = createGooglePlayReferrerManager(eventBr
 export const keyboardManager = createKeyboardManager(eventBridge);
 
 export const networkManager = createNetworkManager(eventBridge);
+
+export const notificationsManager = createNotificationsManager(eventBridge);
 
 export const openUrlManager = createOpenUrlManager(eventBridge);
 

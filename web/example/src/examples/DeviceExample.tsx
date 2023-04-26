@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { deviceManager, Rect } from 'racehorse';
+import { DeviceInfo, deviceManager, Rect } from 'racehorse';
 
 export function DeviceExample() {
+  const [deviceInfo, setDeviceInfo] = useState<DeviceInfo>();
   const [preferredLocales, setPreferredLocales] = useState<string[]>([]);
   const [insets, setInsets] = useState<Rect>();
 
   useEffect(() => {
+    deviceManager.getDeviceInfo().then(setDeviceInfo);
     deviceManager.getPreferredLocales().then(setPreferredLocales);
     deviceManager.getWindowInsets().then(setInsets);
   }, []);
@@ -21,6 +23,9 @@ export function DeviceExample() {
 
       {'Insets:'}
       <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(insets, null, 2)}</pre>
+
+      {'Device info: '}
+      <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(deviceInfo, null, 2)}</pre>
     </>
   );
 }
