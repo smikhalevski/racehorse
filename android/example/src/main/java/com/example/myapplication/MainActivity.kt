@@ -59,6 +59,7 @@ class MainActivity : AppCompatActivity() {
             it.register(KeyboardPlugin(this))
             it.register(OpenUrlPlugin(this))
             it.register(PermissionsPlugin(this))
+            it.register(NotificationsPlugin(this))
 
             it.register(ToastPlugin(this))
         }

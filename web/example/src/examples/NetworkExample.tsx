@@ -8,8 +8,10 @@ export function NetworkExample() {
     <>
       <h2>{'Network'}</h2>
 
-      {'Online: '}
-      {networkStatus.isConnected === undefined ? '🟡' : networkStatus.isConnected ? '🟢' : '🔴'}
+      <p>
+        {'Online: '}
+        {networkStatus.isConnected === undefined ? '🟡' : networkStatus.isConnected ? '🟢' : '🔴'}
+      </p>
     </>
   );
 }

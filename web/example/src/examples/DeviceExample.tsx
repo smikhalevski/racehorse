@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { DeviceInfo, deviceManager, Rect } from 'racehorse';
 
 export function DeviceExample() {
-  const [deviceInfo, setDeviceInfo] = useState<DeviceInfo | null>();
+  const [deviceInfo, setDeviceInfo] = useState<DeviceInfo>();
   const [preferredLocales, setPreferredLocales] = useState<string[]>([]);
   const [insets, setInsets] = useState<Rect>();
 
