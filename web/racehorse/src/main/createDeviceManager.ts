@@ -9,6 +9,24 @@ export interface Rect {
   right: number;
 }
 
+export interface DeviceInfo {
+  /**
+   * [The SDK version of the software](https://apilevels.com) currently running on this hardware device. This value
+   * never changes while a device is booted, but it may increase when the hardware manufacturer provides an OTA update.
+   */
+  apiLevel: number;
+
+  /**
+   * The consumer-visible brand with which the product/hardware will be associated, if any.
+   */
+  brand: string;
+
+  /**
+   * The end-user-visible name for the end product.
+   */
+  model: string;
+}
+
 export const InsetType = {
   STATUS_BARS: 1,
   NAVIGATION_BARS: 1 << 1,
@@ -22,6 +40,11 @@ export const InsetType = {
 } as const;
 
 export interface DeviceManager {
+  /**
+   * Get OS and device versions.
+   */
+  getDeviceInfo(): Promise<DeviceInfo>;
+
   /**
    * Returns the array of preferred locales.
    */
@@ -56,12 +79,17 @@ export function createDeviceManager(eventBridge: EventBridge): DeviceManager {
       .then(event => ensureEvent(event).locales);
 
   return {
+    getDeviceInfo: () =>
+      eventBridge
+        .request({ type: 'org.racehorse.GetDeviceInfoRequestEvent' })
+        .then(event => ensureEvent(event).deviceInfo),
+
     getPreferredLocales,
 
     pickLocale: (supportedLocales, defaultLocale) =>
       getPreferredLocales().then(locales => pickLocale(locales, supportedLocales, defaultLocale)),
 
-    getWindowInsets: typeMask =>
+    getWindowInsets: (typeMask = InsetType.DISPLAY_CUTOUT | InsetType.NAVIGATION_BARS | InsetType.STATUS_BARS) =>
       eventBridge
         .request({ type: 'org.racehorse.GetWindowInsetsRequestEvent', typeMask })
         .then(event => ensureEvent(event).rect),
