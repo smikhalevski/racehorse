@@ -20,29 +20,30 @@ import javax.crypto.spec.SecretKeySpec
  * @param value A value to write to the file.
  * @param password The password that is used to cipher the file contents.
  */
-class SetEncryptedValueRequestEvent(val key: String, val value: String, val password: String) : RequestEvent()
+class SetEncryptedValueEvent(val key: String, val value: String, val password: String) : RequestEvent()
 
 /**
  * Retrieves an encrypted value associated with the key.
  */
-class GetEncryptedValueRequestEvent(val key: String, val password: String) : RequestEvent()
+class GetEncryptedValueEvent(val key: String, val password: String) : RequestEvent() {
 
-/**
- * The deciphered value or `null` if key wasn't found.
- */
-class GetEncryptedValueResponseEvent(val value: String?) : ResponseEvent()
+    /**
+     * The deciphered value or `null` if key wasn't found or if password is incorrect.
+     */
+    class ResultEvent(val value: String?) : ResponseEvent()
+}
 
 /**
  * Checks that the key exists in the storage.
  */
-class HasEncryptedValueRequestEvent(val key: String) : RequestEvent()
-
-class HasEncryptedValueResponseEvent(val exists: Boolean) : ResponseEvent()
+class HasEncryptedValueEvent(val key: String) : RequestEvent() {
+    class ResultEvent(val exists: Boolean) : ResponseEvent()
+}
 
 /**
  * Deletes an encrypted value associated with the key.
  */
-class DeleteEncryptedValueRequestEvent(val key: String) : RequestEvent()
+class DeleteEncryptedValueEvent(val key: String) : RequestEvent()
 
 /**
  * An encrypted key-value file-based storage.
@@ -60,7 +61,7 @@ open class EncryptedStoragePlugin(
 ) {
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    open fun onSetEncryptedValue(event: SetEncryptedValueRequestEvent) {
+    open fun onSetEncryptedValue(event: SetEncryptedValueEvent) {
         val valueBytes = event.value.toByteArray()
 
         val cipher = getCipher()
@@ -74,35 +75,35 @@ open class EncryptedStoragePlugin(
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    open fun onGetEncryptedValue(event: GetEncryptedValueRequestEvent) {
+    open fun onGetEncryptedValue(event: GetEncryptedValueEvent) {
         val file = getFile(event.key)
 
-        val value = if (file.exists()) {
+        val bytes = if (file.exists()) {
             val fileBytes = file.readBytes()
 
             val cipher = getCipher()
 
             cipher.init(Cipher.DECRYPT_MODE, getSecret(event.password), IvParameterSpec(fileBytes.copyOf(16)))
 
-            val bytes = try {
+            try {
                 cipher.doFinal(fileBytes.copyOfRange(16, fileBytes.size))
             } catch (_: BadPaddingException) {
-                throw IllegalArgumentException("Cannot decrypt a value")
+                null
             }
-
-            String(bytes.copyOfRange(64, bytes.size))
         } else null
 
-        eventBus.postToChain(event, GetEncryptedValueResponseEvent(value))
+        val value = bytes?.run { String(copyOfRange(64, size)) }
+
+        eventBus.postToChain(event, GetEncryptedValueEvent.ResultEvent(value))
     }
 
     @Subscribe
-    open fun onHasEncryptedValue(event: HasEncryptedValueRequestEvent) {
-        eventBus.postToChain(event, HasEncryptedValueResponseEvent(getFile(event.key).exists()))
+    open fun onHasEncryptedValue(event: HasEncryptedValueEvent) {
+        eventBus.postToChain(event, HasEncryptedValueEvent.ResultEvent(getFile(event.key).exists()))
     }
 
     @Subscribe
-    open fun onDeleteEncryptedValue(event: DeleteEncryptedValueRequestEvent) {
+    open fun onDeleteEncryptedValue(event: DeleteEncryptedValueEvent) {
         getFile(event.key).delete()
 
         eventBus.postToChain(event, VoidEvent())

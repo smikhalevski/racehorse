@@ -1,4 +1,5 @@
 import { createEventBridge } from './createEventBridge';
+import { createActivityManager } from './createActivityManager';
 import { createDeepLinkManager } from './createDeepLinkManager';
 import { createDeviceManager } from './createDeviceManager';
 import { createEncryptedStorageManager } from './createEncryptedStorageManager';
@@ -8,10 +9,11 @@ import { createGooglePlayReferrerManager } from './createGooglePlayReferrerManag
 import { createKeyboardManager } from './createKeyboardManager';
 import { createNetworkManager } from './createNetworkManager';
 import { createNotificationsManager } from './createNotificationsManager';
-import { createOpenUrlManager } from './createOpenUrlManager';
 import { createPermissionsManager } from './createPermissionsManager';
 
 export const eventBridge = createEventBridge();
+
+export const activityManager = createActivityManager(eventBridge);
 
 export const deepLinkManager = createDeepLinkManager(eventBridge);
 
@@ -30,7 +32,5 @@ export const keyboardManager = createKeyboardManager(eventBridge);
 export const networkManager = createNetworkManager(eventBridge);
 
 export const notificationsManager = createNotificationsManager(eventBridge);
-
-export const openUrlManager = createOpenUrlManager(eventBridge);
 
 export const permissionsManager = createPermissionsManager(eventBridge);

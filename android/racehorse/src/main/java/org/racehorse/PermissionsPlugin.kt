@@ -15,23 +15,23 @@ import org.racehorse.webview.PermissionRequestEvent
 /**
  * Gets whether you should show UI with rationale before requesting a permission.
  */
-class ShouldShowRequestPermissionRationaleRequestEvent(val permissions: Array<String>) : RequestEvent()
-
-class ShouldShowTaskPermissionRationaleResponseEvent(val statuses: Map<String, Boolean>) : ResponseEvent()
+class ShouldShowRequestPermissionRationaleEvent(val permissions: Array<String>) : RequestEvent() {
+    class ResultEvent(val statuses: Map<String, Boolean>) : ResponseEvent()
+}
 
 /**
  * Determine whether you have been granted a particular permission.
  */
-class IsPermissionGrantedRequestEvent(val permissions: Array<String>) : RequestEvent()
-
-class IsPermissionGrantedResponseEvent(val statuses: Map<String, Boolean>) : ResponseEvent()
+class IsPermissionGrantedEvent(val permissions: Array<String>) : RequestEvent() {
+    class ResultEvent(val statuses: Map<String, Boolean>) : ResponseEvent()
+}
 
 /**
  * Requests permissions to be granted to the app.
  */
-class AskForPermissionRequestEvent(val permissions: Array<String>) : RequestEvent()
-
-class AskForPermissionResponseEvent(val statuses: Map<String, Boolean>) : ResponseEvent()
+class AskForPermissionEvent(val permissions: Array<String>) : RequestEvent() {
+    class ResultEvent(val statuses: Map<String, Boolean>) : ResponseEvent()
+}
 
 /**
  * Check permission statuses and ask for permissions.
@@ -85,8 +85,8 @@ open class PermissionsPlugin(
     }
 
     @Subscribe
-    open fun onShouldShowRequestPermissionRationale(event: ShouldShowRequestPermissionRationaleRequestEvent) {
-        eventBus.postToChain(event, ShouldShowTaskPermissionRationaleResponseEvent(
+    open fun onShouldShowRequestPermissionRationale(event: ShouldShowRequestPermissionRationaleEvent) {
+        eventBus.postToChain(event, ShouldShowRequestPermissionRationaleEvent.ResultEvent(
             event.permissions.distinct().associateWith {
                 ActivityCompat.shouldShowRequestPermissionRationale(activity, it)
             }
@@ -94,17 +94,19 @@ open class PermissionsPlugin(
     }
 
     @Subscribe
-    open fun onIsPermissionGranted(event: IsPermissionGrantedRequestEvent) {
+    open fun onIsPermissionGranted(event: IsPermissionGrantedEvent) {
         eventBus.postToChain(
             event,
-            IsPermissionGrantedResponseEvent(event.permissions.distinct().associateWith(activity::isPermissionGranted))
+            IsPermissionGrantedEvent.ResultEvent(
+                event.permissions.distinct().associateWith(activity::isPermissionGranted)
+            )
         )
     }
 
     @Subscribe
-    open fun onAskForPermission(event: AskForPermissionRequestEvent) {
+    open fun onAskForPermission(event: AskForPermissionEvent) {
         activity.askForPermissions(event.permissions) {
-            eventBus.postToChain(event, AskForPermissionResponseEvent(it))
+            eventBus.postToChain(event, AskForPermissionEvent.ResultEvent(it))
         }
     }
 }

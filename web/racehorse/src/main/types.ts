@@ -32,7 +32,7 @@ export interface Connection {
    * Delivers a serialized event to Android.
    *
    * @param eventJson The serialized event.
-   * @return The unique request ID.
+   * @returns The unique request ID.
    */
   post(eventJson: string): number;
 }
@@ -58,7 +58,7 @@ export interface EventBridge {
   request(event: Event): Promise<Event>;
 
   /**
-   * Subscribes a listener to alert events pushed by Android.
+   * Subscribes a listener to notice events pushed by Android.
    *
    * @param listener The listener to subscribe.
    * @returns The callback that unsubscribes the listener.

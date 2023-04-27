@@ -19,7 +19,7 @@ declare global {
  * `window.racehorseConnection` is used.
  */
 export function createEventBridge(connectionProvider = () => window.racehorseConnection): EventBridge {
-  const alertsPubSub = new PubSub<Event>();
+  const noticePubSub = new PubSub<Event>();
 
   let connectionPromise: Promise<Required<Connection>> | undefined;
   let tryCount = 0;
@@ -28,7 +28,7 @@ export function createEventBridge(connectionProvider = () => window.racehorseCon
     (connectionPromise ||= untilTruthy(connectionProvider, () => 2 ** tryCount++ * 100).then(connection => {
       (connection.inbox ||= new PubSub()).subscribe(envelope => {
         if (envelope[0] === -1) {
-          alertsPubSub.publish(envelope[1]);
+          noticePubSub.publish(envelope[1]);
         }
       });
 
@@ -58,7 +58,7 @@ export function createEventBridge(connectionProvider = () => window.racehorseCon
 
     subscribe(listener) {
       void connect();
-      return alertsPubSub.subscribe(listener);
+      return noticePubSub.subscribe(listener);
     },
   };
 }

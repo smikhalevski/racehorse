@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity() {
             it.register(HttpsPlugin())
             it.register(networkPlugin)
             it.register(KeyboardPlugin(this))
-            it.register(OpenUrlPlugin(this))
+            it.register(ActivityPlugin(this))
             it.register(PermissionsPlugin(this))
             it.register(NotificationsPlugin(this))
 
@@ -124,9 +124,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onBundleReadyEvent(event: BundleReadyEvent) {
+    fun onBundleReady(event: BundleReadyEvent) {
         EventBus.getDefault().register(
             AssetLoaderPlugin(
+                this,
                 WebViewAssetLoader.Builder()
                     .setDomain("example.com")
                     .addPathHandler("/", StaticPathHandler(event.appDir))

@@ -8,32 +8,32 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.postToChain
 
-class Rect(val top: Float, val right: Float, val bottom: Float, val left: Float)
-
 class DeviceInfo(val apiLevel: Int, val brand: String, val model: String)
+
+class Rect(val top: Float, val right: Float, val bottom: Float, val left: Float)
 
 /**
  * Get OS and device versions.
  */
-class GetDeviceInfoRequestEvent : RequestEvent()
-
-class GetDeviceInfoResponseEvent(val deviceInfo: DeviceInfo) : ResponseEvent()
+class GetDeviceInfoEvent : RequestEvent() {
+    class ResultEvent(val deviceInfo: DeviceInfo) : ResponseEvent()
+}
 
 /**
  * Get the list of locales that user picked in the device settings.
  */
-class GetPreferredLocalesRequestEvent : RequestEvent()
-
-class GetPreferredLocalesResponseEvent(val locales: Array<String>) : ResponseEvent()
+class GetPreferredLocalesEvent : RequestEvent() {
+    class ResultEvent(val locales: Array<String>) : ResponseEvent()
+}
 
 /**
  * Get the rect that describes the window insets that overlap with system UI.
  *
  * @param typeMask Bit mask of [WindowInsetsCompat.Type]s to query the insets for.
  */
-class GetWindowInsetsRequestEvent(val typeMask: Int) : RequestEvent()
-
-class GetWindowInsetsResponseEvent(val rect: Rect) : ResponseEvent()
+class GetWindowInsetsEvent(val typeMask: Int) : RequestEvent() {
+    class ResultEvent(val rect: Rect) : ResponseEvent()
+}
 
 /**
  * Device configuration and general information.
@@ -47,17 +47,17 @@ open class DevicePlugin(
 ) {
 
     @Subscribe
-    fun onGetDeviceInfo(event: GetDeviceInfoRequestEvent) {
+    fun onGetDeviceInfo(event: GetDeviceInfoEvent) {
         eventBus.postToChain(
             event,
-            GetDeviceInfoResponseEvent(
+            GetDeviceInfoEvent.ResultEvent(
                 DeviceInfo(apiLevel = Build.VERSION.SDK_INT, brand = Build.BRAND, model = Build.MODEL)
             )
         )
     }
 
     @Subscribe
-    fun onGetPreferredLocales(event: GetPreferredLocalesRequestEvent) {
+    fun onGetPreferredLocales(event: GetPreferredLocalesEvent) {
         val configuration = activity.resources.configuration
 
         val locales = ArrayList<String>().apply {
@@ -66,11 +66,11 @@ open class DevicePlugin(
             }
         }
 
-        eventBus.postToChain(event, GetPreferredLocalesResponseEvent(locales.toTypedArray()))
+        eventBus.postToChain(event, GetPreferredLocalesEvent.ResultEvent(locales.toTypedArray()))
     }
 
     @Subscribe
-    fun onGetWindowInsets(event: GetWindowInsetsRequestEvent) {
+    fun onGetWindowInsets(event: GetWindowInsetsEvent) {
         val density = activity.resources.displayMetrics.density
         val insets = toWindowInsetsCompat(activity.window.decorView.rootWindowInsets).getInsets(event.typeMask)
 
@@ -78,6 +78,6 @@ open class DevicePlugin(
             Rect(top / density, right / density, bottom / density, left / density)
         }
 
-        eventBus.postToChain(event, GetWindowInsetsResponseEvent(rect))
+        eventBus.postToChain(event, GetWindowInsetsEvent.ResultEvent(rect))
     }
 }

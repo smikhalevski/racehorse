@@ -6,9 +6,9 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.postToChain
 
-class AreNotificationsEnabledRequestEvent : RequestEvent()
-
-class AreNotificationsEnabledResponseEvent(val enabled: Boolean) : ResponseEvent()
+class AreNotificationsEnabledEvent : RequestEvent() {
+    class ResultEvent(val isEnabled: Boolean) : ResponseEvent()
+}
 
 class NotificationsPlugin(
     private val activity: ComponentActivity,
@@ -18,7 +18,7 @@ class NotificationsPlugin(
     private val notificationManager get() = NotificationManagerCompat.from(activity)
 
     @Subscribe
-    fun onAreNotificationsEnabled(event: AreNotificationsEnabledRequestEvent) {
-        eventBus.postToChain(event, AreNotificationsEnabledResponseEvent(notificationManager.areNotificationsEnabled()))
+    fun onAreNotificationsEnabled(event: AreNotificationsEnabledEvent) {
+        eventBus.postToChain(event, AreNotificationsEnabledEvent.ResultEvent(notificationManager.areNotificationsEnabled()))
     }
 }

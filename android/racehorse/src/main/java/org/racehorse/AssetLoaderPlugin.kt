@@ -1,10 +1,13 @@
 package org.racehorse
 
+import android.content.Intent
 import android.webkit.WebResourceResponse
+import androidx.activity.ComponentActivity
 import androidx.annotation.WorkerThread
 import androidx.webkit.WebViewAssetLoader
-import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.racehorse.utils.guessIntentAction
+import org.racehorse.utils.launchActivity
 import org.racehorse.webview.ShouldInterceptRequestEvent
 import org.racehorse.webview.ShouldOverrideUrlLoadingEvent
 import java.io.File
@@ -12,16 +15,12 @@ import java.io.FileInputStream
 import java.net.URLConnection
 
 /**
- * Intercepts requests and serves the responses using an [assetLoader]. If a URL cannot be handled by the [assetLoader]
- * then it is opened in an external app by posting an [OpenUrlRequestEvent].
+ * Intercepts requests and serves the responses using an [assetLoader], or starts a new activity.
  *
+ * @param activity The activity that starts the external app if [assetLoader] cannot handle the intercepted URL.
  * @param assetLoader The asset loader that resolves the URL.
- * @param eventBus The event bus to which events are posted.
  */
-open class AssetLoaderPlugin(
-    private val assetLoader: WebViewAssetLoader,
-    private val eventBus: EventBus = EventBus.getDefault()
-) {
+open class AssetLoaderPlugin(private val activity: ComponentActivity, private val assetLoader: WebViewAssetLoader) {
 
     @Subscribe
     open fun onShouldInterceptRequest(event: ShouldInterceptRequestEvent) {
@@ -32,8 +31,10 @@ open class AssetLoaderPlugin(
 
     @Subscribe
     open fun onShouldOverrideUrlLoading(event: ShouldOverrideUrlLoadingEvent) {
-        if (assetLoader.shouldInterceptRequest(event.request.url) == null && event.shouldHandle()) {
-            eventBus.post(OpenUrlRequestEvent(event.request.url.toString()))
+        val url = event.request.url
+
+        if (assetLoader.shouldInterceptRequest(url) == null && event.shouldHandle()) {
+            activity.launchActivity(Intent(url.guessIntentAction(), url).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }
     }
 }

@@ -7,9 +7,9 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.postToChain
 
-class GetGooglePlayReferrerRequestEvent : RequestEvent()
-
-class GetGooglePlayReferrerResponseEvent(val referrer: String?) : ResponseEvent()
+class GetGooglePlayReferrerEvent : RequestEvent() {
+    class ResultEvent(val referrer: String?) : ResponseEvent()
+}
 
 /**
  * Gets [Google Play referrer](https://developer.android.com/google/play/installreferrer/library) information.
@@ -20,7 +20,7 @@ open class GooglePlayReferrerPlugin(
 ) {
 
     @Subscribe
-    open fun onGetGooglePlayReferrerRequestEvent(event: GetGooglePlayReferrerRequestEvent) {
+    open fun onGetGooglePlayReferrer(event: GetGooglePlayReferrerEvent) {
         val referrerClient = InstallReferrerClient.newBuilder(context).build()
 
         referrerClient.startConnection(object : InstallReferrerStateListener {
@@ -34,7 +34,7 @@ open class GooglePlayReferrerPlugin(
                     referrerClient.installReferrer.installReferrer
                 } else null
 
-                eventBus.postToChain(event, GetGooglePlayReferrerResponseEvent(referrer))
+                eventBus.postToChain(event, GetGooglePlayReferrerEvent.ResultEvent(referrer))
             }
         })
     }

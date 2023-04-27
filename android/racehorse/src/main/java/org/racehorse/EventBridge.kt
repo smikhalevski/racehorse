@@ -1,16 +1,22 @@
 package org.racehorse
 
+import android.os.Bundle
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
-import org.greenrobot.eventbus.*
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.NoSubscriberEvent
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.SubscriberExceptionEvent
+import org.greenrobot.eventbus.ThreadMode
+import org.racehorse.utils.NaturalAdapter
+import java.io.Serializable
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * An event posted from the web view. Only events that implement this interface are allowed to pass trough the event
- * bridge.
+ * An event posted from the web view. Only events that implement this interface are "visible" to the web application.
  */
 interface WebEvent
 
@@ -51,7 +57,8 @@ abstract class RequestEvent : ChainableEvent(), WebEvent
 abstract class ResponseEvent : ChainableEvent()
 
 /**
- * Response with no payload.
+ * Response with no payload. Use this event to commit the chain of events that doesn't imply a response. Chain of events
+ * guarantees that if an exception is thrown then pending promise is rejected.
  */
 class VoidEvent : ResponseEvent()
 
@@ -67,15 +74,28 @@ class ExceptionEvent(@Transient val cause: Throwable) : ResponseEvent() {
  *
  * @param webView The [WebView] to which the event bridge will add the connection Javascript interface.
  * @param eventBus The event bus to which events are posted.
- * @param gson The [Gson] instance that is used for event serialization.
  * @param connectionKey The key of the `window` that exposes the connection Javascript interface.
+ * @param gson The [Gson] instance that is used for event serialization.
  */
 open class EventBridge(
     private val webView: WebView,
     private val eventBus: EventBus = EventBus.getDefault(),
-    private val gson: Gson = GsonBuilder().serializeNulls().create(),
+    private val gson: Gson = naturalGson,
     private val connectionKey: String = "racehorseConnection"
 ) {
+
+    companion object {
+        val naturalGson: Gson by lazy {
+            val naturalAdapter = NaturalAdapter()
+
+            GsonBuilder()
+                .serializeNulls()
+                .registerTypeAdapter(Serializable::class.java, naturalAdapter)
+                .registerTypeAdapter(Bundle::class.java, naturalAdapter)
+                .registerTypeAdapter(Any::class.java, naturalAdapter)
+                .create()
+        }
+    }
 
     private var requestId = AtomicInteger()
 

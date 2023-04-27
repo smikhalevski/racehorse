@@ -4,7 +4,16 @@ import android.graphics.Bitmap
 import android.net.http.SslError
 import android.os.Message
 import android.view.KeyEvent
-import android.webkit.*
+import android.webkit.ClientCertRequest
+import android.webkit.HttpAuthHandler
+import android.webkit.RenderProcessGoneDetail
+import android.webkit.SafeBrowsingResponse
+import android.webkit.SslErrorHandler
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import org.greenrobot.eventbus.EventBus
 import org.racehorse.utils.HandlerEvent
 import org.racehorse.utils.postForHandler
