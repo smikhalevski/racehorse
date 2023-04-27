@@ -2,6 +2,30 @@ import { pickLocale } from 'locale-matcher';
 import { EventBridge } from './types';
 import { ensureEvent } from './utils';
 
+export interface DeviceInfo {
+  /**
+   * [The SDK version of the software](https://apilevels.com) currently running on this hardware device. This value
+   * never changes while a device is booted, but it may increase when the hardware manufacturer provides an OTA update.
+   *
+   * @see {@link https://developer.android.com/reference/android/os/Build.VERSION#SDK_INT Build.VERSION.SDK_INT}
+   */
+  apiLevel: number;
+
+  /**
+   * The consumer-visible brand with which the product/hardware will be associated, if any.
+   *
+   * @see {@link https://developer.android.com/reference/android/os/Build#BRAND Build.BRAND}
+   */
+  brand: string;
+
+  /**
+   * The end-user-visible name for the end product.
+   *
+   * @see {@link https://developer.android.com/reference/android/os/Build#MODEL Build.MODEL}
+   */
+  model: string;
+}
+
 export interface Rect {
   top: number;
   left: number;
@@ -9,24 +33,9 @@ export interface Rect {
   right: number;
 }
 
-export interface DeviceInfo {
-  /**
-   * [The SDK version of the software](https://apilevels.com) currently running on this hardware device. This value
-   * never changes while a device is booted, but it may increase when the hardware manufacturer provides an OTA update.
-   */
-  apiLevel: number;
-
-  /**
-   * The consumer-visible brand with which the product/hardware will be associated, if any.
-   */
-  brand: string;
-
-  /**
-   * The end-user-visible name for the end product.
-   */
-  model: string;
-}
-
+/**
+ * @see {@link https://developer.android.com/reference/androidx/core/view/WindowInsetsCompat.Type WindowInsetsCompat.Type}
+ */
 export const InsetType = {
   STATUS_BARS: 1,
   NAVIGATION_BARS: 1 << 1,
@@ -74,15 +83,11 @@ export interface DeviceManager {
  */
 export function createDeviceManager(eventBridge: EventBridge): DeviceManager {
   const getPreferredLocales = () =>
-    eventBridge
-      .request({ type: 'org.racehorse.GetPreferredLocalesRequestEvent' })
-      .then(event => ensureEvent(event).locales);
+    eventBridge.request({ type: 'org.racehorse.GetPreferredLocalesEvent' }).then(event => ensureEvent(event).locales);
 
   return {
     getDeviceInfo: () =>
-      eventBridge
-        .request({ type: 'org.racehorse.GetDeviceInfoRequestEvent' })
-        .then(event => ensureEvent(event).deviceInfo),
+      eventBridge.request({ type: 'org.racehorse.GetDeviceInfoEvent' }).then(event => ensureEvent(event).deviceInfo),
 
     getPreferredLocales,
 
@@ -91,7 +96,7 @@ export function createDeviceManager(eventBridge: EventBridge): DeviceManager {
 
     getWindowInsets: (typeMask = InsetType.DISPLAY_CUTOUT | InsetType.NAVIGATION_BARS | InsetType.STATUS_BARS) =>
       eventBridge
-        .request({ type: 'org.racehorse.GetWindowInsetsRequestEvent', typeMask })
+        .request({ type: 'org.racehorse.GetWindowInsetsEvent', typeMask })
         .then(event => ensureEvent(event).rect),
   };
 }

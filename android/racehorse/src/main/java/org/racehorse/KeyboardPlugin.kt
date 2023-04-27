@@ -22,7 +22,7 @@ class KeyboardVisibilityChangedEvent(val isKeyboardVisible: Boolean) : NoticeEve
 /**
  * Monitors keyboard visibility.
  *
- * @param activity The activity to which insets listener is attached.
+ * @param activity The activity to which the keyboard observer is attached.
  * @param eventBus The event bus to which events are posted.
  */
 open class KeyboardPlugin(activity: Activity, private val eventBus: EventBus = EventBus.getDefault()) {

@@ -28,9 +28,7 @@ export interface NetworkManager {
 export function createNetworkManager(eventBridge: EventBridge): NetworkManager {
   return {
     getStatus: () =>
-      eventBridge
-        .request({ type: 'org.racehorse.GetNetworkStatusRequestEvent' })
-        .then(event => ensureEvent(event).status),
+      eventBridge.request({ type: 'org.racehorse.GetNetworkStatusEvent' }).then(event => ensureEvent(event).status),
 
     subscribe: listener =>
       eventBridge.subscribe(event => {

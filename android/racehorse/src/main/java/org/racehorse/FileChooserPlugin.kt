@@ -13,7 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.isPermissionGranted
-import org.racehorse.utils.startActivityForResult
+import org.racehorse.utils.launchActivityForResult
 import org.racehorse.webview.ShowFileChooserEvent
 import java.io.File
 import java.io.IOException
@@ -51,10 +51,10 @@ private class FileChooserLauncher(
     val fileChooserParams: FileChooserParams,
 ) {
 
-    private val mimeType = fileChooserParams.acceptTypes.joinToString(",")
+    private val mimeTypes = fileChooserParams.acceptTypes.joinToString(",")
 
-    private val isImage = mimeType.isEmpty() || mimeType.contains("*/*") || mimeType.contains("image/")
-    private val isVideo = mimeType.isEmpty() || mimeType.contains("*/*") || mimeType.contains("video/")
+    private val isImage = mimeTypes.isEmpty() || mimeTypes.contains("*/*") || mimeTypes.contains("image/")
+    private val isVideo = mimeTypes.isEmpty() || mimeTypes.contains("*/*") || mimeTypes.contains("video/")
 
     fun start() {
         if (
@@ -72,7 +72,7 @@ private class FileChooserLauncher(
         }
 
         // Ask for camera permission
-        activity.startActivityForResult(
+        activity.launchActivityForResult(
             ActivityResultContracts.RequestPermission(),
             Manifest.permission.CAMERA,
             this::launchChooser
@@ -100,7 +100,7 @@ private class FileChooserLauncher(
         } else null
 
         var intent = Intent(Intent.ACTION_GET_CONTENT)
-            .setType(mimeType)
+            .setType(mimeTypes)
             .addCategory(Intent.CATEGORY_OPENABLE)
             .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, fileChooserParams.mode == FileChooserParams.MODE_OPEN_MULTIPLE)
 
@@ -127,7 +127,7 @@ private class FileChooserLauncher(
             }
         }
 
-        val started = activity.startActivityForResult(intent) {
+        val launched = activity.launchActivityForResult(intent) {
             val uris = parseFileChooserResult(it.resultCode, it.data)
 
             filePathCallback.onReceiveValue(
@@ -147,7 +147,7 @@ private class FileChooserLauncher(
             )
         }
 
-        if (!started) {
+        if (!launched) {
             // No activity that can provide files
             filePathCallback.onReceiveValue(arrayOf())
         }

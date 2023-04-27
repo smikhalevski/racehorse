@@ -5,7 +5,6 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.WebIntent
 import org.racehorse.utils.postToChain
-import org.racehorse.utils.toWebIntent
 
 /**
  * Triggered by the web to retrieve the latest deep link.
@@ -23,7 +22,7 @@ class GetLastDeepLinkEvent : RequestEvent() {
  */
 class OpenDeepLinkEvent(val intent: WebIntent) : NoticeEvent {
 
-    constructor(intent: Intent) : this(intent.toWebIntent())
+    constructor(intent: Intent) : this(WebIntent(intent))
 }
 
 /**

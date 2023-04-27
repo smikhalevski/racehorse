@@ -20,9 +20,7 @@ import javax.crypto.spec.SecretKeySpec
  * @param value A value to write to the file.
  * @param password The password that is used to cipher the file contents.
  */
-class SetEncryptedValueEvent(val key: String, val value: String, val password: String) : RequestEvent() {
-    class OkEvent : ResponseEvent()
-}
+class SetEncryptedValueEvent(val key: String, val value: String, val password: String) : RequestEvent()
 
 /**
  * Retrieves an encrypted value associated with the key.
@@ -45,9 +43,7 @@ class HasEncryptedValueEvent(val key: String) : RequestEvent() {
 /**
  * Deletes an encrypted value associated with the key.
  */
-class DeleteEncryptedValueEvent(val key: String) : RequestEvent() {
-    class OkEvent : ResponseEvent()
-}
+class DeleteEncryptedValueEvent(val key: String) : RequestEvent()
 
 /**
  * An encrypted key-value file-based storage.
@@ -75,7 +71,7 @@ open class EncryptedStoragePlugin(
 
         getFile(event.key).writeBytes(cipher.iv + cipher.doFinal(digest.digest(valueBytes) + valueBytes))
 
-        eventBus.postToChain(event, SetEncryptedValueEvent.OkEvent())
+        eventBus.postToChain(event, VoidEvent())
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
@@ -110,7 +106,7 @@ open class EncryptedStoragePlugin(
     open fun onDeleteEncryptedValue(event: DeleteEncryptedValueEvent) {
         getFile(event.key).delete()
 
-        eventBus.postToChain(event, DeleteEncryptedValueEvent.OkEvent())
+        eventBus.postToChain(event, VoidEvent())
     }
 
     /**

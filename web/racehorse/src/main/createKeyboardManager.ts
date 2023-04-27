@@ -14,7 +14,7 @@ export function createKeyboardManager(eventBridge: EventBridge): KeyboardManager
   return {
     isKeyboardVisible: () =>
       eventBridge
-        .request({ type: 'org.racehorse.onIsKeyboardVisible' })
+        .request({ type: 'org.racehorse.IsKeyboardVisibleEvent' })
         .then(event => ensureEvent(event).isKeyboardVisible),
 
     subscribe: listener =>

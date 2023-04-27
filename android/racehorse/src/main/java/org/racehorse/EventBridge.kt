@@ -15,8 +15,7 @@ import java.io.Serializable
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * An event posted from the web view. Only events that implement this interface are allowed to pass trough the event
- * bridge.
+ * An event posted from the web view. Only events that implement this interface are "visible" to the web application.
  */
 interface WebEvent
 
@@ -57,7 +56,8 @@ abstract class RequestEvent : ChainableEvent(), WebEvent
 abstract class ResponseEvent : ChainableEvent()
 
 /**
- * Response with no payload.
+ * Response with no payload. Use this event to commit the chain of events that doesn't imply a response. Chain of events
+ * guarantees that if an exception is thrown then pending promise is rejected.
  */
 class VoidEvent : ResponseEvent()
 
@@ -77,14 +77,14 @@ class ExceptionEvent(@Transient val cause: Throwable) : ResponseEvent() {
  * @param gson The [Gson] instance that is used for event serialization.
  */
 open class EventBridge(
-    val webView: WebView,
-    val eventBus: EventBus = EventBus.getDefault(),
-    val connectionKey: String = "racehorseConnection",
-    val gson: Gson =
+    private val webView: WebView,
+    private val eventBus: EventBus = EventBus.getDefault(),
+    private val gson: Gson =
         GsonBuilder()
             .serializeNulls()
             .registerTypeAdapter(Serializable::class.java, SerializableJsonDeserializer())
             .create(),
+    private val connectionKey: String = "racehorseConnection"
 ) {
 
     private var requestId = AtomicInteger()

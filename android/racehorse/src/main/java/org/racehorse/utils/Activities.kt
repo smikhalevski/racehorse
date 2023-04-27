@@ -14,6 +14,18 @@ import androidx.core.content.ContextCompat
 import java.util.UUID
 
 /**
+ * Starts activity.
+ *
+ * @return `true` is activity was started, or `false` otherwise.
+ */
+fun Context.launchActivity(intent: Intent) = try {
+    startActivity(intent)
+    true
+} catch (_: ActivityNotFoundException) {
+    false
+}
+
+/**
  * Starts a one-time activity and returns its result via [callback].
  *
  * @param contract The contract specifying input/output types of the call.
@@ -21,14 +33,14 @@ import java.util.UUID
  * @param callback The callback that receives the result from the started activity.
  * @return `true` if activity has started, or `false` if there's no matching activity.
  */
-fun <I, O> ComponentActivity.startActivityForResult(
+fun <I, O> ComponentActivity.launchActivityForResult(
     contract: ActivityResultContract<I, O>,
     input: I,
     callback: ActivityResultCallback<O>
 ): Boolean {
     var launcher: ActivityResultLauncher<I>? = null
 
-    launcher = this.activityResultRegistry.register(UUID.randomUUID().toString(), contract) {
+    launcher = activityResultRegistry.register(UUID.randomUUID().toString(), contract) {
         launcher?.unregister()
         callback.onActivityResult(it)
     }
@@ -47,8 +59,8 @@ fun <I, O> ComponentActivity.startActivityForResult(
  * @param callback The callback that receives the result intent from the started activity.
  * @return `true` if activity has started, or `false` if there's no matching activity.
  */
-fun ComponentActivity.startActivityForResult(intent: Intent, callback: ActivityResultCallback<ActivityResult>) =
-    startActivityForResult(ActivityResultContracts.StartActivityForResult(), intent, callback)
+fun ComponentActivity.launchActivityForResult(intent: Intent, callback: ActivityResultCallback<ActivityResult>) =
+    launchActivityForResult(ActivityResultContracts.StartActivityForResult(), intent, callback)
 
 /**
  * Shows a permission dialog for permissions that aren't granted yet.
@@ -68,7 +80,7 @@ fun ComponentActivity.askForPermissions(
         return
     }
 
-    startActivityForResult(ActivityResultContracts.RequestMultiplePermissions(), missingPermissions) {
+    launchActivityForResult(ActivityResultContracts.RequestMultiplePermissions(), missingPermissions) {
         callback(statuses + it)
     }
 }

@@ -5,7 +5,14 @@ import android.graphics.Canvas
 import android.net.Uri
 import android.os.Message
 import android.view.View
-import android.webkit.*
+import android.webkit.ConsoleMessage
+import android.webkit.GeolocationPermissions
+import android.webkit.JsPromptResult
+import android.webkit.JsResult
+import android.webkit.PermissionRequest
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
+import android.webkit.WebView
 import org.greenrobot.eventbus.EventBus
 import org.racehorse.utils.HandlerEvent
 import org.racehorse.utils.postForHandler

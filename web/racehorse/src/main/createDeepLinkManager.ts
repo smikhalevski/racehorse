@@ -1,16 +1,17 @@
-import { EventBridge, WebIntent } from './types';
+import { EventBridge } from './types';
 import { ensureEvent } from './utils';
+import { Intent } from './createActivitiesManager';
 
 export interface DeepLinkManager {
   /**
    * Returns the last deep link intent that was requested.
    */
-  getLastDeepLink(): Promise<WebIntent | null>;
+  getLastDeepLink(): Promise<Intent | null>;
 
   /**
    * Subscribes to incoming deep link intents.
    */
-  subscribe(listener: (intent: WebIntent) => void): () => void;
+  subscribe(listener: (intent: Intent) => void): () => void;
 }
 
 /**
