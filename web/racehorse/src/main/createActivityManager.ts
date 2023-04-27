@@ -18,7 +18,7 @@ export interface Intent {
   action?: string;
 
   /**
-   * Retrieve any explicit MIME type included in the intent.
+   * The explicit MIME type included in the intent.
    */
   type?: string;
 

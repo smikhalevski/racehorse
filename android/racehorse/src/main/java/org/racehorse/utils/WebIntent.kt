@@ -8,6 +8,7 @@ import java.io.Serializable
  * The [Intent] representation passed from and to the web application.
  *
  * @param action The general action to be performed, such as [Intent.ACTION_VIEW].
+ * @param type The explicit MIME type included in the intent.
  * @param data The URI-encoded data that intent is operating on.
  * @param flags Special flags associated with this intent, such as [Intent.FLAG_ACTIVITY_NEW_TASK].
  * @param extras A map of extended data from the intent.
