@@ -1,5 +1,6 @@
 package org.racehorse
 
+import android.os.Bundle
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import com.google.gson.Gson
@@ -10,7 +11,7 @@ import org.greenrobot.eventbus.NoSubscriberEvent
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.SubscriberExceptionEvent
 import org.greenrobot.eventbus.ThreadMode
-import org.racehorse.utils.SerializableJsonDeserializer
+import org.racehorse.utils.NaturalAdapter
 import java.io.Serializable
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -79,13 +80,22 @@ class ExceptionEvent(@Transient val cause: Throwable) : ResponseEvent() {
 open class EventBridge(
     private val webView: WebView,
     private val eventBus: EventBus = EventBus.getDefault(),
-    private val gson: Gson =
-        GsonBuilder()
-            .serializeNulls()
-            .registerTypeAdapter(Serializable::class.java, SerializableJsonDeserializer())
-            .create(),
+    private val gson: Gson = naturalGson,
     private val connectionKey: String = "racehorseConnection"
 ) {
+
+    companion object {
+        val naturalGson: Gson by lazy {
+            val naturalAdapter = NaturalAdapter()
+
+            GsonBuilder()
+                .serializeNulls()
+                .registerTypeAdapter(Serializable::class.java, naturalAdapter)
+                .registerTypeAdapter(Bundle::class.java, naturalAdapter)
+                .registerTypeAdapter(Any::class.java, naturalAdapter)
+                .create()
+        }
+    }
 
     private var requestId = AtomicInteger()
 
