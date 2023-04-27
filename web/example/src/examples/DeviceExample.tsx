@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { DeviceInfo, deviceManager, Rect } from 'racehorse';
+import { FormattedJSON } from '../components/FormattedJSON';
 
 export function DeviceExample() {
   const [deviceInfo, setDeviceInfo] = useState<DeviceInfo>();
@@ -22,10 +23,10 @@ export function DeviceExample() {
       </p>
 
       {'Insets:'}
-      <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(insets, null, 2)}</pre>
+      <FormattedJSON value={insets} />
 
       {'Device info: '}
-      <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(deviceInfo, null, 2)}</pre>
+      <FormattedJSON value={deviceInfo} />
     </>
   );
 }

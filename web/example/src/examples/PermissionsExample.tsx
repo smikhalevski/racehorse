@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { permissionsManager } from 'racehorse';
+import { FormattedJSON } from '../components/FormattedJSON';
 
 export function PermissionsExample() {
   const [permissions, setPermissions] = useState<string[]>([]);
@@ -37,7 +38,7 @@ export function PermissionsExample() {
         {'Request permissions'}
       </button>
 
-      <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(statuses, null, 2)}</pre>
+      <FormattedJSON value={statuses} />
     </>
   );
 }
