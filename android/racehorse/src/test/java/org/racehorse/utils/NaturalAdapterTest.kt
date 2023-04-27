@@ -15,7 +15,7 @@ class NaturalAdapterTest {
         val value = WebIntent(extras = mapOf("aaa" to arrayOf(111, 222)))
 
         Assert.assertEquals(
-            "{\"action\":null,\"data\":null,\"flags\":0,\"extras\":{\"aaa\":[111,222]}}",
+            "{\"action\":null,\"type\":null,\"data\":null,\"flags\":0,\"extras\":{\"aaa\":[111,222]}}",
             gson.toJson(value)
         )
     }

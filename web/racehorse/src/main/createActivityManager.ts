@@ -18,6 +18,11 @@ export interface Intent {
   action?: string;
 
   /**
+   * Retrieve any explicit MIME type included in the intent.
+   */
+  type?: string;
+
+  /**
    * The URI-encoded data that intent is operating on.
    */
   data?: string;
@@ -45,7 +50,7 @@ export interface ActivityResult {
   /**
    * The data returned from the activity.
    */
-  data: Intent | null;
+  intent: Intent | null;
 }
 
 export const Intent = {
@@ -86,6 +91,7 @@ export interface ActivityManager {
   /**
    * Starts an activity for the intent.
    *
+   * @param intent The intent that starts an activity.
    * @returns `true` if activity has started, or `false` otherwise.
    */
   startActivity(intent: Intent): Promise<boolean>;
@@ -93,6 +99,7 @@ export interface ActivityManager {
   /**
    * Start an activity for the intent.
    *
+   * @param intent The intent that starts an activity.
    * @returns The activity result.
    */
   startActivityForResult(intent: Intent): Promise<ActivityResult | null>;
@@ -118,7 +125,7 @@ export function createActivityManager(eventBridge: EventBridge): ActivityManager
     startActivityForResult: intent =>
       eventBridge.request({ type: 'org.racehorse.StartActivityForResultEvent', intent }).then(event => {
         event = ensureEvent(event);
-        return { resultCode: event.resultCode, data: event.data };
+        return { resultCode: event.resultCode, intent: event.intent };
       }),
   };
 }

@@ -14,21 +14,23 @@ import java.io.Serializable
  */
 class WebIntent(
     var action: String? = null,
+    val type: String? = null,
     var data: String? = null,
     var flags: Int = 0,
     var extras: Map<String, Serializable?>? = null
 ) {
 
+    @Suppress("DEPRECATION")
     constructor(intent: Intent) : this(
-        intent.action,
-        intent.dataString,
-        intent.flags,
-
-        @Suppress("DEPRECATION")
-        intent.extras?.keySet()?.associateWith(intent::getSerializableExtra)
+        action = intent.action,
+        type = intent.type,
+        data = intent.dataString,
+        flags = intent.flags,
+        extras = intent.extras?.keySet()?.associateWith(intent::getSerializableExtra)
     )
 
-    fun toIntent() = Intent(action, data?.toUri())
+    fun toIntent() = Intent(action)
+        .setDataAndType(data?.toUri(), type)
         .addFlags(flags)
         .also { extras?.forEach(it::putExtra) }
 }
