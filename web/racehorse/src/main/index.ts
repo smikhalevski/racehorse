@@ -5,7 +5,7 @@ export * from './createEventBridge';
 export * from './createEvergreenManager';
 export * from './createFirebaseManager';
 export * from './createGooglePlayReferrerManager';
-export * from './createActivitiesManager';
+export * from './createActivityManager';
 export * from './createKeyboardManager';
 export * from './createNetworkManager';
 export * from './createNotificationsManager';

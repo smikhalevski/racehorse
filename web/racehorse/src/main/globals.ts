@@ -1,5 +1,5 @@
 import { createEventBridge } from './createEventBridge';
-import { createActivitiesManager } from './createActivitiesManager';
+import { createActivityManager } from './createActivityManager';
 import { createDeepLinkManager } from './createDeepLinkManager';
 import { createDeviceManager } from './createDeviceManager';
 import { createEncryptedStorageManager } from './createEncryptedStorageManager';
@@ -13,7 +13,7 @@ import { createPermissionsManager } from './createPermissionsManager';
 
 export const eventBridge = createEventBridge();
 
-export const activitiesManager = createActivitiesManager(eventBridge);
+export const activityManager = createActivityManager(eventBridge);
 
 export const deepLinkManager = createDeepLinkManager(eventBridge);
 

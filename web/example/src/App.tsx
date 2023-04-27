@@ -3,7 +3,7 @@ import { FileInputExample } from './examples/FileInputExample';
 import { GeolocationExample } from './examples/GeolocationExample';
 import { LocalStorageExample } from './examples/LocalStorageExample';
 import { DeviceExample } from './examples/DeviceExample';
-import { IntentsExample } from './examples/IntentsExample';
+import { ActivityExample } from './examples/ActivityExample';
 import { NetworkExample } from './examples/NetworkExample';
 import { NotificationsExample } from './examples/NotificationsExample';
 import { PermissionsExample } from './examples/PermissionsExample';
@@ -18,6 +18,7 @@ export function App() {
   return (
     <>
       <ToastExample />
+      <ActivityExample />
       <PermissionsExample />
       <NotificationsExample />
       <NetworkExample />
@@ -26,7 +27,6 @@ export function App() {
       <FileInputExample />
       <GeolocationExample />
       <LocalStorageExample />
-      <IntentsExample />
       <DeviceExample />
     </>
   );

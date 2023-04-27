@@ -9,6 +9,12 @@ import org.racehorse.utils.launchActivity
 import org.racehorse.utils.launchActivityForResult
 import org.racehorse.utils.postToChain
 
+class ActivityInfo(val packageName: String)
+
+class GetActivityInfoEvent : RequestEvent() {
+    class ResultEvent(val activityInfo: ActivityInfo) : ResponseEvent()
+}
+
 /**
  * Starts an activity and doesn't wait for its result.
  *
@@ -31,10 +37,20 @@ class StartActivityForResultEvent(val intent: WebIntent) : RequestEvent() {
  * @param activity The activity that launches the intent to open a URL.
  * @param eventBus The event bus to which events are posted.
  */
-open class ActivitiesPlugin(
+open class ActivityPlugin(
     private val activity: ComponentActivity,
     private val eventBus: EventBus = EventBus.getDefault()
 ) {
+
+    @Subscribe
+    open fun onGetActivityInfo(event: GetActivityInfoEvent) {
+        eventBus.postToChain(
+            event,
+            GetActivityInfoEvent.ResultEvent(
+                ActivityInfo(packageName = activity.packageName)
+            )
+        )
+    }
 
     @Subscribe
     open fun onStartActivity(event: StartActivityEvent) {

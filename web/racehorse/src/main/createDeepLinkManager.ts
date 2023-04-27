@@ -1,6 +1,6 @@
 import { EventBridge } from './types';
 import { ensureEvent } from './utils';
-import { Intent } from './createActivitiesManager';
+import { Intent } from './createActivityManager';
 
 export interface DeepLinkManager {
   /**

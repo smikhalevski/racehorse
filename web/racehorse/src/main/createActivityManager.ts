@@ -1,6 +1,13 @@
 import { EventBridge } from './types';
 import { ensureEvent } from './utils';
 
+export interface ActivityInfo {
+  /**
+   * The package name of the running activity.
+   */
+  packageName: string;
+}
+
 /**
  * The intent that can be passed from and to web application.
  */
@@ -70,7 +77,12 @@ export const Activity = {
   RESULT_OK: -1,
 } as const;
 
-export interface ActivitiesManager {
+export interface ActivityManager {
+  /**
+   * Get info about the current activity.
+   */
+  getActivityInfo(): Promise<ActivityInfo>;
+
   /**
    * Starts an activity for the intent.
    *
@@ -91,8 +103,13 @@ export interface ActivitiesManager {
  *
  * @param eventBridge The underlying event bridge.
  */
-export function createActivitiesManager(eventBridge: EventBridge): ActivitiesManager {
+export function createActivityManager(eventBridge: EventBridge): ActivityManager {
   return {
+    getActivityInfo: () =>
+      eventBridge
+        .request({ type: 'org.racehorse.GetActivityInfoEvent' })
+        .then(event => ensureEvent(event).activityInfo),
+
     startActivity: intent =>
       eventBridge
         .request({ type: 'org.racehorse.StartActivityEvent', intent })

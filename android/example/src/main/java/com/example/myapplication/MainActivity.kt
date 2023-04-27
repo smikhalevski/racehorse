@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity() {
             it.register(HttpsPlugin())
             it.register(networkPlugin)
             it.register(KeyboardPlugin(this))
-            it.register(ActivitiesPlugin(this))
+            it.register(ActivityPlugin(this))
             it.register(PermissionsPlugin(this))
             it.register(NotificationsPlugin(this))
 
