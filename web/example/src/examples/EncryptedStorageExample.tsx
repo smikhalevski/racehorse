@@ -39,27 +39,26 @@ export function EncryptedStorageExample() {
             encryptedStorageManager.set('test', value, password);
           }}
         >
-          {'Set'}
+          {'Set value'}
         </button>{' '}
         <button
           onClick={() => {
             encryptedStorageManager.delete('test');
           }}
         >
-          {'Delete'}
+          {'Delete value'}
+        </button>{' '}
+        <button
+          onClick={() => {
+            encryptedStorageManager.get('test', password).then(setPersistedValue);
+          }}
+        >
+          {'Get value'}
         </button>
       </p>
 
       {'Value: '}
       <pre>{JSON.stringify(persistedValue)}</pre>
-
-      <button
-        onClick={() => {
-          encryptedStorageManager.get('test', password).then(setPersistedValue);
-        }}
-      >
-        {'Get'}
-      </button>
     </>
   );
 }
