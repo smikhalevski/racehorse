@@ -1,4 +1,5 @@
 import React, { useReducer } from 'react';
+import { FormattedJSON } from '../components/FormattedJSON';
 
 export function LocalStorageExample() {
   const [, rerender] = useReducer(value => ++value, 0);
@@ -27,7 +28,7 @@ export function LocalStorageExample() {
       </p>
 
       {'Value:'}
-      <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(localStorage.getItem('example'), null, 2)}</pre>
+      <FormattedJSON value={localStorage.getItem('example')} />
     </>
   );
 }

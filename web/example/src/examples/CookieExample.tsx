@@ -1,4 +1,5 @@
 import React, { useReducer } from 'react';
+import { FormattedJSON } from '../components/FormattedJSON';
 
 export function CookieExample() {
   const [, rerender] = useReducer(value => ++value, 0);
@@ -29,7 +30,7 @@ export function CookieExample() {
       </p>
 
       {'Value:'}
-      <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(document.cookie, null, 2)}</pre>
+      <FormattedJSON value={document.cookie} />
     </>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FormattedJSON } from '../components/FormattedJSON';
 
 export function GeolocationExample() {
   const [geolocation, setGeolocation] = useState<any>();
@@ -25,7 +26,7 @@ export function GeolocationExample() {
         {'Get geolocation'}
       </button>
 
-      <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(geolocation, null, 2)}</pre>
+      <FormattedJSON value={geolocation} />
     </>
   );
 }

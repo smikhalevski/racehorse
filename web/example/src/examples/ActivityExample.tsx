@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { activityManager, ActivityResult, Intent, permissionsManager } from 'racehorse';
+import { FormattedJSON } from '../components/FormattedJSON';
 
 export function ActivityExample() {
   const [contactActivityResult, setContactActivityResult] = useState<ActivityResult | null>();
+
   return (
     <>
       <h2>{'Activity'}</h2>
@@ -45,7 +47,7 @@ export function ActivityExample() {
         {'Pick a contact'}
       </button>
 
-      <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(contactActivityResult, null, 2)}</pre>
+      <FormattedJSON value={contactActivityResult} />
     </>
   );
 }

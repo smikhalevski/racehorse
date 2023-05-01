@@ -18,8 +18,14 @@ import java.io.File
 @SuppressLint("SetJavaScriptEnabled")
 class MainActivity : AppCompatActivity() {
 
-    private val webView: WebView by lazy {
-        WebView(this).apply {
+    private lateinit var webView: WebView
+    private lateinit var cookieManager: CookieManager
+    private lateinit var networkPlugin: NetworkPlugin
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        webView = WebView(this).apply {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.mediaPlaybackRequiresUserGesture = false
@@ -31,21 +37,13 @@ class MainActivity : AppCompatActivity() {
             webChromeClient = RacehorseWebChromeClient()
             webViewClient = RacehorseWebViewClient()
         }
-    }
 
-    private val cookieManager: CookieManager by lazy {
-        CookieManager.getInstance().apply {
+        cookieManager = CookieManager.getInstance().apply {
             setAcceptCookie(true)
             setAcceptThirdPartyCookies(webView, true)
         }
-    }
 
-    private val networkPlugin: NetworkPlugin by lazy {
-        NetworkPlugin(this)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        networkPlugin = NetworkPlugin(this)
 
         EventBus.getDefault().let {
             it.register(EventBridge(webView))
@@ -60,7 +58,6 @@ class MainActivity : AppCompatActivity() {
             it.register(ActivityPlugin(this))
             it.register(PermissionsPlugin(this))
             it.register(NotificationsPlugin(this))
-
             it.register(ToastPlugin(this))
         }
 
