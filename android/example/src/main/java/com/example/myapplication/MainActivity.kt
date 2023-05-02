@@ -18,48 +18,41 @@ import java.io.File
 @SuppressLint("SetJavaScriptEnabled")
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var webView: WebView
-    private lateinit var cookieManager: CookieManager
-    private lateinit var networkPlugin: NetworkPlugin
+    private val webView by lazy { WebView(this) }
+    private val eventBus = EventBus.getDefault()
+    private val networkPlugin = NetworkPlugin(this)
+    private val cookieManager = CookieManager.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        webView = WebView(this).apply {
-            settings.javaScriptEnabled = true
-            settings.domStorageEnabled = true
-            settings.mediaPlaybackRequiresUserGesture = false
-            settings.setGeolocationEnabled(true)
+        webView.settings.javaScriptEnabled = true
+        webView.settings.domStorageEnabled = true
+        webView.settings.mediaPlaybackRequiresUserGesture = false
+        webView.settings.setGeolocationEnabled(true)
 
-            isVerticalScrollBarEnabled = false
-            isHorizontalScrollBarEnabled = false
+        webView.isVerticalScrollBarEnabled = false
+        webView.isHorizontalScrollBarEnabled = false
 
-            webChromeClient = RacehorseWebChromeClient()
-            webViewClient = RacehorseWebViewClient()
-        }
+        webView.webChromeClient = RacehorseWebChromeClient()
+        webView.webViewClient = RacehorseWebViewClient()
 
-        cookieManager = CookieManager.getInstance().apply {
-            setAcceptCookie(true)
-            setAcceptThirdPartyCookies(webView, true)
-        }
+        cookieManager.setAcceptCookie(true)
+        cookieManager.setAcceptThirdPartyCookies(webView, true)
 
-        networkPlugin = NetworkPlugin(this)
-
-        EventBus.getDefault().let {
-            it.register(EventBridge(webView))
-            it.register(DevicePlugin(this))
-            it.register(EncryptedStoragePlugin(File(filesDir, "storage"), BuildConfig.APPLICATION_ID.toByteArray()))
-            it.register(FileChooserPlugin(this, externalCacheDir, "${BuildConfig.APPLICATION_ID}.provider"))
-            it.register(FirebasePlugin())
-            it.register(GooglePlayReferrerPlugin(this))
-            it.register(HttpsPlugin())
-            it.register(networkPlugin)
-            it.register(KeyboardPlugin(this))
-            it.register(ActivityPlugin(this))
-            it.register(PermissionsPlugin(this))
-            it.register(NotificationsPlugin(this))
-            it.register(ToastPlugin(this))
-        }
+        eventBus.register(EventBridge(webView))
+        eventBus.register(DevicePlugin(this))
+        eventBus.register(EncryptedStoragePlugin(File(filesDir, "storage"), BuildConfig.APPLICATION_ID.toByteArray()))
+        eventBus.register(FileChooserPlugin(this, externalCacheDir, "${BuildConfig.APPLICATION_ID}.provider"))
+        eventBus.register(FirebasePlugin())
+        eventBus.register(GooglePlayReferrerPlugin(this))
+        eventBus.register(HttpsPlugin())
+        eventBus.register(networkPlugin)
+        eventBus.register(KeyboardPlugin(this))
+        eventBus.register(ActivityPlugin(this))
+        eventBus.register(PermissionsPlugin(this))
+        eventBus.register(NotificationsPlugin(this))
+        eventBus.register(ToastPlugin(this))
 
         // 1️⃣ Debug in emulator with a server running on the host machine on localhost:1234
         // Run `npm start` in `<racehorse>/web/example` then start the app in emulator.
@@ -67,13 +60,14 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(webView)
 
-/*
+        /*
         // 2️⃣ Load app bundle from src/main/assets folder
         // Run `num run build` in `<racehorse>/web/example`, copy files from `<racehorse>/web/example/dist` to
         // `<racehorse>/android/example/src/main/assets`, then start the app in emulator.
 
         EventBus.getDefault().register(
             AssetLoaderPlugin(
+                this,
                 WebViewAssetLoader.Builder()
                     .setDomain("example.com")
                     .addPathHandler("/", WebViewAssetLoader.AssetsPathHandler(this))
@@ -84,9 +78,9 @@ class MainActivity : AppCompatActivity() {
         webView.loadUrl("http://example.com")
 
         setContentView(webView)
-*/
+        */
 
-/*
+        /*
         // 3️⃣ Evergreen
         // Run `num run start:evergreen` in `<racehorse>/web/example` then start the app in emulator.
         //
@@ -96,15 +90,13 @@ class MainActivity : AppCompatActivity() {
 
         val evergreenPlugin = EvergreenPlugin(File(filesDir, "app"))
 
-        EventBus.getDefault().let {
-            it.register(this)
-            it.register(evergreenPlugin)
-        }
+        eventBus.register(this)
+        eventBus.register(evergreenPlugin)
 
         Thread {
             evergreenPlugin.start("0.0.0", true) { URL("http://10.0.2.2:1234/dist.zip").openConnection() }
         }.start()
-*/
+        */
     }
 
     override fun onStart() {
