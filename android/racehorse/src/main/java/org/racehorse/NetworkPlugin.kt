@@ -44,7 +44,7 @@ open class NetworkPlugin(private val context: Context, private val eventBus: Eve
 
     private var lastStatus: NetworkStatus? = null
 
-    private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    private val connectivityManager by lazy { context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager }
 
     private val capabilities get() = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
 
