@@ -82,14 +82,14 @@ dependencies {
     compileOnly("org.greenrobot:eventbus:3.3.1")
     compileOnly("com.google.code.gson:gson:2.8.9")
 
+    // Google Sign-In
+    implementation("com.google.android.gms:play-services-auth:20.5.0")
+
     // Google Play referrer
     compileOnly("com.android.installreferrer:installreferrer:2.2")
 
     // Push notifications
     compileOnly("com.google.firebase:firebase-messaging-ktx:23.1.2")
-
-    // Google Sign-In
-    implementation("com.google.android.gms:play-services-auth:20.5.0")
 
     testImplementation("com.google.code.gson:gson:2.8.9")
     testImplementation("junit:junit:4.13.2")
