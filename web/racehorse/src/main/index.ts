@@ -16,6 +16,7 @@ export * from './createDeviceManager';
 export * from './createEncryptedStorageManager';
 export * from './createEventBridge';
 export * from './createEvergreenManager';
+export * from './createFacebookLoginManager';
 export * from './createFirebaseManager';
 export * from './createGooglePlayReferrerManager';
 export * from './createGoogleSignInManager';

@@ -85,6 +85,9 @@ dependencies {
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:20.5.0")
 
+    // Facebook Login
+    compileOnly("com.facebook.android:facebook-login:latest.release")
+
     // Google Play referrer
     compileOnly("com.android.installreferrer:installreferrer:2.2")
 

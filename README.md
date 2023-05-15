@@ -191,13 +191,23 @@ EventBus.getDefault().post(BatteryLowEvent())
 
 Enables Google Sign-In for your app.
 
-Add a plugin in your Android app:
+1. Add a Google Play Auth dependency to `build.gradle.kts`:
+
+```kotlin
+dependencies {
+    implementation("com.google.android.gms:play-services-auth:20.5.0")
+}
+```
+
+2. Register the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.GoogleSignInPlugin
 
 EventBus.getDefault().register(GoogleSignInPlugin(activity))
 ```
+
+3. Request sign in from the web app that is loaded into the web view:
 
 ```ts
 import { googleSignInManager } from 'racehorse';

@@ -15,6 +15,8 @@ export interface GoogleSignInAccount {
 }
 
 export interface GoogleSignInManager {
+  getLastSignedInAccountOrSignIn(): Promise<GoogleSignInAccount | null>;
+
   getLastSignedInAccount(): Promise<GoogleSignInAccount | null>;
 
   signIn(): Promise<GoogleSignInAccount | null>;
@@ -30,14 +32,23 @@ export interface GoogleSignInManager {
  * @param eventBridge The underlying event bridge.
  */
 export function createGoogleSignInManager(eventBridge: EventBridge): GoogleSignInManager {
-  return {
-    getLastSignedInAccount: () =>
-      eventBridge
-        .request({ type: 'org.racehorse.auth.GetLastGoogleSignedInAccountEvent' })
-        .then(event => ensureEvent(event).account),
+  const getLastSignedInAccount = () =>
+    eventBridge
+      .request({ type: 'org.racehorse.auth.GetLastGoogleSignedInAccountEvent' })
+      .then(event => ensureEvent(event).account);
 
-    signIn: () =>
-      eventBridge.request({ type: 'org.racehorse.auth.GoogleSignInEvent' }).then(event => ensureEvent(event).account),
+  const signIn = () =>
+    eventBridge.request({ type: 'org.racehorse.auth.GoogleSignInEvent' }).then(event => ensureEvent(event).account);
+
+  return {
+    getLastSignedInAccountOrSignIn: () =>
+      getLastSignedInAccount().then(account => {
+        return account?.isExpired === false ? account : signIn();
+      }),
+
+    getLastSignedInAccount,
+
+    signIn,
 
     signOut: () =>
       eventBridge.request({ type: 'org.racehorse.auth.GoogleSignOutEvent' }).then(event => {
