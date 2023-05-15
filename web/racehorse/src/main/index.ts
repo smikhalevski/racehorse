@@ -18,6 +18,7 @@ export * from './createEventBridge';
 export * from './createEvergreenManager';
 export * from './createFirebaseManager';
 export * from './createGooglePlayReferrerManager';
+export * from './createGoogleSignInManager';
 export * from './createActivityManager';
 export * from './createKeyboardManager';
 export * from './createNetworkManager';

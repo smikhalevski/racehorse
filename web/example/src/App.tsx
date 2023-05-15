@@ -2,6 +2,7 @@ import { CookieExample } from './examples/CookieExample';
 import { FileInputExample } from './examples/FileInputExample';
 import { GeolocationExample } from './examples/GeolocationExample';
 import { KeyboardExample } from './examples/KeyboardExample';
+import { GoogleSignInExample } from './examples/GoogleSignInExample';
 import { LocalStorageExample } from './examples/LocalStorageExample';
 import { DeviceExample } from './examples/DeviceExample';
 import { ActivityExample } from './examples/ActivityExample';
@@ -17,6 +18,7 @@ export function App() {
     <>
       <ToastExample />
       <KeyboardExample />
+      <GoogleSignInExample />
       <ActivityExample />
       <PermissionsExample />
       <NotificationsExample />

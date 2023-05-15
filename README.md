@@ -187,7 +187,35 @@ anywhere in your Android app, and it would be delivered to a subscriber in the w
 EventBus.getDefault().post(BatteryLowEvent())
 ```
 
-# Evergreen
+# `googleSignInManager`
+
+Enables Google Sign-In for your app.
+
+Add a plugin in your Android app:
+
+```kotlin
+import org.racehorse.GoogleSignInPlugin
+
+EventBus.getDefault().register(GoogleSignInPlugin(activity))
+```
+
+```ts
+import { googleSignInManager } from 'racehorse';
+
+googleSignInManager.signIn().then(account => {
+  // The account is not-null if sign in succeeded
+})
+```
+
+To make login work, you must create OAuth 2.0 Client ID in
+[Google API Console](https://console.cloud.google.com/apis/credentials) with the package name of your app (as defined in
+`AndroidManifest.xml`) and SHA-1 that is used for app signing. You can use gradle to retrieve SHA-1:
+
+```shell
+./gradlew signingReport
+```
+
+# `evergreenManager`
 
 ```mermaid
 graph TD

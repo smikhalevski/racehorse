@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { encryptedStorageManager } from 'racehorse';
+import { FormattedJSON } from '../components/FormattedJSON';
 
 export function EncryptedStorageExample() {
   const [value, setValue] = useState('test');
@@ -58,7 +59,7 @@ export function EncryptedStorageExample() {
       </p>
 
       {'Value: '}
-      <pre>{JSON.stringify(persistedValue)}</pre>
+      <FormattedJSON value={persistedValue} />
     </>
   );
 }

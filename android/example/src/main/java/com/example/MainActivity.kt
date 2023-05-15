@@ -10,6 +10,7 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.*
+import org.racehorse.auth.GoogleSignInPlugin
 import org.racehorse.evergreen.BundleReadyEvent
 import org.racehorse.evergreen.EvergreenPlugin
 import org.racehorse.evergreen.UpdateMode
@@ -59,6 +60,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(ActivityPlugin(this))
         eventBus.register(PermissionsPlugin(this))
         eventBus.register(NotificationsPlugin(this))
+        eventBus.register(GoogleSignInPlugin(this))
         eventBus.register(ToastPlugin(this))
 
         // Run `npm run watch` in `<racehorse>/web/example` to build the web app and start the server.
