@@ -74,13 +74,21 @@ publishing {
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.10.0")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.webkit:webkit:1.6.1")
-    implementation("org.greenrobot:eventbus:3.3.1")
-    implementation("com.google.code.gson:gson:2.8.9")
-    implementation("com.android.installreferrer:installreferrer:2.2")
-    implementation("com.google.firebase:firebase-messaging-ktx:23.1.2")
+    // Android
+    compileOnly("androidx.appcompat:appcompat:1.6.1")
+    compileOnly("androidx.webkit:webkit:1.6.1")
+
+    // EventBridge
+    compileOnly("org.greenrobot:eventbus:3.3.1")
+    compileOnly("com.google.code.gson:gson:2.8.9")
+
+    // Google Play referrer
+    compileOnly("com.android.installreferrer:installreferrer:2.2")
+
+    // Push notifications
+    compileOnly("com.google.firebase:firebase-messaging-ktx:23.1.2")
+
+    testImplementation("com.google.code.gson:gson:2.8.9")
     testImplementation("junit:junit:4.13.2")
     testImplementation("com.squareup.okhttp:mockwebserver:1.2.1")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
