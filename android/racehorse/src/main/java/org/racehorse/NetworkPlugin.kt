@@ -50,11 +50,8 @@ open class NetworkPlugin(private val context: Context, private val eventBus: Eve
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
 
-        override fun onAvailable(network: Network) =
-            handleChange(capabilities)
-
         override fun onLost(network: Network) =
-            handleChange(capabilities)
+            handleChange(null)
 
         override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) =
             handleChange(capabilities)
