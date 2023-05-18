@@ -8,6 +8,7 @@ import com.google.gson.annotations.SerializedName
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.postToChain
+import java.io.Serializable
 
 class GetNetworkStatusEvent : RequestEvent() {
     class ResultEvent(val status: NetworkStatus) : ResponseEvent()
@@ -15,7 +16,7 @@ class GetNetworkStatusEvent : RequestEvent() {
 
 class NetworkStatusChangedEvent(val status: NetworkStatus) : NoticeEvent
 
-data class NetworkStatus(val type: NetworkType, val isConnected: Boolean)
+data class NetworkStatus(val type: NetworkType, val isConnected: Boolean) : Serializable
 
 enum class NetworkType {
     @SerializedName("wifi")

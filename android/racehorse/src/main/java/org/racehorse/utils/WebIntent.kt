@@ -19,7 +19,7 @@ class WebIntent(
     var data: String? = null,
     var flags: Int = 0,
     var extras: Map<String, Serializable?>? = null
-) {
+) : Serializable {
 
     @Suppress("DEPRECATION")
     constructor(intent: Intent) : this(

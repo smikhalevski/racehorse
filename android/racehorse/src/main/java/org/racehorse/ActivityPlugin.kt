@@ -8,8 +8,9 @@ import org.racehorse.utils.WebIntent
 import org.racehorse.utils.launchActivity
 import org.racehorse.utils.launchActivityForResult
 import org.racehorse.utils.postToChain
+import java.io.Serializable
 
-class ActivityInfo(val packageName: String)
+class ActivityInfo(val packageName: String) : Serializable
 
 class GetActivityInfoEvent : RequestEvent() {
     class ResultEvent(val activityInfo: ActivityInfo) : ResponseEvent()
