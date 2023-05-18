@@ -212,3 +212,9 @@ IsUpdateSameVersionAsNext
 DownloadBundle
 --> BundleDownloaded
 ```
+
+# Proguard
+
+`org.racehorse:racehorse` is an Android library (AAR) that provides its own
+[proguard rules](./android/racehorse/proguard-rules.pro), so no additional action is needed. Proguard rules prevent
+obfuscation of events and related classes which are available in Racehorse. 
