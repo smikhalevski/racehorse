@@ -8,6 +8,7 @@ import org.racehorse.RequestEvent
 import org.racehorse.ResponseEvent
 import org.racehorse.utils.postToChain
 import java.io.File
+import java.io.Serializable
 
 /**
  * The status of the update bundle.
@@ -16,12 +17,12 @@ import java.io.File
  * @param isReady `true` if the update is fully downloaded and ready to be applied, or `false` if update is being
  * downloaded.
  */
-class UpdateStatus(val version: String, val isReady: Boolean)
+class UpdateStatus(val version: String, val isReady: Boolean) : Serializable
 
 /**
  * App assets available in [appDir] and are ready to be used.
  */
-class BundleReadyEvent(val appDir: File) : NoticeEvent
+class BundleReadyEvent(@Transient val appDir: File) : NoticeEvent
 
 /**
  * The new update download has started.

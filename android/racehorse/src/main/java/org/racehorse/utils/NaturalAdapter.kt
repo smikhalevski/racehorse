@@ -65,7 +65,10 @@ class NaturalAdapter : JsonDeserializer<Any?>, JsonSerializer<Any?> {
 
         is Map<*, *> -> serializeObject(src.toList(), context)
 
-        is Bundle -> serializeObject(src.keySet().map { it to src.get(it) }, context)
+        is Bundle -> serializeObject(src.keySet().map {
+            @Suppress("DEPRECATION")
+            it to src.get(it)
+        }, context)
 
         else -> null
     }

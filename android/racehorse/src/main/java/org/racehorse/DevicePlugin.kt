@@ -7,10 +7,11 @@ import androidx.core.view.WindowInsetsCompat.toWindowInsetsCompat
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.postToChain
+import java.io.Serializable
 
-class DeviceInfo(val apiLevel: Int, val brand: String, val model: String)
+class DeviceInfo(val apiLevel: Int, val brand: String, val model: String) : Serializable
 
-class Rect(val top: Float, val right: Float, val bottom: Float, val left: Float)
+class Rect(val top: Float, val right: Float, val bottom: Float, val left: Float) : Serializable
 
 /**
  * Get OS and device versions.

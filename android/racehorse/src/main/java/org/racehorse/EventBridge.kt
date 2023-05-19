@@ -18,12 +18,12 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * An event posted from the web view. Only events that implement this interface are "visible" to the web application.
  */
-interface WebEvent
+interface WebEvent : Serializable
 
 /**
  * An event published by Android for subscribers in web view.
  */
-interface NoticeEvent
+interface NoticeEvent : Serializable
 
 /**
  * An event that is the part of request-response chain of events.
@@ -54,7 +54,7 @@ abstract class RequestEvent : ChainableEvent(), WebEvent
 /**
  * An event that is published to the web, denoting an end of a request.
  */
-abstract class ResponseEvent : ChainableEvent()
+abstract class ResponseEvent : ChainableEvent(), Serializable
 
 /**
  * Response with no payload. Use this event to commit the chain of events that doesn't imply a response. Chain of events
