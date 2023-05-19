@@ -2,13 +2,14 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
 import replace from '@rollup/plugin-replace';
-import copy from 'rollup-plugin-copy';
 import serve from 'rollup-plugin-serve';
 import livereload from 'rollup-plugin-livereload';
+import zip from 'rollup-plugin-zip';
+import html from '@rollup/plugin-html';
 
 export default {
   input: './src/index.tsx',
-  output: { file: './dist/index.js', format: 'cjs' },
+  output: { dir: './dist', format: 'iife' },
   plugins: [
     nodeResolve(),
     replace({
@@ -19,11 +20,11 @@ export default {
     }),
     commonjs(),
     typescript({ tsconfig: './tsconfig.json' }),
-    copy({
-      targets: [
-        { src: './src/index.html', dest: 'dist' },
-        { src: './src/style.css', dest: 'dist' },
-      ],
+    html({
+      title: 'Racehorse',
+    }),
+    zip({
+      dir: './dist',
     }),
     process.env.ROLLUP_WATCH && serve('dist'),
     process.env.ROLLUP_WATCH && livereload('dist'),
