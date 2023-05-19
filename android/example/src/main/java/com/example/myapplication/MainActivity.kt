@@ -11,12 +11,19 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.*
 import org.racehorse.evergreen.BundleReadyEvent
+import org.racehorse.evergreen.EvergreenPlugin
+import org.racehorse.evergreen.UpdateMode
 import org.racehorse.webview.RacehorseWebChromeClient
 import org.racehorse.webview.RacehorseWebViewClient
 import java.io.File
+import java.net.URL
 
 @SuppressLint("SetJavaScriptEnabled")
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        private const val LIVE_RELOAD_ENABLED = true
+    }
 
     private val webView by lazy { WebView(this) }
     private val eventBus = EventBus.getDefault()
@@ -54,49 +61,39 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(NotificationsPlugin(this))
         eventBus.register(ToastPlugin(this))
 
-        // 1️⃣ Debug in emulator with a server running on the host machine on localhost:1234
-        // Run `npm start` in `<racehorse>/web/example` then start the app in emulator.
-        webView.loadUrl("https://10.0.2.2:1234")
+        // Run `npm run watch` in `<racehorse>/web/example` to build the web app and start the server.
 
-        setContentView(webView)
+        if (LIVE_RELOAD_ENABLED) {
+            // 1️⃣ Live reload
+            //
+            // Debug in emulator with a server running on the host machine on localhost:10001
 
-        /*
-        // 2️⃣ Load app bundle from src/main/assets folder
-        // Run `num run build` in `<racehorse>/web/example`, copy files from `<racehorse>/web/example/dist` to
-        // `<racehorse>/android/example/src/main/assets`, then start the app in emulator.
+            webView.loadUrl("http://10.0.2.2:10001")
 
-        EventBus.getDefault().register(
-            AssetLoaderPlugin(
-                this,
-                WebViewAssetLoader.Builder()
-                    .setDomain("example.com")
-                    .addPathHandler("/", WebViewAssetLoader.AssetsPathHandler(this))
-                    .build()
-            )
-        )
+            setContentView(webView)
+        } else {
+            // 3️⃣ Evergreen
+            //
+            // An update bundle `web/example/dist/bundle.zip` is downloaded using the `EvergreenPlugin` and served from
+            // the internal app cache.
+            //
+            // If the bundle is downloaded via a non-secure request, then add `android:usesCleartextTraffic="true"`
+            // attribute to `AndroidManifest.xml/manifest/application`. `BundleReadyEvent` is emitted after bundle is
+            // successfully downloaded, see `onBundleReady` below.
 
-        webView.loadUrl("http://example.com")
+            val evergreenPlugin = EvergreenPlugin(File(filesDir, "app"))
 
-        setContentView(webView)
-        */
+            eventBus.register(this)
+            eventBus.register(evergreenPlugin)
 
-        /*
-        // 3️⃣ Evergreen
-        // Run `num run start:evergreen` in `<racehorse>/web/example` then start the app in emulator.
-        //
-        // If the bundle is downloaded via a non-secure request, then add `android:usesCleartextTraffic="true"`
-        // attribute to `AndroidManifest.xml/manifest/application`. `BundleReadyEvent` is emitted after bundle is
-        // successfully downloaded, see `onBundleReadyEvent` below.
-
-        val evergreenPlugin = EvergreenPlugin(File(filesDir, "app"))
-
-        eventBus.register(this)
-        eventBus.register(evergreenPlugin)
-
-        Thread {
-            evergreenPlugin.start("0.0.0", true) { URL("http://10.0.2.2:1234/dist.zip").openConnection() }
-        }.start()
-        */
+            Thread {
+                // The update bundle is downloaded if there's no bundle available, or if provided version differs from
+                // the version of previously downloaded bundle.
+                evergreenPlugin.start("0.0.0", UpdateMode.MANDATORY) {
+                    URL("http://10.0.2.2:10001/bundle.zip").openConnection()
+                }
+            }.start()
+        }
     }
 
     override fun onStart() {

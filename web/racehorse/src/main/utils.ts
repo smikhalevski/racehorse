@@ -7,7 +7,7 @@ import { Event } from './types';
  */
 export function ensureEvent(event: Event): Event {
   if (event.type === 'org.racehorse.ExceptionEvent') {
-    throw new Error(event.stackTrace);
+    throw new Error(event.payload.stackTrace);
   }
   return event;
 }

@@ -97,7 +97,8 @@ open class EventBridge(
         }
     }
 
-    private var requestId = AtomicInteger()
+    private val requestId = AtomicInteger()
+    private val eventClasses = HashMap<String, Class<*>>()
 
     init {
         webView.addJavascriptInterface(this, connectionKey)
@@ -138,14 +139,17 @@ open class EventBridge(
 
         val event = try {
             val jsonObject = gson.fromJson(eventJson, JsonObject::class.java)
-            val eventClass = Class.forName(jsonObject["type"].asString)
+            val type = jsonObject.remove("type").asString
 
-            jsonObject.remove("requestId")
-            jsonObject.remove("type")
+            gson.fromJson(
+                if (jsonObject.has("payload")) jsonObject.getAsJsonObject("payload") else JsonObject(),
 
-            require(WebEvent::class.java.isAssignableFrom(eventClass)) { "Not an event: $eventClass" }
-
-            gson.fromJson(jsonObject, eventClass)
+                eventClasses.getOrPut(type) {
+                    Class.forName(type).also {
+                        require(WebEvent::class.java.isAssignableFrom(it)) { "Not an event: $type" }
+                    }
+                }
+            )
         } catch (throwable: Throwable) {
             eventBus.post(ExceptionEvent(throwable).setRequestId(requestId))
             return requestId
@@ -165,8 +169,9 @@ open class EventBridge(
      * Publishes the event to the web.
      */
     private fun publish(requestId: Int, event: Any) {
-        val json = gson.toJson(gson.toJsonTree(event).asJsonObject.apply {
+        val json = gson.toJson(JsonObject().apply {
             addProperty("type", event::class.java.name)
+            add("payload", gson.toJsonTree(event))
         })
 
         webView.evaluateJavascript(

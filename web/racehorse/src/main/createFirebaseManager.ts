@@ -11,6 +11,8 @@ export interface FirebaseManager {
 export function createFirebaseManager(eventBridge: EventBridge): FirebaseManager {
   return {
     getFirebaseToken: () =>
-      eventBridge.request({ type: 'org.racehorse.GetFirebaseTokenEvent' }).then(event => ensureEvent(event).token),
+      eventBridge
+        .request({ type: 'org.racehorse.GetFirebaseTokenEvent' })
+        .then(event => ensureEvent(event).payload.token),
   };
 }

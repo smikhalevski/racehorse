@@ -32,22 +32,24 @@ export interface EncryptedStorageManager {
 export function createEncryptedStorageManager(eventBridge: EventBridge): EncryptedStorageManager {
   return {
     set: (key, value, password) =>
-      eventBridge.request({ type: 'org.racehorse.SetEncryptedValueEvent', key, value, password }).then(event => {
-        ensureEvent(event);
-      }),
+      eventBridge
+        .request({ type: 'org.racehorse.SetEncryptedValueEvent', payload: { key, value, password } })
+        .then(event => {
+          ensureEvent(event);
+        }),
 
     get: (key, password) =>
       eventBridge
-        .request({ type: 'org.racehorse.GetEncryptedValueEvent', key, password })
-        .then(event => ensureEvent(event).value),
+        .request({ type: 'org.racehorse.GetEncryptedValueEvent', payload: { key, password } })
+        .then(event => ensureEvent(event).payload.value),
 
     has: key =>
       eventBridge
-        .request({ type: 'org.racehorse.HasEncryptedValueEvent', key })
-        .then(event => ensureEvent(event).exists),
+        .request({ type: 'org.racehorse.HasEncryptedValueEvent', payload: { key } })
+        .then(event => ensureEvent(event).payload.exists),
 
     delete: key =>
-      eventBridge.request({ type: 'org.racehorse.DeleteEncryptedValueEvent', key }).then(event => {
+      eventBridge.request({ type: 'org.racehorse.DeleteEncryptedValueEvent', payload: { key } }).then(event => {
         ensureEvent(event);
       }),
   };
