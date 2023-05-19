@@ -10,10 +10,6 @@ import { PermissionsExample } from './examples/PermissionsExample';
 import { EncryptedStorageExample } from './examples/EncryptedStorageExample';
 import { ToastExample } from './examples/ToastExample';
 
-module.hot?.accept(() => {
-  location.reload();
-});
-
 export function App() {
   return (
     <>

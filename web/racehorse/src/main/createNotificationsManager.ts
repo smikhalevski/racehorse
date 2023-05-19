@@ -16,6 +16,6 @@ export function createNotificationsManager(eventBridge: EventBridge): Notificati
     areNotificationsEnabled: () =>
       eventBridge
         .request({ type: 'org.racehorse.AreNotificationsEnabledEvent' })
-        .then(event => ensureEvent(event).isEnabled),
+        .then(event => ensureEvent(event).payload.isEnabled),
   };
 }

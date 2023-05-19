@@ -3,7 +3,7 @@ import { PubSub } from 'parallel-universe';
 /**
  * The event transported through the {@link EventBridge}.
  */
-export interface Event {
+export interface Event<P = any> {
   /**
    * The event type (a qualified class name).
    */
@@ -12,7 +12,7 @@ export interface Event {
   /**
    * The event payload.
    */
-  [key: string]: any;
+  payload?: P;
 }
 
 /**

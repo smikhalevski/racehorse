@@ -1,18 +1,23 @@
 {
   "private": true,
   "scripts": {
-    "build": "parcel build src/index.html",
-    "start": "parcel serve src/index.html --https",
-    "start:evergreen": "npm run clean && npm run build && cd dist && zip -r dist.zip . && serve -p 1234",
-    "clean": "rimraf dist .parcel-cache",
+    "build": "rollup --config rollup.config.mjs",
+    "watch": "rollup --config rollup.config.mjs --watch",
+    "clean": "rimraf dist",
     "test": "exit 0"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.2",
+    "@rollup/plugin-replace": "^5.0.2",
+    "@rollup/plugin-typescript": "^11.1.1",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
-    "parcel": "^2.8.3",
-    "process": "^0.11.10",
-    "serve": "^14.2.0",
+    "rollup": "^3.22.0",
+    "rollup-plugin-copy": "^3.4.0",
+    "rollup-plugin-livereload": "^2.0.5",
+    "rollup-plugin-serve": "^2.0.2",
+    "tslib": "^2.5.2",
     "typescript": "^4.9.4"
   },
   "dependencies": {

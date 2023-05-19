@@ -72,10 +72,12 @@ export function createPermissionsManager(eventBridge: EventBridge): PermissionsM
 
 function request(type: string, eventBridge: EventBridge, permission: string | string[]): any {
   if (Array.isArray(permission)) {
-    return eventBridge.request({ type, permissions: permission }).then(event => ensureEvent(event).statuses);
+    return eventBridge
+      .request({ type, payload: { permissions: permission } })
+      .then(event => ensureEvent(event).payload.statuses);
   }
 
   return eventBridge
-    .request({ type, permissions: [permission] })
-    .then(event => ensureEvent(event).statuses[permission]);
+    .request({ type, payload: { permissions: [permission] } })
+    .then(event => ensureEvent(event).payload.statuses[permission]);
 }

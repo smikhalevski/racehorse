@@ -28,12 +28,14 @@ export interface NetworkManager {
 export function createNetworkManager(eventBridge: EventBridge): NetworkManager {
   return {
     getStatus: () =>
-      eventBridge.request({ type: 'org.racehorse.GetNetworkStatusEvent' }).then(event => ensureEvent(event).status),
+      eventBridge
+        .request({ type: 'org.racehorse.GetNetworkStatusEvent' })
+        .then(event => ensureEvent(event).payload.status),
 
     subscribe: listener =>
       eventBridge.subscribe(event => {
         if (event.type === 'org.racehorse.NetworkStatusChangedEvent') {
-          listener(event.status);
+          listener(event.payload.status);
         }
       }),
   };

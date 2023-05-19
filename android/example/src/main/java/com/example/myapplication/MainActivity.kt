@@ -54,9 +54,9 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(NotificationsPlugin(this))
         eventBus.register(ToastPlugin(this))
 
-        // 1️⃣ Debug in emulator with a server running on the host machine on localhost:1234
+        // 1️⃣ Debug in emulator with a server running on the host machine on localhost:10001
         // Run `npm start` in `<racehorse>/web/example` then start the app in emulator.
-        webView.loadUrl("https://10.0.2.2:1234")
+        webView.loadUrl("http://10.0.2.2:10001")
 
         setContentView(webView)
 
@@ -94,7 +94,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(evergreenPlugin)
 
         Thread {
-            evergreenPlugin.start("0.0.0", true) { URL("http://10.0.2.2:1234/dist.zip").openConnection() }
+            evergreenPlugin.start("0.0.0", true) { URL("http://10.0.2.2:10001/dist.zip").openConnection() }
         }.start()
         */
     }

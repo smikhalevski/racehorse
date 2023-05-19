@@ -1,13 +1,6 @@
 import { EventBridge } from './types';
 import { ensureEvent } from './utils';
 
-export interface ActivityInfo {
-  /**
-   * The package name of the running activity.
-   */
-  packageName: string;
-}
-
 /**
  * The intent that can be passed from and to web application.
  */
@@ -36,6 +29,13 @@ export interface Intent {
    * A map of extended data from the intent.
    */
   extras?: { [key: string]: any };
+}
+
+export interface ActivityInfo {
+  /**
+   * The package name of the running activity.
+   */
+  packageName: string;
 }
 
 /**
@@ -115,17 +115,16 @@ export function createActivityManager(eventBridge: EventBridge): ActivityManager
     getActivityInfo: () =>
       eventBridge
         .request({ type: 'org.racehorse.GetActivityInfoEvent' })
-        .then(event => ensureEvent(event).activityInfo),
+        .then(event => ensureEvent(event).payload.activityInfo),
 
     startActivity: intent =>
       eventBridge
-        .request({ type: 'org.racehorse.StartActivityEvent', intent })
-        .then(event => ensureEvent(event).isStarted),
+        .request({ type: 'org.racehorse.StartActivityEvent', payload: { intent } })
+        .then(event => ensureEvent(event).payload?.isStarted),
 
     startActivityForResult: intent =>
-      eventBridge.request({ type: 'org.racehorse.StartActivityForResultEvent', intent }).then(event => {
-        event = ensureEvent(event);
-        return { resultCode: event.resultCode, intent: event.intent };
-      }),
+      eventBridge
+        .request({ type: 'org.racehorse.StartActivityForResultEvent', payload: { intent } })
+        .then(event => ensureEvent(event).payload),
   };
 }

@@ -22,12 +22,14 @@ export interface DeepLinkManager {
 export function createDeepLinkManager(eventBridge: EventBridge): DeepLinkManager {
   return {
     getLastDeepLink: () =>
-      eventBridge.request({ type: 'org.racehorse.GetLastDeepLinkEvent' }).then(event => ensureEvent(event).intent),
+      eventBridge
+        .request({ type: 'org.racehorse.GetLastDeepLinkEvent' })
+        .then(event => ensureEvent(event).payload.intent),
 
     subscribe: listener =>
       eventBridge.subscribe(event => {
         if (event.type === 'org.racehorse.OpenDeepLinkEvent') {
-          listener(event.intent);
+          listener(event.payload.intent);
         }
       }),
   };

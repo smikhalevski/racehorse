@@ -15,12 +15,12 @@ export function createKeyboardManager(eventBridge: EventBridge): KeyboardManager
     isKeyboardVisible: () =>
       eventBridge
         .request({ type: 'org.racehorse.IsKeyboardVisibleEvent' })
-        .then(event => ensureEvent(event).isKeyboardVisible),
+        .then(event => ensureEvent(event).payload.isKeyboardVisible),
 
     subscribe: listener =>
       eventBridge.subscribe(event => {
         if (event.type === 'org.racehorse.KeyboardVisibilityChangedEvent') {
-          listener(event.isKeyboardVisible);
+          listener(event.payload.isKeyboardVisible);
         }
       }),
   };

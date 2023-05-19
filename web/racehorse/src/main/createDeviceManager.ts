@@ -83,11 +83,15 @@ export interface DeviceManager {
  */
 export function createDeviceManager(eventBridge: EventBridge): DeviceManager {
   const getPreferredLocales = () =>
-    eventBridge.request({ type: 'org.racehorse.GetPreferredLocalesEvent' }).then(event => ensureEvent(event).locales);
+    eventBridge
+      .request({ type: 'org.racehorse.GetPreferredLocalesEvent' })
+      .then(event => ensureEvent(event).payload.locales);
 
   return {
     getDeviceInfo: () =>
-      eventBridge.request({ type: 'org.racehorse.GetDeviceInfoEvent' }).then(event => ensureEvent(event).deviceInfo),
+      eventBridge
+        .request({ type: 'org.racehorse.GetDeviceInfoEvent' })
+        .then(event => ensureEvent(event).payload.deviceInfo),
 
     getPreferredLocales,
 
@@ -96,7 +100,7 @@ export function createDeviceManager(eventBridge: EventBridge): DeviceManager {
 
     getWindowInsets: (typeMask = InsetType.DISPLAY_CUTOUT | InsetType.NAVIGATION_BARS | InsetType.STATUS_BARS) =>
       eventBridge
-        .request({ type: 'org.racehorse.GetWindowInsetsEvent', typeMask })
-        .then(event => ensureEvent(event).rect),
+        .request({ type: 'org.racehorse.GetWindowInsetsEvent', payload: { typeMask } })
+        .then(event => ensureEvent(event).payload.rect),
   };
 }
