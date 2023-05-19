@@ -12,16 +12,14 @@ export function ActivityExample() {
       <p>
         <button
           onClick={() => {
-            activityManager.getActivityInfo().then(activityInfo => {
-              activityManager.startActivity({
-                // https://developer.android.com/reference/android/provider/Settings#ACTION_APP_NOTIFICATION_SETTINGS
-                action: 'android.settings.APP_NOTIFICATION_SETTINGS',
-                flags: Intent.FLAG_ACTIVITY_NEW_TASK,
-                extras: {
-                  // https://developer.android.com/reference/android/provider/Settings#EXTRA_APP_PACKAGE
-                  'android.provider.extra.APP_PACKAGE': activityInfo.packageName,
-                },
-              });
+            activityManager.startActivity({
+              // https://developer.android.com/reference/android/provider/Settings#ACTION_APP_NOTIFICATION_SETTINGS
+              action: 'android.settings.APP_NOTIFICATION_SETTINGS',
+              flags: Intent.FLAG_ACTIVITY_NEW_TASK,
+              extras: {
+                // https://developer.android.com/reference/android/provider/Settings#EXTRA_APP_PACKAGE
+                'android.provider.extra.APP_PACKAGE': activityManager.getActivityInfo().packageName,
+              },
             });
           }}
         >

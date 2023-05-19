@@ -21,12 +21,12 @@ export interface EncryptedStorageManager {
   /**
    * Checks that the key exists in the storage.
    */
-  has(key: string): Promise<void>;
+  has(key: string): void;
 
   /**
    * Deletes an encrypted value associated with the key.
    */
-  delete(key: string): Promise<void>;
+  delete(key: string): void;
 }
 
 export function createEncryptedStorageManager(eventBridge: EventBridge): EncryptedStorageManager {
@@ -44,13 +44,11 @@ export function createEncryptedStorageManager(eventBridge: EventBridge): Encrypt
         .then(event => ensureEvent(event).payload.value),
 
     has: key =>
-      eventBridge
-        .request({ type: 'org.racehorse.HasEncryptedValueEvent', payload: { key } })
-        .then(event => ensureEvent(event).payload.exists),
+      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.HasEncryptedValueEvent', payload: { key } })).payload
+        .exists,
 
-    delete: key =>
-      eventBridge.request({ type: 'org.racehorse.DeleteEncryptedValueEvent', payload: { key } }).then(event => {
-        ensureEvent(event);
-      }),
+    delete: key => {
+      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.DeleteEncryptedValueEvent', payload: { key } }));
+    },
   };
 }

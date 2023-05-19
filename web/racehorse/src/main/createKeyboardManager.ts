@@ -2,7 +2,7 @@ import { EventBridge } from './types';
 import { ensureEvent } from './utils';
 
 export interface KeyboardManager {
-  isKeyboardVisible(): Promise<boolean>;
+  isKeyboardVisible(): boolean;
 
   /**
    * Subscribes a listener to software keyboard visibility changes.
@@ -13,9 +13,7 @@ export interface KeyboardManager {
 export function createKeyboardManager(eventBridge: EventBridge): KeyboardManager {
   return {
     isKeyboardVisible: () =>
-      eventBridge
-        .request({ type: 'org.racehorse.IsKeyboardVisibleEvent' })
-        .then(event => ensureEvent(event).payload.isKeyboardVisible),
+      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.IsKeyboardVisibleEvent' })).payload.isKeyboardVisible,
 
     subscribe: listener =>
       eventBridge.subscribe(event => {

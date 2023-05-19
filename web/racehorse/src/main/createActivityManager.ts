@@ -86,7 +86,7 @@ export interface ActivityManager {
   /**
    * Get info about the current activity.
    */
-  getActivityInfo(): Promise<ActivityInfo>;
+  getActivityInfo(): ActivityInfo;
 
   /**
    * Starts an activity for the intent.
@@ -94,7 +94,7 @@ export interface ActivityManager {
    * @param intent The intent that starts an activity.
    * @returns `true` if activity has started, or `false` otherwise.
    */
-  startActivity(intent: Intent): Promise<boolean>;
+  startActivity(intent: Intent): boolean;
 
   /**
    * Start an activity for the intent.
@@ -113,14 +113,11 @@ export interface ActivityManager {
 export function createActivityManager(eventBridge: EventBridge): ActivityManager {
   return {
     getActivityInfo: () =>
-      eventBridge
-        .request({ type: 'org.racehorse.GetActivityInfoEvent' })
-        .then(event => ensureEvent(event).payload.activityInfo),
+      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.GetActivityInfoEvent' })).payload.activityInfo,
 
     startActivity: intent =>
-      eventBridge
-        .request({ type: 'org.racehorse.StartActivityEvent', payload: { intent } })
-        .then(event => ensureEvent(event).payload?.isStarted),
+      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.StartActivityEvent', payload: { intent } })).payload
+        .isStarted,
 
     startActivityForResult: intent =>
       eventBridge

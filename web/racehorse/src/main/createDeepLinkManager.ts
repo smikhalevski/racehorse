@@ -6,7 +6,7 @@ export interface DeepLinkManager {
   /**
    * Returns the last deep link intent that was requested.
    */
-  getLastDeepLink(): Promise<Intent | null>;
+  getLastDeepLink(): Intent | null;
 
   /**
    * Subscribes to incoming deep link intents.
@@ -22,9 +22,7 @@ export interface DeepLinkManager {
 export function createDeepLinkManager(eventBridge: EventBridge): DeepLinkManager {
   return {
     getLastDeepLink: () =>
-      eventBridge
-        .request({ type: 'org.racehorse.GetLastDeepLinkEvent' })
-        .then(event => ensureEvent(event).payload.intent),
+      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.GetLastDeepLinkEvent' })).payload.intent,
 
     subscribe: listener =>
       eventBridge.subscribe(event => {
