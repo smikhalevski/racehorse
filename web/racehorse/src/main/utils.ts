@@ -5,7 +5,10 @@ import { Event } from './types';
  *
  * @param event The event to ensure isn't an exception.
  */
-export function ensureEvent(event: Event): Event {
+export function ensureEvent(event: Event | null): Event {
+  if (event === null) {
+    throw new Error('Expected an event');
+  }
   if (event.type === 'org.racehorse.ExceptionEvent') {
     throw new Error(event.payload.stackTrace);
   }

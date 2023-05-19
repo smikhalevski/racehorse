@@ -52,12 +52,12 @@ export interface DeviceManager {
   /**
    * Get OS and device versions.
    */
-  getDeviceInfo(): Promise<DeviceInfo>;
+  getDeviceInfo(): DeviceInfo;
 
   /**
    * Returns the array of preferred locales.
    */
-  getPreferredLocales(): Promise<string[]>;
+  getPreferredLocales(): string[];
 
   /**
    * Returns a locale from `supportedLocales` that best matches one of preferred locales, or returns a `defaultLocale`.
@@ -65,7 +65,7 @@ export interface DeviceManager {
    * @param supportedLocales The list of locales that your application supports.
    * @param defaultLocale The default locale that is returned if there's no matching locale among preferred.
    */
-  pickLocale(supportedLocales: string[], defaultLocale: string): Promise<string>;
+  pickLocale(supportedLocales: string[], defaultLocale: string): string;
 
   /**
    * Get the rect that describes the window insets that overlap with system UI.
@@ -73,7 +73,7 @@ export interface DeviceManager {
    * @param typeMask Bit mask of {@link InsetType}s to query the insets for. By default, display cutout, navigation and
    * status bars are included.
    */
-  getWindowInsets(typeMask?: number): Promise<Rect>;
+  getWindowInsets(typeMask?: number): Rect;
 }
 
 /**
@@ -83,24 +83,18 @@ export interface DeviceManager {
  */
 export function createDeviceManager(eventBridge: EventBridge): DeviceManager {
   const getPreferredLocales = () =>
-    eventBridge
-      .request({ type: 'org.racehorse.GetPreferredLocalesEvent' })
-      .then(event => ensureEvent(event).payload.locales);
+    ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.GetPreferredLocalesEvent' })).payload.locales;
 
   return {
     getDeviceInfo: () =>
-      eventBridge
-        .request({ type: 'org.racehorse.GetDeviceInfoEvent' })
-        .then(event => ensureEvent(event).payload.deviceInfo),
+      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.GetDeviceInfoEvent' })).payload.deviceInfo,
 
     getPreferredLocales,
 
-    pickLocale: (supportedLocales, defaultLocale) =>
-      getPreferredLocales().then(locales => pickLocale(locales, supportedLocales, defaultLocale)),
+    pickLocale: (supportedLocales, defaultLocale) => pickLocale(getPreferredLocales(), supportedLocales, defaultLocale),
 
     getWindowInsets: (typeMask = InsetType.DISPLAY_CUTOUT | InsetType.NAVIGATION_BARS | InsetType.STATUS_BARS) =>
-      eventBridge
-        .request({ type: 'org.racehorse.GetWindowInsetsEvent', payload: { typeMask } })
-        .then(event => ensureEvent(event).payload.rect),
+      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.GetWindowInsetsEvent', payload: { typeMask } }))
+        .payload.rect,
   };
 }
