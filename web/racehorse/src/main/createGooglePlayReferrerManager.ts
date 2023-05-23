@@ -1,5 +1,4 @@
-import { EventBridge } from './types';
-import { ensureEvent } from './utils';
+import { EventBridge } from './createEventBridge';
 
 export interface GooglePlayReferrerManager {
   getGooglePlayReferrer(): Promise<string>;
@@ -16,7 +15,7 @@ export function createGooglePlayReferrerManager(eventBridge: EventBridge): Googl
   return {
     getGooglePlayReferrer: () =>
       (referrerPromise ||= eventBridge
-        .request({ type: 'org.racehorse.GetGooglePlayReferrerEvent' })
-        .then(event => ensureEvent(event).payload.referrer)),
+        .requestAsync({ type: 'org.racehorse.GetGooglePlayReferrerEvent' })
+        .then(event => event.payload.referrer)),
   };
 }

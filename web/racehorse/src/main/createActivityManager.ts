@@ -1,5 +1,4 @@
-import { EventBridge } from './types';
-import { ensureEvent } from './utils';
+import { EventBridge } from './createEventBridge';
 
 /**
  * The intent that can be passed from and to web application.
@@ -97,7 +96,7 @@ export interface ActivityManager {
   startActivity(intent: Intent): boolean;
 
   /**
-   * Start an activity for the intent.
+   * Start an activity for the intent and wait for it to return the result.
    *
    * @param intent The intent that starts an activity.
    * @returns The activity result.
@@ -112,16 +111,14 @@ export interface ActivityManager {
  */
 export function createActivityManager(eventBridge: EventBridge): ActivityManager {
   return {
-    getActivityInfo: () =>
-      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.GetActivityInfoEvent' })).payload.activityInfo,
+    getActivityInfo: () => eventBridge.request({ type: 'org.racehorse.GetActivityInfoEvent' }).payload.activityInfo,
 
     startActivity: intent =>
-      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.StartActivityEvent', payload: { intent } })).payload
-        .isStarted,
+      eventBridge.request({ type: 'org.racehorse.StartActivityEvent', payload: { intent } }).payload.isStarted,
 
     startActivityForResult: intent =>
       eventBridge
-        .request({ type: 'org.racehorse.StartActivityForResultEvent', payload: { intent } })
-        .then(event => ensureEvent(event).payload),
+        .requestAsync({ type: 'org.racehorse.StartActivityForResultEvent', payload: { intent } })
+        .then(event => event.payload),
   };
 }

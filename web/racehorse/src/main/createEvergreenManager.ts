@@ -1,5 +1,4 @@
-import { EventBridge } from './types';
-import { ensureEvent } from './utils';
+import { EventBridge } from './createEventBridge';
 
 export interface UpdateStatus {
   /**
@@ -40,15 +39,14 @@ export function createEvergreenManager(eventBridge: EventBridge): EvergreenManag
 
   return {
     getMasterVersion: () =>
-      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.evergreen.GetMasterVersionEvent' })).payload.version,
+      eventBridge.request({ type: 'org.racehorse.evergreen.GetMasterVersionEvent' }).payload.version,
 
-    getUpdateStatus: () =>
-      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.evergreen.GetUpdateStatusEvent' })).payload.status,
+    getUpdateStatus: () => eventBridge.request({ type: 'org.racehorse.evergreen.GetUpdateStatusEvent' }).payload.status,
 
     applyUpdate: () =>
-      (updatePromise ||= eventBridge.request({ type: 'org.racehorse.evergreen.ApplyUpdateEvent' }).then(event => {
+      (updatePromise ||= eventBridge.requestAsync({ type: 'org.racehorse.evergreen.ApplyUpdateEvent' }).then(event => {
         updatePromise = undefined;
-        return ensureEvent(event).payload.version;
+        return event.payload.version;
       })),
   };
 }

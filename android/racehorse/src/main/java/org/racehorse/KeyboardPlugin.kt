@@ -33,7 +33,7 @@ open class KeyboardPlugin(activity: Activity, private val eventBus: EventBus = E
 
     @Subscribe
     open fun onIsKeyboardVisible(event: IsKeyboardVisibleEvent) {
-        eventBus.post(IsKeyboardVisibleEvent.ResultEvent(keyboardObserver.keyboardHeight > 0))
+        event.respond(IsKeyboardVisibleEvent.ResultEvent(keyboardObserver.keyboardHeight > 0))
     }
 }
 

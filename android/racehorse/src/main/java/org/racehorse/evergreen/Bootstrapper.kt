@@ -126,9 +126,9 @@ open class Bootstrapper(private val bundlesDir: File) {
             updateDownload = download
 
             download.start()
-        } catch (ex: Throwable) {
-            ex.printStackTrace()
-            onUpdateFailed(updateMode, ex)
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            onUpdateFailed(updateMode, e)
             return
         } finally {
             updateDownload = null

@@ -1,6 +1,6 @@
 import { pickLocale } from 'locale-matcher';
-import { EventBridge } from './types';
-import { ensureEvent } from './utils';
+
+import { EventBridge } from './createEventBridge';
 
 export interface DeviceInfo {
   /**
@@ -83,18 +83,16 @@ export interface DeviceManager {
  */
 export function createDeviceManager(eventBridge: EventBridge): DeviceManager {
   const getPreferredLocales = () =>
-    ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.GetPreferredLocalesEvent' })).payload.locales;
+    eventBridge.request({ type: 'org.racehorse.GetPreferredLocalesEvent' }).payload.locales;
 
   return {
-    getDeviceInfo: () =>
-      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.GetDeviceInfoEvent' })).payload.deviceInfo,
+    getDeviceInfo: () => eventBridge.request({ type: 'org.racehorse.GetDeviceInfoEvent' }).payload.deviceInfo,
 
     getPreferredLocales,
 
     pickLocale: (supportedLocales, defaultLocale) => pickLocale(getPreferredLocales(), supportedLocales, defaultLocale),
 
     getWindowInsets: (typeMask = InsetType.DISPLAY_CUTOUT | InsetType.NAVIGATION_BARS | InsetType.STATUS_BARS) =>
-      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.GetWindowInsetsEvent', payload: { typeMask } }))
-        .payload.rect,
+      eventBridge.request({ type: 'org.racehorse.GetWindowInsetsEvent', payload: { typeMask } }).payload.rect,
   };
 }

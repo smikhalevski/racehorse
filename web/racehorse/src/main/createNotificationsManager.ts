@@ -1,5 +1,4 @@
-import { EventBridge } from './types';
-import { ensureEvent } from './utils';
+import { EventBridge } from './createEventBridge';
 
 export interface NotificationsManager {
   /**
@@ -14,6 +13,6 @@ export interface NotificationsManager {
 export function createNotificationsManager(eventBridge: EventBridge): NotificationsManager {
   return {
     areNotificationsEnabled: () =>
-      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.AreNotificationsEnabledEvent' })).payload.isEnabled,
+      eventBridge.request({ type: 'org.racehorse.AreNotificationsEnabledEvent' }).payload.isEnabled,
   };
 }

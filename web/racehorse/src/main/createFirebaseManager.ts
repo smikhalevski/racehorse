@@ -1,5 +1,4 @@
-import { EventBridge } from './types';
-import { ensureEvent } from './utils';
+import { EventBridge } from './createEventBridge';
 
 export interface FirebaseManager {
   /**
@@ -10,7 +9,6 @@ export interface FirebaseManager {
 
 export function createFirebaseManager(eventBridge: EventBridge): FirebaseManager {
   return {
-    getFirebaseToken: () =>
-      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.GetFirebaseTokenEvent' })).payload.token,
+    getFirebaseToken: () => eventBridge.request({ type: 'org.racehorse.GetFirebaseTokenEvent' }).payload.token,
   };
 }

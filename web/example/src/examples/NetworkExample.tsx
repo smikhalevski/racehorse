@@ -10,7 +10,7 @@ export function NetworkExample() {
 
       <p>
         {'Online: '}
-        {networkStatus.isConnected === undefined ? '🟡' : networkStatus.isConnected ? '🟢' : '🔴'}
+        {networkStatus.isConnected ? '🟢' : '🔴'}
       </p>
     </>
   );

@@ -1,5 +1,4 @@
-import { EventBridge } from './types';
-import { ensureEvent } from './utils';
+import { EventBridge } from './createEventBridge';
 
 /**
  * Allows checking and requesting application permissions.
@@ -62,32 +61,30 @@ export interface PermissionsManager {
 export function createPermissionsManager(eventBridge: EventBridge): PermissionsManager {
   return {
     shouldShowRequestPermissionRationale: permission =>
-      requestSync('org.racehorse.ShouldShowRequestPermissionRationaleEvent', eventBridge, permission),
+      request('org.racehorse.ShouldShowRequestPermissionRationaleEvent', eventBridge, permission),
 
-    isPermissionGranted: permission => requestSync('org.racehorse.IsPermissionGrantedEvent', eventBridge, permission),
+    isPermissionGranted: permission => request('org.racehorse.IsPermissionGrantedEvent', eventBridge, permission),
 
-    askForPermission: permission => request('org.racehorse.AskForPermissionEvent', eventBridge, permission),
+    askForPermission: permission => requestAsync('org.racehorse.AskForPermissionEvent', eventBridge, permission),
   };
 }
 
 function request(type: string, eventBridge: EventBridge, permission: string | string[]): any {
   if (Array.isArray(permission)) {
+    return eventBridge.request({ type, payload: { permissions: permission } }).payload.statuses;
+  }
+
+  return eventBridge.request({ type, payload: { permissions: [permission] } }).payload.statuses[permission];
+}
+
+function requestAsync(type: string, eventBridge: EventBridge, permission: string | string[]): any {
+  if (Array.isArray(permission)) {
     return eventBridge
-      .request({ type, payload: { permissions: permission } })
-      .then(event => ensureEvent(event).payload.statuses);
+      .requestAsync({ type, payload: { permissions: permission } })
+      .then(event => event.payload.statuses);
   }
 
   return eventBridge
-    .request({ type, payload: { permissions: [permission] } })
-    .then(event => ensureEvent(event).payload.statuses[permission]);
-}
-
-function requestSync(type: string, eventBridge: EventBridge, permission: string | string[]): any {
-  if (Array.isArray(permission)) {
-    return ensureEvent(eventBridge.requestSync({ type, payload: { permissions: permission } })).payload.statuses;
-  }
-
-  return ensureEvent(eventBridge.requestSync({ type, payload: { permissions: [permission] } })).payload.statuses[
-    permission
-  ];
+    .requestAsync({ type, payload: { permissions: [permission] } })
+    .then(event => event.payload.statuses[permission]);
 }

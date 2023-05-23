@@ -1,5 +1,4 @@
-import { EventBridge } from './types';
-import { ensureEvent } from './utils';
+import { EventBridge } from './createEventBridge';
 
 export type NetworkType = 'wifi' | 'cellular' | 'none' | 'unknown';
 
@@ -27,8 +26,7 @@ export interface NetworkManager {
  */
 export function createNetworkManager(eventBridge: EventBridge): NetworkManager {
   return {
-    getStatus: () =>
-      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.GetNetworkStatusEvent' })).payload.status,
+    getStatus: () => eventBridge.request({ type: 'org.racehorse.GetNetworkStatusEvent' }).payload.status,
 
     subscribe: listener =>
       eventBridge.subscribe(event => {

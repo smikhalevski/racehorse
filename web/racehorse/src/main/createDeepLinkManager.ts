@@ -1,6 +1,5 @@
-import { EventBridge } from './types';
-import { ensureEvent } from './utils';
 import { Intent } from './createActivityManager';
+import { EventBridge } from './createEventBridge';
 
 export interface DeepLinkManager {
   /**
@@ -21,8 +20,7 @@ export interface DeepLinkManager {
  */
 export function createDeepLinkManager(eventBridge: EventBridge): DeepLinkManager {
   return {
-    getLastDeepLink: () =>
-      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.GetLastDeepLinkEvent' })).payload.intent,
+    getLastDeepLink: () => eventBridge.request({ type: 'org.racehorse.GetLastDeepLinkEvent' }).payload.intent,
 
     subscribe: listener =>
       eventBridge.subscribe(event => {

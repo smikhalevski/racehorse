@@ -1,5 +1,4 @@
-import { EventBridge } from './types';
-import { ensureEvent } from './utils';
+import { EventBridge } from './createEventBridge';
 
 export interface EncryptedStorageManager {
   /**
@@ -14,7 +13,7 @@ export interface EncryptedStorageManager {
   /**
    * Retrieves an encrypted value associated with the key.
    *
-   * @returns The deciphered value or `null` if key wasn't found or if password is incorrect.
+   * @returns The deciphered value, or `null` if key wasn't found or if password is incorrect.
    */
   get(key: string, password: string): Promise<string | null>;
 
@@ -33,22 +32,18 @@ export function createEncryptedStorageManager(eventBridge: EventBridge): Encrypt
   return {
     set: (key, value, password) =>
       eventBridge
-        .request({ type: 'org.racehorse.SetEncryptedValueEvent', payload: { key, value, password } })
-        .then(event => {
-          ensureEvent(event);
-        }),
+        .requestAsync({ type: 'org.racehorse.SetEncryptedValueEvent', payload: { key, value, password } })
+        .then(() => undefined),
 
     get: (key, password) =>
       eventBridge
-        .request({ type: 'org.racehorse.GetEncryptedValueEvent', payload: { key, password } })
-        .then(event => ensureEvent(event).payload.value),
+        .requestAsync({ type: 'org.racehorse.GetEncryptedValueEvent', payload: { key, password } })
+        .then(event => event.payload.value),
 
-    has: key =>
-      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.HasEncryptedValueEvent', payload: { key } })).payload
-        .exists,
+    has: key => eventBridge.request({ type: 'org.racehorse.HasEncryptedValueEvent', payload: { key } }).payload.exists,
 
     delete: key => {
-      ensureEvent(eventBridge.requestSync({ type: 'org.racehorse.DeleteEncryptedValueEvent', payload: { key } }));
+      eventBridge.request({ type: 'org.racehorse.DeleteEncryptedValueEvent', payload: { key } });
     },
   };
 }

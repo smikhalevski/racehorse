@@ -14,7 +14,7 @@ describe('createEventBridge', () => {
       connectionMock = {
         post: jest.fn(() => {
           setTimeout(() => connectionMock!.inbox!.publish([111, { type: 'bbb' }]), 0);
-          return 111;
+          return '111';
         }),
       };
     };
@@ -30,7 +30,7 @@ describe('createEventBridge', () => {
     provideConnection();
     const eventBridge = createEventBridge(connectionProviderMock);
 
-    await expect(eventBridge.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb' });
+    await expect(eventBridge.requestAsync({ type: 'aaa' })).resolves.toEqual({ type: 'bbb' });
 
     expect(connectionMock!.post).toHaveBeenCalledTimes(1);
     expect(connectionMock!.post).toHaveBeenNthCalledWith(1, '{"type":"aaa"}');
@@ -39,7 +39,7 @@ describe('createEventBridge', () => {
   test('posts a request if connection is deferred', async () => {
     const eventBridge = createEventBridge(connectionProviderMock);
 
-    const promise = eventBridge.request({ type: 'aaa' });
+    const promise = eventBridge.requestAsync({ type: 'aaa' });
 
     setTimeout(provideConnection, 100);
 
@@ -59,7 +59,7 @@ describe('createEventBridge', () => {
 
     await eventBridge.connect();
 
-    connectionMock!.inbox!.publish([-1, { type: 'aaa' }]);
+    connectionMock!.inbox!.publish([-2, { type: 'aaa' }]);
 
     expect(listenerMock).toHaveBeenCalledTimes(1);
     expect(listenerMock).toHaveBeenNthCalledWith(1, { type: 'aaa' });
@@ -98,12 +98,12 @@ describe('createEventBridge', () => {
 
     await eventBridge1.connect();
 
-    await expect(eventBridge1.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb' });
+    await expect(eventBridge1.requestAsync({ type: 'aaa' })).resolves.toEqual({ type: 'bbb' });
 
     const eventBridge2 = createEventBridge(connectionProviderMock);
 
     await eventBridge2.connect();
 
-    await expect(eventBridge2.request({ type: 'aaa' })).resolves.toEqual({ type: 'bbb' });
+    await expect(eventBridge2.requestAsync({ type: 'aaa' })).resolves.toEqual({ type: 'bbb' });
   });
 });

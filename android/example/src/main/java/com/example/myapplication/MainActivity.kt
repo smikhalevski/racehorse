@@ -22,7 +22,7 @@ import java.net.URL
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        private const val LIVE_RELOAD_ENABLED = false
+        private const val LIVE_RELOAD_ENABLED = true
     }
 
     private val webView by lazy { WebView(this) }

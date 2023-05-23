@@ -7,7 +7,6 @@ import android.net.NetworkCapabilities
 import com.google.gson.annotations.SerializedName
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.utils.postToChain
 import java.io.Serializable
 
 class GetNetworkStatusEvent : RequestEvent() {
@@ -79,7 +78,7 @@ open class NetworkPlugin(private val context: Context, private val eventBus: Eve
 
     @Subscribe
     open fun onGetNetworkStatus(event: GetNetworkStatusEvent) {
-        eventBus.postToChain(event, GetNetworkStatusEvent.ResultEvent(status))
+        event.respond(GetNetworkStatusEvent.ResultEvent(status))
     }
 
     protected fun getNetworkStatus(capabilities: NetworkCapabilities?): NetworkStatus {
