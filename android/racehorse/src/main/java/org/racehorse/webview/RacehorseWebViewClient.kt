@@ -15,9 +15,9 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import org.greenrobot.eventbus.EventBus
-import org.racehorse.utils.HandlerEvent
-import org.racehorse.utils.postForHandler
+import org.racehorse.utils.SyncHandlerEvent
 import org.racehorse.utils.postForSubscriber
+import org.racehorse.utils.postForSyncHandler
 
 /**
  * Handlers of this event must be called on the posting thread, and should update the [response] field.
@@ -28,9 +28,9 @@ class ShouldInterceptRequestEvent(
     var response: WebResourceResponse?
 )
 
-class ShouldOverrideKeyEventEvent(val view: WebView, val event: KeyEvent) : HandlerEvent()
+class ShouldOverrideKeyEventEvent(val view: WebView, val event: KeyEvent) : SyncHandlerEvent()
 
-class ShouldOverrideUrlLoadingEvent(val view: WebView, val request: WebResourceRequest) : HandlerEvent()
+class ShouldOverrideUrlLoadingEvent(val view: WebView, val request: WebResourceRequest) : SyncHandlerEvent()
 
 class PageStartedEvent(val view: WebView, val url: String, val favicon: Bitmap?)
 
@@ -44,20 +44,20 @@ class ReceivedErrorEvent(val view: WebView, val request: WebResourceRequest, val
 
 class ReceivedHttpErrorEvent(val view: WebView, val request: WebResourceRequest, val errorResponse: WebResourceResponse)
 
-class FormResubmissionEvent(val view: WebView, val dontResend: Message, val resend: Message) : HandlerEvent()
+class FormResubmissionEvent(val view: WebView, val dontResend: Message, val resend: Message) : SyncHandlerEvent()
 
 class UpdateVisitedHistoryEvent(val view: WebView, val url: String, val isReload: Boolean)
 
-class ReceivedSslErrorEvent(val view: WebView, val handler: SslErrorHandler, val error: SslError) : HandlerEvent()
+class ReceivedSslErrorEvent(val view: WebView, val handler: SslErrorHandler, val error: SslError) : SyncHandlerEvent()
 
-class ReceivedClientCertRequestEvent(val view: WebView, val request: ClientCertRequest) : HandlerEvent()
+class ReceivedClientCertRequestEvent(val view: WebView, val request: ClientCertRequest) : SyncHandlerEvent()
 
 class ReceivedHttpAuthRequestEvent(
     val view: WebView,
     val handler: HttpAuthHandler,
     val host: String,
     val realm: String
-) : HandlerEvent()
+) : SyncHandlerEvent()
 
 class UnhandledKeyEventEvent(val view: WebView, val event: KeyEvent)
 
@@ -65,14 +65,14 @@ class ScaleChangedEvent(val view: WebView, val oldScale: Float, val newScale: Fl
 
 class ReceivedLoginRequestEvent(val view: WebView, val realm: String, val account: String?, val args: String)
 
-class RenderProcessGoneEvent(val view: WebView, val detail: RenderProcessGoneDetail) : HandlerEvent()
+class RenderProcessGoneEvent(val view: WebView, val detail: RenderProcessGoneDetail) : SyncHandlerEvent()
 
 class SafeBrowsingHitEvent(
     val view: WebView,
     val request: WebResourceRequest,
     val threatType: Int,
     val callback: SafeBrowsingResponse
-) : HandlerEvent()
+)
 
 open class RacehorseWebViewClient(val eventBus: EventBus = EventBus.getDefault()) : WebViewClient() {
 
@@ -81,11 +81,11 @@ open class RacehorseWebViewClient(val eventBus: EventBus = EventBus.getDefault()
     }
 
     override fun shouldOverrideKeyEvent(view: WebView, event: KeyEvent): Boolean {
-        return eventBus.postForHandler { ShouldOverrideKeyEventEvent(view, event) }
+        return eventBus.postForSyncHandler { ShouldOverrideKeyEventEvent(view, event) }
     }
 
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-        return eventBus.postForHandler { ShouldOverrideUrlLoadingEvent(view, request) }
+        return eventBus.postForSyncHandler { ShouldOverrideUrlLoadingEvent(view, request) }
     }
 
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
@@ -113,8 +113,8 @@ open class RacehorseWebViewClient(val eventBus: EventBus = EventBus.getDefault()
     }
 
     override fun onFormResubmission(view: WebView, dontResend: Message, resend: Message) {
-        if (!eventBus.postForHandler { FormResubmissionEvent(view, dontResend, resend) }) {
-            dontResend.sendToTarget()
+        if (!eventBus.postForSyncHandler { FormResubmissionEvent(view, dontResend, resend) }) {
+            super.onFormResubmission(view, dontResend, resend)
         }
     }
 
@@ -123,20 +123,20 @@ open class RacehorseWebViewClient(val eventBus: EventBus = EventBus.getDefault()
     }
 
     override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
-        if (!eventBus.postForHandler { ReceivedSslErrorEvent(view, handler, error) }) {
-            handler.cancel()
+        if (!eventBus.postForSyncHandler { ReceivedSslErrorEvent(view, handler, error) }) {
+            super.onReceivedSslError(view, handler, error)
         }
     }
 
     override fun onReceivedClientCertRequest(view: WebView, request: ClientCertRequest) {
-        if (!eventBus.postForHandler { ReceivedClientCertRequestEvent(view, request) }) {
-            request.cancel()
+        if (!eventBus.postForSyncHandler { ReceivedClientCertRequestEvent(view, request) }) {
+            super.onReceivedClientCertRequest(view, request)
         }
     }
 
     override fun onReceivedHttpAuthRequest(view: WebView, handler: HttpAuthHandler, host: String, realm: String) {
-        if (!eventBus.postForHandler { ReceivedHttpAuthRequestEvent(view, handler, host, realm) }) {
-            handler.cancel()
+        if (!eventBus.postForSyncHandler { ReceivedHttpAuthRequestEvent(view, handler, host, realm) }) {
+            super.onReceivedHttpAuthRequest(view, handler, host, realm)
         }
     }
 
@@ -153,7 +153,7 @@ open class RacehorseWebViewClient(val eventBus: EventBus = EventBus.getDefault()
     }
 
     override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
-        return eventBus.postForHandler { RenderProcessGoneEvent(view, detail) }
+        return eventBus.postForSyncHandler { RenderProcessGoneEvent(view, detail) }
     }
 
     override fun onSafeBrowsingHit(

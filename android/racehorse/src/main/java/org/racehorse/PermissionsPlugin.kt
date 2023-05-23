@@ -4,11 +4,9 @@ import android.Manifest
 import android.webkit.PermissionRequest
 import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
-import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.askForPermissions
 import org.racehorse.utils.isPermissionGranted
-import org.racehorse.utils.postToChain
 import org.racehorse.webview.GeolocationPermissionsShowPromptEvent
 import org.racehorse.webview.PermissionRequestEvent
 
@@ -37,12 +35,8 @@ class AskForPermissionEvent(val permissions: Array<String>) : RequestEvent() {
  * Check permission statuses and ask for permissions.
  *
  * @param activity The activity that launches permission request intents.
- * @param eventBus The event bus to which events are posted.
  */
-open class PermissionsPlugin(
-    private val activity: ComponentActivity,
-    private val eventBus: EventBus = EventBus.getDefault()
-) {
+open class PermissionsPlugin(private val activity: ComponentActivity) {
 
     @Subscribe
     open fun onGeolocationPermissionsShowPrompt(event: GeolocationPermissionsShowPromptEvent) {
@@ -86,7 +80,7 @@ open class PermissionsPlugin(
 
     @Subscribe
     open fun onShouldShowRequestPermissionRationale(event: ShouldShowRequestPermissionRationaleEvent) {
-        eventBus.postToChain(event, ShouldShowRequestPermissionRationaleEvent.ResultEvent(
+        event.respond(ShouldShowRequestPermissionRationaleEvent.ResultEvent(
             event.permissions.distinct().associateWith {
                 ActivityCompat.shouldShowRequestPermissionRationale(activity, it)
             }
@@ -95,8 +89,7 @@ open class PermissionsPlugin(
 
     @Subscribe
     open fun onIsPermissionGranted(event: IsPermissionGrantedEvent) {
-        eventBus.postToChain(
-            event,
+        event.respond(
             IsPermissionGrantedEvent.ResultEvent(
                 event.permissions.distinct().associateWith(activity::isPermissionGranted)
             )
@@ -106,7 +99,7 @@ open class PermissionsPlugin(
     @Subscribe
     open fun onAskForPermission(event: AskForPermissionEvent) {
         activity.askForPermissions(event.permissions) {
-            eventBus.postToChain(event, AskForPermissionEvent.ResultEvent(it))
+            event.respond(AskForPermissionEvent.ResultEvent(it))
         }
     }
 }

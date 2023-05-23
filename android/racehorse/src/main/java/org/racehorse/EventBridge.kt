@@ -1,27 +1,30 @@
 package org.racehorse
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.NoSubscriberEvent
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.SubscriberExceptionEvent
-import org.greenrobot.eventbus.ThreadMode
-import org.racehorse.utils.NaturalAdapter
+import org.racehorse.utils.NaturalJsonAdapter
 import java.io.Serializable
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * An event posted from the web view. Only events that implement this interface are "visible" to the web application.
+ * An event posted from the web view.
+ *
+ * Only events that implement this interface are "visible" to the web application.
  */
 interface WebEvent : Serializable
 
 /**
- * An event published by Android for subscribers in web view.
+ * An event published by Android for subscribers in the web view.
  */
 interface NoticeEvent : Serializable
 
@@ -31,17 +34,32 @@ interface NoticeEvent : Serializable
 open class ChainableEvent {
 
     /**
-     * The ID of the original request that started the chain of events.
+     * The event bus that was used to dispatch the event.
      */
     @Transient
-    var requestId: Int = -1
-        private set
+    internal var eventBus: EventBus? = null
 
-    fun setRequestId(requestId: Int): ChainableEvent {
-        require(requestId >= 0) { "Unexpected request ID" }
+    /**
+     * The internally tracked request ID that links request that originated from the web view with the response.
+     */
+    @Transient
+    internal var requestId = -1
 
-        this.requestId = requestId
-        return this
+    /**
+     * Posts an [event] to the chain in the same event bus from which the original request event was posted.
+     */
+    fun <T : ChainableEvent> respond(event: T): T {
+        val eventBus = eventBus
+
+        checkNotNull(eventBus) { "The event did not originate from the event bridge" }
+        require(event.requestId == -1) { "The event was posted" }
+
+        event.eventBus = eventBus
+        event.requestId = requestId
+
+        eventBus.post(event)
+
+        return event
     }
 }
 
@@ -66,7 +84,21 @@ class VoidEvent : ResponseEvent()
  * Response that describes an occurred exception.
  */
 class ExceptionEvent(@Transient val cause: Throwable) : ResponseEvent() {
-    val stackTrace = cause.stackTraceToString()
+
+    /**
+     * The class name of the [Throwable] that caused the event.
+     */
+    val name = cause::class.java.name
+
+    /**
+     * The detail message string.
+     */
+    val message = cause.message.orEmpty()
+
+    /**
+     * The serialized stack trace.
+     */
+    val stack = cause.stackTraceToString()
 }
 
 /**
@@ -74,108 +106,139 @@ class ExceptionEvent(@Transient val cause: Throwable) : ResponseEvent() {
  *
  * @param webView The [WebView] to which the event bridge will add the connection Javascript interface.
  * @param eventBus The event bus to which events are posted.
- * @param connectionKey The key of the `window` that exposes the connection Javascript interface.
  * @param gson The [Gson] instance that is used for event serialization.
+ * @param handler The handler that is used to communicate with the [webView].
+ * @param connectionKey The key of the `window` that exposes the connection Javascript interface.
  */
 open class EventBridge(
     private val webView: WebView,
     private val eventBus: EventBus = EventBus.getDefault(),
-    private val gson: Gson = naturalGson,
-    private val connectionKey: String = "racehorseConnection"
+    private val gson: Gson = GsonBuilder()
+        .serializeNulls()
+        .registerTypeAdapter(Serializable::class.java, NaturalJsonAdapter())
+        .registerTypeAdapter(Bundle::class.java, NaturalJsonAdapter())
+        .registerTypeAdapter(Any::class.java, NaturalJsonAdapter())
+        .create(),
+    private val handler: Handler = Handler(Looper.getMainLooper()),
+    private val connectionKey: String = "racehorseConnection",
 ) {
 
     companion object {
-        val naturalGson: Gson by lazy {
-            val naturalAdapter = NaturalAdapter()
-
-            GsonBuilder()
-                .serializeNulls()
-                .registerTypeAdapter(Serializable::class.java, naturalAdapter)
-                .registerTypeAdapter(Bundle::class.java, naturalAdapter)
-                .registerTypeAdapter(Any::class.java, naturalAdapter)
-                .create()
-        }
+        const val TYPE_KEY = "type"
+        const val PAYLOAD_KEY = "payload"
     }
-
-    private val requestId = AtomicInteger()
-    private val eventClasses = HashMap<String, Class<*>>()
 
     init {
         webView.addJavascriptInterface(this, connectionKey)
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onResponse(event: ResponseEvent) {
-        require(event.requestId >= 0) { "Expected a request ID to be set for a response event" }
+    /**
+     * The cache of loaded event classes.
+     */
+    private val eventClasses = HashMap<String, Class<*>>()
 
-        publish(event.requestId, event)
-    }
+    /**
+     * The ID that would be assigned to the next request.
+     */
+    private var nextRequestId = 0
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onNotice(event: NoticeEvent) {
-        publish(-1, event)
-    }
+    /**
+     * The ID of the currently pending synchronous request, or -1 if there's no pending synchronous request.
+     */
+    private var syncRequestId = -1
 
-    @Subscribe
-    fun onNoSubscriber(event: NoSubscriberEvent) {
-        (event.originalEvent as? RequestEvent)?.let {
-            eventBus.post(ExceptionEvent(IllegalStateException("No subscribers for $it")).setRequestId(it.requestId))
+    /**
+     * The response event for the currently pending synchronous request.
+     */
+    private var syncResponseEvent: ResponseEvent? = null
+
+    @JavascriptInterface
+    open fun post(requestJson: String): String {
+        val event = try {
+            gson.fromJson(requestJson, JsonObject::class.java).run {
+                gson.fromJson(get(PAYLOAD_KEY) ?: JsonObject(), getEventClass(get(TYPE_KEY).asString))
+            }
+        } catch (e: Throwable) {
+            return getEventJson(ExceptionEvent(e))
+        }
+
+        if (event !is ChainableEvent) {
+            eventBus.post(event)
+            return getEventJson(VoidEvent())
+        }
+
+        return synchronized(this) {
+            event.eventBus = eventBus
+            event.requestId = nextRequestId++
+
+            syncRequestId = event.requestId
+            syncResponseEvent = null
+
+            try {
+                eventBus.post(event)
+                syncResponseEvent?.let(::getEventJson) ?: event.requestId.toString()
+            } catch (e: Throwable) {
+                getEventJson(ExceptionEvent(e))
+            } finally {
+                syncRequestId = -1
+                syncResponseEvent = null
+            }
         }
     }
 
     @Subscribe
-    fun onSubscriberException(event: SubscriberExceptionEvent) {
+    open fun onResponse(event: ResponseEvent) {
+        require(event.requestId != -1) { "The response event isn't related to any request event" }
+
+        if (syncRequestId == event.requestId) {
+            // Synchronously return the response event
+            syncResponseEvent = event
+        } else {
+            publishEvent(event.requestId, event)
+        }
+    }
+
+    @Subscribe
+    open fun onNotice(event: NoticeEvent) {
+        publishEvent(-2, event)
+    }
+
+    @Subscribe
+    open fun onNoSubscriber(event: NoSubscriberEvent) {
+        (event.originalEvent as? RequestEvent)?.let {
+            it.respond(ExceptionEvent(IllegalStateException("No subscribers for $it")))
+        }
+    }
+
+    @Subscribe
+    open fun onSubscriberException(event: SubscriberExceptionEvent) {
         when (val causingEvent = event.causingEvent) {
 
             is ExceptionEvent -> causingEvent.cause.printStackTrace()
 
-            is RequestEvent -> eventBus.post(ExceptionEvent(event.throwable).setRequestId(causingEvent.requestId))
+            is RequestEvent -> causingEvent.respond(ExceptionEvent(event.throwable))
         }
-    }
-
-    @JavascriptInterface
-    fun post(eventJson: String): Int {
-        val requestId = requestId.getAndIncrement()
-
-        val event = try {
-            val jsonObject = gson.fromJson(eventJson, JsonObject::class.java)
-            val type = jsonObject.remove("type").asString
-
-            gson.fromJson(
-                if (jsonObject.has("payload")) jsonObject.getAsJsonObject("payload") else JsonObject(),
-
-                eventClasses.getOrPut(type) {
-                    Class.forName(type).also {
-                        require(WebEvent::class.java.isAssignableFrom(it)) { "Not an event: $type" }
-                    }
-                }
-            )
-        } catch (throwable: Throwable) {
-            eventBus.post(ExceptionEvent(throwable).setRequestId(requestId))
-            return requestId
-        }
-
-        if (event is ChainableEvent) {
-            eventBus.post(event.setRequestId(requestId))
-            return requestId
-        }
-
-        eventBus.post(event)
-        eventBus.post(VoidEvent().setRequestId(requestId))
-        return requestId
     }
 
     /**
-     * Publishes the event to the web.
+     * Returns the class associated with the event type.
      */
-    private fun publish(requestId: Int, event: Any) {
-        val json = gson.toJson(JsonObject().apply {
-            addProperty("type", event::class.java.name)
-            add("payload", gson.toJsonTree(event))
-        })
+    private fun getEventClass(eventType: String) = eventClasses.getOrPut(eventType) {
+        Class.forName(eventType).also {
+            require(WebEvent::class.java.isAssignableFrom(it)) { "Expected an event: $eventType" }
+        }
+    }
 
+    private fun getEventJson(event: Any) = gson.toJson(JsonObject().apply {
+        add(TYPE_KEY, JsonPrimitive(event::class.java.name))
+        add(PAYLOAD_KEY, gson.toJsonTree(event))
+    })
+
+    private fun publishEvent(requestId: Int, event: Any) = handler.post {
         webView.evaluateJavascript(
-            "(function(conn){conn && conn.inbox && conn.inbox.publish([$requestId, $json])})(window.$connectionKey)",
+            "(function(conn){" +
+                "conn && conn.inbox && conn.inbox.publish([$requestId, ${getEventJson(event)}])" +
+                "})(window.$connectionKey)",
             null
         )
     }

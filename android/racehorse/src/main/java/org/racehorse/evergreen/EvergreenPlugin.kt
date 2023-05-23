@@ -6,7 +6,6 @@ import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.NoticeEvent
 import org.racehorse.RequestEvent
 import org.racehorse.ResponseEvent
-import org.racehorse.utils.postToChain
 import java.io.File
 import java.io.Serializable
 
@@ -115,19 +114,16 @@ open class EvergreenPlugin(
 
     @Subscribe
     open fun onGetMasterVersion(event: GetMasterVersionEvent) {
-        eventBus.postToChain(event, GetMasterVersionEvent.ResultEvent(masterVersion))
+        event.respond(GetMasterVersionEvent.ResultEvent(masterVersion))
     }
 
     @Subscribe
     open fun onGetUpdateStatus(event: GetUpdateStatusEvent) {
-        eventBus.postToChain(
-            event,
-            GetUpdateStatusEvent.ResultEvent(updateVersion?.let { UpdateStatus(it, isUpdateReady) })
-        )
+        event.respond(GetUpdateStatusEvent.ResultEvent(updateVersion?.let { UpdateStatus(it, isUpdateReady) }))
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     open fun onApplyUpdate(event: ApplyUpdateEvent) {
-        eventBus.postToChain(event, ApplyUpdateEvent.ResultEvent(if (applyUpdate()) masterVersion else null))
+        event.respond(ApplyUpdateEvent.ResultEvent(if (applyUpdate()) masterVersion else null))
     }
 }

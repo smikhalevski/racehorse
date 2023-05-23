@@ -1,5 +1,4 @@
-import { EventBridge } from './types';
-import { ensureEvent } from './utils';
+import { EventBridge } from './createEventBridge';
 
 export interface EncryptedStorageManager {
   /**
@@ -14,43 +13,37 @@ export interface EncryptedStorageManager {
   /**
    * Retrieves an encrypted value associated with the key.
    *
-   * @returns The deciphered value or `null` if key wasn't found or if password is incorrect.
+   * @returns The deciphered value, or `null` if key wasn't found or if password is incorrect.
    */
   get(key: string, password: string): Promise<string | null>;
 
   /**
    * Checks that the key exists in the storage.
    */
-  has(key: string): Promise<void>;
+  has(key: string): void;
 
   /**
    * Deletes an encrypted value associated with the key.
    */
-  delete(key: string): Promise<void>;
+  delete(key: string): void;
 }
 
 export function createEncryptedStorageManager(eventBridge: EventBridge): EncryptedStorageManager {
   return {
     set: (key, value, password) =>
       eventBridge
-        .request({ type: 'org.racehorse.SetEncryptedValueEvent', payload: { key, value, password } })
-        .then(event => {
-          ensureEvent(event);
-        }),
+        .requestAsync({ type: 'org.racehorse.SetEncryptedValueEvent', payload: { key, value, password } })
+        .then(() => undefined),
 
     get: (key, password) =>
       eventBridge
-        .request({ type: 'org.racehorse.GetEncryptedValueEvent', payload: { key, password } })
-        .then(event => ensureEvent(event).payload.value),
+        .requestAsync({ type: 'org.racehorse.GetEncryptedValueEvent', payload: { key, password } })
+        .then(event => event.payload.value),
 
-    has: key =>
-      eventBridge
-        .request({ type: 'org.racehorse.HasEncryptedValueEvent', payload: { key } })
-        .then(event => ensureEvent(event).payload.exists),
+    has: key => eventBridge.request({ type: 'org.racehorse.HasEncryptedValueEvent', payload: { key } }).payload.exists,
 
-    delete: key =>
-      eventBridge.request({ type: 'org.racehorse.DeleteEncryptedValueEvent', payload: { key } }).then(event => {
-        ensureEvent(event);
-      }),
+    delete: key => {
+      eventBridge.request({ type: 'org.racehorse.DeleteEncryptedValueEvent', payload: { key } });
+    },
   };
 }

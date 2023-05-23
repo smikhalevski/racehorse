@@ -4,9 +4,7 @@ import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsCompat.toWindowInsetsCompat
-import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.utils.postToChain
 import java.io.Serializable
 
 class DeviceInfo(val apiLevel: Int, val brand: String, val model: String) : Serializable
@@ -40,17 +38,12 @@ class GetWindowInsetsEvent(val typeMask: Int) : RequestEvent() {
  * Device configuration and general information.
  *
  * @param activity The activity that provides access to window and resources.
- * @param eventBus The event bus to which events are posted.
  */
-open class DevicePlugin(
-    private val activity: ComponentActivity,
-    private val eventBus: EventBus = EventBus.getDefault()
-) {
+open class DevicePlugin(private val activity: ComponentActivity) {
 
     @Subscribe
     fun onGetDeviceInfo(event: GetDeviceInfoEvent) {
-        eventBus.postToChain(
-            event,
+        event.respond(
             GetDeviceInfoEvent.ResultEvent(
                 DeviceInfo(apiLevel = Build.VERSION.SDK_INT, brand = Build.BRAND, model = Build.MODEL)
             )
@@ -67,7 +60,7 @@ open class DevicePlugin(
             }
         }
 
-        eventBus.postToChain(event, GetPreferredLocalesEvent.ResultEvent(locales.toTypedArray()))
+        event.respond(GetPreferredLocalesEvent.ResultEvent(locales.toTypedArray()))
     }
 
     @Subscribe
@@ -79,6 +72,6 @@ open class DevicePlugin(
             Rect(top / density, right / density, bottom / density, left / density)
         }
 
-        eventBus.postToChain(event, GetWindowInsetsEvent.ResultEvent(rect))
+        event.respond(GetWindowInsetsEvent.ResultEvent(rect))
     }
 }

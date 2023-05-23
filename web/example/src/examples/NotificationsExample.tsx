@@ -5,7 +5,7 @@ export function NotificationsExample() {
   const [areNotificationsEnabled, setAreNotificationsEnabled] = useState<boolean>();
 
   useEffect(() => {
-    const listener = () => notificationsManager.areNotificationsEnabled().then(setAreNotificationsEnabled);
+    const listener = () => setAreNotificationsEnabled(notificationsManager.areNotificationsEnabled());
 
     listener();
 

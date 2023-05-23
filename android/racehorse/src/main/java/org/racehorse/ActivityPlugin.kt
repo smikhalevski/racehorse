@@ -2,12 +2,10 @@ package org.racehorse
 
 import android.app.Activity
 import androidx.activity.ComponentActivity
-import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.WebIntent
 import org.racehorse.utils.launchActivity
 import org.racehorse.utils.launchActivityForResult
-import org.racehorse.utils.postToChain
 import java.io.Serializable
 
 class ActivityInfo(val packageName: String) : Serializable
@@ -36,17 +34,12 @@ class StartActivityForResultEvent(val intent: WebIntent) : RequestEvent() {
  * Opens URL in an external app.
  *
  * @param activity The activity that launches the intent to open a URL.
- * @param eventBus The event bus to which events are posted.
  */
-open class ActivityPlugin(
-    private val activity: ComponentActivity,
-    private val eventBus: EventBus = EventBus.getDefault()
-) {
+open class ActivityPlugin(private val activity: ComponentActivity) {
 
     @Subscribe
     open fun onGetActivityInfo(event: GetActivityInfoEvent) {
-        eventBus.postToChain(
-            event,
+        event.respond(
             GetActivityInfoEvent.ResultEvent(
                 ActivityInfo(packageName = activity.packageName)
             )
@@ -55,20 +48,17 @@ open class ActivityPlugin(
 
     @Subscribe
     open fun onStartActivity(event: StartActivityEvent) {
-        eventBus.postToChain(event, StartActivityEvent.ResultEvent(activity.launchActivity(event.intent.toIntent())))
+        event.respond(StartActivityEvent.ResultEvent(activity.launchActivity(event.intent.toIntent())))
     }
 
     @Subscribe
     open fun onStartActivityForResult(event: StartActivityForResultEvent) {
         val launched = activity.launchActivityForResult(event.intent.toIntent()) {
-            eventBus.postToChain(
-                event,
-                StartActivityForResultEvent.ResultEvent(it.resultCode, it.data?.let(::WebIntent))
-            )
+            event.respond(StartActivityForResultEvent.ResultEvent(it.resultCode, it.data?.let(::WebIntent)))
         }
 
         if (!launched) {
-            eventBus.postToChain(event, StartActivityForResultEvent.ResultEvent(Activity.RESULT_CANCELED, null))
+            event.respond(StartActivityForResultEvent.ResultEvent(Activity.RESULT_CANCELED, null))
         }
     }
 }

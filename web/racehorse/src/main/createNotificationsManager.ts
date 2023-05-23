@@ -1,11 +1,10 @@
-import { EventBridge } from './types';
-import { ensureEvent } from './utils';
+import { EventBridge } from './createEventBridge';
 
 export interface NotificationsManager {
   /**
    * Returns whether notifications are enabled in Settings app.
    */
-  areNotificationsEnabled(): Promise<boolean>;
+  areNotificationsEnabled(): boolean;
 }
 
 /**
@@ -14,8 +13,6 @@ export interface NotificationsManager {
 export function createNotificationsManager(eventBridge: EventBridge): NotificationsManager {
   return {
     areNotificationsEnabled: () =>
-      eventBridge
-        .request({ type: 'org.racehorse.AreNotificationsEnabledEvent' })
-        .then(event => ensureEvent(event).payload.isEnabled),
+      eventBridge.request({ type: 'org.racehorse.AreNotificationsEnabledEvent' }).payload.isEnabled,
   };
 }

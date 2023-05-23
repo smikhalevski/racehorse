@@ -91,10 +91,10 @@ private class FileChooserLauncher(
                 file.deleteOnExit()
 
                 FileProvider.getUriForFile(activity, authority, file)
-            } catch (exception: IOException) {
+            } catch (ex: IOException) {
                 file?.delete()
                 file = null
-                exception.printStackTrace()
+                ex.printStackTrace()
                 null
             }
         } else null

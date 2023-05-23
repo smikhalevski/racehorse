@@ -1,5 +1,4 @@
-import { EventBridge } from './types';
-import { ensureEvent } from './utils';
+import { EventBridge } from './createEventBridge';
 
 /**
  * Allows checking and requesting application permissions.
@@ -11,7 +10,7 @@ export interface PermissionsManager {
    * @param permission A permission your app wants to request.
    * @returns Whether you should show permission rationale UI.
    */
-  shouldShowRequestPermissionRationale(permission: string): Promise<boolean>;
+  shouldShowRequestPermissionRationale(permission: string): boolean;
 
   /**
    * Gets whether you should show UI with rationale before requesting a permission.
@@ -19,21 +18,21 @@ export interface PermissionsManager {
    * @param permissions An array of permission your app wants to request.
    * @returns Mapping from permission name to a boolean indicating whether you should show permission rationale UI.
    */
-  shouldShowRequestPermissionRationale(permissions: string[]): Promise<{ [permission: string]: boolean }>;
+  shouldShowRequestPermissionRationale(permissions: string[]): { [permission: string]: boolean };
 
   /**
    * Returns `true` if you have been granted a particular permission, or `false` otherwise.
    *
    * @param permission The name of the permission being checked.
    */
-  isPermissionGranted(permission: string): Promise<boolean>;
+  isPermissionGranted(permission: string): boolean;
 
   /**
    * Returns a mapping from a permission name to a boolean indicating that you have been granted a particular permission.
    *
    * @param permissions An array of permission your app wants to request.
    */
-  isPermissionGranted(permissions: string[]): Promise<{ [permission: string]: boolean }>;
+  isPermissionGranted(permissions: string[]): { [permission: string]: boolean };
 
   /**
    * Requests a permission to be granted to this application. This permission must be requested in your manifest, and
@@ -66,18 +65,26 @@ export function createPermissionsManager(eventBridge: EventBridge): PermissionsM
 
     isPermissionGranted: permission => request('org.racehorse.IsPermissionGrantedEvent', eventBridge, permission),
 
-    askForPermission: permission => request('org.racehorse.AskForPermissionEvent', eventBridge, permission),
+    askForPermission: permission => requestAsync('org.racehorse.AskForPermissionEvent', eventBridge, permission),
   };
 }
 
 function request(type: string, eventBridge: EventBridge, permission: string | string[]): any {
   if (Array.isArray(permission)) {
+    return eventBridge.request({ type, payload: { permissions: permission } }).payload.statuses;
+  }
+
+  return eventBridge.request({ type, payload: { permissions: [permission] } }).payload.statuses[permission];
+}
+
+function requestAsync(type: string, eventBridge: EventBridge, permission: string | string[]): any {
+  if (Array.isArray(permission)) {
     return eventBridge
-      .request({ type, payload: { permissions: permission } })
-      .then(event => ensureEvent(event).payload.statuses);
+      .requestAsync({ type, payload: { permissions: permission } })
+      .then(event => event.payload.statuses);
   }
 
   return eventBridge
-    .request({ type, payload: { permissions: [permission] } })
-    .then(event => ensureEvent(event).payload.statuses[permission]);
+    .requestAsync({ type, payload: { permissions: [permission] } })
+    .then(event => event.payload.statuses[permission]);
 }

@@ -8,16 +8,15 @@ export const NetworkManagerContext = createContext(networkManager);
 
 NetworkManagerContext.displayName = 'NetworkManagerContext';
 
-export function useNetworkStatus(): Partial<NetworkStatus> {
+/**
+ * Returns the current network status.
+ */
+export function useNetworkStatus(): NetworkStatus {
   const manager = useContext(NetworkManagerContext);
 
-  const [status, setStatus] = useState<Partial<NetworkStatus>>({});
+  const [status, setStatus] = useState(manager.getStatus);
 
-  useEffect(() => {
-    manager.getStatus().then(setStatus);
-
-    return manager.subscribe(setStatus);
-  }, [manager]);
+  useEffect(() => manager.subscribe(setStatus), [manager]);
 
   return status;
 }

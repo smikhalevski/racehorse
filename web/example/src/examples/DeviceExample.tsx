@@ -1,17 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { DeviceInfo, deviceManager, Rect } from 'racehorse';
+import React, { useState } from 'react';
+import { deviceManager } from 'racehorse';
 import { FormattedJSON } from '../components/FormattedJSON';
 
 export function DeviceExample() {
-  const [deviceInfo, setDeviceInfo] = useState<DeviceInfo>();
-  const [preferredLocales, setPreferredLocales] = useState<string[]>([]);
-  const [insets, setInsets] = useState<Rect>();
-
-  useEffect(() => {
-    deviceManager.getDeviceInfo().then(setDeviceInfo);
-    deviceManager.getPreferredLocales().then(setPreferredLocales);
-    deviceManager.getWindowInsets().then(setInsets);
-  }, []);
+  const [deviceInfo] = useState(deviceManager.getDeviceInfo);
+  const [preferredLocales] = useState(deviceManager.getPreferredLocales);
+  const [insets] = useState(deviceManager.getWindowInsets);
 
   return (
     <>

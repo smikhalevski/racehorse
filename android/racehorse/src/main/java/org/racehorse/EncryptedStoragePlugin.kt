@@ -1,9 +1,7 @@
 package org.racehorse
 
-import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.racehorse.utils.postToChain
 import java.io.File
 import java.security.MessageDigest
 import javax.crypto.BadPaddingException
@@ -51,13 +49,11 @@ class DeleteEncryptedValueEvent(val key: String) : RequestEvent()
  * @param storageDir The directory to write files to.
  * @param salt The salt required to generate the encryption key.
  * @param iterationCount The number of iterations to generate an encryption key.
- * @param eventBus The event bus to which events are posted.
  */
 open class EncryptedStoragePlugin(
     private val storageDir: File,
     private val salt: ByteArray,
-    private val iterationCount: Int = 10_000,
-    private val eventBus: EventBus = EventBus.getDefault()
+    private val iterationCount: Int = 10_000
 ) {
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
@@ -71,7 +67,7 @@ open class EncryptedStoragePlugin(
 
         getFile(event.key).writeBytes(cipher.iv + cipher.doFinal(digest.digest(valueBytes) + valueBytes))
 
-        eventBus.postToChain(event, VoidEvent())
+        event.respond(VoidEvent())
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
@@ -94,19 +90,19 @@ open class EncryptedStoragePlugin(
 
         val value = bytes?.run { String(copyOfRange(64, size)) }
 
-        eventBus.postToChain(event, GetEncryptedValueEvent.ResultEvent(value))
+        event.respond(GetEncryptedValueEvent.ResultEvent(value))
     }
 
     @Subscribe
     open fun onHasEncryptedValue(event: HasEncryptedValueEvent) {
-        eventBus.postToChain(event, HasEncryptedValueEvent.ResultEvent(getFile(event.key).exists()))
+        event.respond(HasEncryptedValueEvent.ResultEvent(getFile(event.key).exists()))
     }
 
     @Subscribe
     open fun onDeleteEncryptedValue(event: DeleteEncryptedValueEvent) {
         getFile(event.key).delete()
 
-        eventBus.postToChain(event, VoidEvent())
+        event.respond(VoidEvent())
     }
 
     /**

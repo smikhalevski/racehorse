@@ -14,7 +14,7 @@ import java.lang.reflect.Type
 /**
  * Gson adapter that serializes and deserializes any values.
  */
-class NaturalAdapter : JsonDeserializer<Any?>, JsonSerializer<Any?> {
+class NaturalJsonAdapter : JsonDeserializer<Any?>, JsonSerializer<Any?> {
 
     override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Any? = when {
 

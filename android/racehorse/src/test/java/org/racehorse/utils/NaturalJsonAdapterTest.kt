@@ -5,12 +5,12 @@ import org.junit.Assert
 import org.junit.Test
 import java.io.Serializable
 
-class NaturalAdapterTest {
+class NaturalJsonAdapterTest {
 
     @Test
     fun testSerializesWebIntent() {
         val gson =
-            GsonBuilder().serializeNulls().registerTypeAdapter(Serializable::class.java, NaturalAdapter()).create()
+            GsonBuilder().serializeNulls().registerTypeAdapter(Serializable::class.java, NaturalJsonAdapter()).create()
 
         val value = WebIntent(extras = mapOf("aaa" to arrayOf(111, 222)))
 

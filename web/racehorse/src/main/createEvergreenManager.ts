@@ -1,5 +1,4 @@
-import { EventBridge } from './types';
-import { ensureEvent } from './utils';
+import { EventBridge } from './createEventBridge';
 
 export interface UpdateStatus {
   /**
@@ -17,12 +16,12 @@ export interface EvergreenManager {
   /**
    * The current version of the app bundle.
    */
-  getMasterVersion(): Promise<string | null>;
+  getMasterVersion(): string | null;
 
   /**
    * Get the version of the update that would be applied on the next app restart.
    */
-  getUpdateStatus(): Promise<UpdateStatus | null>;
+  getUpdateStatus(): UpdateStatus | null;
 
   /**
    * Applies the available update bundle and returns its version, or returns `null` if there's no update bundle.
@@ -40,19 +39,14 @@ export function createEvergreenManager(eventBridge: EventBridge): EvergreenManag
 
   return {
     getMasterVersion: () =>
-      eventBridge
-        .request({ type: 'org.racehorse.evergreen.GetMasterVersionEvent' })
-        .then(event => ensureEvent(event).payload.version),
+      eventBridge.request({ type: 'org.racehorse.evergreen.GetMasterVersionEvent' }).payload.version,
 
-    getUpdateStatus: () =>
-      eventBridge
-        .request({ type: 'org.racehorse.evergreen.GetUpdateStatusEvent' })
-        .then(event => ensureEvent(event).payload.status),
+    getUpdateStatus: () => eventBridge.request({ type: 'org.racehorse.evergreen.GetUpdateStatusEvent' }).payload.status,
 
     applyUpdate: () =>
-      (updatePromise ||= eventBridge.request({ type: 'org.racehorse.evergreen.ApplyUpdateEvent' }).then(event => {
+      (updatePromise ||= eventBridge.requestAsync({ type: 'org.racehorse.evergreen.ApplyUpdateEvent' }).then(event => {
         updatePromise = undefined;
-        return ensureEvent(event).payload.version;
+        return event.payload.version;
       })),
   };
 }

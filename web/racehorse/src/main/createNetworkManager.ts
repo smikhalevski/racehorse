@@ -1,5 +1,4 @@
-import { EventBridge } from './types';
-import { ensureEvent } from './utils';
+import { EventBridge } from './createEventBridge';
 
 export type NetworkType = 'wifi' | 'cellular' | 'none' | 'unknown';
 
@@ -12,7 +11,7 @@ export interface NetworkManager {
   /**
    * Returns the status of the active network.
    */
-  getStatus(): Promise<NetworkStatus>;
+  getStatus(): NetworkStatus;
 
   /**
    * Subscribes to network status changes.
@@ -27,10 +26,7 @@ export interface NetworkManager {
  */
 export function createNetworkManager(eventBridge: EventBridge): NetworkManager {
   return {
-    getStatus: () =>
-      eventBridge
-        .request({ type: 'org.racehorse.GetNetworkStatusEvent' })
-        .then(event => ensureEvent(event).payload.status),
+    getStatus: () => eventBridge.request({ type: 'org.racehorse.GetNetworkStatusEvent' }).payload.status,
 
     subscribe: listener =>
       eventBridge.subscribe(event => {
