@@ -8,16 +8,22 @@ import android.view.WindowInsets
 import android.widget.FrameLayout
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import java.io.Serializable
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.max
 
-class IsKeyboardVisibleEvent : RequestEvent() {
-    class ResultEvent(val isKeyboardVisible: Boolean) : ResponseEvent()
+class KeyboardStatus(val height: Int) : Serializable {
+    val isVisible = height != 0
+}
+
+class GetKeyboardStatusEvent : RequestEvent() {
+    class ResultEvent(val status: KeyboardStatus) : ResponseEvent()
 }
 
 /**
- * Notifies the web app that the keyboard visibility has changed.
+ * Notifies the web app that the keyboard status has changed.
  */
-class KeyboardVisibilityChangedEvent(val isKeyboardVisible: Boolean) : NoticeEvent
+class KeyboardStatusChangedEvent(val status: KeyboardStatus) : NoticeEvent
 
 /**
  * Monitors keyboard visibility.
@@ -25,15 +31,15 @@ class KeyboardVisibilityChangedEvent(val isKeyboardVisible: Boolean) : NoticeEve
  * @param activity The activity to which the keyboard observer is attached.
  * @param eventBus The event bus to which events are posted.
  */
-open class KeyboardPlugin(activity: Activity, private val eventBus: EventBus = EventBus.getDefault()) {
+open class KeyboardPlugin(private val activity: Activity, private val eventBus: EventBus = EventBus.getDefault()) {
 
     private val keyboardObserver = KeyboardObserver(activity) { keyboardHeight ->
-        eventBus.post(KeyboardVisibilityChangedEvent(keyboardHeight > 0))
+        eventBus.post(KeyboardStatusChangedEvent(KeyboardStatus(keyboardHeight)))
     }
 
     @Subscribe
-    open fun onIsKeyboardVisible(event: IsKeyboardVisibleEvent) {
-        event.respond(IsKeyboardVisibleEvent.ResultEvent(keyboardObserver.keyboardHeight > 0))
+    open fun onGetKeyboardStatus(event: GetKeyboardStatusEvent) {
+        event.respond(GetKeyboardStatusEvent.ResultEvent(KeyboardStatus(keyboardObserver.keyboardHeight)))
     }
 }
 
@@ -64,7 +70,7 @@ class KeyboardObserver(activity: Activity, private val listener: (keyboardHeight
             rootView.rootWindowInsets.stableInsetBottom
         }
 
-        val height = rootView.rootView.height - frameBottom - insetBottom
+        val height = max(rootView.rootView.height - frameBottom - insetBottom, 0)
 
         if (lastKeyboardHeight.getAndSet(height) != height) {
             listener(height)

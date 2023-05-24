@@ -1,6 +1,7 @@
 import { CookieExample } from './examples/CookieExample';
 import { FileInputExample } from './examples/FileInputExample';
 import { GeolocationExample } from './examples/GeolocationExample';
+import { KeyboardExample } from './examples/KeyboardExample';
 import { LocalStorageExample } from './examples/LocalStorageExample';
 import { DeviceExample } from './examples/DeviceExample';
 import { ActivityExample } from './examples/ActivityExample';
@@ -14,6 +15,7 @@ export function App() {
   return (
     <>
       <ToastExample />
+      <KeyboardExample />
       <ActivityExample />
       <PermissionsExample />
       <NotificationsExample />
