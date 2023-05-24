@@ -41,7 +41,7 @@ class UpdateFailedEvent(val updateMode: UpdateMode, @Transient val cause: Throwa
 class UpdateReadyEvent(val version: String) : NoticeEvent
 
 /**
- * A progress of a pending update download.
+ * Progress of a pending update download.
  *
  * @param contentLength The length of downloaded content in bytes, or -1 if content length cannot be detected.
  * @param readLength The number of bytes that are already downloaded.

@@ -69,7 +69,7 @@ export function createPermissionsManager(eventBridge: EventBridge): PermissionsM
   };
 }
 
-function request(type: string, eventBridge: EventBridge, permission: string | string[]): any {
+function request(type: string, eventBridge: EventBridge, permission: string | string[]) {
   if (Array.isArray(permission)) {
     return eventBridge.request({ type, payload: { permissions: permission } }).payload.statuses;
   }
@@ -77,7 +77,7 @@ function request(type: string, eventBridge: EventBridge, permission: string | st
   return eventBridge.request({ type, payload: { permissions: [permission] } }).payload.statuses[permission];
 }
 
-function requestAsync(type: string, eventBridge: EventBridge, permission: string | string[]): any {
+function requestAsync(type: string, eventBridge: EventBridge, permission: string | string[]) {
   if (Array.isArray(permission)) {
     return eventBridge
       .requestAsync({ type, payload: { permissions: permission } })

@@ -8,6 +8,10 @@ export function GeolocationExample() {
     <>
       <h2>{'Geolocation'}</h2>
 
+      {window.location.protocol !== 'https:' && (
+        <p style={{ color: 'red' }}>{'Disable MainActivity.LIVE_RELOAD_ENABLED to allow geolocation detection!'}</p>
+      )}
+
       <button
         onClick={() => {
           navigator.geolocation.getCurrentPosition(

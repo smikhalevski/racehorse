@@ -14,7 +14,7 @@ export function ToastExample() {
         <input
           value={message}
           onChange={event => {
-            setMessage(event.target.value + '--');
+            setMessage(event.target.value);
           }}
         />
       </p>
