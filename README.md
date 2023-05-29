@@ -26,8 +26,8 @@ import org.racehorse.EventBridge
 val eventBridge = EventBridge(webView)
 ```
 
-Racehorse uses an [event bus](https://greenrobot.org/eventbus) to deliver events to subscribers, so bridge must be
-registered in the event bus:
+Racehorse uses a [Greenrobot EventBus](https://greenrobot.org/eventbus) to deliver events to subscribers, so bridge must
+be registered in the event bus:
 
 ```kotlin
 import org.greenrobot.eventbus.EventBus
@@ -45,7 +45,7 @@ import org.racehorse.WebEvent
 class ShowToastEvent(val message: String) : WebEvent
 ```
 
-Note that `ShowToastEvent` implements `WebEvent` marker interface. This is the baseline requirement to which events 
+Note that `ShowToastEvent` implements `WebEvent` marker interface. This is the baseline requirement to which events
 must conform to support marshalling from the web app to Android.
 
 Now let's add an event subscriber that would receive incoming `ShowToastEvent` and display a toast:
@@ -77,7 +77,7 @@ Now the native part is set up, and we can send an event from the web app:
 ```js
 import { eventBridge } from 'racehorse';
 
-eventBridge.request({
+eventBridge.requestAsync({
   // 🟡 The event class name
   type: 'com.example.ShowToastEvent',
   message: 'Hello, world!'
@@ -86,7 +86,7 @@ eventBridge.request({
 
 The last step is to load the web app into the `webView`. You can do this in any way that fits your needs, Racehorse
 doesn't restrict this process in any way. For example, if your web app is running on your local machine on the port
-1234, then you can load the web app in the web view using this snippet: 
+1234, then you can load the web app in the web view using this snippet:
 
 ```kotlin
 webView.loadUrl("https://10.0.2.2:1234")
@@ -130,12 +130,32 @@ Request and response events are instances of `ChainableEvent`. Events in the cha
 import { eventBridge } from 'racehorse';
 
 const deviceModel = await eventBridge
-  .request({ type: 'com.example.GetDeviceModelRequestEvent' })
-  .then(event => event.deviceModel)
+  .requestAsync({ type: 'com.example.GetDeviceModelRequestEvent' })
+  .then(event => event.payload.deviceModel)
 ```
 
-If an exception is thrown in `DeviceModelPlugin.onGetDeviceModel`, then promise is _resolved_ with
-`org.racehorse.ExceptionEvent`.
+If an exception is thrown in `DeviceModelPlugin.onGetDeviceModel`, then promise is _rejected_ with an `Error` instance.
+
+## Synchronous requests
+
+If all events in the event chain are handled on
+[the posting thread](https://greenrobot.org/eventbus/documentation/delivery-threads-threadmode/) on the Android side,
+then a request can be handled synchronously on the web side. In the `DeviceModelPlugin` example `onGetDeviceModel` is
+called on the posting thread, since we didn't specify a thread mode for `@Subscribe` annotation. So this allows web to
+use a synchronous request:
+
+```ts
+import { eventBridge } from 'racehorse';
+
+const { deviceModel } = eventBridge.request({ type: 'com.example.GetDeviceModelRequestEvent' }).payload;
+```
+
+If you're initializes event bridge after the web view was created, you may need to establish connection manually before
+using synchronous requests:
+
+```ts
+await eventBridge.connect();
+```
 
 # Event subscriptions in the web app
 
