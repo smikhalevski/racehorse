@@ -3,11 +3,15 @@ import { activityManager, ActivityResult, Intent, permissionsManager } from 'rac
 import { FormattedJSON } from '../components/FormattedJSON';
 
 export function ActivityExample() {
+  const [activityInfo] = useState(activityManager.getActivityInfo);
   const [contactActivityResult, setContactActivityResult] = useState<ActivityResult | null>();
 
   return (
     <>
       <h2>{'Activity'}</h2>
+
+      {'Activity info: '}
+      <FormattedJSON value={activityInfo} />
 
       <p>
         <button

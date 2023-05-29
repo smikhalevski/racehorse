@@ -21,7 +21,7 @@ export function ToastExample() {
 
       <button
         onClick={() => {
-          eventBridge.request({ type: 'com.example.myapplication.ShowToastEvent', payload: { message } });
+          eventBridge.request({ type: 'com.example.ShowToastEvent', payload: { message } });
         }}
       >
         {'Show toast'}

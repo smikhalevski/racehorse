@@ -104,7 +104,6 @@ import android.os.Build
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.RequestEvent
 import org.racehorse.ResponseEvent
-import org.racehorse.utils.postToChain
 
 class GetDeviceModelRequestEvent : RequestEvent()
 
@@ -114,10 +113,7 @@ class DeviceModelPlugin {
 
     @Subscribe
     fun onGetDeviceModel(event: GetDeviceModelRequestEvent) {
-        EventBus.getDefault().postToChain(
-            event,
-            GetDeviceModelResponseEvent(Build.MODEL)
-        )
+        event.respond(GetDeviceModelResponseEvent(Build.MODEL))
     }
 }
 ```
@@ -237,4 +233,4 @@ DownloadBundle
 
 `org.racehorse:racehorse` is an Android library (AAR) that provides its own
 [proguard rules](./android/racehorse/proguard-rules.pro), so no additional action is needed. Proguard rules prevent
-obfuscation of events and related classes which are available in Racehorse. 
+obfuscation of events and related classes which are available in Racehorse.
