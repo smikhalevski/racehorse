@@ -56,10 +56,10 @@ export interface EventBridge {
   /**
    * Sends an event through a connection to Android and returns a response event.
    *
-   * Before using synchronous requests, wait for {@link connect a connection} to be established.
+   * The connection is automatically established when this method is called.
    *
    * The error is thrown if `org.racehorse.ExceptionEvent` is published as a response, if the response event wasn't
-   * published synchronously, or if connection wasn't yet established.
+   * published synchronously, or if connection cannot be established synchronously.
    *
    * @param event The request event to send.
    * @returns The response event.
@@ -133,17 +133,29 @@ export function createEventBridge(connectionProvider = () => window.racehorseCon
 
   let connectionPromise: Promise<Required<Connection>> | undefined;
   let connection: Required<Connection> | null = null;
-  let tryCount = 0;
 
-  const connect = (): Promise<Required<Connection>> =>
-    (connectionPromise ||= untilTruthy(connectionProvider, () => 2 ** tryCount++ * 100).then(conn => {
+  const connect = (): Promise<Required<Connection>> => {
+    if (connectionPromise) {
+      return connectionPromise;
+    }
+
+    const establishConnection = (conn: Connection): Required<Connection> => {
       (conn.inbox ||= new PubSub()).subscribe(([requestId, event]) => {
         if (requestId === -2) {
           noticePubSub.publish(event);
         }
       });
       return (connection = conn as Required<Connection>);
-    }));
+    };
+
+    const conn = connectionProvider();
+
+    let tryCount = 0;
+
+    return (connectionPromise = conn
+      ? Promise.resolve(establishConnection(conn))
+      : untilTruthy(connectionProvider, () => 2 ** tryCount++ * 100).then(establishConnection));
+  };
 
   return {
     connect,
@@ -151,6 +163,8 @@ export function createEventBridge(connectionProvider = () => window.racehorseCon
     getConnection: () => connection,
 
     request(event) {
+      void connect();
+
       if (connection === null) {
         throw new Error('Expected an established connection');
       }
@@ -158,7 +172,7 @@ export function createEventBridge(connectionProvider = () => window.racehorseCon
       const response = JSON.parse(connection.post(JSON.stringify(event)));
 
       if (typeof response === 'number') {
-        throw new Error('Expected a synchronous response: ' + event.type);
+        throw new Error('Expected a synchronous response');
       }
       if (isException(response)) {
         throw toError(response);
