@@ -1,0 +1,8 @@
+{
+  "name": "@racehorse/react",
+  "entryPoints": [
+    "./src/main/index.ts"
+  ],
+  "disableSources": true,
+  "readme": "none"
+}

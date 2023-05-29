@@ -5,10 +5,6 @@
   "main": "./lib/index.js",
   "module": "./lib/index.mjs",
   "types": "./lib/index.d.ts",
-  "typedoc": {
-    "entryPoint": "./src/main/index.ts",
-    "readmeFile": "none"
-  },
   "sideEffects": false,
   "files": [
     "lib"
