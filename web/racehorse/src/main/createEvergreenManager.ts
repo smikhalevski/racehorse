@@ -12,6 +12,8 @@ export interface UpdateStatus {
   isReady: boolean;
 }
 
+export type UpdateMode = 'mandatory' | 'optional' | 'postponed';
+
 export interface EvergreenManager {
   /**
    * The current version of the app bundle.
@@ -27,6 +29,46 @@ export interface EvergreenManager {
    * Applies the available update bundle and returns its version, or returns `null` if there's no update bundle.
    */
   applyUpdate(): Promise<string | null>;
+
+  /**
+   * The new update download has started.
+   */
+  subscribe(type: 'started', listener: (payload: { updateMode: UpdateMode }) => void): () => void;
+
+  /**
+   * Failed to download an update.
+   */
+  subscribe(type: 'failed', listener: (payload: { updateMode: UpdateMode }) => void): () => void;
+
+  /**
+   * An update was successfully downloaded and ready to be applied.
+   */
+  subscribe(
+    type: 'ready',
+    listener: (payload: {
+      /**
+       * The version of the update bundle that is ready to be applied.
+       */
+      version: String;
+    }) => void
+  ): () => void;
+
+  /**
+   * Progress of a pending update download.
+   */
+  subscribe(
+    type: 'progress',
+    listener: (payload: {
+      /**
+       * The length of downloaded content in bytes, or -1 if content length cannot be detected.
+       */
+      contentLength: number;
+      /**
+       * The number of bytes that are already downloaded.
+       */
+      readLength: number;
+    }) => void
+  ): () => void;
 }
 
 /**
@@ -48,5 +90,16 @@ export function createEvergreenManager(eventBridge: EventBridge): EvergreenManag
         updatePromise = undefined;
         return event.payload.version;
       })),
+
+    subscribe: (type, listener) =>
+      eventBridge.subscribe(
+        {
+          started: 'org.racehorse.UpdateStartedEvent',
+          failed: 'org.racehorse.UpdateFailedEvent',
+          ready: 'org.racehorse.UpdateReadyEvent',
+          progress: 'org.racehorse.UpdateProgressEvent',
+        }[type],
+        listener
+      ),
   };
 }

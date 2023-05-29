@@ -2,12 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { notificationsManager } from 'racehorse';
 
 export function NotificationsExample() {
-  const [areNotificationsEnabled, setAreNotificationsEnabled] = useState<boolean>();
+  const [areNotificationsEnabled, setAreNotificationsEnabled] = useState(notificationsManager.areNotificationsEnabled);
 
   useEffect(() => {
     const listener = () => setAreNotificationsEnabled(notificationsManager.areNotificationsEnabled());
-
-    listener();
 
     window.addEventListener('visibilitychange', listener);
 
@@ -22,7 +20,7 @@ export function NotificationsExample() {
 
       <p>
         {'Notifications enabled: '}
-        {areNotificationsEnabled === undefined ? '🟡' : areNotificationsEnabled ? '🟢' : '🔴'}
+        {areNotificationsEnabled ? '🟢' : '🔴'}
       </p>
     </>
   );

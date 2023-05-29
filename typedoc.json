@@ -9,5 +9,8 @@
   "excludeInternal": true,
   "entryPointStrategy": "packages",
   "disableSources": true,
-  "readme": "none"
+  "readme": "none",
+  "sidebarLinks": {
+    "Racehorse Android API": "https://smikhalevski.github.io/racehorse/android/index.html"
+  }
 }

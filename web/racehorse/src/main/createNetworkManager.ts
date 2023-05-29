@@ -29,10 +29,8 @@ export function createNetworkManager(eventBridge: EventBridge): NetworkManager {
     getStatus: () => eventBridge.request({ type: 'org.racehorse.GetNetworkStatusEvent' }).payload.status,
 
     subscribe: listener =>
-      eventBridge.subscribe(event => {
-        if (event.type === 'org.racehorse.NetworkStatusChangedEvent') {
-          listener(event.payload.status);
-        }
+      eventBridge.subscribe('org.racehorse.NetworkStatusChangedEvent', payload => {
+        listener(payload.status);
       }),
   };
 }

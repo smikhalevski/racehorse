@@ -21,10 +21,10 @@ export interface Event {
  */
 export interface Connection {
   /**
-   * The pub-sub to which Android publishes envelopes for the web to consume.
+   * The pub-sub to which Android publishes request IDs and corresponding response events.
    *
-   * Request ID is either a non-negative number returned from {@link post}, or -1 if an event is an alert pushed by
-   * Android.
+   * Request ID is either a non-negative number returned from {@link Connection.post}, or -2 if it is a
+   * `org.racehorse.NoticeEvent` instance that was pushed by Android.
    */
   inbox?: PubSub<[requestId: number, event: Event]>;
 
@@ -56,10 +56,10 @@ export interface EventBridge {
   /**
    * Sends an event through a connection to Android and returns a response event.
    *
-   * Before using synchronous requests, wait for {@link connect a connection} to be established.
+   * The connection is automatically established when this method is called.
    *
    * The error is thrown if `org.racehorse.ExceptionEvent` is published as a response, if the response event wasn't
-   * published synchronously, or if connection wasn't yet established.
+   * published synchronously, or if connection cannot be established synchronously.
    *
    * @param event The request event to send.
    * @returns The response event.
@@ -79,7 +79,7 @@ export interface EventBridge {
   requestAsync(event: Event): Promise<Event>;
 
   /**
-   * Subscribes a listener to notice events pushed by Android.
+   * Subscribes a listener to all notice events pushed by Android.
    *
    * The connection is automatically established when this method is called.
    *
@@ -91,6 +91,23 @@ export interface EventBridge {
      * @param event The event pushed to the connection inbox.
      */
     listener: (event: Event) => void
+  ): () => void;
+
+  /**
+   * Subscribes a listener to notice events of the particular type pushed by Android.
+   *
+   * The connection is automatically established when this method is called.
+   *
+   * @param type The type of event to subscribe to.
+   * @param listener The listener to subscribe.
+   * @returns The callback that unsubscribes the listener.
+   */
+  subscribe(
+    type: string,
+    /**
+     * @param payload The event payload.
+     */
+    listener: (payload: any) => void
   ): () => void;
 }
 
@@ -116,17 +133,29 @@ export function createEventBridge(connectionProvider = () => window.racehorseCon
 
   let connectionPromise: Promise<Required<Connection>> | undefined;
   let connection: Required<Connection> | null = null;
-  let tryCount = 0;
 
-  const connect = (): Promise<Required<Connection>> =>
-    (connectionPromise ||= untilTruthy(connectionProvider, () => 2 ** tryCount++ * 100).then(conn => {
-      (conn.inbox ||= new PubSub()).subscribe(envelope => {
-        if (envelope[0] === -2) {
-          noticePubSub.publish(envelope[1]);
+  const connect = (): Promise<Required<Connection>> => {
+    if (connectionPromise) {
+      return connectionPromise;
+    }
+
+    const establishConnection = (conn: Connection): Required<Connection> => {
+      (conn.inbox ||= new PubSub()).subscribe(([requestId, event]) => {
+        if (requestId === -2) {
+          noticePubSub.publish(event);
         }
       });
       return (connection = conn as Required<Connection>);
-    }));
+    };
+
+    const conn = connectionProvider();
+
+    let tryCount = 0;
+
+    return (connectionPromise = conn
+      ? Promise.resolve(establishConnection(conn))
+      : untilTruthy(connectionProvider, () => 2 ** tryCount++ * 100).then(establishConnection));
+  };
 
   return {
     connect,
@@ -134,17 +163,21 @@ export function createEventBridge(connectionProvider = () => window.racehorseCon
     getConnection: () => connection,
 
     request(event) {
+      void connect();
+
       if (connection === null) {
-        throw new Error('Expected a connection');
+        throw new Error('Expected an established connection');
       }
 
       const response = JSON.parse(connection.post(JSON.stringify(event)));
 
       if (typeof response === 'number') {
-        throw new Error('Expected a synchronous response: ' + event.type);
+        throw new Error('Expected a synchronous response');
       }
-
-      return ensureEvent(response);
+      if (isException(response)) {
+        throw toError(response);
+      }
+      return response;
     },
 
     requestAsync(event) {
@@ -152,39 +185,55 @@ export function createEventBridge(connectionProvider = () => window.racehorseCon
 
       return connect().then(
         connection =>
-          new Promise(resolve => {
+          new Promise((resolve, reject) => {
             const response = JSON.parse(connection.post(requestJson));
 
             if (typeof response === 'number') {
-              const unsubscribe = connection.inbox.subscribe(envelope => {
-                if (envelope[0] === response) {
-                  unsubscribe();
-                  resolve(ensureEvent(envelope[1]));
+              const unsubscribe = connection.inbox.subscribe(([requestId, event]) => {
+                if (requestId !== response) {
+                  return;
+                }
+
+                unsubscribe();
+
+                if (isException(event)) {
+                  reject(toError(event));
+                } else {
+                  resolve(event);
                 }
               });
               return;
             }
 
-            resolve(ensureEvent(response));
+            if (isException(response)) {
+              reject(toError(response));
+            } else {
+              resolve(response);
+            }
           })
       );
     },
 
-    subscribe(listener) {
+    subscribe(typeOrListener, listener?: Function) {
       void connect();
-      return noticePubSub.subscribe(listener);
+
+      if (typeof typeOrListener === 'function') {
+        return noticePubSub.subscribe(typeOrListener);
+      }
+
+      return noticePubSub.subscribe(event => {
+        if (event.type === typeOrListener) {
+          listener!(event.payload);
+        }
+      });
     },
   };
 }
 
-/**
- * Throws an error if an event carries an exception, or returns event as is.
- *
- * @param event The event to check.
- */
-function ensureEvent(event: Event): Event {
-  if (event.type === 'org.racehorse.ExceptionEvent') {
-    throw Object.assign(new Error(), event.payload);
-  }
-  return event;
+function isException(event: Event): boolean {
+  return event.type === 'org.racehorse.ExceptionEvent';
+}
+
+function toError(event: Event): Error {
+  return Object.assign(new Error(), event.payload);
 }

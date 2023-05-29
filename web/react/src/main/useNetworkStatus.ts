@@ -9,7 +9,7 @@ export const NetworkManagerContext = createContext(networkManager);
 NetworkManagerContext.displayName = 'NetworkManagerContext';
 
 /**
- * Returns the current network status.
+ * Returns the current network status and re-renders the component if it changes.
  */
 export function useNetworkStatus(): NetworkStatus {
   const manager = useContext(NetworkManagerContext);

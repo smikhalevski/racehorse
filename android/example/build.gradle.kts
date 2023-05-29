@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.myapplication"
+    namespace = "com.example"
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "com.example.myapplication"
+        applicationId = "com.example"
         // https://apilevels.com/
         minSdk = 26
         targetSdk = 33

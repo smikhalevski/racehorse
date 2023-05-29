@@ -79,7 +79,7 @@ open class Bootstrapper(private val bundlesDir: File) {
     protected open fun onUpdateReady(version: String) {}
 
     /**
-     * A progress of a pending update download.
+     * Progress of a pending update download.
      */
     protected open fun onUpdateProgress(contentLength: Int, readLength: Long) {}
 

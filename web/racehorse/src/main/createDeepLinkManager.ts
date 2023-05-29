@@ -23,10 +23,8 @@ export function createDeepLinkManager(eventBridge: EventBridge): DeepLinkManager
     getLastDeepLink: () => eventBridge.request({ type: 'org.racehorse.GetLastDeepLinkEvent' }).payload.intent,
 
     subscribe: listener =>
-      eventBridge.subscribe(event => {
-        if (event.type === 'org.racehorse.OpenDeepLinkEvent') {
-          listener(event.payload.intent);
-        }
+      eventBridge.subscribe('org.racehorse.OpenDeepLinkEvent', payload => {
+        listener(payload.intent);
       }),
   };
 }

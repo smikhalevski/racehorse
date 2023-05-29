@@ -14,14 +14,14 @@ export function ToastExample() {
         <input
           value={message}
           onChange={event => {
-            setMessage(event.target.value + '--');
+            setMessage(event.target.value);
           }}
         />
       </p>
 
       <button
         onClick={() => {
-          eventBridge.request({ type: 'com.example.myapplication.ShowToastEvent', payload: { message } });
+          eventBridge.request({ type: 'com.example.ShowToastEvent', payload: { message } });
         }}
       >
         {'Show toast'}

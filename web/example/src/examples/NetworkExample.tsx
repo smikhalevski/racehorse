@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNetworkStatus } from '@racehorse/react';
+import { FormattedJSON } from '../components/FormattedJSON';
 
 export function NetworkExample() {
   const networkStatus = useNetworkStatus();
@@ -12,6 +13,8 @@ export function NetworkExample() {
         {'Online: '}
         {networkStatus.isConnected ? '🟢' : '🔴'}
       </p>
+
+      <FormattedJSON value={networkStatus} />
     </>
   );
 }

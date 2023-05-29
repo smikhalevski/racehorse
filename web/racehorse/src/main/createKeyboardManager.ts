@@ -1,24 +1,29 @@
 import { EventBridge } from './createEventBridge';
 
+export interface KeyboardStatus {
+  height: number;
+  isVisible: boolean;
+}
+
 export interface KeyboardManager {
-  isKeyboardVisible(): boolean;
+  /**
+   * Returns the status of the software keyboard.
+   */
+  getStatus(): KeyboardStatus;
 
   /**
-   * Subscribes a listener to software keyboard visibility changes.
+   * Subscribes a listener to software keyboard status changes.
    */
-  subscribe(listener: (keyboardVisible: boolean) => void): () => void;
+  subscribe(listener: (status: KeyboardStatus) => void): () => void;
 }
 
 export function createKeyboardManager(eventBridge: EventBridge): KeyboardManager {
   return {
-    isKeyboardVisible: () =>
-      eventBridge.request({ type: 'org.racehorse.IsKeyboardVisibleEvent' }).payload.isKeyboardVisible,
+    getStatus: () => eventBridge.request({ type: 'org.racehorse.GetKeyboardStatusEvent' }).payload.status,
 
     subscribe: listener =>
-      eventBridge.subscribe(event => {
-        if (event.type === 'org.racehorse.KeyboardVisibilityChangedEvent') {
-          listener(event.payload.isKeyboardVisible);
-        }
+      eventBridge.subscribe('org.racehorse.KeyboardStatusChangedEvent', payload => {
+        listener(payload.status);
       }),
   };
 }
