@@ -146,8 +146,8 @@ import { eventBridge } from 'racehorse';
 const { deviceModel } = eventBridge.request({ type: 'com.example.GetDeviceModelRequestEvent' }).payload;
 ```
 
-If you're initializes event bridge after the web view was created, you may need to establish connection manually before
-using synchronous requests:
+If your app initializes an event bridge after the web view was created, you may need to establish the connection
+manually before using synchronous requests:
 
 ```ts
 await eventBridge.connect();
