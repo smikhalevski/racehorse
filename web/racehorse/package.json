@@ -1,6 +1,6 @@
 {
   "name": "racehorse",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "JS bindings for Racehorse.",
   "main": "./lib/index.js",
   "module": "./lib/index.mjs",
