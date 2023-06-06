@@ -10,6 +10,7 @@ import { NotificationsExample } from './examples/NotificationsExample';
 import { PermissionsExample } from './examples/PermissionsExample';
 import { EncryptedStorageExample } from './examples/EncryptedStorageExample';
 import { ToastExample } from './examples/ToastExample';
+import { EventBridgeExample } from './examples/EventBridgeExample';
 
 export function App() {
   return (
@@ -26,6 +27,7 @@ export function App() {
       <GeolocationExample />
       <LocalStorageExample />
       <DeviceExample />
+      <EventBridgeExample />
     </>
   );
 }

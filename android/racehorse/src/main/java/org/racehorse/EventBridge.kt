@@ -46,19 +46,15 @@ open class ChainableEvent {
     internal var requestId = -1
 
     /**
-     * Posts an [event] to the chain in the same event bus from which the original request event was posted.
+     * Posts an [event] to the chain in the same event bus to which this event was originally posted.
      */
     fun <T : ChainableEvent> respond(event: T): T {
-        val eventBus = eventBus
-
-        checkNotNull(eventBus) { "The event did not originate from the event bridge" }
-        require(event.requestId == -1) { "The event was posted" }
+        val eventBus = eventBus ?: throw IllegalStateException("Cannot respond to this event")
 
         event.eventBus = eventBus
         event.requestId = requestId
 
         eventBus.post(event)
-
         return event
     }
 }
@@ -99,6 +95,13 @@ class ExceptionEvent(@Transient val cause: Throwable) : ResponseEvent() {
      * The serialized stack trace.
      */
     val stack = cause.stackTraceToString()
+}
+
+/**
+ * Checks that there's a class that implements [WebEvent] or [NoticeEvent].
+ */
+class IsSupportedEvent(val eventType: String) : RequestEvent() {
+    class ResultEvent(val isSupported: Boolean) : ResponseEvent()
 }
 
 /**
@@ -220,6 +223,17 @@ open class EventBridge(
         }
     }
 
+    @Subscribe
+    open fun onIsSupported(event: IsSupportedEvent) {
+        event.respond(IsSupportedEvent.ResultEvent(try {
+            Class.forName(event.eventType).let {
+                WebEvent::class.java.isAssignableFrom(it) || NoticeEvent::class.java.isAssignableFrom(it)
+            }
+        } catch (_: Throwable) {
+            false
+        }))
+    }
+
     /**
      * Returns the class associated with the event type.
      */
@@ -237,8 +251,8 @@ open class EventBridge(
     private fun publishEvent(requestId: Int, event: Any) = handler.post {
         webView.evaluateJavascript(
             "(function(conn){" +
-                "conn && conn.inbox && conn.inbox.publish([$requestId, ${getEventJson(event)}])" +
-                "})(window.$connectionKey)",
+                    "conn && conn.inbox && conn.inbox.publish([$requestId, ${getEventJson(event)}])" +
+                    "})(window.$connectionKey)",
             null
         )
     }

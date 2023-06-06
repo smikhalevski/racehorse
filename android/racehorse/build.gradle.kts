@@ -76,7 +76,7 @@ publishing {
 dependencies {
     // Android
     compileOnly("androidx.appcompat:appcompat:1.6.1")
-    compileOnly("androidx.webkit:webkit:1.6.1")
+    compileOnly("androidx.webkit:webkit:1.7.0")
 
     // EventBridge
     compileOnly("org.greenrobot:eventbus:3.3.1")

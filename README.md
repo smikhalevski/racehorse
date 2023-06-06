@@ -177,7 +177,7 @@ eventBridge.subscribe(event => {
   if (event.type === 'com.example.BatteryLowEvent') {
     // Handle the event here
   }
-})
+});
 ```
 
 If you have [an `EventBridge` registered](#basics) in the event bus, then you can post `BatteryLowEvent` event from
