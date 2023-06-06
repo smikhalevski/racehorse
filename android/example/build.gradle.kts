@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -49,6 +50,7 @@ dependencies {
 
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:20.5.0")
+    implementation(platform("com.google.firebase:firebase-bom:32.1.0"))
 
     // Facebook Login
     implementation("com.facebook.android:facebook-login:latest.release")

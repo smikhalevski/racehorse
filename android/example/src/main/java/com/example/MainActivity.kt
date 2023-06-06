@@ -60,6 +60,10 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(ActivityPlugin(this))
         eventBus.register(PermissionsPlugin(this))
         eventBus.register(NotificationsPlugin(this))
+
+        // To enable Google Sign-In copy google-services.json from
+        // https://console.firebase.google.com/u/0/project/racehorse-73170/settings/general/android:com.example
+        // to <racehorse>/android/example/google-services.json
         eventBus.register(GoogleSignInPlugin(this))
         eventBus.register(ToastPlugin(this))
 
@@ -74,7 +78,7 @@ class MainActivity : AppCompatActivity() {
 
             setContentView(webView)
         } else {
-            // 3️⃣ Evergreen
+            // 2️⃣ Evergreen
             //
             // An update bundle `web/example/dist/bundle.zip` is downloaded using the `EvergreenPlugin` and served from
             // the internal app cache.

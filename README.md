@@ -191,12 +191,12 @@ EventBus.getDefault().post(BatteryLowEvent())
 
 Enables Google Sign-In for your app.
 
-1. Add a Google Play Auth dependency to `build.gradle.kts`:
+1. Go to https://console.firebase.google.com, set up a new project, and configure an Android app following all
+   instructions. Use the package name of your app (as defined in `build.gradle.kts/android/defaultConfig/applicationId`)
+   and SHA-1 that is used for app signing. You can use gradle to retrieve SHA-1:
 
-```kotlin
-dependencies {
-    implementation("com.google.android.gms:play-services-auth:20.5.0")
-}
+```shell
+./gradlew signingReport
 ```
 
 2. Register the plugin in your Android app:
@@ -215,14 +215,6 @@ import { googleSignInManager } from 'racehorse';
 googleSignInManager.signIn().then(account => {
   // The account is not-null if sign in succeeded
 })
-```
-
-To make login work, you must create OAuth 2.0 Client ID in
-[Google API Console](https://console.cloud.google.com/apis/credentials) with the package name of your app (as defined in
-`AndroidManifest.xml`) and SHA-1 that is used for app signing. You can use gradle to retrieve SHA-1:
-
-```shell
-./gradlew signingReport
 ```
 
 # `evergreenManager`

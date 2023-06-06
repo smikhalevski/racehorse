@@ -8,10 +8,26 @@ export function GoogleSignInExample() {
   return (
     <>
       <h2>{'Google Sign-In'}</h2>
+      {account !== null && (
+        <p>
+          <img
+            style={{ width: '100px', height: '100px', borderRadius: '50%' }}
+            src={account.photoUrl}
+            alt={account.displayName}
+          />
+        </p>
+      )}
       <p>
         {'Account:'}
         <FormattedJSON value={account} />
       </p>
+      <button
+        onClick={() => {
+          googleSignInManager.silentSignIn().then(setAccount);
+        }}
+      >
+        {'Silent sign in'}
+      </button>{' '}
       <button
         onClick={() => {
           googleSignInManager.signIn().then(setAccount);

@@ -18,8 +18,6 @@ export interface FacebookAccessToken {
 }
 
 export interface FacebookLoginManager {
-  getCurrentAccessTokenOrLogIn(permissions?: string[]): Promise<FacebookAccessToken | null>;
-
   getCurrentAccessToken(): FacebookAccessToken | null;
 
   logIn(permissions?: string[]): Promise<FacebookAccessToken | null>;
@@ -33,24 +31,14 @@ export interface FacebookLoginManager {
  * @param eventBridge The underlying event bridge.
  */
 export function createFacebookLoginManager(eventBridge: EventBridge): FacebookLoginManager {
-  const getCurrentAccessToken = (): FacebookAccessToken =>
-    eventBridge.request({ type: 'org.racehorse.auth.GetCurrentFacebookAccessTokenEvent' }).payload.accessToken;
-
-  const logIn = (permissions?: string[]): Promise<FacebookAccessToken> =>
-    eventBridge
-      .requestAsync({ type: 'org.racehorse.auth.FacebookLogInEvent', payload: { permissions } })
-      .then(event => event.payload.accessToken);
-
   return {
-    getCurrentAccessTokenOrLogIn(permissions) {
-      const accessToken = getCurrentAccessToken();
+    getCurrentAccessToken: () =>
+      eventBridge.request({ type: 'org.racehorse.auth.GetCurrentFacebookAccessTokenEvent' }).payload.accessToken,
 
-      return accessToken?.isExpired === false ? Promise.resolve(accessToken) : logIn(permissions);
-    },
-
-    getCurrentAccessToken,
-
-    logIn,
+    logIn: permissions =>
+      eventBridge
+        .requestAsync({ type: 'org.racehorse.auth.FacebookLogInEvent', payload: { permissions } })
+        .then(event => event.payload.accessToken),
 
     logOut() {
       eventBridge.request({ type: 'org.racehorse.auth.FacebookLogOutEvent' });
