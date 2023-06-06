@@ -109,6 +109,13 @@ export interface EventBridge {
      */
     listener: (payload: any) => void
   ): () => void;
+
+  /**
+   * Returns `true` if an event of the given type is supported, or `false` otherwise.
+   *
+   * @param type The type of event to check.
+   */
+  isSupported(type: string): boolean;
 }
 
 declare global {
@@ -157,28 +164,30 @@ export function createEventBridge(connectionProvider = () => window.racehorseCon
       : untilTruthy(connectionProvider, () => 2 ** tryCount++ * 100).then(establishConnection));
   };
 
+  const request = (event: Event): Event => {
+    void connect();
+
+    if (connection === null) {
+      throw new Error('Expected an established connection');
+    }
+
+    const response = JSON.parse(connection.post(JSON.stringify(event)));
+
+    if (typeof response === 'number') {
+      throw new Error('Expected a synchronous response');
+    }
+    if (isException(response)) {
+      throw toError(response);
+    }
+    return response;
+  };
+
   return {
     connect,
 
     getConnection: () => connection,
 
-    request(event) {
-      void connect();
-
-      if (connection === null) {
-        throw new Error('Expected an established connection');
-      }
-
-      const response = JSON.parse(connection.post(JSON.stringify(event)));
-
-      if (typeof response === 'number') {
-        throw new Error('Expected a synchronous response');
-      }
-      if (isException(response)) {
-        throw toError(response);
-      }
-      return response;
-    },
+    request,
 
     requestAsync(event) {
       const requestJson = JSON.stringify(event);
@@ -227,6 +236,9 @@ export function createEventBridge(connectionProvider = () => window.racehorseCon
         }
       });
     },
+
+    isSupported: eventType =>
+      request({ type: 'org.racehorse.IsSupportedEvent', payload: { eventType } }).payload.isSupported,
   };
 }
 
