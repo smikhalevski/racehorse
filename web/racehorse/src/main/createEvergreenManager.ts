@@ -49,7 +49,7 @@ export interface EvergreenManager {
       /**
        * The version of the update bundle that is ready to be applied.
        */
-      version: String;
+      version: string;
     }) => void
   ): () => void;
 
