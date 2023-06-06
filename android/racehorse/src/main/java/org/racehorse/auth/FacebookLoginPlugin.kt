@@ -11,7 +11,6 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.RequestEvent
 import org.racehorse.ResponseEvent
-import org.racehorse.utils.postToChain
 
 class GetCurrentFacebookAccessTokenEvent : RequestEvent() {
     class ResultEvent(val accessToken: AccessToken?) : ResponseEvent()
@@ -34,10 +33,7 @@ open class FacebookLoginPlugin(
 
     @Subscribe
     fun onGetCurrentFacebookAccessToken(event: GetCurrentFacebookAccessTokenEvent) {
-        eventBus.postToChain(
-            event,
-            GetCurrentFacebookAccessTokenEvent.ResultEvent(AccessToken.getCurrentAccessToken())
-        )
+        event.respond(GetCurrentFacebookAccessTokenEvent.ResultEvent(AccessToken.getCurrentAccessToken()))
     }
 
     @Subscribe
@@ -54,7 +50,7 @@ open class FacebookLoginPlugin(
 
             fun handleLoginResult(result: LoginResult?) {
                 loginManager.unregisterCallback(callbackManager)
-                eventBus.postToChain(event, FacebookLogInEvent.ResultEvent(result?.accessToken))
+                event.respond(FacebookLogInEvent.ResultEvent(result?.accessToken))
             }
         })
 
@@ -64,6 +60,6 @@ open class FacebookLoginPlugin(
     @Subscribe
     fun onFacebookLogOut(event: FacebookLogOutEvent) {
         loginManager.logOut()
-        eventBus.postToChain(event, FacebookLogOutEvent.ResultEvent())
+        event.respond(FacebookLogOutEvent.ResultEvent())
     }
 }

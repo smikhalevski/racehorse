@@ -41,14 +41,17 @@ android {
 dependencies {
     // Android
     implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.webkit:webkit:1.6.1")
+    implementation("androidx.webkit:webkit:1.7.0")
 
     // EventBridge
     implementation("org.greenrobot:eventbus:3.3.1")
+    implementation("com.google.code.gson:gson:2.8.9")
 
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:20.5.0")
-    implementation("com.google.code.gson:gson:2.8.9")
+
+    // Facebook Login
+    implementation("com.facebook.android:facebook-login:latest.release")
 
     implementation(project(":racehorse"))
 

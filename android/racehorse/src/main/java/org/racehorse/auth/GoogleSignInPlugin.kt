@@ -10,7 +10,6 @@ import org.greenrobot.eventbus.Subscribe
 import org.racehorse.RequestEvent
 import org.racehorse.ResponseEvent
 import org.racehorse.utils.launchActivityForResult
-import org.racehorse.utils.postToChain
 
 /**
  * Check for existing Google Sign-In account, if the user is already signed in the account will be non-null.
@@ -47,10 +46,7 @@ open class GoogleSignInPlugin(
 
     @Subscribe
     open fun onGetLastGoogleSignedInAccount(event: GetLastGoogleSignedInAccountEvent) {
-        eventBus.postToChain(
-            event,
-            GetLastGoogleSignedInAccountEvent.ResultEvent(GoogleSignIn.getLastSignedInAccount(activity))
-        )
+        event.respond(GetLastGoogleSignedInAccountEvent.ResultEvent(GoogleSignIn.getLastSignedInAccount(activity)))
     }
 
     @Subscribe
@@ -63,25 +59,25 @@ open class GoogleSignInPlugin(
             } catch (_: ApiException) {
                 null
             }
-            eventBus.postToChain(event, GoogleSignInEvent.ResultEvent(account))
+            event.respond(GoogleSignInEvent.ResultEvent(account))
         }
 
         if (!launched) {
-            eventBus.postToChain(event, GoogleSignInEvent.ResultEvent(null))
+            event.respond(GoogleSignInEvent.ResultEvent(null))
         }
     }
 
     @Subscribe
     open fun onGoogleSignOutEvent(event: GoogleSignOutEvent) {
         googleSignInClient.signOut().addOnCompleteListener(activity) {
-            eventBus.postToChain(event, GoogleSignOutEvent.ResultEvent())
+            event.respond(GoogleSignOutEvent.ResultEvent())
         }
     }
 
     @Subscribe
     open fun onGoogleRevokeAccess(event: GoogleRevokeAccessEvent) {
         googleSignInClient.revokeAccess().addOnCompleteListener(activity) {
-            eventBus.postToChain(event, GoogleRevokeAccessEvent.ResultEvent())
+            event.respond(GoogleRevokeAccessEvent.ResultEvent())
         }
     }
 }

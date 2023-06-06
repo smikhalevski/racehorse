@@ -1,13 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { GoogleSignInAccount, googleSignInManager } from 'racehorse';
+import React, { useState } from 'react';
+import { googleSignInManager } from 'racehorse';
 import { FormattedJSON } from '../components/FormattedJSON';
 
 export function GoogleSignInExample() {
-  const [account, setAccount] = useState<GoogleSignInAccount | null>();
-
-  useEffect(() => {
-    googleSignInManager.getLastSignedInAccount().then(setAccount);
-  }, []);
+  const [account, setAccount] = useState(googleSignInManager.getLastSignedInAccount);
 
   return (
     <>

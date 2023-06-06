@@ -1,5 +1,4 @@
-import { EventBridge } from './types';
-import { ensureEvent } from './utils';
+import { EventBridge } from './createEventBridge';
 
 export interface FacebookAccessToken {
   expires: string;
@@ -21,11 +20,11 @@ export interface FacebookAccessToken {
 export interface FacebookLoginManager {
   getCurrentAccessTokenOrLogIn(permissions?: string[]): Promise<FacebookAccessToken | null>;
 
-  getCurrentAccessToken(): Promise<FacebookAccessToken | null>;
+  getCurrentAccessToken(): FacebookAccessToken | null;
 
   logIn(permissions?: string[]): Promise<FacebookAccessToken | null>;
 
-  logOut(): Promise<void>;
+  logOut(): void;
 }
 
 /**
@@ -34,29 +33,27 @@ export interface FacebookLoginManager {
  * @param eventBridge The underlying event bridge.
  */
 export function createFacebookLoginManager(eventBridge: EventBridge): FacebookLoginManager {
-  const getCurrentAccessToken = () =>
-    eventBridge
-      .request({ type: 'org.racehorse.auth.GetCurrentFacebookAccessTokenEvent' })
-      .then(event => ensureEvent(event).accessToken);
+  const getCurrentAccessToken = (): FacebookAccessToken =>
+    eventBridge.request({ type: 'org.racehorse.auth.GetCurrentFacebookAccessTokenEvent' }).payload.accessToken;
 
-  const logIn = (permissions?: string[]) =>
+  const logIn = (permissions?: string[]): Promise<FacebookAccessToken> =>
     eventBridge
-      .request({ type: 'org.racehorse.auth.FacebookLogInEvent', permissions })
-      .then(event => ensureEvent(event).accessToken);
+      .requestAsync({ type: 'org.racehorse.auth.FacebookLogInEvent', payload: { permissions } })
+      .then(event => event.payload.accessToken);
 
   return {
-    getCurrentAccessTokenOrLogIn: permissions =>
-      getCurrentAccessToken().then(accessToken => {
-        return accessToken?.isExpired === false ? accessToken : logIn(permissions);
-      }),
+    getCurrentAccessTokenOrLogIn(permissions) {
+      const accessToken = getCurrentAccessToken();
+
+      return accessToken?.isExpired === false ? Promise.resolve(accessToken) : logIn(permissions);
+    },
 
     getCurrentAccessToken,
 
     logIn,
 
-    logOut: () =>
-      eventBridge.request({ type: 'org.racehorse.auth.FacebookLogOutEvent' }).then(event => {
-        ensureEvent(event);
-      }),
+    logOut() {
+      eventBridge.request({ type: 'org.racehorse.auth.FacebookLogOutEvent' });
+    },
   };
 }

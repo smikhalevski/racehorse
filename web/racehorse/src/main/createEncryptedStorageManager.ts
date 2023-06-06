@@ -1,4 +1,5 @@
 import { EventBridge } from './createEventBridge';
+import { noop } from './utils';
 
 export interface EncryptedStorageManager {
   /**
@@ -33,7 +34,7 @@ export function createEncryptedStorageManager(eventBridge: EventBridge): Encrypt
     set: (key, value, password) =>
       eventBridge
         .requestAsync({ type: 'org.racehorse.SetEncryptedValueEvent', payload: { key, value, password } })
-        .then(() => undefined),
+        .then(noop),
 
     get: (key, password) =>
       eventBridge

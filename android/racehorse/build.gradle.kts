@@ -83,7 +83,7 @@ dependencies {
     compileOnly("com.google.code.gson:gson:2.8.9")
 
     // Google Sign-In
-    implementation("com.google.android.gms:play-services-auth:20.5.0")
+    compileOnly("com.google.android.gms:play-services-auth:20.5.0")
 
     // Facebook Login
     compileOnly("com.facebook.android:facebook-login:latest.release")

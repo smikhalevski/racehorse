@@ -1,5 +1,5 @@
-import { EventBridge } from './types';
-import { ensureEvent } from './utils';
+import { EventBridge } from './createEventBridge';
+import { noop } from './utils';
 
 export interface GoogleSignInAccount {
   id: string;
@@ -17,7 +17,7 @@ export interface GoogleSignInAccount {
 export interface GoogleSignInManager {
   getLastSignedInAccountOrSignIn(): Promise<GoogleSignInAccount | null>;
 
-  getLastSignedInAccount(): Promise<GoogleSignInAccount | null>;
+  getLastSignedInAccount(): GoogleSignInAccount | null;
 
   signIn(): Promise<GoogleSignInAccount | null>;
 
@@ -32,32 +32,23 @@ export interface GoogleSignInManager {
  * @param eventBridge The underlying event bridge.
  */
 export function createGoogleSignInManager(eventBridge: EventBridge): GoogleSignInManager {
-  const getLastSignedInAccount = () =>
-    eventBridge
-      .request({ type: 'org.racehorse.auth.GetLastGoogleSignedInAccountEvent' })
-      .then(event => ensureEvent(event).account);
+  const getLastSignedInAccount = (): GoogleSignInAccount =>
+    eventBridge.request({ type: 'org.racehorse.auth.GetLastGoogleSignedInAccountEvent' }).payload.account;
 
   const signIn = () =>
-    eventBridge.request({ type: 'org.racehorse.auth.GoogleSignInEvent' }).then(event => ensureEvent(event).account);
+    eventBridge.requestAsync({ type: 'org.racehorse.auth.GoogleSignInEvent' }).then(event => event.payload.account);
 
   return {
-    getLastSignedInAccountOrSignIn: () =>
-      getLastSignedInAccount().then(account => {
-        return account?.isExpired === false ? account : signIn();
-      }),
+    getLastSignedInAccountOrSignIn() {
+      return signIn();
+    },
 
     getLastSignedInAccount,
 
     signIn,
 
-    signOut: () =>
-      eventBridge.request({ type: 'org.racehorse.auth.GoogleSignOutEvent' }).then(event => {
-        ensureEvent(event);
-      }),
+    signOut: () => eventBridge.requestAsync({ type: 'org.racehorse.auth.GoogleSignOutEvent' }).then(noop),
 
-    revokeAccess: () =>
-      eventBridge.request({ type: 'org.racehorse.auth.GoogleRevokeAccessEvent' }).then(event => {
-        ensureEvent(event);
-      }),
+    revokeAccess: () => eventBridge.requestAsync({ type: 'org.racehorse.auth.GoogleRevokeAccessEvent' }).then(noop),
   };
 }
