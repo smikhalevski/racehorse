@@ -209,7 +209,7 @@ open class EventBridge(
     @Subscribe
     open fun onNoSubscriber(event: NoSubscriberEvent) {
         (event.originalEvent as? RequestEvent)?.let {
-            it.respond(ExceptionEvent(IllegalStateException("No subscribers for $it")))
+            it.respond(ExceptionEvent(IllegalStateException("No subscribers for ${it::class.java.name}")))
         }
     }
 
