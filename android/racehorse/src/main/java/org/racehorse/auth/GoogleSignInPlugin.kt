@@ -6,7 +6,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes
 import com.google.android.gms.common.api.ApiException
-import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.ExceptionEvent
 import org.racehorse.RequestEvent
@@ -72,7 +71,6 @@ open class GoogleSignInPlugin(
     private val activity: ComponentActivity,
     private val googleSignInOptions: GoogleSignInOptions =
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build(),
-    private val eventBus: EventBus = EventBus.getDefault()
 ) {
 
     private val googleSignInClient by lazy { GoogleSignIn.getClient(activity, googleSignInOptions) }

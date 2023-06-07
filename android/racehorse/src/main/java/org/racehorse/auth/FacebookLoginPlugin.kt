@@ -7,7 +7,6 @@ import com.facebook.FacebookCallback
 import com.facebook.FacebookException
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
-import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.RequestEvent
 import org.racehorse.ResponseEvent
@@ -24,10 +23,7 @@ class FacebookLogOutEvent : RequestEvent() {
     class ResultEvent : ResponseEvent()
 }
 
-open class FacebookLoginPlugin(
-    private val activity: ComponentActivity,
-    private val eventBus: EventBus = EventBus.getDefault()
-) {
+open class FacebookLoginPlugin(private val activity: ComponentActivity) {
 
     val loginManager by lazy { LoginManager.getInstance() }
 

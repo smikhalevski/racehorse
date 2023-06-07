@@ -12,6 +12,7 @@ import { PermissionsExample } from './examples/PermissionsExample';
 import { EncryptedStorageExample } from './examples/EncryptedStorageExample';
 import { ToastExample } from './examples/ToastExample';
 import { EventBridgeExample } from './examples/EventBridgeExample';
+import { FacebookLoginExample } from './examples/FacebookLoginExample';
 
 export function App() {
   return (
@@ -19,6 +20,7 @@ export function App() {
       <ToastExample />
       <KeyboardExample />
       <GoogleSignInExample />
+      <FacebookLoginExample />
       <ActivityExample />
       <PermissionsExample />
       <NotificationsExample />

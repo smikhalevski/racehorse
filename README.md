@@ -202,7 +202,7 @@ Enables Google Sign-In for your app.
 2. Register the plugin in your Android app:
 
 ```kotlin
-import org.racehorse.GoogleSignInPlugin
+import org.racehorse.auth.GoogleSignInPlugin
 
 EventBus.getDefault().register(GoogleSignInPlugin(activity))
 ```
@@ -214,7 +214,29 @@ import { googleSignInManager } from 'racehorse';
 
 googleSignInManager.signIn().then(account => {
   // The account is not-null if sign in succeeded
-})
+});
+```
+
+# `facebookLoginManager`
+
+1. [Follow instructions to configure a Facebook app.](https://developers.facebook.com/docs/facebook-login/android/)
+
+2. Register the plugin in your Android app:
+
+```kotlin
+import org.racehorse.auth.FacebookLoginPlugin
+
+EventBus.getDefault().register(FacebookLoginPlugin(activity))
+```
+
+3. Request sign in from the web app that is loaded into the web view:
+
+```ts
+import { facebookLoginManager } from 'racehorse';
+
+facebookLoginManager.logIn().then(accessToken => {
+  // The accessToken is not-null if log in succeeded
+});
 ```
 
 # `evergreenManager`

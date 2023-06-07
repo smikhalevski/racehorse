@@ -6,10 +6,12 @@ import android.webkit.CookieManager
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.webkit.WebViewAssetLoader
+import com.facebook.FacebookSdk
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.*
+import org.racehorse.auth.FacebookLoginPlugin
 import org.racehorse.auth.GoogleSignInPlugin
 import org.racehorse.evergreen.BundleReadyEvent
 import org.racehorse.evergreen.EvergreenPlugin
@@ -61,11 +63,17 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(PermissionsPlugin(this))
         eventBus.register(NotificationsPlugin(this))
 
-        // To enable Google Sign-In copy google-services.json from
+        // Google Sign-In
+        // <racehorse>/android/example/google-services.json
         // https://console.firebase.google.com/u/0/project/racehorse-73170/settings/general/android:com.example
-        // to <racehorse>/android/example/google-services.json
         eventBus.register(GoogleSignInPlugin(this))
+
+        // Facebook Login
+        // <racehorse>/android/example/src/main/AndroidManifest.xml
+        eventBus.register(FacebookLoginPlugin(this))
         eventBus.register(ToastPlugin(this))
+
+        FacebookSdk.sdkInitialize(this)
 
         // Run `npm run watch` in `<racehorse>/web/example` to build the web app and start the server.
 
