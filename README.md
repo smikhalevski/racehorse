@@ -2,6 +2,15 @@
 
 The bootstrapper for `WebView`-based Android apps.
 
+- [Basics](#basics)
+- [Request-response event chains](#request-response-event-chains)
+    - [Synchronous requests](#synchronous-requests)
+- [Event subscriptions in the web app](#event-subscriptions-in-the-web-app)
+- [`googleSignInManager`](#googlesigninmanager)
+- [`facebookLoginManager`](#facebookloginmanager)
+- [`evergreenManager`](#evergreenmanager)
+- [Proguard](#proguard)
+
 # Basics
 
 Racehorse is the pluggable bridge that marshals events between the web app and the native Android app. To showcase how
@@ -189,11 +198,11 @@ EventBus.getDefault().post(BatteryLowEvent())
 
 # `googleSignInManager`
 
-Enables Google Sign-In for your app.
+Enables Google Sign-In support.
 
-1. Go to https://console.firebase.google.com, set up a new project, and configure an Android app following all
-   instructions. Use the package name of your app (as defined in `build.gradle.kts/android/defaultConfig/applicationId`)
-   and SHA-1 that is used for app signing. You can use gradle to retrieve SHA-1:
+1. Go to [console.firebase.google.com](https://console.firebase.google.com), set up a new project, and configure an
+   Android app following all instructions. Use the `applicationId` of your app and SHA-1 that is used for app signing.
+   You can use gradle to retrieve SHA-1:
 
 ```shell
 ./gradlew signingReport
@@ -219,7 +228,9 @@ googleSignInManager.signIn().then(account => {
 
 # `facebookLoginManager`
 
-1. [Follow instructions to configure a Facebook app.](https://developers.facebook.com/docs/facebook-login/android/)
+Enables Facebook Login support.
+
+1. Go to [developers.facebook.com](https://developers.facebook.com/docs/facebook-login/android/) and register your app.
 
 2. Register the plugin in your Android app:
 
