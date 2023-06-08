@@ -3,7 +3,7 @@ package org.racehorse
 import android.app.Activity
 import androidx.activity.ComponentActivity
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.utils.WebIntent
+import org.racehorse.utils.SerializableIntent
 import org.racehorse.utils.launchActivity
 import org.racehorse.utils.launchActivityForResult
 import java.io.Serializable
@@ -19,15 +19,15 @@ class GetActivityInfoEvent : RequestEvent() {
  *
  * @param intent The intent that starts an activity.
  */
-class StartActivityEvent(val intent: WebIntent) : RequestEvent() {
+class StartActivityEvent(val intent: SerializableIntent) : RequestEvent() {
     class ResultEvent(val isStarted: Boolean) : ResponseEvent()
 }
 
 /**
  * Start an activity for the [intent] and wait for the result.
  */
-class StartActivityForResultEvent(val intent: WebIntent) : RequestEvent() {
-    class ResultEvent(val resultCode: Int, val intent: WebIntent?) : ResponseEvent()
+class StartActivityForResultEvent(val intent: SerializableIntent) : RequestEvent() {
+    class ResultEvent(val resultCode: Int, val intent: SerializableIntent?) : ResponseEvent()
 }
 
 /**
@@ -54,7 +54,7 @@ open class ActivityPlugin(private val activity: ComponentActivity) {
     @Subscribe
     open fun onStartActivityForResult(event: StartActivityForResultEvent) {
         val launched = activity.launchActivityForResult(event.intent.toIntent()) {
-            event.respond(StartActivityForResultEvent.ResultEvent(it.resultCode, it.data?.let(::WebIntent)))
+            event.respond(StartActivityForResultEvent.ResultEvent(it.resultCode, it.data?.let(::SerializableIntent)))
         }
 
         if (!launched) {

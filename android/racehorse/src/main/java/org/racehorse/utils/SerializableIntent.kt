@@ -13,7 +13,7 @@ import java.io.Serializable
  * @param flags Special flags associated with this intent, such as [Intent.FLAG_ACTIVITY_NEW_TASK].
  * @param extras A map of extended data from the intent.
  */
-class WebIntent(
+class SerializableIntent(
     var action: String? = null,
     val type: String? = null,
     var data: String? = null,

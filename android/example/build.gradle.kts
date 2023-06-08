@@ -21,6 +21,7 @@ android {
 
     buildTypes {
         release {
+            signingConfig = getByName("debug").signingConfig
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
@@ -54,6 +55,9 @@ dependencies {
 
     // Facebook Login
     implementation("com.facebook.android:facebook-login:latest.release")
+
+    // Firebase
+    implementation("com.google.firebase:firebase-messaging-ktx:23.1.2")
 
     implementation(project(":racehorse"))
 

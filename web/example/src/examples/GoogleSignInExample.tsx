@@ -12,8 +12,8 @@ export function GoogleSignInExample() {
         <p>
           <img
             style={{ width: '100px', height: '100px', borderRadius: '50%' }}
-            src={account.photoUrl}
-            alt={account.displayName}
+            src={account.photoUrl || ''}
+            alt={account.displayName || ''}
           />
         </p>
       )}

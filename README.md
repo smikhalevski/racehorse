@@ -232,10 +232,13 @@ Enables Facebook Login support.
 
 1. Go to [developers.facebook.com](https://developers.facebook.com/docs/facebook-login/android/) and register your app.
 
-2. Register the plugin in your Android app:
+2. Initialize the Facebook SDK and register the plugin in your Android app:
 
 ```kotlin
+import com.facebook.FacebookSdk
 import org.racehorse.auth.FacebookLoginPlugin
+
+FacebookSdk.sdkInitialize(activity)
 
 EventBus.getDefault().register(FacebookLoginPlugin(activity))
 ```

@@ -13,17 +13,17 @@ import org.racehorse.ResponseEvent
 import org.racehorse.utils.launchActivityForResult
 import java.io.Serializable
 
-class WebGoogleSignInAccount(
+class SerializableGoogleSignInAccount(
     val id: String?,
     val idToken: String?,
     val email: String?,
     val grantedScopes: List<String>,
     val serverAuthCode: String?,
-    val isExpired: Boolean,
     val displayName: String?,
     val givenName: String?,
     val familyName: String?,
     val photoUrl: String?,
+    val isExpired: Boolean,
 ) : Serializable {
     constructor(account: GoogleSignInAccount) : this(
         id = account.id,
@@ -31,11 +31,11 @@ class WebGoogleSignInAccount(
         email = account.email,
         grantedScopes = account.grantedScopes.map { it.scopeUri },
         serverAuthCode = account.serverAuthCode,
-        isExpired = account.isExpired,
         displayName = account.displayName,
         givenName = account.givenName,
         familyName = account.familyName,
         photoUrl = account.photoUrl.toString(),
+        isExpired = account.isExpired,
     )
 }
 
@@ -43,15 +43,15 @@ class WebGoogleSignInAccount(
  * Check for existing Google Sign-In account, if the user is already signed in the account will be non-null.
  */
 class GetLastGoogleSignedInAccountEvent : RequestEvent() {
-    class ResultEvent(val account: WebGoogleSignInAccount?) : ResponseEvent()
+    class ResultEvent(val account: SerializableGoogleSignInAccount?) : ResponseEvent()
 }
 
 class GoogleSignInEvent : RequestEvent() {
-    class ResultEvent(val account: WebGoogleSignInAccount?) : ResponseEvent()
+    class ResultEvent(val account: SerializableGoogleSignInAccount?) : ResponseEvent()
 }
 
 class GoogleSilentSignInEvent : RequestEvent() {
-    class ResultEvent(val account: WebGoogleSignInAccount?) : ResponseEvent()
+    class ResultEvent(val account: SerializableGoogleSignInAccount?) : ResponseEvent()
 }
 
 class GoogleSignOutEvent : RequestEvent() {
@@ -77,7 +77,7 @@ open class GoogleSignInPlugin(
 
     @Subscribe
     open fun onGetLastGoogleSignedInAccount(event: GetLastGoogleSignedInAccountEvent) {
-        val account = GoogleSignIn.getLastSignedInAccount(activity)?.let(::WebGoogleSignInAccount)
+        val account = GoogleSignIn.getLastSignedInAccount(activity)?.let(::SerializableGoogleSignInAccount)
 
         event.respond(GetLastGoogleSignedInAccountEvent.ResultEvent(account))
     }
@@ -89,7 +89,7 @@ open class GoogleSignInPlugin(
 
             event.respond(
                 try {
-                    GoogleSignInEvent.ResultEvent(WebGoogleSignInAccount(task.getResult(ApiException::class.java)))
+                    GoogleSignInEvent.ResultEvent(SerializableGoogleSignInAccount(task.getResult(ApiException::class.java)))
                 } catch (e: ApiException) {
                     if (e.statusCode == GoogleSignInStatusCodes.SIGN_IN_CANCELLED) {
                         GoogleSignInEvent.ResultEvent(null)
@@ -110,14 +110,14 @@ open class GoogleSignInPlugin(
         val task = googleSignInClient.silentSignIn()
 
         if (task.isSuccessful) {
-            event.respond(GoogleSilentSignInEvent.ResultEvent(WebGoogleSignInAccount(task.result)))
+            event.respond(GoogleSilentSignInEvent.ResultEvent(SerializableGoogleSignInAccount(task.result)))
             return
         }
 
         task.addOnCompleteListener {
             event.respond(
                 try {
-                    GoogleSignInEvent.ResultEvent(WebGoogleSignInAccount(task.getResult(ApiException::class.java)))
+                    GoogleSignInEvent.ResultEvent(SerializableGoogleSignInAccount(task.getResult(ApiException::class.java)))
                 } catch (e: ApiException) {
                     if (e.statusCode == GoogleSignInStatusCodes.SIGN_IN_REQUIRED) {
                         GoogleSignInEvent.ResultEvent(null)

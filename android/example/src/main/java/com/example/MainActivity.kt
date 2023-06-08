@@ -1,6 +1,7 @@
 package com.example
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.webkit.CookieManager
 import android.webkit.WebView
@@ -23,10 +24,6 @@ import java.net.URL
 
 @SuppressLint("SetJavaScriptEnabled")
 class MainActivity : AppCompatActivity() {
-
-    companion object {
-        private const val LIVE_RELOAD_ENABLED = true
-    }
 
     private val webView by lazy { WebView(this) }
     private val eventBus = EventBus.getDefault()
@@ -62,14 +59,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(ActivityPlugin(this))
         eventBus.register(PermissionsPlugin(this))
         eventBus.register(NotificationsPlugin(this))
-
-        // Google Sign-In
-        // <racehorse>/android/example/google-services.json
-        // https://console.firebase.google.com/u/0/project/racehorse-73170/settings/general/android:com.example
         eventBus.register(GoogleSignInPlugin(this))
-
-        // Facebook Login
-        // <racehorse>/android/example/src/main/AndroidManifest.xml
         eventBus.register(FacebookLoginPlugin(this))
         eventBus.register(ToastPlugin(this))
 
@@ -77,7 +67,7 @@ class MainActivity : AppCompatActivity() {
 
         // Run `npm run watch` in `<racehorse>/web/example` to build the web app and start the server.
 
-        if (LIVE_RELOAD_ENABLED) {
+        if (BuildConfig.DEBUG) {
             // 1️⃣ Live reload
             //
             // Debug in emulator with a server running on the host machine on localhost:10001
@@ -121,6 +111,10 @@ class MainActivity : AppCompatActivity() {
 
         cookieManager.flush()
         networkPlugin.disable()
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

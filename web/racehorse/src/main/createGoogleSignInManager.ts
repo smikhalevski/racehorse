@@ -2,16 +2,16 @@ import { EventBridge } from './createEventBridge';
 import { noop } from './utils';
 
 export interface GoogleSignInAccount {
-  id: string;
-  idToken: string;
-  email: string;
+  id: string | null;
+  idToken: string | null;
+  email: string | null;
   grantedScopes: string[];
-  serverAuthCode: string;
+  serverAuthCode: string | null;
+  displayName: string | null;
+  givenName: string | null;
+  familyName: string | null;
+  photoUrl: string | null;
   isExpired: boolean;
-  displayName: string;
-  givenName: string;
-  familyName: string;
-  photoUrl: string;
 }
 
 export interface GoogleSignInManager {
