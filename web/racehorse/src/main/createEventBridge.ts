@@ -247,5 +247,17 @@ function isException(event: Event): boolean {
 }
 
 function toError(event: Event): Error {
-  return Object.assign(new Error(), event.payload);
+  const error = new Error();
+  const { stack } = error;
+
+  Object.assign(error, event.payload);
+
+  if (stack !== undefined) {
+    const b = stack.indexOf('at');
+    const a = stack.lastIndexOf('\n', b);
+
+    error.stack = (b !== -1 ? error.stack!.replace(/\n\t/g, stack.substring(a, b)) + '' : '') + stack.substring(a + 1);
+  }
+
+  return error;
 }

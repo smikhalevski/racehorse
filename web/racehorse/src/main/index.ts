@@ -4,8 +4,10 @@ import { createDeepLinkManager } from './createDeepLinkManager';
 import { createDeviceManager } from './createDeviceManager';
 import { createEncryptedStorageManager } from './createEncryptedStorageManager';
 import { createEvergreenManager } from './createEvergreenManager';
+import { createFacebookLoginManager } from './createFacebookLoginManager';
 import { createFirebaseManager } from './createFirebaseManager';
 import { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager';
+import { createGoogleSignInManager } from './createGoogleSignInManager';
 import { createKeyboardManager } from './createKeyboardManager';
 import { createNetworkManager } from './createNetworkManager';
 import { createNotificationsManager } from './createNotificationsManager';
@@ -16,8 +18,10 @@ export * from './createDeviceManager';
 export * from './createEncryptedStorageManager';
 export * from './createEventBridge';
 export * from './createEvergreenManager';
+export * from './createFacebookLoginManager';
 export * from './createFirebaseManager';
 export * from './createGooglePlayReferrerManager';
+export * from './createGoogleSignInManager';
 export * from './createActivityManager';
 export * from './createKeyboardManager';
 export * from './createNetworkManager';
@@ -34,11 +38,15 @@ export const deviceManager = createDeviceManager(eventBridge);
 
 export const evergreenManager = createEvergreenManager(eventBridge);
 
+export const facebookLoginManager = createFacebookLoginManager(eventBridge);
+
 export const encryptedStorageManager = createEncryptedStorageManager(eventBridge);
 
 export const firebaseManager = createFirebaseManager(eventBridge);
 
 export const googlePlayReferrerManager = createGooglePlayReferrerManager(eventBridge);
+
+export const googleSignInManager = createGoogleSignInManager(eventBridge);
 
 export const keyboardManager = createKeyboardManager(eventBridge);
 

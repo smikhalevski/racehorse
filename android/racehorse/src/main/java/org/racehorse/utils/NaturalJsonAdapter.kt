@@ -10,6 +10,7 @@ import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
 import java.lang.reflect.Type
+import java.util.Date
 
 /**
  * Gson adapter that serializes and deserializes any values.
@@ -31,21 +32,28 @@ class NaturalJsonAdapter : JsonDeserializer<Any?>, JsonSerializer<Any?> {
             }
         }
 
-        json.isJsonPrimitive -> deserializePrimitive(json.asJsonPrimitive)
+        json.isJsonPrimitive -> deserializePrimitive(json.asJsonPrimitive, typeOfT)
 
         else -> null
     }
 
-    private fun deserializePrimitive(json: JsonPrimitive): Any = when {
+    private fun deserializePrimitive(json: JsonPrimitive, typeOfT: Type): Any = when {
 
         json.isString -> json.asString
 
         json.isBoolean -> json.asBoolean
 
-        else -> try {
-            json.asBigDecimal.longValueExact()
-        } catch (_: ArithmeticException) {
-            json.asDouble
+        else -> {
+            val value = try {
+                json.asBigDecimal.longValueExact()
+            } catch (_: ArithmeticException) {
+                json.asDouble
+            }
+            if (typeOfT == Date::class.java) {
+                Date(value.toLong())
+            } else {
+                value
+            }
         }
     }
 
@@ -56,6 +64,8 @@ class NaturalJsonAdapter : JsonDeserializer<Any?>, JsonSerializer<Any?> {
         is String -> JsonPrimitive(src)
 
         is Boolean -> JsonPrimitive(src)
+
+        is Date -> JsonPrimitive(src.time)
 
         is Char -> JsonPrimitive(src)
 

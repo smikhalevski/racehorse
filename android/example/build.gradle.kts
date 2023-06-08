@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -20,6 +21,7 @@ android {
 
     buildTypes {
         release {
+            signingConfig = getByName("debug").signingConfig
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
@@ -41,11 +43,21 @@ android {
 dependencies {
     // Android
     implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.webkit:webkit:1.6.1")
+    implementation("androidx.webkit:webkit:1.7.0")
 
     // EventBridge
     implementation("org.greenrobot:eventbus:3.3.1")
     implementation("com.google.code.gson:gson:2.8.9")
+
+    // Google Sign-In
+    implementation("com.google.android.gms:play-services-auth:20.5.0")
+    implementation(platform("com.google.firebase:firebase-bom:32.1.0"))
+
+    // Facebook Login
+    implementation("com.facebook.android:facebook-login:latest.release")
+
+    // Firebase
+    implementation("com.google.firebase:firebase-messaging-ktx:23.1.2")
 
     implementation(project(":racehorse"))
 

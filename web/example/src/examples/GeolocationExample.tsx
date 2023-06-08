@@ -9,7 +9,7 @@ export function GeolocationExample() {
       <h2>{'Geolocation'}</h2>
 
       {window.location.protocol !== 'https:' && (
-        <p style={{ color: 'red' }}>{'Disable MainActivity.LIVE_RELOAD_ENABLED to allow geolocation detection!'}</p>
+        <p style={{ color: 'red' }}>{'Pick "release" build variant to enable geolocation'}</p>
       )}
 
       <button

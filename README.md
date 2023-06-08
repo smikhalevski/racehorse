@@ -2,6 +2,15 @@
 
 The bootstrapper for `WebView`-based Android apps.
 
+- [Basics](#basics)
+- [Request-response event chains](#request-response-event-chains)
+    - [Synchronous requests](#synchronous-requests)
+- [Event subscriptions in the web app](#event-subscriptions-in-the-web-app)
+- [`googleSignInManager`](#googlesigninmanager)
+- [`facebookLoginManager`](#facebookloginmanager)
+- [`evergreenManager`](#evergreenmanager)
+- [Proguard](#proguard)
+
 # Basics
 
 Racehorse is the pluggable bridge that marshals events between the web app and the native Android app. To showcase how
@@ -187,7 +196,64 @@ anywhere in your Android app, and it would be delivered to a subscriber in the w
 EventBus.getDefault().post(BatteryLowEvent())
 ```
 
-# Evergreen
+# `googleSignInManager`
+
+Enables Google Sign-In support.
+
+1. Go to [console.firebase.google.com](https://console.firebase.google.com), set up a new project, and configure an
+   Android app following all instructions. Use the `applicationId` of your app and SHA-1 that is used for app signing.
+   You can use gradle to retrieve SHA-1:
+
+```shell
+./gradlew signingReport
+```
+
+2. Register the plugin in your Android app:
+
+```kotlin
+import org.racehorse.auth.GoogleSignInPlugin
+
+EventBus.getDefault().register(GoogleSignInPlugin(activity))
+```
+
+3. Request sign in from the web app that is loaded into the web view:
+
+```ts
+import { googleSignInManager } from 'racehorse';
+
+googleSignInManager.signIn().then(account => {
+  // The account is not-null if sign in succeeded
+});
+```
+
+# `facebookLoginManager`
+
+Enables Facebook Login support.
+
+1. Go to [developers.facebook.com](https://developers.facebook.com/docs/facebook-login/android/) and register your app.
+
+2. Initialize the Facebook SDK and register the plugin in your Android app:
+
+```kotlin
+import com.facebook.FacebookSdk
+import org.racehorse.auth.FacebookLoginPlugin
+
+FacebookSdk.sdkInitialize(activity)
+
+EventBus.getDefault().register(FacebookLoginPlugin(activity))
+```
+
+3. Request sign in from the web app that is loaded into the web view:
+
+```ts
+import { facebookLoginManager } from 'racehorse';
+
+facebookLoginManager.logIn().then(accessToken => {
+  // The accessToken is not-null if log in succeeded
+});
+```
+
+# `evergreenManager`
 
 ```mermaid
 graph TD

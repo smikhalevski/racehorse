@@ -15,6 +15,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.SubscriberExceptionEvent
 import org.racehorse.utils.NaturalJsonAdapter
 import java.io.Serializable
+import java.util.Date
 
 /**
  * An event posted from the web view.
@@ -120,6 +121,7 @@ open class EventBridge(
         .serializeNulls()
         .registerTypeAdapter(Serializable::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Bundle::class.java, NaturalJsonAdapter())
+        .registerTypeAdapter(Date::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Any::class.java, NaturalJsonAdapter())
         .create(),
     private val handler: Handler = Handler(Looper.getMainLooper()),
@@ -209,7 +211,7 @@ open class EventBridge(
     @Subscribe
     open fun onNoSubscriber(event: NoSubscriberEvent) {
         (event.originalEvent as? RequestEvent)?.let {
-            it.respond(ExceptionEvent(IllegalStateException("No subscribers for $it")))
+            it.respond(ExceptionEvent(IllegalStateException("No subscribers for ${it::class.java.name}")))
         }
     }
 
@@ -251,8 +253,8 @@ open class EventBridge(
     private fun publishEvent(requestId: Int, event: Any) = handler.post {
         webView.evaluateJavascript(
             "(function(conn){" +
-                    "conn && conn.inbox && conn.inbox.publish([$requestId, ${getEventJson(event)}])" +
-                    "})(window.$connectionKey)",
+                "conn && conn.inbox && conn.inbox.publish([$requestId, ${getEventJson(event)}])" +
+                "})(window.$connectionKey)",
             null
         )
     }

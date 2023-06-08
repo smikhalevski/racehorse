@@ -21,3 +21,9 @@ inline fun <reified T> EventBus.postForSubscriber(eventFactory: () -> T): T? =
 
 inline fun <reified T : SyncHandlerEvent> EventBus.postForSyncHandler(eventFactory: () -> T) =
     if (hasSubscriberForEvent(T::class.java)) eventFactory().apply(::post).isHandled else false
+
+fun EventBus.registerOnce(subscriber: Any) {
+    if (!isRegistered(subscriber)) {
+        register(subscriber)
+    }
+}

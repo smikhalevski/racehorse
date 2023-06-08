@@ -82,6 +82,12 @@ dependencies {
     compileOnly("org.greenrobot:eventbus:3.3.1")
     compileOnly("com.google.code.gson:gson:2.8.9")
 
+    // Google Sign-In
+    compileOnly("com.google.android.gms:play-services-auth:20.5.0")
+
+    // Facebook Login
+    compileOnly("com.facebook.android:facebook-login:latest.release")
+
     // Google Play referrer
     compileOnly("com.android.installreferrer:installreferrer:2.2")
 
@@ -91,6 +97,7 @@ dependencies {
     testImplementation("com.google.code.gson:gson:2.8.9")
     testImplementation("junit:junit:4.13.2")
     testImplementation("com.squareup.okhttp:mockwebserver:1.2.1")
+
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
