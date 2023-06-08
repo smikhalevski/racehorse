@@ -57,6 +57,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(networkPlugin)
         eventBus.register(KeyboardPlugin(this))
         eventBus.register(ActivityPlugin(this))
+        eventBus.register(DeepLinkPlugin())
         eventBus.register(PermissionsPlugin(this))
         eventBus.register(NotificationsPlugin(this))
         eventBus.register(GoogleSignInPlugin(this))
@@ -114,7 +115,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
+        if (intent != null) {
+            EventBus.getDefault().post(OpenDeepLinkEvent(intent))
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
