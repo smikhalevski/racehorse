@@ -97,7 +97,7 @@ internal class BundleDownload(
                 HttpURLConnection.HTTP_OK -> readLength = 0L
                 HttpURLConnection.HTTP_PARTIAL -> {}
 
-                else -> throw IOException()
+                else -> throw IOException("Cannot download bundle")
             }
 
             if (connection.getHeaderField("Accept-Ranges")?.contains("bytes") == true) {
@@ -105,7 +105,7 @@ internal class BundleDownload(
             }
 
             FileOutputStream(zipFile, readLength != 0L).use { outputStream ->
-                val contentLength = connection.contentLength
+                val contentLength = connection.contentLength.let { if (it != -1) it + readLength.toInt() else -1 }
                 val buffer = ByteArray(bufferSize)
 
                 while (!isStopped) {
