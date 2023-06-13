@@ -75,7 +75,7 @@ private class FileChooserLauncher(
         activity.launchActivityForResult(
             ActivityResultContracts.RequestPermission(),
             Manifest.permission.CAMERA,
-            this::launchChooser
+            ::launchChooser
         )
     }
 
