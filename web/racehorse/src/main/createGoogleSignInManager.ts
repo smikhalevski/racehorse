@@ -74,18 +74,16 @@ export interface GoogleSignInManager {
 export function createGoogleSignInManager(eventBridge: EventBridge): GoogleSignInManager {
   return {
     getLastSignedInAccount: () =>
-      eventBridge.request({ type: 'org.racehorse.auth.GetLastGoogleSignedInAccountEvent' }).payload.account,
+      eventBridge.request({ type: 'org.racehorse.GetLastGoogleSignedInAccountEvent' }).payload.account,
 
     signIn: () =>
-      eventBridge.requestAsync({ type: 'org.racehorse.auth.GoogleSignInEvent' }).then(event => event.payload.account),
+      eventBridge.requestAsync({ type: 'org.racehorse.GoogleSignInEvent' }).then(event => event.payload.account),
 
     silentSignIn: () =>
-      eventBridge
-        .requestAsync({ type: 'org.racehorse.auth.GoogleSilentSignInEvent' })
-        .then(event => event.payload.account),
+      eventBridge.requestAsync({ type: 'org.racehorse.GoogleSilentSignInEvent' }).then(event => event.payload.account),
 
-    signOut: () => eventBridge.requestAsync({ type: 'org.racehorse.auth.GoogleSignOutEvent' }).then(noop),
+    signOut: () => eventBridge.requestAsync({ type: 'org.racehorse.GoogleSignOutEvent' }).then(noop),
 
-    revokeAccess: () => eventBridge.requestAsync({ type: 'org.racehorse.auth.GoogleRevokeAccessEvent' }).then(noop),
+    revokeAccess: () => eventBridge.requestAsync({ type: 'org.racehorse.GoogleRevokeAccessEvent' }).then(noop),
   };
 }

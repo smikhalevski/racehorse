@@ -101,15 +101,15 @@ export interface FacebookLoginManager {
 export function createFacebookLoginManager(eventBridge: EventBridge): FacebookLoginManager {
   return {
     getCurrentAccessToken: () =>
-      eventBridge.request({ type: 'org.racehorse.auth.GetCurrentFacebookAccessTokenEvent' }).payload.accessToken,
+      eventBridge.request({ type: 'org.racehorse.GetCurrentFacebookAccessTokenEvent' }).payload.accessToken,
 
     logIn: permissions =>
       eventBridge
-        .requestAsync({ type: 'org.racehorse.auth.FacebookLogInEvent', payload: { permissions } })
+        .requestAsync({ type: 'org.racehorse.FacebookLogInEvent', payload: { permissions } })
         .then(event => event.payload.accessToken),
 
     logOut() {
-      eventBridge.request({ type: 'org.racehorse.auth.FacebookLogOutEvent' });
+      eventBridge.request({ type: 'org.racehorse.FacebookLogOutEvent' });
     },
   };
 }

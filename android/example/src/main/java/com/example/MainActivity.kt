@@ -12,8 +12,6 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.*
-import org.racehorse.auth.FacebookLoginPlugin
-import org.racehorse.auth.GoogleSignInPlugin
 import org.racehorse.evergreen.BundleReadyEvent
 import org.racehorse.evergreen.EvergreenPlugin
 import org.racehorse.evergreen.UpdateMode
@@ -62,6 +60,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(NotificationsPlugin(this))
         eventBus.register(GoogleSignInPlugin(this))
         eventBus.register(FacebookLoginPlugin(this))
+        eventBus.register(FacebookSharePlugin(this))
         eventBus.register(ToastPlugin(this))
 
         FacebookSdk.sdkInitialize(this)
