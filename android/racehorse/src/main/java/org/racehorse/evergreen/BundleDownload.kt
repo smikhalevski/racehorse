@@ -105,7 +105,7 @@ internal class BundleDownload(
             }
 
             FileOutputStream(zipFile, readLength != 0L).use { outputStream ->
-                val contentLength = connection.contentLength.let { if (it != -1) it + readLength.toInt() else -1 }
+                val contentLength = connection.contentLength.let { if (it == -1) -1 else it + readLength.toInt() }
                 val buffer = ByteArray(bufferSize)
 
                 while (!isStopped) {
