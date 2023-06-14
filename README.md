@@ -27,14 +27,14 @@ npm install
 npm run build
 ```
 
-3. Run web server that would serve the app for the debug build:
+3. Start the web server that would serve the app for the debug build:
 
 ```shell
 cd web/example
 npm run watch
 ```
 
-4. Open `<racehorse>/android` in Android Studio and run example app.
+4. Open `<racehorse>/android` in Android Studio and run `example` app.
 
 # Basics
 
