@@ -19,13 +19,23 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("example") {
+            storeFile = file("example-keystore.jks")
+            storePassword = "example"
+            keyAlias = "key0"
+            keyPassword = "example"
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig = getByName("debug").signingConfig
+            signingConfig = signingConfigs.getByName("example")
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
         debug {
+            signingConfig = signingConfigs.getByName("example")
             applicationIdSuffix = ".debug"
         }
     }

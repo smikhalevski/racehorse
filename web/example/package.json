@@ -1,8 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "build": "rollup --config rollup.config.mjs",
-    "watch": "rollup --config rollup.config.mjs --watch",
+    "build": "rollup --config rollup.config.js",
+    "watch": "rollup --config rollup.config.js --watch",
     "clean": "rimraf dist",
     "test": "exit 0"
   },

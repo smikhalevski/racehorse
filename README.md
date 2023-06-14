@@ -11,6 +11,31 @@ The bootstrapper for `WebView`-based Android apps.
 - [`evergreenManager`](#evergreenmanager)
 - [Proguard](#proguard)
 
+# How to run the example app?
+
+1. Clone this repo:
+
+```shell
+git clone git@github.com:smikhalevski/racehorse.git
+cd racehorse
+```
+
+2. Install packages and build Racehorse:
+
+```shell
+npm install
+npm run build
+```
+
+3. Start the web server that would serve the app for the debug build:
+
+```shell
+cd web/example
+npm run watch
+```
+
+4. Open `<racehorse>/android` in Android Studio and run `example` app.
+
 # Basics
 
 Racehorse is the pluggable bridge that marshals events between the web app and the native Android app. To showcase how
