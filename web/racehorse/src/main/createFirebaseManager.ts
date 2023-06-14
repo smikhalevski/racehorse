@@ -4,11 +4,12 @@ export interface FirebaseManager {
   /**
    * Returns the Firebase token associated with the device.
    */
-  getFirebaseToken(): string | null;
+  getFirebaseToken(): Promise<string | null>;
 }
 
 export function createFirebaseManager(eventBridge: EventBridge): FirebaseManager {
   return {
-    getFirebaseToken: () => eventBridge.request({ type: 'org.racehorse.GetFirebaseTokenEvent' }).payload.token,
+    getFirebaseToken: () =>
+      eventBridge.requestAsync({ type: 'org.racehorse.GetFirebaseTokenEvent' }).then(event => event.payload.token),
   };
 }
