@@ -1,4 +1,4 @@
-package org.racehorse.auth
+package org.racehorse
 
 import androidx.activity.ComponentActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -7,9 +7,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes
 import com.google.android.gms.common.api.ApiException
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.ExceptionEvent
-import org.racehorse.RequestEvent
-import org.racehorse.ResponseEvent
 import org.racehorse.utils.launchActivityForResult
 import java.io.Serializable
 
@@ -54,13 +51,9 @@ class GoogleSilentSignInEvent : RequestEvent() {
     class ResultEvent(val account: SerializableGoogleSignInAccount?) : ResponseEvent()
 }
 
-class GoogleSignOutEvent : RequestEvent() {
-    class ResultEvent : ResponseEvent()
-}
+class GoogleSignOutEvent : RequestEvent()
 
-class GoogleRevokeAccessEvent : RequestEvent() {
-    class ResultEvent : ResponseEvent()
-}
+class GoogleRevokeAccessEvent : RequestEvent()
 
 /**
  * @param googleSignInOptions Options to initialize Google Sign-In. Bu default, sign-in is configured to request the
@@ -132,14 +125,14 @@ open class GoogleSignInPlugin(
     @Subscribe
     open fun onGoogleSignOutEvent(event: GoogleSignOutEvent) {
         googleSignInClient.signOut().addOnCompleteListener(activity) {
-            event.respond(GoogleSignOutEvent.ResultEvent())
+            event.respond(VoidEvent())
         }
     }
 
     @Subscribe
     open fun onGoogleRevokeAccess(event: GoogleRevokeAccessEvent) {
         googleSignInClient.revokeAccess().addOnCompleteListener(activity) {
-            event.respond(GoogleRevokeAccessEvent.ResultEvent())
+            event.respond(VoidEvent())
         }
     }
 }

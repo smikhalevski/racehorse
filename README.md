@@ -211,7 +211,7 @@ Enables Google Sign-In support.
 2. Register the plugin in your Android app:
 
 ```kotlin
-import org.racehorse.auth.GoogleSignInPlugin
+import org.racehorse.GoogleSignInPlugin
 
 EventBus.getDefault().register(GoogleSignInPlugin(activity))
 ```
@@ -236,7 +236,7 @@ Enables Facebook Login support.
 
 ```kotlin
 import com.facebook.FacebookSdk
-import org.racehorse.auth.FacebookLoginPlugin
+import org.racehorse.FacebookLoginPlugin
 
 FacebookSdk.sdkInitialize(activity)
 

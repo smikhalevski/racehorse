@@ -1,4 +1,4 @@
-package org.racehorse.auth
+package org.racehorse
 
 import androidx.activity.ComponentActivity
 import com.facebook.AccessToken
@@ -8,8 +8,6 @@ import com.facebook.FacebookException
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.RequestEvent
-import org.racehorse.ResponseEvent
 import java.io.Serializable
 
 class SerializableFacebookAccessToken(
@@ -52,9 +50,7 @@ class FacebookLogInEvent(val permissions: Array<String> = arrayOf()) : RequestEv
     class ResultEvent(val accessToken: SerializableFacebookAccessToken?) : ResponseEvent()
 }
 
-class FacebookLogOutEvent : RequestEvent() {
-    class ResultEvent : ResponseEvent()
-}
+class FacebookLogOutEvent : RequestEvent()
 
 open class FacebookLoginPlugin(private val activity: ComponentActivity) {
 
@@ -93,6 +89,6 @@ open class FacebookLoginPlugin(private val activity: ComponentActivity) {
     @Subscribe
     fun onFacebookLogOut(event: FacebookLogOutEvent) {
         loginManager.logOut()
-        event.respond(FacebookLogOutEvent.ResultEvent())
+        event.respond(VoidEvent())
     }
 }

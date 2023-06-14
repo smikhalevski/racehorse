@@ -5,6 +5,7 @@ import { createDeviceManager } from './createDeviceManager';
 import { createEncryptedStorageManager } from './createEncryptedStorageManager';
 import { createEvergreenManager } from './createEvergreenManager';
 import { createFacebookLoginManager } from './createFacebookLoginManager';
+import { createFacebookShareManager } from './createFacebookShareManager';
 import { createFirebaseManager } from './createFirebaseManager';
 import { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager';
 import { createGoogleSignInManager } from './createGoogleSignInManager';
@@ -19,6 +20,7 @@ export * from './createEncryptedStorageManager';
 export * from './createEventBridge';
 export * from './createEvergreenManager';
 export * from './createFacebookLoginManager';
+export * from './createFacebookShareManager';
 export * from './createFirebaseManager';
 export * from './createGooglePlayReferrerManager';
 export * from './createGoogleSignInManager';
@@ -39,6 +41,8 @@ export const deviceManager = createDeviceManager(eventBridge);
 export const evergreenManager = createEvergreenManager(eventBridge);
 
 export const facebookLoginManager = createFacebookLoginManager(eventBridge);
+
+export const facebookShareManager = createFacebookShareManager(eventBridge);
 
 export const encryptedStorageManager = createEncryptedStorageManager(eventBridge);
 
