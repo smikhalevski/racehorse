@@ -10,7 +10,7 @@
     "lib"
   ],
   "scripts": {
-    "build": "rollup --config ../../rollup.config.mjs",
+    "build": "rollup --config ../../rollup.config.js",
     "clean": "rimraf ./lib",
     "test": "jest --config ../../jest.config.js"
   },
