@@ -6,7 +6,7 @@ import android.net.Uri
 import android.os.Build
 
 /**
- * Returns the new intent that is applied only to packages that passed the filter.
+ * Returns the new intent that is applied only to packages that are accepted by the predicate.
  *
  * For example, to prevent sharing a URL via Bluetooth:
  *
