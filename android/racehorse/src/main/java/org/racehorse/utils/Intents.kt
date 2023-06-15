@@ -6,16 +6,31 @@ import android.net.Uri
 import android.os.Build
 
 /**
- * Returns the new intent that wouldn't be applied to the apps with given package names.
+ * Returns the new intent that is applied only to packages that passed the filter.
  *
- * Requires [`QUERY_ALL_PACKAGES`](https://developer.android.com/training/package-visibility) permission, otherwise
- * no activity would be started.
+ * For example, to prevent sharing a URL via Bluetooth:
+ *
+ * ```kotlin
+ * val intent = Intent(Intent.ACTION_SEND)
+ *     .setType("text/plain")
+ *     .putExtra(Intent.EXTRA_TEXT, "http://example.com")
+ *     .filterPackageNames(activity.packageManager) { "bluetooth" !in it }
+ * ```
+ *
+ * Add query to the manifest:
+ *
+ * ```xml
+ * <manifest>
+ *   <queries>
+ *     <intent>
+ *       <action android:name="android.intent.action.SEND" />
+ *       <data android:mimeType="text/plain" />
+ *     </intent>
+ *   </queries>
+ * </manifest>
+ * ```
  */
-fun Intent.excludePackages(packageManager: PackageManager, excludedPackageNames: Array<String>): Intent? {
-    if (excludedPackageNames.isEmpty()) {
-        return this
-    }
-
+fun Intent.filterPackageNames(packageManager: PackageManager, predicate: (packageName: String) -> Boolean): Intent? {
     val resolveInfos = if (Build.VERSION.SDK_INT >= 33) {
         packageManager.queryIntentActivities(this, PackageManager.ResolveInfoFlags.of(0L))
     } else {
@@ -23,10 +38,8 @@ fun Intent.excludePackages(packageManager: PackageManager, excludedPackageNames:
         packageManager.queryIntentActivities(this, 0)
     }
 
-    val intents = resolveInfos.mapNotNull { resolveInfo ->
-        resolveInfo.activityInfo.packageName
-            ?.takeIf { excludedPackageNames.none(it::startsWith) }
-            ?.let { Intent(this).setPackage(it) }
+    val intents = resolveInfos.mapNotNull {
+        it.activityInfo.packageName.takeIf(predicate)?.let(Intent(this)::setPackage)
     }
 
     return if (intents.size > 1) {

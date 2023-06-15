@@ -53,8 +53,8 @@ private class FileChooserLauncher(
 
     private val mimeTypes = fileChooserParams.acceptTypes.joinToString(",")
 
-    private val isImage = mimeTypes.isEmpty() || mimeTypes.contains("*/*") || mimeTypes.contains("image/")
-    private val isVideo = mimeTypes.isEmpty() || mimeTypes.contains("*/*") || mimeTypes.contains("video/")
+    private val isImage = mimeTypes.isEmpty() || "*/*" in mimeTypes || "image/" in mimeTypes
+    private val isVideo = mimeTypes.isEmpty() || "*/*" in mimeTypes || "video/" in mimeTypes
 
     fun start() {
         if (

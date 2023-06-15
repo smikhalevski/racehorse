@@ -51,10 +51,10 @@ open class PermissionsPlugin(private val activity: ComponentActivity) {
     open fun onPermissionRequest(event: PermissionRequestEvent) {
         val permissions = HashSet<String>()
 
-        if (event.request.resources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
+        if (PermissionRequest.RESOURCE_VIDEO_CAPTURE in event.request.resources) {
             permissions.add(Manifest.permission.CAMERA)
         }
-        if (event.request.resources.contains(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
+        if (PermissionRequest.RESOURCE_AUDIO_CAPTURE in event.request.resources) {
             permissions.add(Manifest.permission.RECORD_AUDIO)
         }
         if (permissions.isEmpty() || !event.shouldHandle()) {
