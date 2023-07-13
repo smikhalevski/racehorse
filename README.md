@@ -1,4 +1,6 @@
-# Racehorse 🏇
+<p align="center">
+  <img src="./logo.png" alt="Racehorse" width="320"/>
+</p>
 
 The bootstrapper for `WebView`-based Android apps.
 
