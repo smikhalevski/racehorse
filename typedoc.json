@@ -10,6 +10,8 @@
   "entryPointStrategy": "packages",
   "disableSources": true,
   "readme": "none",
+  "tsconfig": "./tsconfig.build.json",
+  "customCss": "./assets/typedoc.css",
   "sidebarLinks": {
     "Racehorse Android API": "https://smikhalevski.github.io/racehorse/android/index.html"
   }

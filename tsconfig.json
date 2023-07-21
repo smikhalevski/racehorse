@@ -22,5 +22,8 @@
   },
   "include": [
     "./web/*/src/main/**/*"
+  ],
+  "exclude": [
+    "./web/example/**/*"
   ]
 }

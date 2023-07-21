@@ -1,17 +1,36 @@
 <p align="center">
-  <img src="./logo.png" alt="Racehorse" width="320"/>
+  <img src="./assets/logo.png" alt="Racehorse" width="320"/>
 </p>
 
 The bootstrapper for `WebView`-based Android apps.
 
+🚀&ensp;**Features**
+
 - [Basics](#basics)
 - [Request-response event chains](#request-response-event-chains)
-    - [Synchronous requests](#synchronous-requests)
-- [Event subscriptions in the web app](#event-subscriptions-in-the-web-app)
-- [`googleSignInManager`](#googlesigninmanager)
-- [`facebookLoginManager`](#facebookloginmanager)
-- [`evergreenManager`](#evergreenmanager)
+- [Event subscriptions](#event-subscriptions)
 - [Proguard](#proguard)
+
+🔌&ensp;**Plugins**
+
+- Activity
+- Asset loader
+- DeepLink
+- Device
+- Encrypted storage
+- Event
+- Evergreen
+- Facebook Login
+- Facebook Sharing
+- File chooser
+- Firebase
+- Google Play referrer
+- Google Sign-In
+- HTTPS
+- Keyboard
+- Network
+- Notifications
+- Permissions
 
 # How to run the example app?
 
@@ -189,7 +208,7 @@ manually before using synchronous requests:
 await eventBridge.connect();
 ```
 
-# Event subscriptions in the web app
+# Event subscriptions
 
 While web can post a request event to the Android, it is frequently required that the Android would post an event to the
 web app without an explicit request. This can be achieved using subscriptions.
@@ -216,6 +235,16 @@ eventBridge.subscribe(event => {
 });
 ```
 
+To subscribe to an event of the given type, you can use a shortcut:
+
+```js
+import { eventBridge } from 'racehorse';
+
+eventBridge.subscribe('com.example.BatteryLowEvent', payload => {
+  // Handle the event payload here
+});
+```
+
 If you have [an `EventBridge` registered](#basics) in the event bus, then you can post `BatteryLowEvent` event from
 anywhere in your Android app, and it would be delivered to a subscriber in the web app:
 
@@ -223,64 +252,47 @@ anywhere in your Android app, and it would be delivered to a subscriber in the w
 EventBus.getDefault().post(BatteryLowEvent())
 ```
 
-# `googleSignInManager`
+# Proguard
 
-Enables Google Sign-In support.
+`org.racehorse:racehorse` is an Android library (AAR) that provides its own
+[proguard rules](./android/racehorse/proguard-rules.pro), so no additional action is needed. Proguard rules prevent
+obfuscation of events and related classes which are available in Racehorse.
 
-1. Go to [console.firebase.google.com](https://console.firebase.google.com), set up a new project, and configure an
-   Android app following all instructions. Use the `applicationId` of your app and SHA-1 that is used for app signing.
-   You can use gradle to retrieve SHA-1:
+# Plugins
 
-```shell
-./gradlew signingReport
-```
+## `activityManager`
 
-2. Register the plugin in your Android app:
+See [`ActivityManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.ActivityManager.html) in the docs.
+
+Starts activities and provides info about the activity that renders the web view.
+
+1. Initialize the plugin in your Android app:
 
 ```kotlin
-import org.racehorse.GoogleSignInPlugin
+import org.racehorse.ActivityPlugin
 
-EventBus.getDefault().register(GoogleSignInPlugin(activity))
+EventBus.getDefault().register(ActivityPlugin(activity))
 ```
 
-3. Request sign in from the web app that is loaded into the web view:
+2. Start the activity, for example to open settings app and navigate user to the notification settings:
 
 ```ts
-import { googleSignInManager } from 'racehorse';
+import { activityManager, Intent } from 'racehorse';
 
-googleSignInManager.signIn().then(account => {
-  // The account is not-null if sign in succeeded
+activityManager.startActivity({
+  action: 'android.settings.APP_NOTIFICATION_SETTINGS',
+  flags: Intent.FLAG_ACTIVITY_NEW_TASK,
+  extras: {
+    'android.provider.extra.APP_PACKAGE': activityManager.getActivityInfo().packageName,
+  },
 });
 ```
 
-# `facebookLoginManager`
+## `deepLinkManager`
 
-Enables Facebook Login support.
+## `deviceManager`
 
-1. Go to [developers.facebook.com](https://developers.facebook.com/docs/facebook-login/android/) and register your app.
-
-2. Initialize the Facebook SDK and register the plugin in your Android app:
-
-```kotlin
-import com.facebook.FacebookSdk
-import org.racehorse.FacebookLoginPlugin
-
-FacebookSdk.sdkInitialize(activity)
-
-EventBus.getDefault().register(FacebookLoginPlugin(activity))
-```
-
-3. Request sign in from the web app that is loaded into the web view:
-
-```ts
-import { facebookLoginManager } from 'racehorse';
-
-facebookLoginManager.logIn().then(accessToken => {
-  // The accessToken is not-null if log in succeeded
-});
-```
-
-# `evergreenManager`
+## `evergreenManager`
 
 ```mermaid
 graph TD
@@ -322,8 +334,75 @@ DownloadBundle
 --> BundleDownloaded
 ```
 
-# Proguard
+## `facebookLoginManager`
 
-`org.racehorse:racehorse` is an Android library (AAR) that provides its own
-[proguard rules](./android/racehorse/proguard-rules.pro), so no additional action is needed. Proguard rules prevent
-obfuscation of events and related classes which are available in Racehorse.
+Enables Facebook Login support.
+
+1. Go to [developers.facebook.com](https://developers.facebook.com/docs/facebook-login/android/) and register your app.
+
+2. Initialize the Facebook SDK and register the plugin in your Android app:
+
+```kotlin
+import com.facebook.FacebookSdk
+import org.racehorse.FacebookLoginPlugin
+
+FacebookSdk.sdkInitialize(activity)
+
+EventBus.getDefault().register(FacebookLoginPlugin(activity))
+```
+
+3. Request sign in from the web app that is loaded into the web view:
+
+```ts
+import { facebookLoginManager } from 'racehorse';
+
+facebookLoginManager.logIn().then(accessToken => {
+  // The accessToken is not-null if log in succeeded
+});
+```
+
+## `facebookShareManager`
+
+## `encryptedStorageManager`
+
+## `firebaseManager`
+
+## `googlePlayReferrerManager`
+
+## `googleSignInManager`
+
+Enables Google Sign-In support.
+
+1. Go to [console.firebase.google.com](https://console.firebase.google.com), set up a new project, and configure an
+   Android app following all instructions. Use the `applicationId` of your app and SHA-1 that is used for app signing.
+   You can use gradle to retrieve SHA-1:
+
+```shell
+./gradlew signingReport
+```
+
+2. Register the plugin in your Android app:
+
+```kotlin
+import org.racehorse.GoogleSignInPlugin
+
+EventBus.getDefault().register(GoogleSignInPlugin(activity))
+```
+
+3. Request sign in from the web app that is loaded into the web view:
+
+```ts
+import { googleSignInManager } from 'racehorse';
+
+googleSignInManager.signIn().then(account => {
+  // The account is not-null if sign in succeeded
+});
+```
+
+## `keyboardManager`
+
+## `networkManager`
+
+## `notificationsManager`
+
+## `permissionsManager`
