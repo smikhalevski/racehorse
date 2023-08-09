@@ -82,6 +82,19 @@ class VoidEvent : ResponseEvent()
  */
 class ExceptionEvent(@Transient val cause: Throwable) : ResponseEvent() {
 
+    companion object {
+        /**
+         * Returns an event from the block, or an [ExceptionEvent] if an error is thrown.
+         */
+        fun unless(block: () -> ChainableEvent): ChainableEvent = try {
+            block()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+
+            ExceptionEvent(e)
+        }
+    }
+
     /**
      * The class name of the [Throwable] that caused the event.
      */
