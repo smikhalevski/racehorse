@@ -11,6 +11,11 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+
+        // Google Pay
+        maven {
+            url = java.net.URI("file:${rootDir}/tapandpay_sdk/")
+        }
     }
 }
 
