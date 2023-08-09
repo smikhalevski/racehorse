@@ -40,5 +40,10 @@ jobs:
 
       - uses: android-actions/setup-android@v2
 
+      - name: Setup
+        run: cd android && gpg -dq --batch --yes --passphrase ${GPG_PASSPHRASE} tapandpay_sdk.zip.gpg | tar -zx
+        env:
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
       - run: ../gradlew test
         working-directory: ./android/racehorse
