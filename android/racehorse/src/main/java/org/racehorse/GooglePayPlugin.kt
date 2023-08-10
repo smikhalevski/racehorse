@@ -202,25 +202,21 @@ class GooglePayPlugin(private val activity: ComponentActivity, private val event
     @Subscribe
     fun onGooglePayGetEnvironment(event: GooglePayGetEnvironmentEvent) {
         tapAndPayClient.environment.addOnCompleteListener {
-            event.respond(ExceptionEvent.unless {
-                GooglePayGetEnvironmentEvent.ResultEvent(it.result)
-            })
+            event.respond { GooglePayGetEnvironmentEvent.ResultEvent(it.result) }
         }
     }
 
     @Subscribe
     fun onGooglePayGetStableHardwareId(event: GooglePayGetStableHardwareIdEvent) {
         tapAndPayClient.stableHardwareId.addOnCompleteListener {
-            event.respond(ExceptionEvent.unless {
-                GooglePayGetStableHardwareIdEvent.ResultEvent(it.result)
-            })
+            event.respond { GooglePayGetStableHardwareIdEvent.ResultEvent(it.result) }
         }
     }
 
     @Subscribe
     fun onGooglePayListTokens(event: GooglePayListTokensEvent) {
         tapAndPayClient.listTokens().addOnCompleteListener { task ->
-            event.respond(ExceptionEvent.unless {
+            event.respond {
                 GooglePayListTokensEvent.ResultEvent(
                     task.result.map {
                         GooglePayTokenInfo(
@@ -236,7 +232,7 @@ class GooglePayPlugin(private val activity: ComponentActivity, private val event
                         )
                     }.toTypedArray()
                 )
-            })
+            }
         }
     }
 
@@ -249,9 +245,7 @@ class GooglePayPlugin(private val activity: ComponentActivity, private val event
             .build()
 
         tapAndPayClient.isTokenized(request).addOnCompleteListener {
-            event.respond(ExceptionEvent.unless {
-                GooglePayIsTokenizedEvent.ResultEvent(it.result)
-            })
+            event.respond { GooglePayIsTokenizedEvent.ResultEvent(it.result) }
         }
     }
 
