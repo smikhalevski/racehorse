@@ -13,6 +13,7 @@ import com.google.android.gms.tapandpay.issuer.ViewTokenRequest
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.io.Serializable
+import java.util.concurrent.atomic.AtomicInteger
 
 class GooglePayTokenInfo(
     val network: Int,
@@ -30,8 +31,8 @@ class SerializableGooglePayUserAddress(
     val name: String,
     val address1: String,
     val address2: String,
-    val locality: String, // Mountain View
-    val administrativeArea: String, // CA
+    val locality: String,
+    val administrativeArea: String,
     val countryCode: String,
     val postalCode: String,
     val phoneNumber: String,
@@ -142,17 +143,23 @@ class GooglePayTokenizeEvent(
     class ResultEvent(val tokenId: String?) : ResponseEvent()
 }
 
+class GooglePayRequestSelectTokenEvent(val tokenId: String, val tokenServiceProvider: Int) : RequestEvent()
+
+class GooglePayRequestDeleteTokenEvent(val tokenId: String, val tokenServiceProvider: Int) : RequestEvent()
+
+class GooglePayCreateWalletEvent : RequestEvent()
+
 /**
  * Manages tokenized cards in Google Pay.
  *
  * [Reading wallet state.](https://developers.google.com/pay/issuers/apis/push-provisioning/android/reading-wallet)
  */
-class GooglePayPlugin(private val activity: ComponentActivity, private val eventBus: EventBus = EventBus.getDefault()) {
+open class GooglePayPlugin(
+    private val activity: ComponentActivity,
+    private val eventBus: EventBus = EventBus.getDefault(),
+) {
 
-    companion object {
-        const val REQUEST_CODE_PUSH_TOKENIZE = 378204261
-        const val REQUEST_CODE_TOKENIZE = 378204262
-    }
+    private val requestCode = AtomicInteger(0x10000000)
 
     private val tapAndPayClient by lazy {
         TapAndPay.getClient(activity).apply {
@@ -162,8 +169,7 @@ class GooglePayPlugin(private val activity: ComponentActivity, private val event
         }
     }
 
-    private var pendingPushTokenizeEvent: GooglePayPushTokenizeEvent? = null
-    private var pendingTokenizeEvent: GooglePayTokenizeEvent? = null
+    private val activityCallbacks = HashMap<Int, (data: Intent?) -> Unit>()
 
     @Subscribe
     fun onGooglePayGetActiveWalletId(event: GooglePayGetActiveWalletIdEvent) {
@@ -259,10 +265,10 @@ class GooglePayPlugin(private val activity: ComponentActivity, private val event
         tapAndPayClient.viewToken(request).addOnCompleteListener {
             event.respond(
                 GooglePayViewTokenEvent.ResultEvent(
-                    if (it.isSuccessful) {
+                    try {
                         it.result.send()
                         true
-                    } else {
+                    } catch (_: Throwable) {
                         false
                     }
                 )
@@ -271,59 +277,81 @@ class GooglePayPlugin(private val activity: ComponentActivity, private val event
     }
 
     @Subscribe
-    fun onGooglePayPushTokenize(event: GooglePayPushTokenizeEvent) {
-        check(pendingPushTokenizeEvent == null) { "Push tokenize is pending" }
+    fun onGooglePayPushTokenize(event: GooglePayPushTokenizeEvent) = runOperation(
+        { requestCode ->
+            val request = PushTokenizeRequest.Builder()
+                .setOpaquePaymentCard(event.opaquePaymentCard.toByteArray())
+                .setDisplayName(event.displayName)
+                .setLastDigits(event.lastFour)
+                .setNetwork(event.network)
+                .setTokenServiceProvider(event.tokenServiceProvider)
+                .setUserAddress(event.userAddress.toUserAddress())
+                .build()
 
-        val request = PushTokenizeRequest.Builder()
-            .setOpaquePaymentCard(event.opaquePaymentCard.toByteArray())
-            .setDisplayName(event.displayName)
-            .setLastDigits(event.lastFour)
-            .setNetwork(event.network)
-            .setTokenServiceProvider(event.tokenServiceProvider)
-            .setUserAddress(event.userAddress.toUserAddress())
-            .build()
-
-        pendingPushTokenizeEvent = event
-        try {
-            tapAndPayClient.pushTokenize(activity, request, REQUEST_CODE_PUSH_TOKENIZE)
-        } catch (e: Throwable) {
-            e.printStackTrace()
-
-            pendingPushTokenizeEvent = null
-            event.respond(ExceptionEvent(e))
-        }
-    }
+            tapAndPayClient.pushTokenize(activity, request, requestCode)
+        },
+        { event.respond(GooglePayPushTokenizeEvent.ResultEvent(it?.getStringExtra(TapAndPay.EXTRA_ISSUER_TOKEN_ID))) }
+    )
 
     @Subscribe
-    fun onGooglePayTokenize(event: GooglePayTokenizeEvent) {
-        check(pendingTokenizeEvent == null) { "Tokenize is pending" }
-
-        pendingTokenizeEvent = event
-        try {
+    fun onGooglePayTokenize(event: GooglePayTokenizeEvent) = runOperation(
+        { requestCode ->
             tapAndPayClient.tokenize(
                 activity,
                 event.tokenId,
                 event.tokenServiceProvider,
                 event.displayName,
                 event.network,
-                REQUEST_CODE_TOKENIZE
+                requestCode
             )
-        } catch (e: Throwable) {
-            e.printStackTrace()
+        },
+        { event.respond(GooglePayTokenizeEvent.ResultEvent(it?.getStringExtra(TapAndPay.EXTRA_ISSUER_TOKEN_ID))) }
+    )
 
-            pendingTokenizeEvent = null
-            event.respond(ExceptionEvent(e))
-        }
+    @Subscribe
+    fun onGooglePayRequestSelectTokenEvent(event: GooglePayRequestSelectTokenEvent) = runOperation(
+        { requestCode ->
+            tapAndPayClient.requestSelectToken(
+                activity,
+                event.tokenId,
+                event.tokenServiceProvider,
+                requestCode
+            )
+        },
+        { event.respond(VoidEvent()) }
+    )
+
+    @Subscribe
+    fun onGooglePayRequestDeleteTokenEvent(event: GooglePayRequestDeleteTokenEvent) = runOperation(
+        { requestCode ->
+            tapAndPayClient.requestDeleteToken(
+                activity,
+                event.tokenId,
+                event.tokenServiceProvider,
+                requestCode
+            )
+        },
+        { event.respond(VoidEvent()) }
+    )
+
+    @Subscribe
+    fun onGooglePayCreateWalletEvent(event: GooglePayCreateWalletEvent) = runOperation(
+        { requestCode -> tapAndPayClient.createWallet(activity, requestCode) },
+        { event.respond(VoidEvent()) }
+    )
+
+    /**
+     * This method must be called from the [activity].
+     */
+    fun dispatchResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        activityCallbacks.remove(requestCode)?.invoke(data)
     }
 
-    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_CODE_PUSH_TOKENIZE) {
-            pendingPushTokenizeEvent?.respond(GooglePayPushTokenizeEvent.ResultEvent(data?.getStringExtra(TapAndPay.EXTRA_ISSUER_TOKEN_ID)))
-            pendingPushTokenizeEvent = null
-        }
-        if (requestCode == REQUEST_CODE_TOKENIZE) {
-            pendingTokenizeEvent?.respond(GooglePayTokenizeEvent.ResultEvent(data?.getStringExtra(TapAndPay.EXTRA_ISSUER_TOKEN_ID)))
-            pendingTokenizeEvent = null
-        }
+    protected fun getRequestCode() = requestCode.getAndIncrement()
+
+    protected fun runOperation(operation: (requestCode: Int) -> Unit, callback: (data: Intent?) -> Unit) {
+        val requestCode = getRequestCode()
+        operation(requestCode)
+        activityCallbacks[requestCode] = callback
     }
 }

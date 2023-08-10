@@ -1,4 +1,5 @@
 import { EventBridge } from './createEventBridge';
+import { noop } from './utils';
 
 export enum GooglePayTokenState {
   UNTOKENIZED = 1,
@@ -149,7 +150,6 @@ export interface GooglePayManager {
    * @returns `true` if it finds a token with same last four FPAN digits as the identifier, as well as matches on the
    * other fields. False positives may be returned since the last four FPAN digits are not necessarily unique among
    * tokens.
-   *
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/reading-wallet?authuser=1#istokenized)
    */
   isTokenized(
@@ -189,6 +189,33 @@ export interface GooglePayManager {
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/wallet-operations?authuser=1#manual_provisioning)
    */
   tokenize(request: GooglePayTokenizeRequest): Promise<string | null>;
+
+  /**
+   * Brings up a dialog asking the user to confirm the intention to set the identified card as their selected (default)
+   * card.
+   *
+   * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/wallet-operations?authuser=1#setting_the_default_token)
+   */
+  requestSelectToken(tokenId: string, tokenServiceProvider: GooglePayTokenServiceProvider): Promise<void>;
+
+  /**
+   * Brings up a dialog asking the user to confirm the deletion of the indicated token.
+   *
+   * Deleting the token does not affect the card-on-file on the user's Google account if one exists. To delete a
+   * card-on-file, the user would need to go to the Google Payments Center or use the Google Wallet app.
+   *
+   * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/wallet-operations?authuser=1#token_deletion)
+   */
+  requestDeleteToken(tokenId: string, tokenServiceProvider: GooglePayTokenServiceProvider): Promise<void>;
+
+  /**
+   * Some issuers may need the active wallet ID before creating an opaque payment card for push provisioning. If the
+   * wallet ID does not need to be included in the opaque payment card, simply let the {@link tokenize} and
+   * {@link pushTokenize} manage wallet creation automatically.
+   *
+   * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/wallet-operations?authuser=1#create_wallet)
+   */
+  createWallet(): Promise<void>;
 
   /**
    * The Push Provisioning API will immediately call a listener whenever the following events occur:
@@ -268,6 +295,24 @@ export function createGooglePayManager(eventBridge: EventBridge): GooglePayManag
       eventBridge
         .requestAsync({ type: 'org.racehorse.GooglePayTokenizeEvent', payload: request })
         .then(event => event.payload.tokenId),
+
+    requestSelectToken: (tokenId, tokenServiceProvider) =>
+      eventBridge
+        .requestAsync({
+          type: 'org.racehorse.GooglePayRequestSelectTokenEvent',
+          payload: { tokenId, tokenServiceProvider },
+        })
+        .then(noop),
+
+    requestDeleteToken: (tokenId, tokenServiceProvider) =>
+      eventBridge
+        .requestAsync({
+          type: 'org.racehorse.GooglePayRequestDeleteTokenEvent',
+          payload: { tokenId, tokenServiceProvider },
+        })
+        .then(noop),
+
+    createWallet: () => eventBridge.requestAsync({ type: 'org.racehorse.GooglePayCreateWalletEvent' }).then(noop),
 
     subscribe: listener =>
       eventBridge.subscribe('org.racehorse.GooglePayDataChangedEvent', () => {
