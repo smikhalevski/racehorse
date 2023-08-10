@@ -40,7 +40,7 @@ jobs:
 
       - uses: android-actions/setup-android@v2
 
-      - name: Setup
+      - name: Unpack TapAndPay SDK
         run: cd android && gpg -dq --batch --yes --passphrase ${GPG_PASSPHRASE} tapandpay_sdk.zip.gpg | tar -zx
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
