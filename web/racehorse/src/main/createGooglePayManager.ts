@@ -61,14 +61,14 @@ export interface GooglePayTokenInfo {
 }
 
 export interface GooglePayUserAddress {
-  name: string;
-  address1: string;
-  address2: string;
-  locality: string; // Mountain View
-  administrativeArea: string; // CA
-  countryCode: string;
-  postalCode: string;
-  phoneNumber: string;
+  name?: string | null;
+  address1?: string | null;
+  address2?: string | null;
+  locality?: string | null; // Mountain View
+  administrativeArea?: string | null; // CA
+  countryCode?: string | null;
+  postalCode?: string | null;
+  phoneNumber?: string | null;
 }
 
 export interface GooglePayTokenStatus {
@@ -77,19 +77,42 @@ export interface GooglePayTokenStatus {
 }
 
 export interface GooglePayPushTokenizeRequest {
+  /**
+   * The Opaque Payment Card (OPC) binary data.
+   */
   opaquePaymentCard: String;
+
+  /**
+   * The display name or nickname used to describe the payment card in the user interface.
+   */
   displayName: String;
+
+  /**
+   * The last 4 digits for the payment card required to correctly display the card in Google Pay UI.
+   */
   lastFour: String;
+
+  /**
+   * The card payment network.
+   */
   network: GooglePayCardNetwork;
+
+  /**
+   * The TSP that should be used for the tokenization attempt.
+   */
   tokenServiceProvider: GooglePayTokenServiceProvider;
-  userAddress: GooglePayUserAddress;
+
+  /**
+   * The user's address.
+   */
+  userAddress?: GooglePayUserAddress | null;
 }
 
 export interface GooglePayTokenizeRequest {
   displayName: String;
   network: GooglePayCardNetwork;
   tokenServiceProvider: GooglePayTokenServiceProvider;
-  tokenId?: string | undefined | null;
+  tokenId?: string | null;
 }
 
 export interface GooglePayManager {
