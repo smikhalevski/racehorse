@@ -13,24 +13,23 @@ The bootstrapper for `WebView`-based Android apps.
 
 🔌&ensp;**Plugins**
 
-- Activity
-- Asset loader
-- DeepLink
-- Device
-- Encrypted storage
-- Event
-- Evergreen
-- Facebook Login
-- Facebook Sharing
-- File chooser
-- Firebase
-- Google Play referrer
-- Google Sign-In
-- HTTPS
-- Keyboard
-- Network
-- Notifications
-- Permissions
+- [Activity](#activity-plugin)
+- [Asset loader](#asset-loader-plugin)
+- [DeepLink](#deeplink-plugin)
+- [Device](#device-plugin)
+- [Encrypted storage](#encrypted-storage-plugin)
+- [Evergreen](#evergreen-plugin)
+- [Facebook Login](#facebook-login-plugin)
+- [Facebook Sharing](#facebook-sharing-plugin)
+- [File chooser](#file-chooser-plugin)
+- [Firebase](#firebase-plugin)
+- [Google Play referrer](#google-play-referrer-plugin)
+- [Google Sign-In](#google-sign-in-plugin)
+- [HTTPS](#https-plugin)
+- [Keyboard](#keyboard-plugin)
+- [Network](#network-plugin)
+- [Notifications](#notifications-plugin)
+- [Permissions](#permissions-plugin)
 
 # How to run the example app?
 
@@ -258,9 +257,7 @@ EventBus.getDefault().post(BatteryLowEvent())
 [proguard rules](./android/racehorse/proguard-rules.pro), so no additional action is needed. Proguard rules prevent
 obfuscation of events and related classes which are available in Racehorse.
 
-# Plugins
-
-## `activityManager`
+# Activity plugin
 
 See [`ActivityManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.ActivityManager.html) in the docs.
 
@@ -288,11 +285,15 @@ activityManager.startActivity({
 });
 ```
 
-## `deepLinkManager`
+# Asset loader plugin
 
-## `deviceManager`
+# DeepLink plugin
 
-## `evergreenManager`
+# Device plugin
+
+# Encrypted storage plugin
+
+# Evergreen plugin
 
 ```mermaid
 graph TD
@@ -334,7 +335,7 @@ DownloadBundle
 --> BundleDownloaded
 ```
 
-## `facebookLoginManager`
+# Facebook Login plugin
 
 Enables Facebook Login support.
 
@@ -361,15 +362,15 @@ facebookLoginManager.logIn().then(accessToken => {
 });
 ```
 
-## `facebookShareManager`
+# Facebook Sharing plugin
 
-## `encryptedStorageManager`
+# File chooser plugin
 
-## `firebaseManager`
+# Firebase plugin
 
-## `googlePlayReferrerManager`
+# Google Play referrer plugin
 
-## `googleSignInManager`
+# Google Sign-In plugin
 
 Enables Google Sign-In support.
 
@@ -399,10 +400,12 @@ googleSignInManager.signIn().then(account => {
 });
 ```
 
-## `keyboardManager`
+# HTTPS plugin
 
-## `networkManager`
+# Keyboard plugin
 
-## `notificationsManager`
+# Network plugin
 
-## `permissionsManager`
+# Notifications plugin
+
+# Permissions plugin

@@ -26,6 +26,7 @@
     "ts-jest": "^29.1.0",
     "tslib": "^2.5.2",
     "typedoc": "^0.24.7",
+    "typedoc-custom-css": "github:smikhalevski/typedoc-custom-css#master",
     "typescript": "^5.0.4"
   }
 }
