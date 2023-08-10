@@ -77,6 +77,13 @@ export interface GooglePayPushTokenizeRequest {
   userAddress: GooglePayUserAddress;
 }
 
+export interface GooglePayTokenizeRequest {
+  displayName: String;
+  network: GooglePayCardNetwork;
+  tokenServiceProvider: GooglePayTokenServiceProvider;
+  tokenId?: string | undefined | null;
+}
+
 export interface GooglePayManager {
   /**
    * Get the ID of the active wallet, or `null` if there's no active wallet.
@@ -157,17 +164,31 @@ export interface GooglePayManager {
    * @returns `true` if Google Pay app was opened, or `false` otherwise.
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/reading-wallet?authuser=1#viewtoken)
    */
-  viewToken(issuerTokenId: string, tokenServiceProvider: GooglePayTokenServiceProvider): Promise<boolean>;
+  viewToken(tokenId: string, tokenServiceProvider: GooglePayTokenServiceProvider): Promise<boolean>;
 
   /**
    * Starts the push tokenization flow in which the issuer provides most or all card details needed for Google Pay to
    * get a valid token. Tokens added using this method are added to the active wallet.
    *
-   * @returns The token ID.
+   * @returns The token ID, or `null` if tokenization wasn't completed.
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/wallet-operations?authuser=1#push_provisioning_operations)
    * @see [Sequence diagrams for Android Push Provisioning](https://developers.google.com/pay/issuers/apis/push-provisioning/android/integration-steps)
    */
-  pushTokenize(request: GooglePayPushTokenizeRequest): Promise<string>;
+  pushTokenize(request: GooglePayPushTokenizeRequest): Promise<string | null>;
+
+  /**
+   * Starts the manual tokenization flow in which the user needs to scan the card or enter all card details manually in
+   * a form. Tokens added using this method are added to the active wallet.
+   *
+   * **Important:** This method is primarily used for activating tokens pending
+   * [yellow path activation](https://developers.google.com/pay/issuers/apis/push-provisioning/android/wallet-operations?authuser=1#resolving_yellow_path).
+   * It can also be used as a fallback in error handling (e.g. if the app cannot retrieve an OPC because your server is
+   * down). However, it should not be used as a substitute for a proper push provisioning integration.
+   *
+   * @returns The token ID, or `null` if tokenization wasn't completed.
+   * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/wallet-operations?authuser=1#manual_provisioning)
+   */
+  tokenize(request: GooglePayTokenizeRequest): Promise<string | null>;
 
   /**
    * The Push Provisioning API will immediately call a listener whenever the following events occur:
@@ -230,17 +251,22 @@ export function createGooglePayManager(eventBridge: EventBridge): GooglePayManag
         })
         .then(event => event.payload.isTokenized),
 
-    viewToken: (issuerTokenId, tokenServiceProvider) =>
+    viewToken: (tokenId, tokenServiceProvider) =>
       eventBridge
         .requestAsync({
           type: 'org.racehorse.GooglePayViewTokenEvent',
-          payload: { issuerTokenId, tokenServiceProvider },
+          payload: { tokenId, tokenServiceProvider },
         })
         .then(event => event.payload.opened),
 
     pushTokenize: request =>
       eventBridge
         .requestAsync({ type: 'org.racehorse.GooglePayPushTokenizeEvent', payload: request })
+        .then(event => event.payload.tokenId),
+
+    tokenize: request =>
+      eventBridge
+        .requestAsync({ type: 'org.racehorse.GooglePayTokenizeEvent', payload: request })
         .then(event => event.payload.tokenId),
 
     subscribe: listener =>
