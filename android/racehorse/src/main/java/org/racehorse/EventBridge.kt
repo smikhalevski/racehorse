@@ -64,9 +64,7 @@ open class ChainableEvent {
     fun respond(block: () -> ChainableEvent) {
         val eventBus = checkNotNull(eventBus) { "Event has no origin" }
 
-        eventBus.post(ExceptionEvent.unless {
-            block().setOrigin(eventBus, requestId)
-        })
+        eventBus.post(ExceptionEvent.unless(block).setOrigin(eventBus, requestId))
     }
 
     /**
