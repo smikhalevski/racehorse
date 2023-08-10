@@ -174,7 +174,7 @@ open class GooglePayPlugin(
     @Subscribe
     fun onGooglePayGetActiveWalletId(event: GooglePayGetActiveWalletIdEvent) {
         tapAndPayClient.activeWalletId.addOnCompleteListener {
-            event.respond(
+            event.respond {
                 try {
                     GooglePayGetActiveWalletIdEvent.ResultEvent(it.getResult(ApiException::class.java))
                 } catch (e: ApiException) {
@@ -184,14 +184,14 @@ open class GooglePayPlugin(
                         ExceptionEvent(e)
                     }
                 }
-            )
+            }
         }
     }
 
     @Subscribe
     fun onGooglePayGetTokenStatus(event: GooglePayGetTokenStatusEvent) {
         tapAndPayClient.getTokenStatus(event.tokenServiceProvider, event.tokenId).addOnCompleteListener {
-            event.respond(
+            event.respond {
                 try {
                     GooglePayGetTokenStatusEvent.ResultEvent(GooglePayTokenStatus(it.getResult(ApiException::class.java)))
                 } catch (e: ApiException) {
@@ -201,21 +201,21 @@ open class GooglePayPlugin(
                         ExceptionEvent(e)
                     }
                 }
-            )
+            }
         }
     }
 
     @Subscribe
     fun onGooglePayGetEnvironment(event: GooglePayGetEnvironmentEvent) {
         tapAndPayClient.environment.addOnCompleteListener {
-            event.respond { GooglePayGetEnvironmentEvent.ResultEvent(it.result) }
+            event.respond { GooglePayGetEnvironmentEvent.ResultEvent(it.getResult(ApiException::class.java)) }
         }
     }
 
     @Subscribe
     fun onGooglePayGetStableHardwareId(event: GooglePayGetStableHardwareIdEvent) {
         tapAndPayClient.stableHardwareId.addOnCompleteListener {
-            event.respond { GooglePayGetStableHardwareIdEvent.ResultEvent(it.result) }
+            event.respond { GooglePayGetStableHardwareIdEvent.ResultEvent(it.getResult(ApiException::class.java)) }
         }
     }
 
@@ -223,21 +223,20 @@ open class GooglePayPlugin(
     fun onGooglePayListTokens(event: GooglePayListTokensEvent) {
         tapAndPayClient.listTokens().addOnCompleteListener { task ->
             event.respond {
-                GooglePayListTokensEvent.ResultEvent(
-                    task.result.map {
-                        GooglePayTokenInfo(
-                            network = it.network,
-                            tokenServiceProvider = it.tokenServiceProvider,
-                            tokenState = it.tokenState,
-                            dpanLastFour = it.dpanLastFour,
-                            fpanLastFour = it.fpanLastFour,
-                            issuerName = it.issuerName,
-                            issuerTokenId = it.issuerTokenId,
-                            portfolioName = it.portfolioName,
-                            isDefaultToken = it.isDefaultToken,
-                        )
-                    }.toTypedArray()
-                )
+                val tokenInfos = task.getResult(ApiException::class.java).map {
+                    GooglePayTokenInfo(
+                        network = it.network,
+                        tokenServiceProvider = it.tokenServiceProvider,
+                        tokenState = it.tokenState,
+                        dpanLastFour = it.dpanLastFour,
+                        fpanLastFour = it.fpanLastFour,
+                        issuerName = it.issuerName,
+                        issuerTokenId = it.issuerTokenId,
+                        portfolioName = it.portfolioName,
+                        isDefaultToken = it.isDefaultToken,
+                    )
+                }
+                GooglePayListTokensEvent.ResultEvent(tokenInfos.toTypedArray())
             }
         }
     }
@@ -251,7 +250,7 @@ open class GooglePayPlugin(
             .build()
 
         tapAndPayClient.isTokenized(request).addOnCompleteListener {
-            event.respond { GooglePayIsTokenizedEvent.ResultEvent(it.result) }
+            event.respond { GooglePayIsTokenizedEvent.ResultEvent(it.getResult(ApiException::class.java)) }
         }
     }
 
@@ -266,7 +265,7 @@ open class GooglePayPlugin(
             event.respond(
                 GooglePayViewTokenEvent.ResultEvent(
                     try {
-                        it.result.send()
+                        it.getResult(ApiException::class.java).send()
                         true
                     } catch (_: Throwable) {
                         false
@@ -347,9 +346,9 @@ open class GooglePayPlugin(
         activityCallbacks.remove(requestCode)?.invoke(data)
     }
 
-    protected fun getRequestCode() = requestCode.getAndIncrement()
+    protected open fun getRequestCode() = requestCode.getAndIncrement()
 
-    protected fun runOperation(operation: (requestCode: Int) -> Unit, callback: (data: Intent?) -> Unit) {
+    protected open fun runOperation(operation: (requestCode: Int) -> Unit, callback: (data: Intent?) -> Unit) {
         val requestCode = getRequestCode()
         operation(requestCode)
         activityCallbacks[requestCode] = callback

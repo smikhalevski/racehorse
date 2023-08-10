@@ -78,9 +78,9 @@ open class GoogleSignInPlugin(
     @Subscribe
     open fun onGoogleSignIn(event: GoogleSignInEvent) {
         val launched = activity.launchActivityForResult(googleSignInClient.signInIntent) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
+            event.respond {
+                val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
 
-            event.respond(
                 try {
                     GoogleSignInEvent.ResultEvent(SerializableGoogleSignInAccount(task.getResult(ApiException::class.java)))
                 } catch (e: ApiException) {
@@ -90,7 +90,7 @@ open class GoogleSignInPlugin(
                         ExceptionEvent(e)
                     }
                 }
-            )
+            }
         }
 
         if (!launched) {
@@ -108,7 +108,7 @@ open class GoogleSignInPlugin(
         }
 
         task.addOnCompleteListener {
-            event.respond(
+            event.respond {
                 try {
                     GoogleSignInEvent.ResultEvent(SerializableGoogleSignInAccount(task.getResult(ApiException::class.java)))
                 } catch (e: ApiException) {
@@ -118,7 +118,7 @@ open class GoogleSignInPlugin(
                         ExceptionEvent(e)
                     }
                 }
-            )
+            }
         }
     }
 
