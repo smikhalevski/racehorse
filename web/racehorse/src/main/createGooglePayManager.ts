@@ -1,45 +1,52 @@
 import { EventBridge } from './createEventBridge';
 import { noop } from './utils';
 
-export enum GooglePayTokenState {
-  UNTOKENIZED = 1,
-  PENDING = 2,
-  NEEDS_IDENTITY_VERIFICATION = 3,
-  SUSPENDED = 4,
-  ACTIVE = 5,
-  FELICA_PENDING_PROVISIONING = 6,
-}
+export const GooglePayTokenState = {
+  UNTOKENIZED: 1,
+  PENDING: 2,
+  NEEDS_IDENTITY_VERIFICATION: 3,
+  SUSPENDED: 4,
+  ACTIVE: 5,
+  FELICA_PENDING_PROVISIONING: 6,
+} as const;
 
-export enum GooglePayCardNetwork {
-  AMEX = 1,
-  DISCOVER = 2,
-  MASTERCARD = 3,
-  VISA = 4,
-  INTERAC = 5,
-  PRIVATE_LABEL = 6,
-  EFTPOS = 7,
-  MAESTRO = 8,
-  ID = 9,
-  QUICPAY = 10,
-  JCB = 11,
-  ELO = 12,
-  MIR = 13,
-}
+export type GooglePayTokenState = (typeof GooglePayTokenState)[keyof typeof GooglePayTokenState];
 
-export enum GooglePayTokenServiceProvider {
-  AMEX = 2,
-  MASTERCARD = 3,
-  VISA = 4,
-  DISCOVER = 5,
-  EFTPOS = 6,
-  INTERAC = 7,
-  OBERTHUR = 8,
-  PAYPAL = 9,
-  JCB = 13,
-  ELO = 14,
-  GEMALTO = 15,
-  MIR = 16,
-}
+export const GooglePayCardNetwork = {
+  AMEX: 1,
+  DISCOVER: 2,
+  MASTERCARD: 3,
+  VISA: 4,
+  INTERAC: 5,
+  PRIVATE_LABEL: 6,
+  EFTPOS: 7,
+  MAESTRO: 8,
+  ID: 9,
+  QUICPAY: 10,
+  JCB: 11,
+  ELO: 12,
+  MIR: 13,
+} as const;
+
+export type GooglePayCardNetwork = (typeof GooglePayCardNetwork)[keyof typeof GooglePayCardNetwork];
+
+export const GooglePayTokenServiceProvider = {
+  AMEX: 2,
+  MASTERCARD: 3,
+  VISA: 4,
+  DISCOVER: 5,
+  EFTPOS: 6,
+  INTERAC: 7,
+  OBERTHUR: 8,
+  PAYPAL: 9,
+  JCB: 13,
+  ELO: 14,
+  GEMALTO: 15,
+  MIR: 16,
+} as const;
+
+export type GooglePayTokenServiceProvider =
+  (typeof GooglePayTokenServiceProvider)[keyof typeof GooglePayTokenServiceProvider];
 
 export interface GooglePayTokenInfo {
   network: GooglePayCardNetwork;
