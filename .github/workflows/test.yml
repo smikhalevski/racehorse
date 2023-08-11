@@ -38,3 +38,9 @@ jobs:
 
       - run: ../gradlew test
         working-directory: ./android/racehorse
+
+  publish-docs:
+    needs:
+      - test-web
+      - test-android
+    uses: ./.github/workflows/publish-docs.yml

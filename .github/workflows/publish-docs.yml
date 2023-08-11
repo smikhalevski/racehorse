@@ -1,0 +1,52 @@
+name: publish-docs
+
+on:
+  workflow_call:
+
+jobs:
+
+  publish-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          cache: npm
+          registry-url: "https://registry.npmjs.org"
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "17"
+          cache: "gradle"
+
+      - uses: android-actions/setup-android@v2
+
+      - run: npm ci
+
+      - run: npm run docs
+
+      - name: Configure git user
+        run: |
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+      - name: Publish docs
+        run: |
+          set -x
+          
+          mv ./docs /tmp/docs
+          
+          git reset HEAD --hard
+          git fetch origin ghpages:ghpages
+          git checkout ghpages
+          git rm -rf --ignore-unmatch .
+          git clean -fxd
+          
+          cp -R /tmp/docs/. .
+          
+          git add .
+          git commit -m "Updated docs (${GITHUB_SHA::7})"
+          git push origin ghpages
