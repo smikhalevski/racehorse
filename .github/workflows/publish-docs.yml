@@ -48,5 +48,8 @@ jobs:
           cp -R /tmp/docs/. .
           
           git add .
-          git commit -m "Updated docs (${GITHUB_SHA::7})"
-          git push origin ghpages
+          
+          git diff-index --quiet HEAD || {
+            git commit -m "Updated docs (${GITHUB_SHA::7})"
+            git push origin ghpages
+          }

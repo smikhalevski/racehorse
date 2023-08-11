@@ -32,3 +32,9 @@ jobs:
       - run: npm publish --workspace=$WORKSPACE --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-docs:
+    needs:
+      - test-web
+      - test-android
+    uses: ./.github/workflows/publish-docs.yml

@@ -32,3 +32,9 @@ jobs:
         working-directory: ${{ env.WORKSPACE }}
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
+
+  publish-docs:
+    needs:
+      - test-web
+      - test-android
+    uses: ./.github/workflows/publish-docs.yml
