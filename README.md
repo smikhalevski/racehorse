@@ -2,7 +2,7 @@
   <img src="./assets/logo.png" alt="Racehorse" width="320"/>
 </p>
 
-The bootstrapper for `WebView`-based Android apps.
+The bootstrapper for WebView-based Android apps.
 
 🚀&ensp;**Features**
 
@@ -15,12 +15,12 @@ The bootstrapper for `WebView`-based Android apps.
 
 - [Activity](#activity-plugin)
 - [Asset loader](#asset-loader-plugin)
-- [DeepLink](#deeplink-plugin)
+- [Deep link](#deep-link-plugin)
 - [Device](#device-plugin)
 - [Encrypted storage](#encrypted-storage-plugin)
 - [Evergreen](#evergreen-plugin)
 - [Facebook Login](#facebook-login-plugin)
-- [Facebook Sharing](#facebook-sharing-plugin)
+- [Facebook Share](#facebook-share-plugin)
 - [File chooser](#file-chooser-plugin)
 - [Firebase](#firebase-plugin)
 - [Google Play referrer](#google-play-referrer-plugin)
@@ -67,7 +67,7 @@ Let's start by creating the `WebView`:
 ```kotlin
 import android.webkit.WebView
 
-val webView = WebView(activityOrContext)
+val webView = WebView(activity)
 // or
 // val webView = activity.findViewById<WebView>(R.id.web_view)
 ```
@@ -120,10 +120,10 @@ class ToastPlugin(val context: Context) {
 }
 ```
 
-To enable `ToastPlugin` plugin, it should be registered in the event bus as well:
+Register `ToastPlugin` in the event bus, so to enable event subscriptions:
 
 ```kotlin
-EventBus.getDefault().register(ToastPlugin(activityOrContext))
+EventBus.getDefault().register(ToastPlugin(activity))
 ```
 
 Now the native part is set up, and we can send an event from the web app:
@@ -134,11 +134,13 @@ import { eventBridge } from 'racehorse';
 eventBridge.requestAsync({
   // 🟡 The event class name
   type: 'com.example.ShowToastEvent',
-  message: 'Hello, world!'
+  payload: {
+    message: 'Hello, world!'
+  }
 });
 ```
 
-The last step is to load the web app into the `webView`. You can do this in any way that fits your needs, Racehorse
+The last step is to load the web app into the WebView. You can do this in any way that fits your needs, Racehorse
 doesn't restrict this process in any way. For example, if your web app is running on your local machine on the port
 1234, then you can load the web app in the web view using this snippet:
 
@@ -174,7 +176,7 @@ class DeviceModelPlugin {
 
 Request and response events are instances of `ChainableEvent`. Events in the chain share the same `requestId`. When a
 `ResponseEvent` is posted to the event bus it is marshalled to the web app and resolves a promise returned from the
-`eventBridge.request`:
+`eventBridge.requestAsync`:
 
 ```ts
 import { eventBridge } from 'racehorse';
@@ -192,12 +194,14 @@ If all events in the event chain are handled on
 [the posting thread](https://greenrobot.org/eventbus/documentation/delivery-threads-threadmode/) on the Android side,
 then a request can be handled synchronously on the web side. In the `DeviceModelPlugin` example `onGetDeviceModel` is
 called on the posting thread, since we didn't specify a thread mode for `@Subscribe` annotation. So this allows web to
-use a synchronous request:
+perform a synchronous request:
 
 ```ts
 import { eventBridge } from 'racehorse';
 
-const { deviceModel } = eventBridge.request({ type: 'com.example.GetDeviceModelRequestEvent' }).payload;
+const { deviceModel } = eventBridge
+  .request({ type: 'com.example.GetDeviceModelRequestEvent' })
+  .payload;
 ```
 
 If your app initializes an event bridge after the web view was created, you may need to establish the connection
@@ -259,9 +263,8 @@ obfuscation of events and related classes which are available in Racehorse.
 
 # Activity plugin
 
-See [`ActivityManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.ActivityManager.html) in the docs.
-
-Starts activities and provides info about the activity that renders the web view.
+[`ActivityManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.ActivityManager.html) starts
+activities and provides info about the activity that renders the web view.
 
 1. Initialize the plugin in your Android app:
 
@@ -287,13 +290,71 @@ activityManager.startActivity({
 
 # Asset loader plugin
 
-# DeepLink plugin
+# Deep link plugin
 
 # Device plugin
 
+[`DeviceManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.DeviceManager.html) provides access
+to various device settings.
+
+1. Initialize the plugin in your Android app:
+
+```kotlin
+import org.racehorse.DevicePlugin
+
+EventBus.getDefault().register(DevicePlugin(activity))
+```
+
+2. Synchronously get device info, locale, or other data:
+
+```ts
+import { deviceManager } from 'racehorse';
+
+deviceManager.getDeviceInfo().apiLevel;
+// ⮕ 33
+
+deviceManager.getPreferredLocales();
+// ⮕ ['en-US']
+```
+
 # Encrypted storage plugin
 
+[`EncryptedStorageManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.EncryptedStorageManager.html)
+enables a file-based persistence of a password-protected data.
+
+1. Initialize the plugin in your Android app:
+
+```kotlin
+import org.racehorse.EncryptedStoragePlugin
+
+EventBus.getDefault().register(
+    EncryptedStoragePlugin(
+        // The directory where encrypted data is stored
+        File(filesDir, "storage"),
+
+        // The salt required to generate the encryption key
+        BuildConfig.APPLICATION_ID.toByteArray()
+    )
+)
+```
+
+2. Read and write encrypted key-value pairs to the storage:
+
+```ts
+import { encryptedStorageManager } from 'racehorse';
+
+const PASSWORD = '12345';
+
+await encryptedStorageManager.set('foo', 'bar', PASSWORD);
+
+await encryptedStorageManager.get('foo', PASSWORD);
+// ⮕ 'bar'
+```
+
 # Evergreen plugin
+
+[`EvergreenManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.EvergreenManager.html) provides a
+way to update your app using an archive that is downloadable from your server.
 
 ```mermaid
 graph TD
@@ -337,9 +398,11 @@ DownloadBundle
 
 # Facebook Login plugin
 
-Enables Facebook Login support.
+[`FacebookLoginManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.FacebookLoginManager.html)
+enables Facebook Login support.
 
-1. Go to [developers.facebook.com](https://developers.facebook.com/docs/facebook-login/android/) and register your app.
+1. Go to [developers.facebook.com](https://developers.facebook.com/docs/facebook-login/android/), register your app and
+   add the required dependencies and configurations.
 
 2. Initialize the Facebook SDK and register the plugin in your Android app:
 
@@ -362,17 +425,130 @@ facebookLoginManager.logIn().then(accessToken => {
 });
 ```
 
-# Facebook Sharing plugin
+# Facebook Share plugin
+
+[`FacebookShareManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.FacebookShareManager.html)
+enables Facebook social sharing.
+
+1. Go to [developers.facebook.com](https://developers.facebook.com/docs/facebook-login/android/), register your app and
+   add the required dependencies and configurations.
+
+2. Initialize the Facebook SDK and register the plugin in your Android app:
+
+```kotlin
+import com.facebook.FacebookSdk
+import org.racehorse.FacebookSharePlugin
+
+FacebookSdk.sdkInitialize(activity)
+
+EventBus.getDefault().register(FacebookSharePlugin(activity))
+```
+
+3. Trigger Facebook social sharing flow:
+
+```ts
+import { facebookShareManager } from 'racehorse';
+
+facebookShareManager.shareLink({
+  contentUrl: 'http://example.com',
+});
+```
 
 # File chooser plugin
+
+Enables `<input type="file">` in the WebView.
+
+If you don't need camera support for file inputs, then the plugin doesn't require any additional configuration:
+
+```kotlin
+import org.racehorse.FileChooserPlugin
+
+EventBus.getDefault().register(FileChooserPlugin(activity))
+```
+
+## Enabling camera capture
+
+1. Declare a provider in your app manifest:
+
+```xml
+
+<manifest>
+    <application>
+        <provider
+                android:name="androidx.core.content.FileProvider"
+                android:authorities="${applicationId}.provider"
+                android:exported="false"
+                android:grantUriPermissions="true">
+            <meta-data
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/file_paths"/>
+        </provider>
+    </application>
+</manifest>
+```
+
+2. Add a provider paths descriptor to XML resources, for example to `src/main/res/xml/file_paths.xml`:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <external-path name="cache" path="Android/data/com.myapplication/cache"/>
+</paths>
+```
+
+3. Initialize the plugin in your Android app, and provide the authority of the provider you've just created and the
+   path that you've defined in the descriptor:
+
+```kotlin
+import org.racehorse.FileChooserPlugin
+
+EventBus.getDefault().register(
+    FileChooserPlugin(
+        activity,
+
+        // Points to Android/data/com.myapplication/cache
+        activity.externalCacheDir,
+        "${BuildConfig.APPLICATION_ID}.provider"
+    )
+)
+```
 
 # Firebase plugin
 
 # Google Play referrer plugin
 
+[`GooglePlayReferrerManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.GooglePlayReferrerManager.html)
+fetches the [Google Play referrer](https://developer.android.com/google/play/installreferrer/library) information.
+
+1. Add Google Play referrer SDK dependency to your Android app:
+
+```kotlin
+dependencies {
+    implementation("com.android.installreferrer:installreferrer:2.2")
+}
+```
+
+2. Initialize the plugin in your Android app:
+
+```kotlin
+import org.racehorse.GooglePlayReferrerPlugin
+
+EventBus.getDefault().register(GooglePlayReferrerPlugin(activity))
+```
+
+3. Read the Google Play referrer:
+
+```ts
+import { googlePlayReferrerManager } from 'racehorse';
+
+googlePlayReferrerManager.getGooglePlayReferrer();
+// ⮕ Promise<string>
+```
+
 # Google Sign-In plugin
 
-Enables Google Sign-In support.
+[`GoogleSignInManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.GoogleSignInManager.html) enables
+Google Sign-In support.
 
 1. Go to [console.firebase.google.com](https://console.firebase.google.com), set up a new project, and configure an
    Android app following all instructions. Use the `applicationId` of your app and SHA-1 that is used for app signing.
@@ -382,7 +558,16 @@ Enables Google Sign-In support.
 ./gradlew signingReport
 ```
 
-2. Register the plugin in your Android app:
+2. Add Google Sign-In SDK dependencies to your Android app:
+
+```kotlin
+dependencies {
+    implementation("com.google.android.gms:play-services-auth:20.5.0")
+    implementation(platform("com.google.firebase:firebase-bom:32.1.0"))
+}
+```
+
+3. Register the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.GoogleSignInPlugin
@@ -390,7 +575,7 @@ import org.racehorse.GoogleSignInPlugin
 EventBus.getDefault().register(GoogleSignInPlugin(activity))
 ```
 
-3. Request sign in from the web app that is loaded into the web view:
+4. Request sign in from the web app that is loaded into the web view:
 
 ```ts
 import { googleSignInManager } from 'racehorse';
@@ -402,10 +587,137 @@ googleSignInManager.signIn().then(account => {
 
 # HTTPS plugin
 
+HTTPS plugin forces the WebView to ignore certificate issues.
+
+```kotlin
+import org.racehorse.HttpsPlugin
+
+EventBus.getDefault().register(HttpsPlugin())
+```
+
 # Keyboard plugin
+
+[`KeyboardManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.KeyboardManager.html) enables
+software keyboard status monitoring.
+
+1. Initialize the plugin in your Android app:
+
+```kotlin
+import org.racehorse.KeyboardPlugin
+
+EventBus.getDefault().register(KeyboardPlugin(activity))
+```
+
+2. Synchronously read the keyboard status or subscribe to changes:
+
+```ts
+import { keyboardManager } from 'racehorse';
+
+keyboardManager.getStatus().isVisible;
+// ⮕ true
+
+keyboardManager.subscribe(status => {
+  // React to keyboard status changes
+});
+```
+
+If you are using React, then refer to `useKeyboardStatus` hook that re-render a component when keyboard status changes.
+
+```tsx
+import { useKeyboardStatus } from '@racehorse/react';
+
+const status = useKeyboardStatus();
+
+status.isVisible;
+// ⮕ true
+
+status.height;
+// ⮕ 630
+```
 
 # Network plugin
 
+[`NetworkManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.NetworkManager.html) enables network
+connection monitoring support.
+
+1. Initialize the plugin in your Android app:
+
+```kotlin
+import org.racehorse.NetworkPlugin
+
+EventBus.getDefault().register(NetworkPlugin(activity))
+```
+
+2. Synchronously read the network connection status or subscribe to changes:
+
+```ts
+import { networkManager } from 'racehorse';
+
+networkManager.getStatus().isConnected;
+// ⮕ true
+
+networkManager.subscribe(status => {
+  // React to network status changes
+});
+```
+
+If you are using React, then refer to `useNetworkStatus` hook that re-render a component when network status changes.
+
+```tsx
+import { useNetworkStatus } from '@racehorse/react';
+
+const status = useNetworkStatus();
+
+status.isConnected;
+// ⮕ true
+
+status.type;
+// ⮕ 'wifi'
+```
+
 # Notifications plugin
 
+[`NotificationsManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.NotificationsManager.html)
+provides access to Android system notifications status.
+
+1. Initialize the plugin in your Android app:
+
+```kotlin
+import org.racehorse.NotificationsPlugin
+
+EventBus.getDefault().register(NotificationsPlugin(activity))
+```
+
+2. Synchronously check that notifications are enabled:
+
+```ts
+import { notificationsManager } from 'racehorse';
+
+notificationsManager.areNotificationsEnabled();
+// ⮕ true
+```
+
 # Permissions plugin
+
+[`PermissionsManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.PermissionsManager.html) allows
+checking and requesting application permissions.
+
+1. Initialize the plugin in your Android app:
+
+```kotlin
+import org.racehorse.PermissionsPlugin
+
+EventBus.getDefault().register(PermissionsPlugin(activity))
+```
+
+2. Check that a permission is granted, or ask for permissions:
+
+```ts
+import { permissionsManager } from 'racehorse';
+
+permissionsManager.isPermissionGranted('android.permission.ACCESS_WIFI_STATE');
+// ⮕ true
+
+permissionsManager.askForPermission('android.permission.CALL_PHONE');
+// ⮕ Promise<boolean>
+```
