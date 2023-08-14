@@ -23,6 +23,7 @@ The bootstrapper for WebView-based Android apps.
 - [Facebook Login](#facebook-login-plugin)
 - [Facebook Share](#facebook-share-plugin)
 - [File chooser](#file-chooser-plugin)
+- [Google Pay](#google-pay-plugin)
 - [Google Play referrer](#google-play-referrer-plugin)
 - [Google Sign-In](#google-sign-in-plugin)
 - [HTTPS](#https-plugin)
@@ -714,6 +715,50 @@ EventBus.getDefault().register(
         BuildConfig.APPLICATION_ID + ".provider"
     )
 )
+```
+
+# Google Pay plugin
+
+[`GooglePayManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.GooglePayManager.html) enables
+[Android Push Provisioning](https://developers.google.com/pay/issuers/apis/push-provisioning/android) support.
+
+1. [Set up the development environment](https://developers.google.com/pay/issuers/apis/push-provisioning/android/setup),
+   so TapAndPay SDK in available in your app.
+
+2. Initialize the plugin in your Android app:
+
+```kotlin
+import org.racehorse.GoogleSignInPlugin
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var googlePayPlugin: GooglePayPlugin
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        googlePayPlugin = GooglePayPlugin(this)
+
+        EventBus.getDefault().register(googlePayPlugin)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        // 🟡 Dispatch results back to the plugin
+        googlePayPlugin.dispatchResult(requestCode, resultCode, data)
+    }
+}
+```
+
+3. Tokenize the card or use any other Google Pay API methods:
+
+```ts
+import { googlePayManager } from 'racehorse';
+
+googlePayManager.listTokens().then(tokens => {
+  // Handle the list of tokenized cards
+});
 ```
 
 # Google Play referrer plugin
