@@ -9,6 +9,7 @@ The bootstrapper for WebView-based Android apps.
 - [Basics](#basics)
 - [Request-response event chains](#request-response-event-chains)
 - [Event subscriptions](#event-subscriptions)
+- [WebView events](#webview-events)
 - [Proguard](#proguard)
 
 🔌&ensp;**Plugins**
@@ -22,7 +23,6 @@ The bootstrapper for WebView-based Android apps.
 - [Facebook Login](#facebook-login-plugin)
 - [Facebook Share](#facebook-share-plugin)
 - [File chooser](#file-chooser-plugin)
-- [Firebase](#firebase-plugin)
 - [Google Play referrer](#google-play-referrer-plugin)
 - [Google Sign-In](#google-sign-in-plugin)
 - [HTTPS](#https-plugin)
@@ -62,7 +62,7 @@ Racehorse is the pluggable bridge that marshals events between the web app and t
 Racehorse works, let's create a plugin that would display
 [an Android-native toast](https://developer.android.com/guide/topics/ui/notifiers/toasts) when the web app requests it.
 
-Let's start by creating the `WebView`:
+Let's start by creating the WebView:
 
 ```kotlin
 import android.webkit.WebView
@@ -142,7 +142,7 @@ eventBridge.requestAsync({
 
 The last step is to load the web app into the WebView. You can do this in any way that fits your needs, Racehorse
 doesn't restrict this process in any way. For example, if your web app is running on your local machine on the port
-1234, then you can load the web app in the web view using this snippet:
+1234, then you can load the web app in the WebView using this snippet:
 
 ```kotlin
 webView.loadUrl("https://10.0.2.2:1234")
@@ -204,7 +204,7 @@ const { deviceModel } = eventBridge
   .payload;
 ```
 
-If your app initializes an event bridge after the web view was created, you may need to establish the connection
+If your app initializes an event bridge after the WebView was created, you may need to establish the connection
 manually before using synchronous requests:
 
 ```ts
@@ -213,8 +213,8 @@ await eventBridge.connect();
 
 # Event subscriptions
 
-While web can post a request event to the Android, it is frequently required that the Android would post an event to the
-web app without an explicit request. This can be achieved using subscriptions.
+While the web app can post a request event to the Android, it is frequently required that the Android would post an
+event to the web app without an explicit request. This can be achieved using subscriptions.
 
 Let's define an event that the Android can post to the web:
 
@@ -255,16 +255,53 @@ anywhere in your Android app, and it would be delivered to a subscriber in the w
 EventBus.getDefault().post(BatteryLowEvent())
 ```
 
+# WebView events
+
+Racehorse provides clients for the WebView which post WebView-related events to the event bus, so you can subscribe to
+them in your plugins. To init clients just set them to the WebView instance:
+
+```kotlin
+import org.racehorse.webview.RacehorseWebChromeClient
+import org.racehorse.webview.RacehorseWebViewClient
+
+webView.webChromeClient = RacehorseWebChromeClient()
+webView.webViewClient = RacehorseWebViewClient()
+```
+
+Now you can subscribe to
+[all events that a WebView instance posts](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse.webview/index.html):
+
+```kotlin
+import org.greenrobot.eventbus.Subscribe
+import org.racehorse.webview.ConsoleMessageEvent
+
+class MyPlugin {
+
+    @Subscribe
+    fun onConsoleMessage(event: ConsoleMessageEvent) {
+        // Handle the event here
+    }
+}
+
+EventBus.getDefault().register(MyPlugin())
+```
+
 # Proguard
 
 `org.racehorse:racehorse` is an Android library (AAR) that provides its own
 [proguard rules](./android/racehorse/proguard-rules.pro), so no additional action is needed. Proguard rules prevent
 obfuscation of events and related classes which are available in Racehorse.
 
+For example, this class and its members won't be minified:
+
+```kotlin
+class ShowToastEvent(val message: String) : WebEvent
+```
+
 # Activity plugin
 
 [`ActivityManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.ActivityManager.html) starts
-activities and provides info about the activity that renders the web view.
+activities and provides info about the activity that renders the WebView.
 
 1. Initialize the plugin in your Android app:
 
@@ -290,7 +327,66 @@ activityManager.startActivity({
 
 # Asset loader plugin
 
+Asset loader plugin requires [WebView events](#webview-events) to be enabled. It loads the static assets from a
+directory when a particular URL is requested in the WebView:
+
+```kotlin
+import androidx.webkit.WebViewAssetLoader
+import org.racehorse.AssetLoaderPlugin
+import org.racehorse.StaticPathHandler
+
+EventBus.getDefault().register(
+    AssetLoaderPlugin(
+        activity,
+        WebViewAssetLoader.Builder()
+            .setDomain("example.com")
+            .addPathHandler(
+                "/",
+                StaticPathHandler(File(activity.filesDir, "www"))
+            )
+            .build()
+    )
+)
+
+webView.loadUrl("https://example.com")
+```
+
+You can register multiple instances of this plugin.
+
 # Deep link plugin
+
+[`DeviceManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.DeviceManager.html) provides access
+to deep links inside yor web app.
+
+1. Initialize the plugin in your Android app:
+
+```kotlin
+import org.racehorse.DeepLinkPlugin
+
+EventBus.getDefault().register(DeepLinkPlugin())
+```
+
+2. Override `onNewIntent` in the main activity of yor app and post the deep link event:
+
+```kotlin
+override fun onNewIntent(intent: Intent?) {
+    super.onNewIntent(intent)
+
+    if (intent != null) {
+        eventBus.post(OpenDeepLinkEvent(intent))
+    }
+}
+```
+
+3. Subscribe to new intents in the web app:
+
+```ts
+import { deepLinkManager } from 'racehorse';
+
+deepLinkManager.subscribe(intent => {
+  // Handle the deep link intent
+});
+```
 
 # Device plugin
 
@@ -330,7 +426,7 @@ import org.racehorse.EncryptedStoragePlugin
 EventBus.getDefault().register(
     EncryptedStoragePlugin(
         // The directory where encrypted data is stored
-        File(filesDir, "storage"),
+        File(activity.filesDir, "storage"),
 
         // The salt required to generate the encryption key
         BuildConfig.APPLICATION_ID.toByteArray()
@@ -356,44 +452,140 @@ await encryptedStorageManager.get('foo', PASSWORD);
 [`EvergreenManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.EvergreenManager.html) provides a
 way to update your app using an archive that is downloadable from your server.
 
+You can find an extensive demo of evergreen plugin usage [in the example app.](#how-to-run-the-example-app)
+
+Init the plugin and start the update download process:
+
+```kotlin
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import org.racehorse.evergreen.EvergreenPlugin
+
+class MyActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val evergreenPlugin = EvergreenPlugin(File(filesDir, "app"))
+
+        EventBus.getDefault().register(evergreenPlugin)
+
+        Thread {
+            // 🟡 Start the update process
+            evergreenPlugin.start(version = "1.0.0", updateMode = UpdateMode.MANDATORY) {
+                URL("http://example.com/bundle.zip").openConnection()
+            }
+        }.start()
+    }
+}
+```
+
+The snipped above would download `bundle.zip`, unpack it and store the assets in `<filesDir>/app` directory. These
+assets would be labeled as version 1.0.0. During future app launches, the plugin would notice that it has the assets for
+version 1.0.0 and would skip the download. If the version changes then the update bundle would be downloaded again.
+
+After the update is downloaded a
+[`BundleReadyEvent`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse.evergreen/-bundle-ready-event/index.html)
+event is posted. You can use the [`AssetLoaderPlugin`](#asset-loader-plugin) to load resources provided by the evergreen
+plugin:
+
+```kotlin
+@Subscribe(threadMode = ThreadMode.MAIN)
+fun onBundleReady(event: BundleReadyEvent) {
+
+    EventBus.getDefault().register(
+        // Loads static assets when a particular URL is requested
+        AssetLoaderPlugin(
+            activity,
+            WebViewAssetLoader.Builder()
+                .setDomain("example.com")
+                .addPathHandler(
+                    "/",
+                    // 🟡 Use assets provided by the evergreen plugin
+                    StaticPathHandler(event.appDir)
+                )
+                .build()
+        )
+    )
+
+    webView.loadUrl("https://example.com")
+}
+```
+
+Evergreen plugin keeps track of downloaded bundles:
+
+- The master bundle contains assets which the web app should use;
+- The pending update bundle is the bundle that was downloaded but not yet applied as master.
+
+Below is the diagram of events posted by the evergreen plugin.
+
 ```mermaid
 graph TD
 
-UpdateRequested(UpdateRequested)
---> ReadUpdateDescriptor[Read update descriptor]
---> HasCurrentBundle
+start["start(version, updateMode)"]
+--> HasMasterBundle
 
-HasCurrentBundle{{Has current bundle?}}
--->|Yes| IsUpdateSameVersionAsCurrent{{Is update same version as current?}}
+HasMasterBundle{{Has master bundle?}}
+-->|Yes| IsSameVersionAsMasterBundle{{Is same version as master bundle?}}
 
-HasCurrentBundle
--->|No| DownloadBundle[Download bundle]
+HasMasterBundle
+-->|No| MandatoryUpdate
 
-IsUpdateSameVersionAsCurrent
--->|Yes| UpToDateEvent([UpToDateEvent])
+IsSameVersionAsMasterBundle
+-->|Yes| MainBundleReadyEvent([BundleReadyEvent])
 
-IsUpdateSameVersionAsCurrent
--->|No| HasNextBundle{{Has next bundle?}} 
+IsSameVersionAsMasterBundle
+-->|No| HasPendingUpdateBundle{{Has pending update bundle?}} 
 
-HasNextBundle
--->|Yes| IsUpdateSameVersionAsNext{{Is update same version as next?}}
+HasPendingUpdateBundle
+-->|Yes| IsSameVersionAsPendingUpdateBundle{{Is same version as pending update bundle?}}
 
-HasNextBundle
--->|No| IsBlockingUpdate{{Is blocking update?}}
--->|Yes| DownloadBundle
+IsSameVersionAsPendingUpdateBundle
+-->|Yes| MainBundleReadyEvent
 
-IsBlockingUpdate
--->|No| NonBlockingUpdateStartedEvent([NonBlockingUpdateStartedEvent])
---> DownloadBundle
+IsSameVersionAsPendingUpdateBundle
+-->|No| IsMandatoryUpdateMode
 
-IsUpdateSameVersionAsNext
--->|Yes| BundleDownloaded([BundleDownloaded])
+HasPendingUpdateBundle
+-->|No| IsMandatoryUpdateMode{{Is mandatory update mode?}}
 
-IsUpdateSameVersionAsNext
--->|No| IsBlockingUpdate
+IsMandatoryUpdateMode
+---|No| BundleReadyEvent(["BundleReadyEvent ¹"])
+--> OptionalUpdate
 
-DownloadBundle
---> BundleDownloaded
+IsMandatoryUpdateMode
+--->|Yes| MandatoryUpdate
+
+subgraph OptionalUpdate [Optional update]
+OptionalUpdateStartedEvent([UpdateStartedEvent])
+--> OptionalUpdateProgressEvent([UpdateProgressEvent])
+--> OptionalUpdateReadyEvent([UpdateReadyEvent])
+end
+
+subgraph MandatoryUpdate [Mandatory update]
+MandatoryUpdateStartedEvent([UpdateStartedEvent])
+--> MandatoryUpdateProgressEvent([UpdateProgressEvent])
+--> MandatoryBundleReadyEvent([BundleReadyEvent])
+end
+```
+
+¹ The app is started with the assets from the available master bundle while the update is downloaded in the background.
+
+You can monitor background updates and apply them as soon as they are ready:
+
+```ts
+import { evergreenManager } from 'racehorse';
+
+// 1️⃣ Wait for the update bundle to be downloaded
+evergreenManager.subscribe('ready', () => {
+
+  // 2️⃣ Apply the update
+  evergreenManager.applyUpdate().then(() => {
+
+    // 3️⃣ Reload the web app to use the latest assets
+    window.location.reload();
+  });
+});
 ```
 
 # Facebook Login plugin
@@ -415,7 +607,7 @@ FacebookSdk.sdkInitialize(activity)
 EventBus.getDefault().register(FacebookLoginPlugin(activity))
 ```
 
-3. Request sign in from the web app that is loaded into the web view:
+3. Request sign in from the web app that is loaded into the WebView:
 
 ```ts
 import { facebookLoginManager } from 'racehorse';
@@ -456,9 +648,16 @@ facebookShareManager.shareLink({
 
 # File chooser plugin
 
-Enables `<input type="file">` in the WebView.
+File chooser plugin requires [WebView events](#webview-events) to be enabled. This plugin enables file inputs in the
+web app.
 
-If you don't need camera support for file inputs, then the plugin doesn't require any additional configuration:
+For example, if you have a file input:
+
+```html
+<input type='file'>
+```
+
+You can register a plugin to make this input open a file chooser dialog:
 
 ```kotlin
 import org.racehorse.FileChooserPlugin
@@ -466,7 +665,11 @@ import org.racehorse.FileChooserPlugin
 EventBus.getDefault().register(FileChooserPlugin(activity))
 ```
 
+If you don't need camera support for file inputs, then the plugin doesn't require any additional configuration.
+
 ## Enabling camera capture
+
+Camera capture requires a temporary file storage to write captured file to.
 
 1. Declare a provider in your app manifest:
 
@@ -506,14 +709,12 @@ EventBus.getDefault().register(
     FileChooserPlugin(
         activity,
 
-        // Points to Android/data/com.myapplication/cache
+        // 🟡 Points to Android/data/com.myapplication/cache
         activity.externalCacheDir,
-        "${BuildConfig.APPLICATION_ID}.provider"
+        BuildConfig.APPLICATION_ID + ".provider"
     )
 )
 ```
-
-# Firebase plugin
 
 # Google Play referrer plugin
 
@@ -575,7 +776,7 @@ import org.racehorse.GoogleSignInPlugin
 EventBus.getDefault().register(GoogleSignInPlugin(activity))
 ```
 
-4. Request sign in from the web app that is loaded into the web view:
+4. Request sign in from the web app that is loaded into the WebView:
 
 ```ts
 import { googleSignInManager } from 'racehorse';

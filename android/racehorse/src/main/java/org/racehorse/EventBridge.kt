@@ -18,14 +18,14 @@ import java.io.Serializable
 import java.util.Date
 
 /**
- * An event posted from the web view.
+ * An event posted from the WebView.
  *
  * Only events that implement this interface are "visible" to the web application.
  */
 interface WebEvent : Serializable
 
 /**
- * An event published by Android for subscribers in the web view.
+ * An event published by Android for subscribers in the WebView.
  */
 interface NoticeEvent : Serializable
 
@@ -41,7 +41,7 @@ open class ChainableEvent {
     internal var eventBus: EventBus? = null
 
     /**
-     * The internally tracked request ID that links request that originated from the web view with the response.
+     * The internally tracked request ID that links request that originated from the WebView with the response.
      */
     @Transient
     internal var requestId = -1
@@ -106,7 +106,7 @@ class IsSupportedEvent(val eventType: String) : RequestEvent() {
 }
 
 /**
- * The event bridge enables communication between the app in the web view and Android-native code.
+ * The event bridge enables communication between the app in the WebView and Android-native code.
  *
  * @param webView The [WebView] to which the event bridge will add the connection Javascript interface.
  * @param eventBus The event bus to which events are posted.
