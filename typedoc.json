@@ -9,8 +9,11 @@
   "excludeInternal": true,
   "entryPointStrategy": "packages",
   "disableSources": true,
+  "hideGenerator": true,
   "readme": "none",
+  "tsconfig": "./tsconfig.build.json",
+  "customCss": "./node_modules/typedoc-custom-css/custom.css",
   "sidebarLinks": {
-    "Racehorse Android API": "https://smikhalevski.github.io/racehorse/android/index.html"
+    "Racehorse Android API": "/racehorse/android/index.html"
   }
 }

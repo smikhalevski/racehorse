@@ -1,4 +1,4 @@
-name: release-web
+name: publish-web
 
 on:
   push:
@@ -6,10 +6,11 @@ on:
 
 jobs:
 
-  publish:
+  publish-web:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - uses: actions/setup-node@v3
         with:
           node-version: "20"
@@ -31,3 +32,9 @@ jobs:
       - run: npm publish --workspace=$WORKSPACE --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-docs:
+    needs:
+      - test-web
+      - test-android
+    uses: ./.github/workflows/publish-docs.yml
