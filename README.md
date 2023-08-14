@@ -514,8 +514,8 @@ fun onBundleReady(event: BundleReadyEvent) {
 
 Evergreen plugin keeps track of downloaded bundles:
 
-- The master bundle contains assets which the web app should use;
-- The pending update bundle is the bundle that was downloaded but not yet applied as master.
+- The master bundle contains current assets of the web app;
+- The pending update bundle contains assets that were downloaded but not yet applied as master.
 
 Below is the diagram of events posted by the evergreen plugin.
 
