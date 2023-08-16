@@ -10,6 +10,7 @@ The bootstrapper for WebView-based Android apps.
 - [Request-response event chains](#request-response-event-chains)
 - [Event subscriptions](#event-subscriptions)
 - [WebView events](#webview-events)
+- [Check supported events](#check-supported-events)
 - [Proguard](#proguard)
 
 🔌&ensp;**Plugins**
@@ -23,6 +24,7 @@ The bootstrapper for WebView-based Android apps.
 - [Facebook Login](#facebook-login-plugin)
 - [Facebook Share](#facebook-share-plugin)
 - [File chooser](#file-chooser-plugin)
+- [Google Pay](#google-pay-plugin)
 - [Google Play referrer](#google-play-referrer-plugin)
 - [Google Sign-In](#google-sign-in-plugin)
 - [HTTPS](#https-plugin)
@@ -284,6 +286,18 @@ class MyPlugin {
 }
 
 EventBus.getDefault().register(MyPlugin())
+```
+
+# Check supported events
+
+The web app can check that the event in supported by the Android binary. For example, to check that the app supports
+GooglePay card tokenization, you can use:
+
+```ts
+import { eventBridge } from 'racehorse';
+
+eventBridge.isSupported('org.racehorse.GooglePayTokenizeEvent');
+// ⮕ true
 ```
 
 # Proguard
@@ -716,6 +730,50 @@ EventBus.getDefault().register(
 )
 ```
 
+# Google Pay plugin
+
+[`GooglePayManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.GooglePayManager.html) enables
+[Android Push Provisioning](https://developers.google.com/pay/issuers/apis/push-provisioning/android) support.
+
+1. [Set up the development environment](https://developers.google.com/pay/issuers/apis/push-provisioning/android/setup),
+   so TapAndPay SDK is available in your app.
+
+2. Initialize the plugin in your Android app:
+
+```kotlin
+import org.racehorse.GoogleSignInPlugin
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var googlePayPlugin: GooglePayPlugin
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        googlePayPlugin = GooglePayPlugin(this)
+
+        EventBus.getDefault().register(googlePayPlugin)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        // 🟡 Dispatch results back to the plugin
+        googlePayPlugin.dispatchResult(requestCode, resultCode, data)
+    }
+}
+```
+
+3. Tokenize the card or use any other Google Pay API methods:
+
+```ts
+import { googlePayManager } from 'racehorse';
+
+googlePayManager.listTokens().then(tokens => {
+  // Handle the list of tokenized cards
+});
+```
+
 # Google Play referrer plugin
 
 [`GooglePlayReferrerManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.GooglePlayReferrerManager.html)
@@ -788,7 +846,8 @@ googleSignInManager.signIn().then(account => {
 
 # HTTPS plugin
 
-HTTPS plugin forces the WebView to ignore certificate issues.
+Asset loader plugin requires [WebView events](#webview-events) to be enabled. HTTPS plugin forces the WebView to ignore
+certificate issues.
 
 ```kotlin
 import org.racehorse.HttpsPlugin

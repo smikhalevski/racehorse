@@ -35,29 +35,42 @@ interface NoticeEvent : Serializable
 open class ChainableEvent {
 
     /**
-     * The event bus that was used to dispatch the event.
+     * The event bus to which responses to this event are posted, or `null` if origin wasn't set for this event.
      */
     @Transient
-    internal var eventBus: EventBus? = null
+    var eventBus: EventBus? = null
+        private set
 
     /**
-     * The internally tracked request ID that links request that originated from the WebView with the response.
+     * The request ID that links request that originated from the web view with the response.
      */
     @Transient
-    internal var requestId = -1
+    var requestId: Int = -1
+        private set
+
+    /**
+     * Sets the origin for this event to which consequent events in chain are posted.
+     */
+    fun setOrigin(eventBus: EventBus, requestId: Int): ChainableEvent {
+        this.eventBus = eventBus
+        this.requestId = requestId
+        return this
+    }
+
+    /**
+     * Executes a block and posts the returned event to the chain in the same event bus to which this event was
+     * originally posted. If an exception is thrown in the block, then an [ExceptionEvent] is used as a response.
+     */
+    fun respond(block: () -> ChainableEvent) {
+        val eventBus = checkNotNull(eventBus) { "Event has no origin" }
+
+        eventBus.post(ExceptionEvent.unless(block).setOrigin(eventBus, requestId))
+    }
 
     /**
      * Posts an [event] to the chain in the same event bus to which this event was originally posted.
      */
-    fun <T : ChainableEvent> respond(event: T): T {
-        val eventBus = eventBus ?: throw IllegalStateException("Cannot respond to this event")
-
-        event.eventBus = eventBus
-        event.requestId = requestId
-
-        eventBus.post(event)
-        return event
-    }
+    fun respond(event: ChainableEvent) = respond { event }
 }
 
 /**
@@ -81,6 +94,18 @@ class VoidEvent : ResponseEvent()
  * Response that describes an occurred exception.
  */
 class ExceptionEvent(@Transient val cause: Throwable) : ResponseEvent() {
+
+    companion object {
+        /**
+         * Returns an event from the block, or an [ExceptionEvent] if an error is thrown.
+         */
+        fun unless(block: () -> ChainableEvent): ChainableEvent = try {
+            block()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            ExceptionEvent(e)
+        }
+    }
 
     /**
      * The class name of the [Throwable] that caused the event.
@@ -115,17 +140,17 @@ class IsSupportedEvent(val eventType: String) : RequestEvent() {
  * @param connectionKey The key of the `window` that exposes the connection Javascript interface.
  */
 open class EventBridge(
-    private val webView: WebView,
-    private val eventBus: EventBus = EventBus.getDefault(),
-    private val gson: Gson = GsonBuilder()
+    val webView: WebView,
+    val eventBus: EventBus = EventBus.getDefault(),
+    val gson: Gson = GsonBuilder()
         .serializeNulls()
         .registerTypeAdapter(Serializable::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Bundle::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Date::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Any::class.java, NaturalJsonAdapter())
         .create(),
-    private val handler: Handler = Handler(Looper.getMainLooper()),
-    private val connectionKey: String = "racehorseConnection",
+    val handler: Handler = Handler(Looper.getMainLooper()),
+    val connectionKey: String = "racehorseConnection",
 ) {
 
     companion object {
@@ -173,8 +198,7 @@ open class EventBridge(
         }
 
         return synchronized(this) {
-            event.eventBus = eventBus
-            event.requestId = nextRequestId++
+            event.setOrigin(eventBus, nextRequestId++)
 
             syncRequestId = event.requestId
             syncResponseEvent = null
@@ -210,9 +234,10 @@ open class EventBridge(
 
     @Subscribe
     open fun onNoSubscriber(event: NoSubscriberEvent) {
-        (event.originalEvent as? RequestEvent)?.let {
-            it.respond(ExceptionEvent(IllegalStateException("No subscribers for ${it::class.java.name}")))
-        }
+        val e = IllegalStateException("No subscribers for ${event.originalEvent::class.java.name}")
+        e.printStackTrace()
+
+        (event.originalEvent as? ChainableEvent)?.respond(ExceptionEvent(e))
     }
 
     @Subscribe
@@ -227,13 +252,16 @@ open class EventBridge(
 
     @Subscribe
     open fun onIsSupported(event: IsSupportedEvent) {
-        event.respond(IsSupportedEvent.ResultEvent(try {
-            Class.forName(event.eventType).let {
-                WebEvent::class.java.isAssignableFrom(it) || NoticeEvent::class.java.isAssignableFrom(it)
-            }
-        } catch (_: Throwable) {
-            false
-        }))
+        event.respond(
+            IsSupportedEvent.ResultEvent(
+                try {
+                    val type = Class.forName(event.eventType)
+                    WebEvent::class.java.isAssignableFrom(type) || NoticeEvent::class.java.isAssignableFrom(type)
+                } catch (_: Throwable) {
+                    false
+                }
+            )
+        )
     }
 
     /**
@@ -241,7 +269,7 @@ open class EventBridge(
      */
     private fun getEventClass(eventType: String) = eventClasses.getOrPut(eventType) {
         Class.forName(eventType).also {
-            require(WebEvent::class.java.isAssignableFrom(it)) { "Expected an event: $eventType" }
+            require(WebEvent::class.java.isAssignableFrom(it)) { "Not an event: $eventType" }
         }
     }
 

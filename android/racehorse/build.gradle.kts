@@ -91,6 +91,9 @@ dependencies {
     // Google Play referrer
     compileOnly("com.android.installreferrer:installreferrer:2.2")
 
+    // Google Pay
+    compileOnly("com.google.android.gms:play-services-tapandpay:18.3.3")
+
     // Push notifications
     compileOnly("com.google.firebase:firebase-messaging-ktx:23.1.2")
 

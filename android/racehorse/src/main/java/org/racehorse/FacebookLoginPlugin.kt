@@ -77,9 +77,10 @@ open class FacebookLoginPlugin(private val activity: ComponentActivity) {
 
             override fun onError(error: FacebookException) = handleLoginResult(null)
 
-            fun handleLoginResult(result: LoginResult?) {
+            fun handleLoginResult(result: LoginResult?) = event.respond {
                 loginManager.unregisterCallback(callbackManager)
-                event.respond(FacebookLogInEvent.ResultEvent(result?.accessToken?.let(::SerializableFacebookAccessToken)))
+
+                FacebookLogInEvent.ResultEvent(result?.accessToken?.let(::SerializableFacebookAccessToken))
             }
         })
 
@@ -88,7 +89,9 @@ open class FacebookLoginPlugin(private val activity: ComponentActivity) {
 
     @Subscribe
     fun onFacebookLogOut(event: FacebookLogOutEvent) {
-        loginManager.logOut()
-        event.respond(VoidEvent())
+        event.respond {
+            loginManager.logOut()
+            VoidEvent()
+        }
     }
 }
