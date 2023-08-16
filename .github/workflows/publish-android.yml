@@ -40,6 +40,5 @@ jobs:
 
   publish-docs:
     needs:
-      - test-web
-      - test-android
+      - publish-android
     uses: ./.github/workflows/publish-docs.yml
