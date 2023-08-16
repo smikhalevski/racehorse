@@ -265,7 +265,7 @@ open class GooglePayPlugin(
             event.respond(
                 GooglePayViewTokenEvent.ResultEvent(
                     try {
-                        it.getResult(ApiException::class.java).send()
+                        it.result.send()
                         true
                     } catch (_: Throwable) {
                         false
