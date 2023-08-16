@@ -234,9 +234,10 @@ open class EventBridge(
 
     @Subscribe
     open fun onNoSubscriber(event: NoSubscriberEvent) {
-        (event.originalEvent as? RequestEvent)?.let {
-            it.respond(ExceptionEvent(IllegalStateException("No subscribers for ${it::class.java.name}")))
-        }
+        val e = IllegalStateException("No subscribers for ${event.originalEvent::class.java.name}")
+        e.printStackTrace()
+
+        (event.originalEvent as? ChainableEvent)?.respond(ExceptionEvent(e))
     }
 
     @Subscribe
@@ -251,15 +252,16 @@ open class EventBridge(
 
     @Subscribe
     open fun onIsSupported(event: IsSupportedEvent) {
-        event.respond(IsSupportedEvent.ResultEvent(
-            try {
-                Class.forName(event.eventType).let {
-                    WebEvent::class.java.isAssignableFrom(it) || NoticeEvent::class.java.isAssignableFrom(it)
+        event.respond(
+            IsSupportedEvent.ResultEvent(
+                try {
+                    val type = Class.forName(event.eventType)
+                    WebEvent::class.java.isAssignableFrom(type) || NoticeEvent::class.java.isAssignableFrom(type)
+                } catch (_: Throwable) {
+                    false
                 }
-            } catch (_: Throwable) {
-                false
-            }
-        ))
+            )
+        )
     }
 
     /**
@@ -267,7 +269,7 @@ open class EventBridge(
      */
     private fun getEventClass(eventType: String) = eventClasses.getOrPut(eventType) {
         Class.forName(eventType).also {
-            require(WebEvent::class.java.isAssignableFrom(it)) { "Expected an event type: $eventType" }
+            require(WebEvent::class.java.isAssignableFrom(it)) { "Not an event: $eventType" }
         }
     }
 

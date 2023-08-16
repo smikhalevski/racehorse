@@ -723,7 +723,7 @@ EventBus.getDefault().register(
 [Android Push Provisioning](https://developers.google.com/pay/issuers/apis/push-provisioning/android) support.
 
 1. [Set up the development environment](https://developers.google.com/pay/issuers/apis/push-provisioning/android/setup),
-   so TapAndPay SDK in available in your app.
+   so TapAndPay SDK is available in your app.
 
 2. Initialize the plugin in your Android app:
 
