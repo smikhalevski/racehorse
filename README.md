@@ -10,6 +10,7 @@ The bootstrapper for WebView-based Android apps.
 - [Request-response event chains](#request-response-event-chains)
 - [Event subscriptions](#event-subscriptions)
 - [WebView events](#webview-events)
+- [Check supported events](#check-supported-events)
 - [Proguard](#proguard)
 
 🔌&ensp;**Plugins**
@@ -285,6 +286,18 @@ class MyPlugin {
 }
 
 EventBus.getDefault().register(MyPlugin())
+```
+
+# Check supported events
+
+The web app can check that the event in supported by the Android binary. For example, to check that the app supports
+GooglePay card tokenization, you can use:
+
+```ts
+import { eventBridge } from 'racehorse';
+
+eventBridge.isSupported('org.racehorse.GooglePayTokenizeEvent');
+// ⮕ true
 ```
 
 # Proguard
@@ -833,7 +846,8 @@ googleSignInManager.signIn().then(account => {
 
 # HTTPS plugin
 
-HTTPS plugin forces the WebView to ignore certificate issues.
+Asset loader plugin requires [WebView events](#webview-events) to be enabled. HTTPS plugin forces the WebView to ignore
+certificate issues.
 
 ```kotlin
 import org.racehorse.HttpsPlugin
