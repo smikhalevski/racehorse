@@ -3,6 +3,7 @@ package org.racehorse
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.io.File
+import java.math.BigInteger
 import java.security.MessageDigest
 import javax.crypto.BadPaddingException
 import javax.crypto.Cipher
@@ -41,7 +42,9 @@ class HasEncryptedValueEvent(val key: String) : RequestEvent() {
 /**
  * Deletes an encrypted value associated with the key.
  */
-class DeleteEncryptedValueEvent(val key: String) : RequestEvent()
+class DeleteEncryptedValueEvent(val key: String) : RequestEvent() {
+    class ResultEvent(val deleted: Boolean) : ResponseEvent()
+}
 
 /**
  * An encrypted key-value file-based storage.
@@ -100,9 +103,7 @@ open class EncryptedStoragePlugin(
 
     @Subscribe
     open fun onDeleteEncryptedValue(event: DeleteEncryptedValueEvent) {
-        getFile(event.key).delete()
-
-        event.respond(VoidEvent())
+        event.respond(DeleteEncryptedValueEvent.ResultEvent(getFile(event.key).delete()))
     }
 
     /**
@@ -122,11 +123,12 @@ open class EncryptedStoragePlugin(
         return SecretKeySpec(factory.generateSecret(spec).encoded, "AES")
     }
 
+    /**
+     * Returns the file descriptor for a given key.
+     */
     private fun getFile(key: String): File {
-        require(key.all(Char::isJavaIdentifierPart)) { "Expected key to be an identifier" }
-
         storageDir.mkdirs()
 
-        return File(storageDir, "$key.ekv")
+        return File(storageDir, BigInteger(1, MessageDigest.getInstance("MD5").digest(key.toByteArray())).toString(16))
     }
 }
