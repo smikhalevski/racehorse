@@ -335,6 +335,9 @@ $dokka.location:org.racehorse/DeepLinkPlugin///PointingToDeclaration/racehorse/
 $dokka.location:org.racehorse/DeepLinkPlugin/DeepLinkPlugin/#/PointingToDeclaration/racehorse/org.racehorse/-deep-link-plugin/-deep-link-plugin.html
 $dokka.location:org.racehorse/DeepLinkPlugin/onGetLastDeepLink/#org.racehorse.GetLastDeepLinkEvent/PointingToDeclaration/racehorse/org.racehorse/-deep-link-plugin/on-get-last-deep-link.html
 $dokka.location:org.racehorse/DeepLinkPlugin/onOpenDeepLink/#org.racehorse.OpenDeepLinkEvent/PointingToDeclaration/racehorse/org.racehorse/-deep-link-plugin/on-open-deep-link.html
+$dokka.location:org.racehorse/DeleteEncryptedValueEvent.ResultEvent///PointingToDeclaration/racehorse/org.racehorse/-delete-encrypted-value-event/-result-event/index.html
+$dokka.location:org.racehorse/DeleteEncryptedValueEvent.ResultEvent/ResultEvent/#kotlin.Boolean/PointingToDeclaration/racehorse/org.racehorse/-delete-encrypted-value-event/-result-event/-result-event.html
+$dokka.location:org.racehorse/DeleteEncryptedValueEvent.ResultEvent/deleted/#/PointingToDeclaration/racehorse/org.racehorse/-delete-encrypted-value-event/-result-event/deleted.html
 $dokka.location:org.racehorse/DeleteEncryptedValueEvent///PointingToDeclaration/racehorse/org.racehorse/-delete-encrypted-value-event/index.html
 $dokka.location:org.racehorse/DeleteEncryptedValueEvent/DeleteEncryptedValueEvent/#kotlin.String/PointingToDeclaration/racehorse/org.racehorse/-delete-encrypted-value-event/-delete-encrypted-value-event.html
 $dokka.location:org.racehorse/DeleteEncryptedValueEvent/key/#/PointingToDeclaration/racehorse/org.racehorse/-delete-encrypted-value-event/key.html
