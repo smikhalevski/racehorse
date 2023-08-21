@@ -1,15 +1,32 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { encryptedStorageManager } from 'racehorse';
 import { FormattedJSON } from '../components/FormattedJSON';
 
 export function EncryptedStorageExample() {
-  const [value, setValue] = useState('test');
-  const [password, setPassword] = useState('test');
+  const [key, setKey] = useState('my_key');
+  const [value, setValue] = useState('my_value');
+  const [password, setPassword] = useState('my_password');
   const [persistedValue, setPersistedValue] = useState<string | null>(null);
+
+  useEffect(() => {
+    encryptedStorageManager.get(key, password).then(setPersistedValue);
+  });
 
   return (
     <>
       <h2>{'Encrypted storage'}</h2>
+      <p>
+        {'Key:'}
+        <br />
+        <input
+          type="text"
+          value={key}
+          onChange={event => {
+            setKey(event.target.value);
+          }}
+        />
+      </p>
+
       <p>
         {'Value:'}
         <br />
@@ -37,28 +54,26 @@ export function EncryptedStorageExample() {
       <p>
         <button
           onClick={() => {
-            encryptedStorageManager.set('test', value, password);
+            encryptedStorageManager.set(key, value, password).then(() => {
+              encryptedStorageManager.get(key, password).then(setPersistedValue);
+            });
           }}
         >
           {'Set value'}
         </button>{' '}
         <button
           onClick={() => {
-            encryptedStorageManager.delete('test');
+            encryptedStorageManager.delete(key);
+            encryptedStorageManager.get(key, password).then(() => {
+              encryptedStorageManager.get(key, password).then(setPersistedValue);
+            });
           }}
         >
           {'Delete value'}
-        </button>{' '}
-        <button
-          onClick={() => {
-            encryptedStorageManager.get('test', password).then(setPersistedValue);
-          }}
-        >
-          {'Get value'}
         </button>
       </p>
 
-      {'Value: '}
+      {'Persisted value: '}
       <FormattedJSON value={persistedValue} />
     </>
   );
