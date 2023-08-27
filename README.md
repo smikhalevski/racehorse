@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/logo.png" alt="Racehorse" width="320"/>
+  <img src="./racehorse.png" alt="Racehorse" width="500"/>
 </p>
 
 The bootstrapper for WebView-based Android apps.
