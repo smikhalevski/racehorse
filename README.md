@@ -74,7 +74,9 @@ val webView = WebView(activity)
 // val webView = activity.findViewById<WebView>(R.id.web_view)
 ```
 
-Create an `EventBridge` instance that would be responsible for event marshalling:
+Create an
+[`EventBridge`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-event-bridge/index.html)
+instance that would be responsible for event marshalling:
 
 ```kotlin
 import org.racehorse.EventBridge
@@ -101,8 +103,10 @@ import org.racehorse.WebEvent
 class ShowToastEvent(val message: String) : WebEvent
 ```
 
-Note that `ShowToastEvent` implements `WebEvent` marker interface. This is the baseline requirement to which events
-must conform to support marshalling from the web app to Android.
+Note that `ShowToastEvent` implements
+[`WebEvent`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-web-event/index.html) marker
+interface. This is the baseline requirement to which events must conform to support marshalling from the web app to
+Android.
 
 Now let's add an event subscriber that would receive incoming `ShowToastEvent` and display a toast:
 
@@ -152,8 +156,9 @@ webView.loadUrl("https://10.0.2.2:1234")
 
 # Request-response event chains
 
-In the [Basics](#basics) section we used an event that extends a `WebEvent` interface. Such events don't imply the
-response. To create a request-response chain at least two events are required:
+In the [Basics](#basics) section we used an event that extends a
+[`WebEvent`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-web-event/index.html) interface.
+Such events don't imply the response. To create a request-response chain at least two events are required:
 
 ```kotlin
 package com.example
@@ -176,9 +181,12 @@ class DeviceModelPlugin {
 }
 ```
 
-Request and response events are instances of `ChainableEvent`. Events in the chain share the same `requestId`. When a
-`ResponseEvent` is posted to the event bus it is marshalled to the web app and resolves a promise returned from the
-`eventBridge.requestAsync`:
+Request and response events are instances of
+[`ChainableEvent`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-chainable-event/index.html).
+Events in the chain share the same `requestId`. When a
+[`ResponseEvent`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-response-event/index.html)
+is posted to the event bus it is marshalled to the web app and resolves a promise returned from the
+[`eventBridge.requestAsync`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.EventBridge.html#requestAsync):
 
 ```ts
 import { eventBridge } from 'racehorse';
@@ -188,15 +196,17 @@ const deviceModel = await eventBridge
   .then(event => event.payload.deviceModel)
 ```
 
-If an exception is thrown in `DeviceModelPlugin.onGetDeviceModel`, then promise is _rejected_ with an `Error` instance.
+If an exception is thrown in `DeviceModelPlugin.onGetDeviceModel`, then promise is _rejected_ with an
+[`Error`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) instance.
 
 ## Synchronous requests
 
 If all events in the event chain are handled on
 [the posting thread](https://greenrobot.org/eventbus/documentation/delivery-threads-threadmode/) on the Android side,
 then a request can be handled synchronously on the web side. In the `DeviceModelPlugin` example `onGetDeviceModel` is
-called on the posting thread, since we didn't specify a thread mode for `@Subscribe` annotation. So this allows web to
-perform a synchronous request:
+called on the posting thread, since we didn't specify a thread mode for
+[`@Subscribe`](https://github.com/greenrobot/EventBus#eventbus-in-3-steps) annotation. So this allows web to perform a
+synchronous request:
 
 ```ts
 import { eventBridge } from 'racehorse';
@@ -369,7 +379,7 @@ You can register multiple instances of this plugin.
 
 # Deep link plugin
 
-[`DeviceManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.DeviceManager.html) provides access
+[`DeepLinkManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.DeepLinkManager.html) provides access
 to deep links inside yor web app.
 
 1. Initialize the plugin in your Android app:
@@ -380,7 +390,9 @@ import org.racehorse.DeepLinkPlugin
 EventBus.getDefault().register(DeepLinkPlugin())
 ```
 
-2. Override `onNewIntent` in the main activity of yor app and post the deep link event:
+2. Override
+   [`onNewIntent`](https://developer.android.com/reference/android/app/Activity#onNewIntent(android.content.Intent)) in
+   the main activity of yor app and post the deep link event:
 
 ```kotlin
 override fun onNewIntent(intent: Intent?) {
@@ -881,7 +893,9 @@ keyboardManager.subscribe(status => {
 });
 ```
 
-If you are using React, then refer to `useKeyboardStatus` hook that re-render a component when keyboard status changes.
+If you are using React, then refer to
+[`useKeyboardStatus`](https://smikhalevski.github.io/racehorse/functions/_racehorse_react.useKeyboardStatus.html) hook
+that re-renders a component when keyboard status changes.
 
 ```tsx
 import { useKeyboardStatus } from '@racehorse/react';
@@ -921,7 +935,9 @@ networkManager.subscribe(status => {
 });
 ```
 
-If you are using React, then refer to `useNetworkStatus` hook that re-render a component when network status changes.
+If you are using React, then refer to
+[`useNetworkStatus`](https://smikhalevski.github.io/racehorse/functions/_racehorse_react.useNetworkStatus.html) hook
+that re-renders a component when network status changes.
 
 ```tsx
 import { useNetworkStatus } from '@racehorse/react';
