@@ -122,7 +122,7 @@ open class EvergreenPlugin(
         event.respond(GetUpdateStatusEvent.ResultEvent(updateVersion?.let { UpdateStatus(it, isUpdateReady) }))
     }
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     open fun onApplyUpdate(event: ApplyUpdateEvent) {
         event.respond(ApplyUpdateEvent.ResultEvent(if (applyUpdate()) masterVersion else null))
     }

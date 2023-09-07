@@ -59,7 +59,7 @@ open class EncryptedStoragePlugin(
     private val iterationCount: Int = 10_000
 ) {
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     open fun onSetEncryptedValue(event: SetEncryptedValueEvent) {
         val valueBytes = event.value.toByteArray()
 
@@ -73,7 +73,7 @@ open class EncryptedStoragePlugin(
         event.respond(VoidEvent())
     }
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     open fun onGetEncryptedValue(event: GetEncryptedValueEvent) {
         val file = getFile(event.key)
 
