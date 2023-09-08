@@ -33,6 +33,10 @@ The bootstrapper for WebView-based Android apps.
 - [Notifications](#notifications-plugin)
 - [Permissions](#permissions-plugin)
 
+🍪&ensp;**Cookbook**
+
+- [Blurring the app that goes to the background](#blurring-the-app-that-goes-to-the-background)
+
 # How to run the example app?
 
 1. Clone this repo:
@@ -997,3 +1001,38 @@ permissionsManager.isPermissionGranted('android.permission.ACCESS_WIFI_STATE');
 permissionsManager.askForPermission('android.permission.CALL_PHONE');
 // ⮕ Promise<boolean>
 ```
+
+# Blurring the app that goes to the background
+
+Post a custom
+[`NoticeEvent`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-notice-event/index.html) event
+in [`onWindowFocusChanged`](https://developer.android.com/reference/android/app/Activity#onWindowFocusChanged(boolean)):
+
+```kotlin
+package com.myapplication
+
+import org.greenrobot.eventbus.EventBus
+import org.racehorse.NoticeEvent
+
+class WindowFocusChangedEvent(val hasFocus: Boolean) : NoticeEvent
+
+class MainActivity {
+
+    // Don't forget to init Racehorse here
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        EventBus.getDefault().post(WindowFocusChangedEvent(hasFocus))
+    }
+}
+```
+
+In the web app, subscribe to this event and apply the blur filter to the body:
+
+```ts
+eventBridge.subscribe('com.myapplication.WindowFocusChangedEvent', payload => {
+  document.body.style.filter = payload.hasFocus ? 'none' : 'blur(30px)';
+});
+```
+
+Now your application would become blurred when it is going to background and become non-blurred when it comes to the
+foreground. 
