@@ -612,6 +612,11 @@ $dokka.location:org.racehorse/HasEncryptedValueEvent.ResultEvent/exists/#/Pointi
 $dokka.location:org.racehorse/HasEncryptedValueEvent///PointingToDeclaration/racehorse/org.racehorse/-has-encrypted-value-event/index.html
 $dokka.location:org.racehorse/HasEncryptedValueEvent/HasEncryptedValueEvent/#kotlin.String/PointingToDeclaration/racehorse/org.racehorse/-has-encrypted-value-event/-has-encrypted-value-event.html
 $dokka.location:org.racehorse/HasEncryptedValueEvent/key/#/PointingToDeclaration/racehorse/org.racehorse/-has-encrypted-value-event/key.html
+$dokka.location:org.racehorse/HideKeyboardEvent.ResultEvent///PointingToDeclaration/racehorse/org.racehorse/-hide-keyboard-event/-result-event/index.html
+$dokka.location:org.racehorse/HideKeyboardEvent.ResultEvent/ResultEvent/#kotlin.Boolean/PointingToDeclaration/racehorse/org.racehorse/-hide-keyboard-event/-result-event/-result-event.html
+$dokka.location:org.racehorse/HideKeyboardEvent.ResultEvent/isHidden/#/PointingToDeclaration/racehorse/org.racehorse/-hide-keyboard-event/-result-event/is-hidden.html
+$dokka.location:org.racehorse/HideKeyboardEvent///PointingToDeclaration/racehorse/org.racehorse/-hide-keyboard-event/index.html
+$dokka.location:org.racehorse/HideKeyboardEvent/HideKeyboardEvent/#/PointingToDeclaration/racehorse/org.racehorse/-hide-keyboard-event/-hide-keyboard-event.html
 $dokka.location:org.racehorse/HttpsPlugin///PointingToDeclaration/racehorse/org.racehorse/-https-plugin/index.html
 $dokka.location:org.racehorse/HttpsPlugin/HttpsPlugin/#/PointingToDeclaration/racehorse/org.racehorse/-https-plugin/-https-plugin.html
 $dokka.location:org.racehorse/HttpsPlugin/onReceivedSslError/#org.racehorse.webview.ReceivedSslErrorEvent/PointingToDeclaration/racehorse/org.racehorse/-https-plugin/on-received-ssl-error.html
@@ -634,6 +639,8 @@ $dokka.location:org.racehorse/KeyboardObserver/unregister/#/PointingToDeclaratio
 $dokka.location:org.racehorse/KeyboardPlugin///PointingToDeclaration/racehorse/org.racehorse/-keyboard-plugin/index.html
 $dokka.location:org.racehorse/KeyboardPlugin/KeyboardPlugin/#android.app.Activity#org.greenrobot.eventbus.EventBus/PointingToDeclaration/racehorse/org.racehorse/-keyboard-plugin/-keyboard-plugin.html
 $dokka.location:org.racehorse/KeyboardPlugin/onGetKeyboardStatus/#org.racehorse.GetKeyboardStatusEvent/PointingToDeclaration/racehorse/org.racehorse/-keyboard-plugin/on-get-keyboard-status.html
+$dokka.location:org.racehorse/KeyboardPlugin/onHideKeyboard/#org.racehorse.HideKeyboardEvent/PointingToDeclaration/racehorse/org.racehorse/-keyboard-plugin/on-hide-keyboard.html
+$dokka.location:org.racehorse/KeyboardPlugin/onShowKeyboard/#org.racehorse.ShowKeyboardEvent/PointingToDeclaration/racehorse/org.racehorse/-keyboard-plugin/on-show-keyboard.html
 $dokka.location:org.racehorse/KeyboardStatus///PointingToDeclaration/racehorse/org.racehorse/-keyboard-status/index.html
 $dokka.location:org.racehorse/KeyboardStatus/KeyboardStatus/#kotlin.Int/PointingToDeclaration/racehorse/org.racehorse/-keyboard-status/-keyboard-status.html
 $dokka.location:org.racehorse/KeyboardStatus/height/#/PointingToDeclaration/racehorse/org.racehorse/-keyboard-status/height.html
@@ -737,6 +744,8 @@ $dokka.location:org.racehorse/ShouldShowRequestPermissionRationaleEvent.ResultEv
 $dokka.location:org.racehorse/ShouldShowRequestPermissionRationaleEvent///PointingToDeclaration/racehorse/org.racehorse/-should-show-request-permission-rationale-event/index.html
 $dokka.location:org.racehorse/ShouldShowRequestPermissionRationaleEvent/ShouldShowRequestPermissionRationaleEvent/#kotlin.Array[kotlin.String]/PointingToDeclaration/racehorse/org.racehorse/-should-show-request-permission-rationale-event/-should-show-request-permission-rationale-event.html
 $dokka.location:org.racehorse/ShouldShowRequestPermissionRationaleEvent/permissions/#/PointingToDeclaration/racehorse/org.racehorse/-should-show-request-permission-rationale-event/permissions.html
+$dokka.location:org.racehorse/ShowKeyboardEvent///PointingToDeclaration/racehorse/org.racehorse/-show-keyboard-event/index.html
+$dokka.location:org.racehorse/ShowKeyboardEvent/ShowKeyboardEvent/#/PointingToDeclaration/racehorse/org.racehorse/-show-keyboard-event/-show-keyboard-event.html
 $dokka.location:org.racehorse/StartActivityEvent.ResultEvent///PointingToDeclaration/racehorse/org.racehorse/-start-activity-event/-result-event/index.html
 $dokka.location:org.racehorse/StartActivityEvent.ResultEvent/ResultEvent/#kotlin.Boolean/PointingToDeclaration/racehorse/org.racehorse/-start-activity-event/-result-event/-result-event.html
 $dokka.location:org.racehorse/StartActivityEvent.ResultEvent/isStarted/#/PointingToDeclaration/racehorse/org.racehorse/-start-activity-event/-result-event/is-started.html
