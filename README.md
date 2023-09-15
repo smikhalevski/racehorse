@@ -889,7 +889,7 @@ EventBus.getDefault().register(KeyboardPlugin(activity))
 ```ts
 import { keyboardManager } from 'racehorse';
 
-keyboardManager.getStatus().isVisible;
+keyboardManager.getKeyboardStatus().isVisible;
 // ⮕ true
 
 keyboardManager.subscribe(status => {
@@ -931,7 +931,7 @@ EventBus.getDefault().register(NetworkPlugin(activity))
 ```ts
 import { networkManager } from 'racehorse';
 
-networkManager.getStatus().isConnected;
+networkManager.getNetworkStatus().isConnected;
 // ⮕ true
 
 networkManager.subscribe(status => {

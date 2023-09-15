@@ -14,7 +14,7 @@ KeyboardManagerContext.displayName = 'KeyboardManagerContext';
 export function useKeyboardStatus(): KeyboardStatus {
   const manager = useContext(KeyboardManagerContext);
 
-  const [status, setStatus] = useState(manager.getStatus);
+  const [status, setStatus] = useState(manager.getKeyboardStatus);
 
   useEffect(() => manager.subscribe(setStatus), [manager]);
 
