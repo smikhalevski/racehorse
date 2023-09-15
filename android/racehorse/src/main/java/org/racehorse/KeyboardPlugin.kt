@@ -1,10 +1,12 @@
 package org.racehorse
 
 import android.app.Activity
+import android.content.Context
 import android.graphics.Rect
 import android.os.Build
 import android.view.ViewTreeObserver
 import android.view.WindowInsets
+import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -18,6 +20,12 @@ class KeyboardStatus(val height: Int) : Serializable {
 
 class GetKeyboardStatusEvent : RequestEvent() {
     class ResultEvent(val status: KeyboardStatus) : ResponseEvent()
+}
+
+class ShowKeyboardEvent : WebEvent
+
+class HideKeyboardEvent : RequestEvent() {
+    class ResultEvent(val isHidden: Boolean) : ResponseEvent()
 }
 
 /**
@@ -37,9 +45,28 @@ open class KeyboardPlugin(private val activity: Activity, private val eventBus: 
         eventBus.post(KeyboardStatusChangedEvent(KeyboardStatus(keyboardHeight)))
     }
 
+    private val inputMethodManager by lazy { activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager }
+
     @Subscribe
     open fun onGetKeyboardStatus(event: GetKeyboardStatusEvent) {
         event.respond(GetKeyboardStatusEvent.ResultEvent(KeyboardStatus(keyboardObserver.keyboardHeight)))
+    }
+
+    @Subscribe
+    open fun onShowKeyboard(event: ShowKeyboardEvent) {
+        inputMethodManager.showSoftInput(activity.currentFocus, 0)
+    }
+
+    @Subscribe
+    open fun onHideKeyboard(event: HideKeyboardEvent) {
+        event.respond(
+            HideKeyboardEvent.ResultEvent(
+                inputMethodManager.hideSoftInputFromWindow(
+                    activity.currentFocus?.windowToken,
+                    InputMethodManager.HIDE_NOT_ALWAYS
+                )
+            )
+        )
     }
 }
 

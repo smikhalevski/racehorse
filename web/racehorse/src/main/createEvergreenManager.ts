@@ -33,18 +33,18 @@ export interface EvergreenManager {
   /**
    * The new update download has started.
    */
-  subscribe(type: 'started', listener: (payload: { updateMode: UpdateMode }) => void): () => void;
+  subscribe(eventType: 'started', listener: (payload: { updateMode: UpdateMode }) => void): () => void;
 
   /**
    * Failed to download an update.
    */
-  subscribe(type: 'failed', listener: (payload: { updateMode: UpdateMode }) => void): () => void;
+  subscribe(eventType: 'failed', listener: (payload: { updateMode: UpdateMode }) => void): () => void;
 
   /**
    * An update was successfully downloaded and ready to be applied.
    */
   subscribe(
-    type: 'ready',
+    eventType: 'ready',
     listener: (payload: {
       /**
        * The version of the update bundle that is ready to be applied.
@@ -57,7 +57,7 @@ export interface EvergreenManager {
    * Progress of a pending update download.
    */
   subscribe(
-    type: 'progress',
+    eventType: 'progress',
     listener: (payload: {
       /**
        * The length of downloaded content in bytes, or -1 if content length cannot be detected.
@@ -91,14 +91,14 @@ export function createEvergreenManager(eventBridge: EventBridge): EvergreenManag
         return event.payload.version;
       })),
 
-    subscribe: (type, listener) =>
+    subscribe: (eventType, listener) =>
       eventBridge.subscribe(
         {
           started: 'org.racehorse.UpdateStartedEvent',
           failed: 'org.racehorse.UpdateFailedEvent',
           ready: 'org.racehorse.UpdateReadyEvent',
           progress: 'org.racehorse.UpdateProgressEvent',
-        }[type],
+        }[eventType],
         listener
       ),
   };

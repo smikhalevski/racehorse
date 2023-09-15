@@ -11,7 +11,7 @@ export interface NetworkManager {
   /**
    * Returns the status of the active network.
    */
-  getStatus(): NetworkStatus;
+  getNetworkStatus(): NetworkStatus;
 
   /**
    * Subscribes to network status changes.
@@ -26,7 +26,7 @@ export interface NetworkManager {
  */
 export function createNetworkManager(eventBridge: EventBridge): NetworkManager {
   return {
-    getStatus: () => eventBridge.request({ type: 'org.racehorse.GetNetworkStatusEvent' }).payload.status,
+    getNetworkStatus: () => eventBridge.request({ type: 'org.racehorse.GetNetworkStatusEvent' }).payload.status,
 
     subscribe: listener =>
       eventBridge.subscribe('org.racehorse.NetworkStatusChangedEvent', payload => {
