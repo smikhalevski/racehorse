@@ -105,6 +105,10 @@ class KeyboardObserver(activity: Activity, private val listener: (keyboardHeight
     }
 
     init {
+        register()
+    }
+
+    fun register() {
         rootView.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
     }
 
