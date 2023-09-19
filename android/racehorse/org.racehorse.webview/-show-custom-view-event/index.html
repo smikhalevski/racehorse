@@ -58,24 +58,24 @@
   <div class="breadcrumbs"><a href="../../../index.html">racehorse</a><span class="delimiter">/</span><a href="../index.html">org.racehorse.webview</a><span class="delimiter">/</span><span class="current">ShowCustomViewEvent</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Show</span><wbr></wbr><span>Custom</span><wbr></wbr><span>View</span><wbr></wbr><span><span>Event</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">ShowCustomViewEvent</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>view<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>callback<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/webkit/WebChromeClient.CustomViewCallback.html">WebChromeClient.CustomViewCallback</a></span></span><span class="token punctuation">)</span></div></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">ShowCustomViewEvent</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>view<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>requestedOrientation<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>callback<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/webkit/WebChromeClient.CustomViewCallback.html">WebChromeClient.CustomViewCallback</a></span></span><span class="token punctuation">)</span></div><p class="paragraph">Notify the host application that the current page has entered full screen mode. After this call, web content will no longer be rendered in the WebView, but will instead be rendered in <code class="lang-kotlin">view</code>. The host application should add this View to a Window which is configured with <a href="https://developer.android.com/reference/kotlin/android/view/WindowManager.LayoutParams.html#flag_fullscreen">android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN</a> flag in order to actually display this web content full screen.</p><p class="paragraph">The application may explicitly exit fullscreen mode by invoking <code class="lang-kotlin">callback</code> (ex. when the user presses the back button). However, this is generally not necessary as the web page will often show its own UI to close out of fullscreen. Regardless of how the WebView exits fullscreen mode, WebView will invoke <a href="../-hide-custom-view-event/index.html">HideCustomViewEvent</a>, signaling for the application to remove the custom View.</p><p class="paragraph">If this method is not overridden, WebView will report to the web page it does not support fullscreen mode and will not honor the web page's request to run in fullscreen mode.</p><p class="paragraph"><strong>Note:</strong> if overriding this method, the application must also override <a href="../-hide-custom-view-event/index.html">HideCustomViewEvent</a>.</p></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,FUNCTION,PROPERTY">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
         <h2 class="">Constructors</h2>
-        <div class="table"><a data-name="1274956729%2FConstructors%2F-88822016" anchor-label="ShowCustomViewEvent" id="1274956729%2FConstructors%2F-88822016" data-filterable-set=":racehorse:dokkaHtml/staging"></a>
+        <div class="table"><a data-name="386665616%2FConstructors%2F-88822016" anchor-label="ShowCustomViewEvent" id="386665616%2FConstructors%2F-88822016" data-filterable-set=":racehorse:dokkaHtml/staging"></a>
           <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":racehorse:dokkaHtml/staging" data-filterable-set=":racehorse:dokkaHtml/staging">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-show-custom-view-event.html"><span>Show</span><wbr></wbr><span>Custom</span><wbr></wbr><span>View</span><wbr></wbr><span><span>Event</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1274956729%2FConstructors%2F-88822016"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="386665616%2FConstructors%2F-88822016"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">view<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a><span class="token punctuation">, </span></span><span class="parameter ">callback<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/webkit/WebChromeClient.CustomViewCallback.html">WebChromeClient.CustomViewCallback</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">view<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a><span class="token punctuation">, </span></span><span class="parameter ">requestedOrientation<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">callback<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/webkit/WebChromeClient.CustomViewCallback.html">WebChromeClient.CustomViewCallback</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -94,7 +94,22 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="callback.html">callback</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/webkit/WebChromeClient.CustomViewCallback.html">WebChromeClient.CustomViewCallback</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="callback.html">callback</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/webkit/WebChromeClient.CustomViewCallback.html">WebChromeClient.CustomViewCallback</a></div><div class="brief "><p class="paragraph">Invoke this callback to request the page to exit full screen mode.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="499447729%2FProperties%2F-88822016" anchor-label="requestedOrientation" id="499447729%2FProperties%2F-88822016" data-filterable-set=":racehorse:dokkaHtml/staging"></a>
+          <div class="table-row" data-filterable-current=":racehorse:dokkaHtml/staging" data-filterable-set=":racehorse:dokkaHtml/staging">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="requested-orientation.html"><span>requested</span><wbr></wbr><span><span>Orientation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="499447729%2FProperties%2F-88822016"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="requested-orientation.html">requestedOrientation</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">An orientation constant as used in ActivityInfo.screenOrientation.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -109,7 +124,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="view.html">view</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="view.html">view</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a></div><div class="brief "><p class="paragraph">Is the View object to be shown.</p></div></div></div>
                 </div>
               </div>
             </div>
