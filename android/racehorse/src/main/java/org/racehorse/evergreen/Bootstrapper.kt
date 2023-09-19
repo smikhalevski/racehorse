@@ -121,7 +121,7 @@ open class Bootstrapper(private val bundlesDir: File) {
             updateDir.deleteRecursively()
             updateVersionFile.writeText(version)
 
-            val download = BundleDownload(openConnection(), updateDir, 8192, ::onUpdateProgress)
+            val download = BundleDownload(openConnection(), updateDir, DEFAULT_BUFFER_SIZE, ::onUpdateProgress)
 
             updateDownload = download
 

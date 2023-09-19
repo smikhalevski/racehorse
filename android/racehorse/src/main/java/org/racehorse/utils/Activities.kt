@@ -86,6 +86,31 @@ fun ComponentActivity.askForPermissions(
 }
 
 /**
+ * Shows a permission dialog if a permission isn't granted yet.
+ *
+ * @param permission The permission to check.
+ * @param callback The callback the receives `true` if the permission was granted, or `false` otherwise.
+ */
+fun ComponentActivity.askForPermission(permission: String, callback: (granted: Boolean) -> Unit) {
+    if (isPermissionGranted(permission)) {
+        callback(true)
+    } else {
+        launchActivityForResult(ActivityResultContracts.RequestPermission(), permission, callback)
+    }
+}
+
+/**
+ * Invokes the callback if the permission is granted.
+ */
+fun ComponentActivity.requiresPermission(permission: String, callback: () -> Unit) {
+    askForPermission(permission) { granted ->
+        if (granted) {
+            callback()
+        }
+    }
+}
+
+/**
  * Returns `true` if permission is granted, or `false` otherwise.
  *
  * @param permission The permission that must be checked.

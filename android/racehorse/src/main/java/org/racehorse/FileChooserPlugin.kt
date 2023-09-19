@@ -9,10 +9,9 @@ import android.provider.MediaStore
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient.FileChooserParams
 import androidx.activity.ComponentActivity
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.utils.isPermissionGranted
+import org.racehorse.utils.askForPermission
 import org.racehorse.utils.launchActivityForResult
 import org.racehorse.webview.ShowFileChooserEvent
 import java.io.File
@@ -58,25 +57,14 @@ private class FileChooserLauncher(
 
     fun start() {
         if (
-            !isImage && !isVideo ||
-            !(cacheDir != null && authority != null && activity.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
+            (isImage || isVideo) &&
+            (cacheDir != null && authority != null && activity.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
         ) {
+            activity.askForPermission(Manifest.permission.CAMERA, ::launchChooser)
+        } else {
             // No camera-related MIME types, camera isn't supported, or capture result cannot be saved
             launchChooser(false)
-            return
         }
-
-        if (activity.isPermissionGranted(Manifest.permission.CAMERA)) {
-            launchChooser(true)
-            return
-        }
-
-        // Ask for camera permission
-        activity.launchActivityForResult(
-            ActivityResultContracts.RequestPermission(),
-            Manifest.permission.CAMERA,
-            ::launchChooser
-        )
     }
 
     private fun launchChooser(cameraEnabled: Boolean) {

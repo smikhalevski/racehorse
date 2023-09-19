@@ -2,6 +2,7 @@ import { createEventBridge } from './createEventBridge';
 import { createActivityManager } from './createActivityManager';
 import { createDeepLinkManager } from './createDeepLinkManager';
 import { createDeviceManager } from './createDeviceManager';
+import { createDownloadManager } from './createDownloadManager';
 import { createEncryptedStorageManager } from './createEncryptedStorageManager';
 import { createEvergreenManager } from './createEvergreenManager';
 import { createFacebookLoginManager } from './createFacebookLoginManager';
@@ -17,6 +18,7 @@ import { createPermissionsManager } from './createPermissionsManager';
 
 export * from './createDeepLinkManager';
 export * from './createDeviceManager';
+export * from './createDownloadManager';
 export * from './createEncryptedStorageManager';
 export * from './createEventBridge';
 export * from './createEvergreenManager';
@@ -39,6 +41,8 @@ export const activityManager = createActivityManager(eventBridge);
 export const deepLinkManager = createDeepLinkManager(eventBridge);
 
 export const deviceManager = createDeviceManager(eventBridge);
+
+export const downloadManager = createDownloadManager(eventBridge);
 
 export const evergreenManager = createEvergreenManager(eventBridge);
 

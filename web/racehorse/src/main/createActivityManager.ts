@@ -54,29 +54,29 @@ export interface ActivityResult {
 
 export const Intent = {
   /**
-   * @see {@link https://developer.android.com/reference/android/content/Intent#ACTION_VIEW Intent.ACTION_VIEW}
+   * @see [Intent.ACTION_VIEW](https://developer.android.com/reference/android/content/Intent#ACTION_VIEW)
    */
   ACTION_VIEW: 'android.intent.action.VIEW',
 
   /**
-   * @see {@link https://developer.android.com/reference/android/content/Intent#FLAG_ACTIVITY_NEW_TASK Intent.FLAG_ACTIVITY_NEW_TASK}
+   * @see [Intent.FLAG_ACTIVITY_NEW_TASK](https://developer.android.com/reference/android/content/Intent#FLAG_ACTIVITY_NEW_TASK)
    */
   FLAG_ACTIVITY_NEW_TASK: 0x10000000,
 } as const;
 
 export const Activity = {
   /**
-   * @see {@link https://developer.android.com/reference/android/app/Activity#RESULT_CANCELED Activity.RESULT_CANCELED}
+   * @see [Activity.RESULT_CANCELED](https://developer.android.com/reference/android/app/Activity#RESULT_CANCELED)
    */
   RESULT_CANCELED: 0,
 
   /**
-   * @see {@link https://developer.android.com/reference/android/app/Activity#RESULT_FIRST_USER Activity.RESULT_FIRST_USER}
+   * @see [Activity.RESULT_FIRST_USER](https://developer.android.com/reference/android/app/Activity#RESULT_FIRST_USER)
    */
   RESULT_FIRST_USER: 1,
 
   /**
-   * @see {@link https://developer.android.com/reference/android/app/Activity#RESULT_OK Activity.RESULT_OK}
+   * @see [Activity.RESULT_OK](https://developer.android.com/reference/android/app/Activity#RESULT_OK)
    */
   RESULT_OK: -1,
 } as const;

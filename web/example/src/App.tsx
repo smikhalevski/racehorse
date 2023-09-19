@@ -14,11 +14,13 @@ import { ToastExample } from './examples/ToastExample';
 import { EventBridgeExample } from './examples/EventBridgeExample';
 import { FacebookLoginExample } from './examples/FacebookLoginExample';
 import { FacebookShareExample } from './examples/FacebookShareExample';
+import { DownloadExample } from './examples/DownloadExample';
 
 export function App() {
   return (
     <>
       <ToastExample />
+      <DownloadExample />
       <KeyboardExample />
       <FacebookShareExample />
       <GoogleSignInExample />

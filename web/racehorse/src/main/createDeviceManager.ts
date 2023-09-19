@@ -7,21 +7,21 @@ export interface DeviceInfo {
    * [The SDK version of the software](https://apilevels.com) currently running on this hardware device. This value
    * never changes while a device is booted, but it may increase when the hardware manufacturer provides an OTA update.
    *
-   * @see {@link https://developer.android.com/reference/android/os/Build.VERSION#SDK_INT Build.VERSION.SDK_INT}
+   * @see [Build.VERSION.SDK_INT](https://developer.android.com/reference/android/os/Build.VERSION#SDK_INT)
    */
   apiLevel: number;
 
   /**
    * The consumer-visible brand with which the product/hardware will be associated, if any.
    *
-   * @see {@link https://developer.android.com/reference/android/os/Build#BRAND Build.BRAND}
+   * @see [Build.BRAND](https://developer.android.com/reference/android/os/Build#BRAND)
    */
   brand: string;
 
   /**
    * The end-user-visible name for the end product.
    *
-   * @see {@link https://developer.android.com/reference/android/os/Build#MODEL Build.MODEL}
+   * @see [Build.MODEL](https://developer.android.com/reference/android/os/Build#MODEL)
    */
   model: string;
 }
@@ -34,7 +34,7 @@ export interface Rect {
 }
 
 /**
- * @see {@link https://developer.android.com/reference/androidx/core/view/WindowInsetsCompat.Type WindowInsetsCompat.Type}
+ * @see [WindowInsetsCompat.Type](https://developer.android.com/reference/androidx/core/view/WindowInsetsCompat.Type)
  */
 export const InsetType = {
   STATUS_BARS: 1,

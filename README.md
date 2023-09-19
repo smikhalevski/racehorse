@@ -19,6 +19,7 @@ The bootstrapper for WebView-based Android apps.
 - [Asset loader](#asset-loader-plugin)
 - [Deep link](#deep-link-plugin)
 - [Device](#device-plugin)
+- [Downloads](#download-plugin)
 - [Encrypted storage](#encrypted-storage-plugin)
 - [Evergreen](#evergreen-plugin)
 - [Facebook Login](#facebook-login-plugin)
@@ -443,6 +444,62 @@ deviceManager.getPreferredLocales();
 // ⮕ ['en-US']
 ```
 
+# Download plugin
+
+[`DownloadManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.DownloadManager.html)
+allows staring and monitoring file downloads.
+
+1. Initialize the plugin in your Android app:
+
+```kotlin
+import org.racehorse.DownloadPlugin
+
+EventBus.getDefault().register(DownloadPlugin(activity))
+```
+
+2. Read previously started downloads or start a new one:
+
+```ts
+import { downloadManager } from 'racehorse';
+
+const id = downloadManager.download('http://example.com');
+
+downloadManager.getDownloadById(id);
+// ⮕ { id: 1, status: 4, uri: 'http://example.com' }
+
+downloadManager.getAllDownloads();
+```
+
+[Download](https://smikhalevski.github.io/racehorse/interfaces/racehorse.Download.html) instance carries the download
+status, progress, and file details.
+
+## Downloadable links
+
+Downloadable links have a [`download`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a) attribute:
+
+```html
+<a href="http://example.com" download>
+  Download me!
+</a>
+```
+
+Initialize the
+[DownloadPlugin](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-download-plugin/index.html)
+as described in the previous section, and add a Racehorse listener to enable handling of downloadable links:
+
+```kotlin
+import org.racehorse.webview.RacehorseDownloadListener
+
+webView.setDownloadListener(RacehorseDownloadListener())
+```
+
+On older Android models (API level < 29) a storage permission must be added to the manifest:
+
+```xml
+
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+```
+
 # Encrypted storage plugin
 
 [`EncryptedStorageManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.EncryptedStorageManager.html)
@@ -684,7 +741,7 @@ web app.
 For example, if you have a file input:
 
 ```html
-<input type='file'>
+<input type="file">
 ```
 
 You can register a plugin to make this input open a file chooser dialog:
