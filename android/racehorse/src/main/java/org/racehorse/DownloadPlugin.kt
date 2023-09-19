@@ -12,6 +12,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.webkit.URLUtil
 import androidx.activity.ComponentActivity
+import androidx.core.database.getStringOrNull
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.requiresPermission
 import org.racehorse.webview.DownloadStartEvent
@@ -48,7 +49,7 @@ class Download(
      * initially be null and will be filled in based on the server's response once the download has
      * started.
      */
-    val mediaType: String,
+    val mediaType: String?,
 
     /**
      * Total size of the download in bytes. This will initially be -1 and will be filled in once
@@ -61,7 +62,7 @@ class Download(
      * will be used here. Otherwise, the value will initially be null and will be filled in with a
      * generated URI once the download has started.
      */
-    val localUri: String,
+    val localUri: String?,
 
     /**
      * Current status of the download.
@@ -99,9 +100,9 @@ class Download(
         title = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_TITLE)),
         description = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_DESCRIPTION)),
         uri = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_URI)),
-        mediaType = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_MEDIA_TYPE)),
+        mediaType = cursor.getStringOrNull(cursor.getColumnIndex(DownloadManager.COLUMN_MEDIA_TYPE)),
         totalSizeBytes = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)),
-        localUri = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)),
+        localUri = cursor.getStringOrNull(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)),
         status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)),
         reason = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_REASON)),
         bytesDownloadedSoFar = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)),

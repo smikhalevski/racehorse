@@ -35,7 +35,7 @@ export interface Download {
    *
    * @see [RFC 1590, defining Media Types](http://www.ietf.org/rfc/rfc1590.txt)
    */
-  mediaType: string;
+  mediaType: string | null;
 
   /**
    * Total size of the download in bytes. This will initially be -1 and will be filled in once the download starts.
@@ -47,7 +47,7 @@ export interface Download {
    * Otherwise, the value will initially be null and will be filled in with a generated URI once the download has
    * started.
    */
-  localUri: string;
+  localUri: string | null;
 
   /**
    * Current status of the download.
@@ -89,27 +89,27 @@ export const DownloadStatus = {
   /**
    * The download is waiting to start.
    */
-  STATUS_PENDING: 1 << 0,
+  STATUS_PENDING: 1,
 
   /**
    * The download is currently running.
    */
-  STATUS_RUNNING: 1 << 1,
+  STATUS_RUNNING: 2,
 
   /**
    * The download is waiting to retry or resume.
    */
-  STATUS_PAUSED: 1 << 2,
+  STATUS_PAUSED: 4,
 
   /**
    * The download has successfully completed.
    */
-  STATUS_SUCCESSFUL: 1 << 3,
+  STATUS_SUCCESSFUL: 8,
 
   /**
    * The download has failed (and will not be retried).
    */
-  STATUS_FAILED: 1 << 4,
+  STATUS_FAILED: 16,
 } as const;
 
 /**
@@ -251,13 +251,13 @@ export interface DownloadManager {
 }
 
 /**
- * Manages file downloads.
+ * Allows staring and monitoring file downloads.
  *
  * @param eventBridge The underlying event bridge.
  */
 export function createDownloadManager(eventBridge: EventBridge): DownloadManager {
   return {
-    download: (url, options) => {
+    download: (uri, options) => {
       let headers;
 
       if (options !== undefined && options.headers !== undefined) {
@@ -271,7 +271,7 @@ export function createDownloadManager(eventBridge: EventBridge): DownloadManager
         }
       }
 
-      const payload = Object.assign({}, options, { url, headers });
+      const payload = Object.assign({}, options, { uri, headers });
 
       return eventBridge.request({ type: 'org.racehorse.DownloadEvent', payload }).payload.id;
     },

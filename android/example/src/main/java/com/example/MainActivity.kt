@@ -15,6 +15,7 @@ import org.racehorse.*
 import org.racehorse.evergreen.BundleReadyEvent
 import org.racehorse.evergreen.EvergreenPlugin
 import org.racehorse.evergreen.UpdateMode
+import org.racehorse.webview.RacehorseDownloadListener
 import org.racehorse.webview.RacehorseWebChromeClient
 import org.racehorse.webview.RacehorseWebViewClient
 import java.io.File
@@ -41,6 +42,7 @@ class MainActivity : AppCompatActivity() {
 
         webView.webChromeClient = RacehorseWebChromeClient()
         webView.webViewClient = RacehorseWebViewClient()
+        webView.setDownloadListener(RacehorseDownloadListener())
 
         cookieManager.setAcceptCookie(true)
         cookieManager.setAcceptThirdPartyCookies(webView, true)
@@ -49,6 +51,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(DevicePlugin(this))
         eventBus.register(EncryptedStoragePlugin(File(filesDir, "storage"), BuildConfig.APPLICATION_ID.toByteArray()))
         eventBus.register(FileChooserPlugin(this, externalCacheDir, "${BuildConfig.APPLICATION_ID}.provider"))
+        eventBus.register(DownloadPlugin(this))
         eventBus.register(FirebasePlugin())
         eventBus.register(GooglePlayReferrerPlugin(this))
         eventBus.register(HttpsPlugin())
