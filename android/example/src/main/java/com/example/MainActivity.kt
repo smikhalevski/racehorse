@@ -66,6 +66,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(FacebookSharePlugin(this))
         eventBus.register(ToastPlugin(this))
 
+        @Suppress("DEPRECATION")
         FacebookSdk.sdkInitialize(this)
 
         // Run `npm run watch` in `<racehorse>/web/example` to build the web app and start the server.
@@ -103,8 +104,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onResume() {
+        super.onResume()
 
         networkPlugin.enable()
     }

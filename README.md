@@ -462,16 +462,26 @@ EventBus.getDefault().register(DownloadPlugin(activity))
 ```ts
 import { downloadManager } from 'racehorse';
 
-const id = downloadManager.download('http://example.com');
+downloadManager.addDownload('http://example.com/my.zip').then(id => {
 
-downloadManager.getDownloadById(id);
-// ⮕ { id: 1, status: 4, uri: 'http://example.com' }
+  downloadManager.getDownload(id);
+  // ⮕ Dowload { id: 1, status: 4, uri: 'http://example.com/my.zip' }
+});
 
 downloadManager.getAllDownloads();
 ```
 
-[Download](https://smikhalevski.github.io/racehorse/interfaces/racehorse.Download.html) instance carries the download
+[`Download`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.Download.html) instance carries the download
 status, progress, and file details.
+
+To support older Android models a storage permission must be added to the application manifest:
+
+```xml
+
+<uses-permission
+    android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    android:maxSdkVersion="28"/>
+```
 
 ## Downloadable links
 
@@ -484,20 +494,13 @@ Downloadable links have a [`download`](https://developer.mozilla.org/en-US/docs/
 ```
 
 Initialize the
-[DownloadPlugin](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-download-plugin/index.html)
-as described in the previous section, and add a Racehorse listener to enable handling of downloadable links:
+[`DownloadPlugin`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-download-plugin/index.html)
+as described in the previous section, and add a Racehorse listener to enable automatic handling of downloadable links:
 
 ```kotlin
 import org.racehorse.webview.RacehorseDownloadListener
 
-webView.setDownloadListener(RacehorseDownloadListener())
-```
-
-On older Android models (API level < 29) a storage permission must be added to the manifest:
-
-```xml
-
-<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+webView.setDownloadListener(RacehorseDownloadListener)
 ```
 
 # Encrypted storage plugin
@@ -765,13 +768,13 @@ Camera capture requires a temporary file storage to write captured file to.
 <manifest>
     <application>
         <provider
-                android:name="androidx.core.content.FileProvider"
-                android:authorities="${applicationId}.provider"
-                android:exported="false"
-                android:grantUriPermissions="true">
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
             <meta-data
-                    android:name="android.support.FILE_PROVIDER_PATHS"
-                    android:resource="@xml/file_paths"/>
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"/>
         </provider>
     </application>
 </manifest>

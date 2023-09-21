@@ -9,6 +9,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
+import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.util.Date
 
@@ -17,7 +18,23 @@ import java.util.Date
  */
 class NaturalJsonAdapter : JsonDeserializer<Any?>, JsonSerializer<Any?> {
 
-    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Any? = when {
+    fun getType(type: Type): Type =
+        (type as? ParameterizedType)?.rawType ?: type
+
+    fun getTypeArgument(type: Type, index: Int): Type =
+        (type as? ParameterizedType)?.actualTypeArguments?.get(index) ?: Any::class.java
+
+    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Any? =
+        when (getType(typeOfT)) {
+            Pair::class.java -> Pair<Any, Any>(
+                context.deserialize(json.asJsonArray.get(0), getTypeArgument(typeOfT, 0)),
+                context.deserialize(json.asJsonArray.get(1), getTypeArgument(typeOfT, 1)),
+            )
+
+            else -> deserializeAny(json, typeOfT, context)
+        }
+
+    fun deserializeAny(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Any? = when {
 
         json.isJsonObject -> json.asJsonObject.run {
             keySet().associateWithTo(LinkedHashMap<String, Any>()) {
@@ -26,10 +43,7 @@ class NaturalJsonAdapter : JsonDeserializer<Any?>, JsonSerializer<Any?> {
         }
 
         json.isJsonArray -> json.asJsonArray.run {
-            foldIndexed(arrayOfNulls<Any>(size())) { index, array, json ->
-                array[index] = context.deserialize(json, Any::class.java)
-                array
-            }
+            map { context.deserialize<Any>(it, Any::class.java) }
         }
 
         json.isJsonPrimitive -> deserializePrimitive(json.asJsonPrimitive, typeOfT)
@@ -71,14 +85,19 @@ class NaturalJsonAdapter : JsonDeserializer<Any?>, JsonSerializer<Any?> {
 
         is Array<*> -> serializeArray(src.asIterable(), context)
 
-        is Collection<*> -> serializeArray(src, context)
-
         is Map<*, *> -> serializeObject(src.toList(), context)
 
         is Bundle -> serializeObject(src.keySet().map {
             @Suppress("DEPRECATION")
             it to src.get(it)
         }, context)
+
+        is Pair<*, *> -> JsonArray().apply {
+            add(context.serialize(src.first))
+            add(context.serialize(src.second))
+        }
+
+        is Iterable<*> -> serializeArray(src, context)
 
         else -> null
     }

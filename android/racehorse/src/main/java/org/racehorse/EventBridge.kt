@@ -59,7 +59,9 @@ open class ChainableEvent {
 
     /**
      * Executes a block and posts the returned event to the chain in the same event bus to which this event was
-     * originally posted. If an exception is thrown in the block, then an [ExceptionEvent] is used as a response.
+     * originally posted.
+     *
+     * If an exception is thrown in the block, then an [ExceptionEvent] is used as a response.
      */
     fun respond(block: () -> ChainableEvent) {
         val eventBus = checkNotNull(eventBus) { "Event has no origin" }
@@ -71,6 +73,19 @@ open class ChainableEvent {
      * Posts an [event] to the chain in the same event bus to which this event was originally posted.
      */
     fun respond(event: ChainableEvent) = respond { event }
+
+    /**
+     * Always executes a block and then posts the returned event to the chain only if this event has an origin.
+     *
+     * If an exception is thrown in the block, then an [ExceptionEvent] is used as a response.
+     */
+    fun tryRespond(block: () -> ChainableEvent) {
+        val event = ExceptionEvent.unless(block)
+
+        if (requestId != -1) {
+            respond(event)
+        }
+    }
 }
 
 /**
@@ -145,7 +160,9 @@ open class EventBridge(
     val gson: Gson = GsonBuilder()
         .serializeNulls()
         .registerTypeAdapter(Serializable::class.java, NaturalJsonAdapter())
+        .registerTypeAdapter(Iterable::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Bundle::class.java, NaturalJsonAdapter())
+        .registerTypeAdapter(Pair::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Date::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Any::class.java, NaturalJsonAdapter())
         .create(),

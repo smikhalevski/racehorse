@@ -67,11 +67,11 @@ private class FileChooserLauncher(
         }
     }
 
-    private fun launchChooser(cameraEnabled: Boolean) {
+    private fun launchChooser(isCameraEnabled: Boolean) {
         // The shared file for camera capture
         var file: File? = null
 
-        val fileUri = if (cameraEnabled && cacheDir != null && authority != null) {
+        val fileUri = if (isCameraEnabled && cacheDir != null && authority != null) {
             try {
                 cacheDir.mkdirs()
 

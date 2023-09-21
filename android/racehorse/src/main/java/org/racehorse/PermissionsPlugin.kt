@@ -13,21 +13,21 @@ import org.racehorse.webview.PermissionRequestEvent
 /**
  * Gets whether you should show UI with rationale before requesting a permission.
  */
-class ShouldShowRequestPermissionRationaleEvent(val permissions: Array<String>) : RequestEvent() {
+class ShouldShowRequestPermissionRationaleEvent(val permissions: Iterable<String>) : RequestEvent() {
     class ResultEvent(val statuses: Map<String, Boolean>) : ResponseEvent()
 }
 
 /**
  * Determine whether you have been granted a particular permission.
  */
-class IsPermissionGrantedEvent(val permissions: Array<String>) : RequestEvent() {
+class IsPermissionGrantedEvent(val permissions: Iterable<String>) : RequestEvent() {
     class ResultEvent(val statuses: Map<String, Boolean>) : ResponseEvent()
 }
 
 /**
  * Requests permissions to be granted to the app.
  */
-class AskForPermissionEvent(val permissions: Array<String>) : RequestEvent() {
+class AskForPermissionEvent(val permissions: Iterable<String>) : RequestEvent() {
     class ResultEvent(val statuses: Map<String, Boolean>) : ResponseEvent()
 }
 
@@ -41,7 +41,7 @@ open class PermissionsPlugin(private val activity: ComponentActivity) {
     @Subscribe
     open fun onGeolocationPermissionsShowPrompt(event: GeolocationPermissionsShowPromptEvent) {
         activity.askForPermissions(
-            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+            setOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
         ) {
             event.callback.invoke(event.origin, it.containsValue(true), false)
         }
@@ -61,7 +61,7 @@ open class PermissionsPlugin(private val activity: ComponentActivity) {
             return
         }
 
-        activity.askForPermissions(permissions.toTypedArray()) {
+        activity.askForPermissions(permissions) {
             val resources = HashSet<String>()
 
             if (it[Manifest.permission.CAMERA] == true) {

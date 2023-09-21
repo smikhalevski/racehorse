@@ -28,6 +28,18 @@ export interface Intent {
    * A map of extended data from the intent.
    */
   extras?: { [key: string]: any };
+
+  /**
+   * The list of intent categories.
+   */
+  categories?: string[];
+
+  /**
+   * A selector for this intent.
+   *
+   * @see [Intent.setSelector](https://developer.android.com/reference/android/content/Intent#setSelector(android.content.Intent))
+   */
+  selector?: Intent;
 }
 
 export interface ActivityInfo {
@@ -62,6 +74,21 @@ export const Intent = {
    * @see [Intent.FLAG_ACTIVITY_NEW_TASK](https://developer.android.com/reference/android/content/Intent#FLAG_ACTIVITY_NEW_TASK)
    */
   FLAG_ACTIVITY_NEW_TASK: 0x10000000,
+
+  /**
+   * @see [Intent.FLAG_GRANT_READ_URI_PERMISSION](https://developer.android.com/reference/android/content/Intent#FLAG_GRANT_READ_URI_PERMISSION)
+   */
+  FLAG_GRANT_READ_URI_PERMISSION: 0x00000001,
+
+  /**
+   * @see [Intent.FLAG_GRANT_WRITE_URI_PERMISSION](https://developer.android.com/reference/android/content/Intent#FLAG_GRANT_WRITE_URI_PERMISSION)
+   */
+  FLAG_GRANT_WRITE_URI_PERMISSION: 0x00000002,
+
+  /**
+   * @see [Intent.CATEGORY_APP_FILES](https://developer.android.com/reference/android/content/Intent#CATEGORY_APP_FILES)
+   */
+  CATEGORY_APP_FILES: 'android.intent.category.APP_FILES',
 } as const;
 
 export const Activity = {

@@ -5,7 +5,7 @@ import android.webkit.WebView
 import org.greenrobot.eventbus.EventBus
 
 /**
- * Notify the host application that a file should be downloaded.
+ * Notifies the host application that a file should be downloaded.
  */
 class DownloadStartEvent(
     /**
