@@ -18,7 +18,9 @@ class SerializableIntent(
     val type: String? = null,
     var data: String? = null,
     var flags: Int = 0,
-    var extras: Map<String, Serializable?>? = null
+    val selector: SerializableIntent? = null,
+    var extras: Map<String, Serializable?>? = null,
+    var categories: Set<String>? = null,
 ) : Serializable {
 
     constructor(intent: Intent) : this(
@@ -26,11 +28,16 @@ class SerializableIntent(
         type = intent.type,
         data = intent.dataString,
         flags = intent.flags,
-        extras = @Suppress("DEPRECATION") intent.extras?.keySet()?.associateWith(intent::getSerializableExtra)
+        selector = intent.selector?.let(::SerializableIntent),
+        extras = @Suppress("DEPRECATION") intent.extras?.keySet()?.associateWith(intent::getSerializableExtra),
+        categories = intent.categories,
     )
 
-    fun toIntent() = Intent(action)
-        .setDataAndType(data?.toUri(), type)
-        .addFlags(flags)
-        .also { extras?.forEach(it::putExtra) }
+    fun toIntent(): Intent = Intent(action).also {
+        it.setDataAndType(data?.toUri(), type)
+        it.addFlags(flags)
+        it.selector = selector?.toIntent()
+        extras?.forEach(it::putExtra)
+        categories?.forEach(it::addCategory)
+    }
 }

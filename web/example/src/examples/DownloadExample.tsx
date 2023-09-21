@@ -48,16 +48,16 @@ export function DownloadExample() {
 
           {downloads.map(download => (
             <tr key={download.id}>
-              <td>
+              <td width={'100%'}>
                 <a
-                  href={download.status == DownloadStatus.SUCCESSFUL ? '#' : undefined}
+                  href={download.status === DownloadStatus.SUCCESSFUL ? '#' : undefined}
                   onClick={event => {
                     event.preventDefault();
 
                     if (download.contentUri !== null) {
                       activityManager.startActivity({
-                        action: 'android.intent.action.VIEW_DOWNLOADS',
-                        flags: Intent.FLAG_ACTIVITY_NEW_TASK,
+                        action: Intent.ACTION_VIEW,
+                        flags: Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION,
                         data: download.contentUri,
                       });
                     }
@@ -67,14 +67,14 @@ export function DownloadExample() {
                 </a>
               </td>
 
-              <td align={'right'}>
+              <td align={'center'}>
                 {
                   {
                     [DownloadStatus.PENDING]: '',
-                    [DownloadStatus.RUNNING]: ((download.totalSize / download.downloadedSize) * 100) | 0,
-                    [DownloadStatus.PAUSED]: '⏸',
-                    [DownloadStatus.SUCCESSFUL]: '✅',
-                    [DownloadStatus.FAILED]: '⚠️',
+                    [DownloadStatus.RUNNING]: (((download.totalSize / download.downloadedSize) * 100) | 0) + '%',
+                    [DownloadStatus.PAUSED]: '🟡',
+                    [DownloadStatus.SUCCESSFUL]: '🟢',
+                    [DownloadStatus.FAILED]: '🔴',
                   }[download.status]
                 }
               </td>
@@ -111,6 +111,7 @@ export function DownloadExample() {
       </p>
 
       <p>
+        {'Use '}
         <a
           href={'#'}
           onClick={event => {
@@ -118,9 +119,9 @@ export function DownloadExample() {
             setUri(TEST_HTTP_URL);
           }}
         >
-          {'Use HTTP URL'}
+          {'HTTP URL'}
         </a>
-        {' • '}
+        {' or '}
         <a
           href={'#'}
           onClick={event => {
@@ -128,7 +129,19 @@ export function DownloadExample() {
             setUri(TEST_DATA_URI);
           }}
         >
-          {'Use data URI'}
+          {'data URI'}
+        </a>
+      </p>
+
+      <hr />
+
+      <p>
+        {'Downloadable '}
+        <a
+          href={TEST_DATA_URI}
+          download={true}
+        >
+          {'data URI link'}
         </a>
       </p>
     </>
