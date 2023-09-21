@@ -22,7 +22,7 @@ class GetDeviceInfoEvent : RequestEvent() {
  * Get the list of locales that user picked in the device settings.
  */
 class GetPreferredLocalesEvent : RequestEvent() {
-    class ResultEvent(val locales: Array<String>) : ResponseEvent()
+    class ResultEvent(val locales: Set<String>) : ResponseEvent()
 }
 
 /**
@@ -54,13 +54,13 @@ open class DevicePlugin(private val activity: ComponentActivity) {
     fun onGetPreferredLocales(event: GetPreferredLocalesEvent) {
         val configuration = activity.resources.configuration
 
-        val locales = ArrayList<String>().apply {
+        val locales = buildSet<String> {
             for (i in 0 until configuration.locales.size()) {
                 add(configuration.locales.get(i).toLanguageTag())
             }
         }
 
-        event.respond(GetPreferredLocalesEvent.ResultEvent(locales.toTypedArray()))
+        event.respond(GetPreferredLocalesEvent.ResultEvent(locales))
     }
 
     @Subscribe

@@ -69,7 +69,7 @@ fun ComponentActivity.launchActivityForResult(intent: Intent, callback: Activity
  * @param callback The callback the receives a map from a permission name to its granted status.
  */
 fun ComponentActivity.askForPermissions(
-    permissions: Array<String>,
+    permissions: Iterable<String>,
     callback: (statuses: Map<String, Boolean>) -> Unit
 ) {
     val statuses = permissions.associateWith { true }

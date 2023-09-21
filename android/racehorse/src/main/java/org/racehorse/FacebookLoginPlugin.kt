@@ -46,7 +46,7 @@ class GetCurrentFacebookAccessTokenEvent : RequestEvent() {
     class ResultEvent(val accessToken: SerializableFacebookAccessToken?) : ResponseEvent()
 }
 
-class FacebookLogInEvent(val permissions: Array<String> = arrayOf()) : RequestEvent() {
+class FacebookLogInEvent(val permissions: List<String> = emptyList()) : RequestEvent() {
     class ResultEvent(val accessToken: SerializableFacebookAccessToken?) : ResponseEvent()
 }
 
@@ -84,7 +84,7 @@ open class FacebookLoginPlugin(private val activity: ComponentActivity) {
             }
         })
 
-        loginManager.logInWithReadPermissions(activity, callbackManager, event.permissions.toList())
+        loginManager.logInWithReadPermissions(activity, callbackManager, event.permissions)
     }
 
     @Subscribe

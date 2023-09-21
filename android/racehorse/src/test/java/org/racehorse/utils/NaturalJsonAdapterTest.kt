@@ -1,6 +1,7 @@
 package org.racehorse.utils
 
 import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
 import org.junit.Assert
 import org.junit.Test
 import java.io.Serializable
@@ -33,5 +34,45 @@ class NaturalJsonAdapterTest {
         val gson = GsonBuilder().registerTypeAdapter(Date::class.java, NaturalJsonAdapter()).create()
 
         Assert.assertEquals(1686227164126, gson.fromJson("1686227164126", Date::class.java).time)
+    }
+
+    @Test
+    fun testSerializesPair() {
+        val gson = GsonBuilder().registerTypeAdapter(Pair::class.java, NaturalJsonAdapter()).create()
+
+        Assert.assertEquals("[111,\"aaa\"]", gson.toJson(111 to "aaa"))
+    }
+
+    @Test
+    fun testSerializesArrayOfPairs() {
+        val gson = GsonBuilder().registerTypeAdapter(Pair::class.java, NaturalJsonAdapter()).create()
+
+        Assert.assertEquals("[[111,\"aaa\"]]", gson.toJson(arrayOf(111 to "aaa")))
+    }
+
+    @Test
+    fun testDeserializesPair() {
+        val gson = GsonBuilder().registerTypeAdapter(Pair::class.java, NaturalJsonAdapter()).create()
+
+        val result = gson.fromJson("[111,\"aaa\"]", Pair::class.java)
+
+        Assert.assertEquals(111.0, result.first)
+        Assert.assertEquals("aaa", result.second)
+    }
+
+    @Test
+    fun testDeserializesArrayOfPairs() {
+        val gson = GsonBuilder()
+            .registerTypeAdapter(Array::class.java, NaturalJsonAdapter())
+            .registerTypeAdapter(Pair::class.java, NaturalJsonAdapter())
+            .create()
+
+        val result = gson.fromJson<Array<Pair<Int, String>>>(
+            "[[111,\"aaa\"]]",
+            object : TypeToken<Array<Pair<Int, String>>>() {}.type
+        )
+
+        Assert.assertEquals(111, result[0].first)
+        Assert.assertEquals("aaa", result[0].second)
     }
 }

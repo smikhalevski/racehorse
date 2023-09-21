@@ -71,6 +71,15 @@ open class ChainableEvent {
      * Posts an [event] to the chain in the same event bus to which this event was originally posted.
      */
     fun respond(event: ChainableEvent) = respond { event }
+
+    /**
+     * Executes a block and posts the returned event to the chain if this event has an origin. No-op otherwise.
+     */
+    fun tryRespond(block: () -> ChainableEvent) {
+        if (requestId != -1) {
+            respond(block)
+        }
+    }
 }
 
 /**
@@ -145,7 +154,9 @@ open class EventBridge(
     val gson: Gson = GsonBuilder()
         .serializeNulls()
         .registerTypeAdapter(Serializable::class.java, NaturalJsonAdapter())
+        .registerTypeAdapter(Iterable::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Bundle::class.java, NaturalJsonAdapter())
+        .registerTypeAdapter(Pair::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Date::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Any::class.java, NaturalJsonAdapter())
         .create(),

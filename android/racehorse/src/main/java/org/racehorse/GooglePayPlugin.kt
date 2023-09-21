@@ -91,7 +91,7 @@ class GooglePayGetStableHardwareIdEvent : RequestEvent() {
  * Get all tokens available in the wallet.
  */
 class GooglePayListTokensEvent : RequestEvent() {
-    class ResultEvent(val tokenInfos: Array<GooglePayTokenInfo>) : ResponseEvent()
+    class ResultEvent(val tokenInfos: List<GooglePayTokenInfo>) : ResponseEvent()
 }
 
 /**
@@ -236,7 +236,7 @@ open class GooglePayPlugin(
                         isDefaultToken = it.isDefaultToken,
                     )
                 }
-                GooglePayListTokensEvent.ResultEvent(tokenInfos.toTypedArray())
+                GooglePayListTokensEvent.ResultEvent(tokenInfos)
             }
         }
     }
