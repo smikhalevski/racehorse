@@ -15,7 +15,7 @@ import androidx.activity.ComponentActivity
 import androidx.core.database.getStringOrNull
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.racehorse.utils.requiresPermission
+import org.racehorse.utils.askForPermission
 import org.racehorse.webview.DownloadStartEvent
 import java.io.File
 import java.io.Serializable
@@ -223,15 +223,26 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
         val fileName = event.fileName
             ?: URLUtil.guessFileName(event.uri, null, event.mimeType)
 
-        val id = downloadManager.enqueue(DownloadManager.Request(uri).apply {
+        val request = DownloadManager.Request(uri).apply {
             setDestinationInExternalPublicDir(SAVE_TO_DIR, fileName)
             setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
             setMimeType(event.mimeType)
 
             event.headers?.forEach { addRequestHeader(it.first, it.second) }
-        })
+        }
 
-        event.tryRespond { AddDownloadEvent.ResultEvent(id) }
+        if (Build.VERSION.SDK_INT >= 29) {
+            event.tryRespond { AddDownloadEvent.ResultEvent(downloadManager.enqueue(request)) }
+            return
+        }
+
+        activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) { granted ->
+            event.tryRespond {
+                check(granted) { "Permission required" }
+
+                AddDownloadEvent.ResultEvent(downloadManager.enqueue(request))
+            }
+        }
     }
 
     /**
@@ -269,28 +280,24 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
                     cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Downloads.DISPLAY_NAME))
                 }
 
-            val id = addCompletedDownload(File(saveToDir, displayName), mimeType)
-
-            event.tryRespond { AddDownloadEvent.ResultEvent(id) }
+            event.tryRespond {
+                AddDownloadEvent.ResultEvent(addCompletedDownload(File(saveToDir, displayName), mimeType))
+            }
             return
         }
 
         // Create a new file manually
-        activity.requiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) {
-            try {
+        activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) { granted ->
+            event.tryRespond {
+                check(granted) { "Permission required" }
+
                 val file = File(saveToDir, fileName).let {
-                    // Always create a new file, never overwrite
+                    // Prevent overwrite
                     if (it.exists()) File.createTempFile(it.nameWithoutExtension, it.extension, saveToDir) else it
                 }
-
                 file.writeBytes(dataUri.data)
 
-                val id = addCompletedDownload(file, mimeType)
-
-                event.tryRespond { AddDownloadEvent.ResultEvent(id) }
-            } catch (e: Throwable) {
-                e.printStackTrace()
-                event.tryRespond { ExceptionEvent(e) }
+                AddDownloadEvent.ResultEvent(addCompletedDownload(file, mimeType))
             }
         }
     }

@@ -59,7 +59,9 @@ open class ChainableEvent {
 
     /**
      * Executes a block and posts the returned event to the chain in the same event bus to which this event was
-     * originally posted. If an exception is thrown in the block, then an [ExceptionEvent] is used as a response.
+     * originally posted.
+     *
+     * If an exception is thrown in the block, then an [ExceptionEvent] is used as a response.
      */
     fun respond(block: () -> ChainableEvent) {
         val eventBus = checkNotNull(eventBus) { "Event has no origin" }
@@ -73,11 +75,15 @@ open class ChainableEvent {
     fun respond(event: ChainableEvent) = respond { event }
 
     /**
-     * Executes a block and posts the returned event to the chain if this event has an origin. No-op otherwise.
+     * Always executes a block and then posts the returned event to the chain only if this event has an origin.
+     *
+     * If an exception is thrown in the block, then an [ExceptionEvent] is used as a response.
      */
     fun tryRespond(block: () -> ChainableEvent) {
+        val event = ExceptionEvent.unless(block)
+
         if (requestId != -1) {
-            respond(block)
+            respond(event)
         }
     }
 }

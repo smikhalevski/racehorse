@@ -100,17 +100,6 @@ fun ComponentActivity.askForPermission(permission: String, callback: (granted: B
 }
 
 /**
- * Invokes the callback if the permission is granted.
- */
-fun ComponentActivity.requiresPermission(permission: String, callback: () -> Unit) {
-    askForPermission(permission) { granted ->
-        if (granted) {
-            callback()
-        }
-    }
-}
-
-/**
  * Returns `true` if permission is granted, or `false` otherwise.
  *
  * @param permission The permission that must be checked.
