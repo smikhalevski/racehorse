@@ -462,15 +462,16 @@ EventBus.getDefault().register(DownloadPlugin(activity))
 ```ts
 import { downloadManager } from 'racehorse';
 
-const id = downloadManager.startDownload('http://example.com');
+downloadManager.addDownload('http://example.com/my.zip').then(id => {
 
-downloadManager.getDownload(id);
-// ⮕ { id: 1, status: 4, uri: 'http://example.com' }
+  downloadManager.getDownload(id);
+  // ⮕ Dowload { id: 1, status: 4, uri: 'http://example.com/my.zip' }
+});
 
 downloadManager.getAllDownloads();
 ```
 
-[Download](https://smikhalevski.github.io/racehorse/interfaces/racehorse.Download.html) instance carries the download
+[`Download`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.Download.html) instance carries the download
 status, progress, and file details.
 
 To support older Android models a storage permission must be added to the application manifest:
@@ -493,13 +494,13 @@ Downloadable links have a [`download`](https://developer.mozilla.org/en-US/docs/
 ```
 
 Initialize the
-[DownloadPlugin](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-download-plugin/index.html)
-as described in the previous section, and add a Racehorse listener to enable handling of downloadable links:
+[`DownloadPlugin`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-download-plugin/index.html)
+as described in the previous section, and add a Racehorse listener to enable automatic handling of downloadable links:
 
 ```kotlin
-import org.racehorse.DownloadPlugin
+import org.racehorse.webview.RacehorseDownloadListener
 
-webView.setDownloadListener(DownloadPlugin.Listener())
+webView.setDownloadListener(RacehorseDownloadListener)
 ```
 
 # Encrypted storage plugin
