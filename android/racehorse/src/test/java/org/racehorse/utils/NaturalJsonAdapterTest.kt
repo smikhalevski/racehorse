@@ -17,7 +17,7 @@ class NaturalJsonAdapterTest {
         val value = SerializableIntent(extras = mapOf("aaa" to arrayOf(111, 222)))
 
         Assert.assertEquals(
-            "{\"action\":null,\"type\":null,\"data\":null,\"flags\":0,\"extras\":{\"aaa\":[111,222]}}",
+            "{\"action\":null,\"type\":null,\"data\":null,\"flags\":0,\"selector\":null,\"extras\":{\"aaa\":[111,222]},\"categories\":null}",
             gson.toJson(value)
         )
     }
