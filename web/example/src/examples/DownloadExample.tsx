@@ -1,28 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { downloadManager, DownloadStatus } from 'racehorse';
+import { activityManager, downloadManager, DownloadStatus, Intent } from 'racehorse';
+import { Download } from 'racehorse/src/main';
 
-const downloadStatusMessages = {
-  [DownloadStatus.STATUS_PENDING]: 'pending',
-  [DownloadStatus.STATUS_RUNNING]: 'running',
-  [DownloadStatus.STATUS_PAUSED]: 'paused',
-  [DownloadStatus.STATUS_SUCCESSFUL]: 'successful',
-  [DownloadStatus.STATUS_FAILED]: 'failed',
-};
+const TEST_HTTP_URL = 'https://upload.wikimedia.org/wikipedia/en/f/f9/Death_star1.png';
 
-const IMAGE_URL = 'https://upload.wikimedia.org/wikipedia/en/f/f9/Death_star1.png';
-
-const DATA_URI =
+const TEST_DATA_URI =
   'data:image/gif;base64,R0lGODlhEAAQAMQAAORHHOVSKudfOulrSOp3WOyDZu6QdvCchPGolfO0o/XBs/fNwfjZ0frl3/zy7////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAkAABAALAAAAAAQABAAAAVVICSOZGlCQAosJ6mu7fiyZeKqNKToQGDsM8hBADgUXoGAiqhSvp5QAnQKGIgUhwFUYLCVDFCrKUE1lBavAViFIDlTImbKC5Gm2hB0SlBCBMQiB0UjIQA7';
 
 export function DownloadExample() {
-  const [title, setTitle] = useState('');
-  const [uri, setUri] = useState('');
+  const [uri, setUri] = useState(TEST_HTTP_URL);
   const [downloads, setDownloads] = useState(downloadManager.getAllDownloads);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setDownloads(downloadManager.getAllDownloads());
-    }, 500);
+    }, 200);
 
     return () => {
       clearInterval(timer);
@@ -36,12 +28,13 @@ export function DownloadExample() {
       <table
         border={1}
         cellPadding={7}
+        width={'100%'}
       >
         <thead>
           <tr>
             <th>{'Title'}</th>
             <th>{'Status'}</th>
-            <th>{'%'}</th>
+            <th />
           </tr>
         </thead>
         <tbody>
@@ -55,12 +48,46 @@ export function DownloadExample() {
 
           {downloads.map(download => (
             <tr key={download.id}>
-              <td>{download.title}</td>
-              <td>{downloadStatusMessages[download.status]}</td>
+              <td>
+                <a
+                  href={download.status == DownloadStatus.SUCCESSFUL ? '#' : undefined}
+                  onClick={event => {
+                    event.preventDefault();
+
+                    if (download.contentUri !== null) {
+                      activityManager.startActivity({
+                        action: 'android.intent.action.VIEW_DOWNLOADS',
+                        flags: Intent.FLAG_ACTIVITY_NEW_TASK,
+                        data: download.contentUri,
+                      });
+                    }
+                  }}
+                >
+                  {decodeURI(download.localUri?.split('/').pop() || '')}
+                </a>
+              </td>
+
               <td align={'right'}>
-                {download.bytesDownloadedSoFar === 0
-                  ? '–'
-                  : Math.max(0, (download.totalSizeBytes / download.bytesDownloadedSoFar) * 100) + '%'}
+                {
+                  {
+                    [DownloadStatus.PENDING]: '',
+                    [DownloadStatus.RUNNING]: ((download.totalSize / download.downloadedSize) * 100) | 0,
+                    [DownloadStatus.PAUSED]: '⏸',
+                    [DownloadStatus.SUCCESSFUL]: '✅',
+                    [DownloadStatus.FAILED]: '⚠️',
+                  }[download.status]
+                }
+              </td>
+
+              <td align={'center'}>
+                <a
+                  onClick={event => {
+                    event.preventDefault();
+                    downloadManager.removeDownload(download.id);
+                  }}
+                >
+                  {'❌'}
+                </a>
               </td>
             </tr>
           ))}
@@ -68,23 +95,19 @@ export function DownloadExample() {
       </table>
 
       <p>
-        {'Title: '}
-        <input
-          value={title}
-          onChange={event => {
-            setTitle(event.target.value);
-          }}
-        />
-      </p>
-
-      <p>
-        {'URI: '}
         <input
           value={uri}
           onChange={event => {
             setUri(event.target.value);
           }}
-        />
+        />{' '}
+        <button
+          onClick={() => {
+            downloadManager.addDownload(uri, { headers: { 'Example-Header': 'example' } });
+          }}
+        >
+          {'Add download'}
+        </button>
       </p>
 
       <p>
@@ -92,32 +115,22 @@ export function DownloadExample() {
           href={'#'}
           onClick={event => {
             event.preventDefault();
-            setUri(IMAGE_URL);
+            setUri(TEST_HTTP_URL);
           }}
         >
-          {'Try image URL'}
+          {'Use HTTP URL'}
         </a>
-      </p>
-
-      <p>
+        {' • '}
         <a
           href={'#'}
           onClick={event => {
             event.preventDefault();
-            setUri(DATA_URI);
+            setUri(TEST_DATA_URI);
           }}
         >
-          {'Try data URI'}
+          {'Use data URI'}
         </a>
       </p>
-
-      <button
-        onClick={() => {
-          downloadManager.download(uri, { title, headers: { 'My-Header': 'wow' } });
-        }}
-      >
-        {'Start download'}
-      </button>
     </>
   );
 }

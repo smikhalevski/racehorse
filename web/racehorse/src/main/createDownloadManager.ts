@@ -1,53 +1,14 @@
 import { EventBridge } from './createEventBridge';
 
 /**
- * The managed download description.
+ * The download description.
  */
 export interface Download {
   /**
-   * An identifier for a particular download, unique across the system. Clients use this ID to make subsequent calls
+   * The identifier for a particular download, unique across the system. Clients use this ID to make subsequent calls
    * related to the download.
    */
   id: number;
-
-  /**
-   * The client-supplied title for this download. This will be displayed in system notifications.
-   *
-   * @default ""
-   */
-  title: string;
-
-  /**
-   * The client-supplied description of this download. This will be displayed in system notifications.
-   *
-   * @default ""
-   */
-  description: string;
-
-  /**
-   * The URI to be downloaded.
-   */
-  uri: string;
-
-  /**
-   * Internet Media Type of the downloaded file. If no value is provided upon creation, this will initially be null and
-   * will be filled in based on the server's response once the download has started.
-   *
-   * @see [RFC 1590, defining Media Types](http://www.ietf.org/rfc/rfc1590.txt)
-   */
-  mediaType: string | null;
-
-  /**
-   * Total size of the download in bytes. This will initially be -1 and will be filled in once the download starts.
-   */
-  totalSizeBytes: number;
-
-  /**
-   * The URI where downloaded file will be stored. If a destination is supplied by client, that URI will be used here.
-   * Otherwise, the value will initially be null and will be filled in with a generated URI once the download has
-   * started.
-   */
-  localUri: string | null;
 
   /**
    * Current status of the download.
@@ -58,23 +19,49 @@ export interface Download {
    * Provides more detail on the status of the download. Its meaning depends on the value of {@link status}.
    *
    * When {@link status} is {@link DownloadStatus.STATUS_FAILED STATUS_FAILED}, this indicates the type of error that
-   * occurred. If an HTTP error occurred, this will hold the HTTP status code as defined in RFC 2616. Otherwise, it will
-   * hold one of the {@link DownloadReason ERROR_* constants}.
+   * occurred. If an HTTP error occurred, this will hold the HTTP status code as defined in
+   * [RFC 2616](http://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html#sec6.1.1). Otherwise, it will hold one of the
+   * {@link DownloadReason ERROR_* constants}.
    *
    * When {@link status} is {@link DownloadStatus.STATUS_PAUSED STATUS_PAUSED}, this indicates why the download is
    * paused. It will hold one of the {@link DownloadReason PAUSED_* constants}.
    *
    * If {@link status} is neither {@link DownloadStatus.STATUS_FAILED STATUS_FAILED} nor
    * {@link DownloadStatus.STATUS_PAUSED STATUS_PAUSED}, this column's value is `null`.
-   *
-   * @see [RFC 2616 status codes](http://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html#sec6.1.1)
    */
   reason: DownloadReason | number;
 
   /**
-   * Number of bytes download so far.
+   * The URI to be downloaded.
    */
-  bytesDownloadedSoFar: number;
+  uri: string;
+
+  /**
+   * The URI where downloaded file will be stored. If a destination is supplied by client, that URI will be used here.
+   * Otherwise, the value will initially be null and will be filled in with a generated URI once the download has
+   * started.
+   */
+  localUri: string | null;
+
+  /**
+   * The `content:` URI of the downloaded file that can be passed to the {@link ActivityManager.startActivity intent}.
+   */
+  contentUri: string | null;
+
+  /**
+   * The MIME type of the downloaded file.
+   */
+  mimeType: string | null;
+
+  /**
+   * Total size of the download in bytes. This will initially be -1 and will be filled in once the download starts.
+   */
+  totalSize: number;
+
+  /**
+   * The number of bytes download so far.
+   */
+  downloadedSize: number;
 
   /**
    * Timestamp when the download was last modified (wall clock time in UTC).
@@ -89,27 +76,27 @@ export const DownloadStatus = {
   /**
    * The download is waiting to start.
    */
-  STATUS_PENDING: 1,
+  PENDING: 1,
 
   /**
    * The download is currently running.
    */
-  STATUS_RUNNING: 2,
+  RUNNING: 2,
 
   /**
    * The download is waiting to retry or resume.
    */
-  STATUS_PAUSED: 4,
+  PAUSED: 4,
 
   /**
    * The download has successfully completed.
    */
-  STATUS_SUCCESSFUL: 8,
+  SUCCESSFUL: 8,
 
   /**
    * The download has failed (and will not be retried).
    */
-  STATUS_FAILED: 16,
+  FAILED: 16,
 } as const;
 
 /**
@@ -200,54 +187,58 @@ export type DownloadReason = (typeof DownloadReason)[keyof typeof DownloadReason
  */
 export interface DownloadOptions {
   /**
-   * The file name that would be displayed to the user.
+   * The file name that would be displayed to the user. If no file name is provided, then it would be derived from the
+   * URI and/or {@link mimeType}.
    */
   fileName?: string;
 
   /**
-   * The mimetype of the content.
+   * The MIME type of the downloaded file. If the downloaded URI is a data URI which has a MIME type, then this option
+   * is ignored.
    */
   mimeType?: string;
 
   /**
-   * The title of this download is displayed in notifications. If no title is given, a default one will be assigned
-   * based on the download file name, once the download starts.
-   */
-  title?: string;
-
-  /**
-   * Set a description of this download, to be displayed in notifications.
-   */
-  description?: string;
-
-  /**
    * HTTP headers to be included with the download request.
    */
-  headers?: { [name: string]: string | readonly string[] };
+  headers?: HeadersInit;
 }
 
 export interface DownloadManager {
   /**
-   * Starts a file download.
+   * Adds a new download.
+   *
+   * The returned promise may be rejected if some of the download options are invalid, or if download cannot be
+   * performed due to platform-dependent reasons.
    *
    * @param uri The full URI of the content that should be downloaded. Supports HTTP, HTTPS, and data URI.
-   * @param options Other download options.
-   * @return The ID of the scheduled download or -1 if data URI was instantly written to file.
+   * @param options The download options.
+   * @return The ID of the download.
    */
-  download(uri: string, options?: DownloadOptions): number;
+  addDownload(uri: string, options?: DownloadOptions): Promise<number>;
 
   /**
-   * Returns a previously started file download by its ID.
+   * Returns a previously added download.
    *
    * @param id The ID of the download.
    * @returns The download or `null` if download doesn't exist.
    */
-  getDownloadById(id: number): Download | null;
+  getDownload(id: number): Download | null;
 
   /**
-   * Returns all file downloads.
+   * Returns all available downloads.
    */
   getAllDownloads(): Download[];
+
+  /**
+   * Cancel a download and remove it from the download manager. Download will be stopped if it was running, and it will
+   * no longer be accessible through the download manager. If there is a downloaded file, partial or complete, it is
+   * deleted.
+   *
+   * @param id The ID of the download.
+   * @returns `true` if the download was deleted, or `false` otherwise.
+   */
+  removeDownload(id: number): boolean;
 }
 
 /**
@@ -257,28 +248,19 @@ export interface DownloadManager {
  */
 export function createDownloadManager(eventBridge: EventBridge): DownloadManager {
   return {
-    download: (uri, options) => {
-      let headers;
+    addDownload: (uri, options) =>
+      new Promise(resolve => {
+        resolve(Object.assign({}, options, { uri, headers: Array.from(new Headers(options?.headers)) }));
+      })
+        .then(payload => eventBridge.requestAsync({ type: 'org.racehorse.AddDownloadEvent', payload }))
+        .then(event => event.payload.id),
 
-      if (options !== undefined && options.headers !== undefined) {
-        headers = Object.assign({}, options.headers);
-
-        for (const key in headers) {
-          let value;
-          if (headers.hasOwnProperty(key) && typeof (value = headers[key]) === 'string') {
-            headers[key] = [value];
-          }
-        }
-      }
-
-      const payload = Object.assign({}, options, { uri, headers });
-
-      return eventBridge.request({ type: 'org.racehorse.DownloadEvent', payload }).payload.id;
-    },
-
-    getDownloadById: id =>
-      eventBridge.request({ type: 'org.racehorse.GetDownloadByIdEvent', payload: { id } }).payload.download,
+    getDownload: id =>
+      eventBridge.request({ type: 'org.racehorse.GetDownloadEvent', payload: { id } }).payload.download,
 
     getAllDownloads: () => eventBridge.request({ type: 'org.racehorse.GetAllDownloadsEvent' }).payload.downloads,
+
+    removeDownload: id =>
+      eventBridge.request({ type: 'org.racehorse.RemoveDownloadEvent', payload: { id } }).payload.removed,
   };
 }

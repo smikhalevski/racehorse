@@ -7,7 +7,7 @@ import org.greenrobot.eventbus.EventBus
 /**
  * Notify the host application that a file should be downloaded.
  */
-class DownloadStartEvent(
+class DownloadRequestedEvent(
     /**
      * The full URL to the content that should be downloaded.
      */
@@ -35,7 +35,7 @@ class DownloadStartEvent(
 )
 
 /**
- * Posts [DownloadStartEvent] when the [WebView] requests to start a file download.
+ * Posts [DownloadRequestedEvent] when the [WebView] requests to start a file download.
  */
 open class RacehorseDownloadListener(private val eventBus: EventBus = EventBus.getDefault()) : DownloadListener {
 
@@ -46,6 +46,6 @@ open class RacehorseDownloadListener(private val eventBus: EventBus = EventBus.g
         mimeType: String,
         contentLength: Long
     ) {
-        eventBus.post(DownloadStartEvent(url, userAgent, contentDisposition, mimeType, contentLength))
+        eventBus.post(DownloadRequestedEvent(url, userAgent, contentDisposition, mimeType, contentLength))
     }
 }
