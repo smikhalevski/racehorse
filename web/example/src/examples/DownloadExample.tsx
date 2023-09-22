@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { activityManager, downloadManager, DownloadStatus, Intent } from 'racehorse';
-import { Download } from 'racehorse/src/main';
 
 const TEST_HTTP_URL = 'https://upload.wikimedia.org/wikipedia/en/f/f9/Death_star1.png';
 

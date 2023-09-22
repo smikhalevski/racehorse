@@ -281,7 +281,7 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
                 }
 
             event.tryRespond {
-                // Android 29 emulator throws ava.lang.SecurityException: Unsupported path /storage/emulated/0/Download
+                // Android 29 emulator throws java.lang.SecurityException: Unsupported path /storage/emulated/0/Download
                 AddDownloadEvent.ResultEvent(addCompletedDownload(File(saveToDir, displayName), mimeType))
             }
             return

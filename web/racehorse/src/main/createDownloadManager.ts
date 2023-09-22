@@ -18,16 +18,16 @@ export interface Download {
   /**
    * Provides more detail on the status of the download. Its meaning depends on the value of {@link status}.
    *
-   * When {@link status} is {@link DownloadStatus.STATUS_FAILED STATUS_FAILED}, this indicates the type of error that
-   * occurred. If an HTTP error occurred, this will hold the HTTP status code as defined in
+   * When {@link status} is {@link DownloadStatus.FAILED FAILED}, this indicates the type of error that occurred. If an
+   * HTTP error occurred, this will hold the HTTP status code as defined in
    * [RFC 2616](http://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html#sec6.1.1). Otherwise, it will hold one of the
    * {@link DownloadReason ERROR_* constants}.
    *
-   * When {@link status} is {@link DownloadStatus.STATUS_PAUSED STATUS_PAUSED}, this indicates why the download is
-   * paused. It will hold one of the {@link DownloadReason PAUSED_* constants}.
+   * When {@link status} is {@link DownloadStatus.PAUSED PAUSED}, this indicates why the download is paused. It will
+   * hold one of the {@link DownloadReason PAUSED_* constants}.
    *
-   * If {@link status} is neither {@link DownloadStatus.STATUS_FAILED STATUS_FAILED} nor
-   * {@link DownloadStatus.STATUS_PAUSED STATUS_PAUSED}, this column's value is `null`.
+   * If {@link status} is neither {@link DownloadStatus.FAILED FAILED} nor
+   * {@link DownloadStatus.PAUSED PAUSED}, this column's value is 0.
    */
   reason: DownloadReason | number;
 
