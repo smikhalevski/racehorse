@@ -7,6 +7,7 @@ import java.math.BigInteger
 import java.security.MessageDigest
 import javax.crypto.BadPaddingException
 import javax.crypto.Cipher
+import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
@@ -59,14 +60,26 @@ open class EncryptedStoragePlugin(
     private val iterationCount: Int = 10_000
 ) {
 
+    companion object {
+        private const val CIPHER_ALGORITHM = "AES"
+        private const val CIPHER_BLOCK_MODE = "CBC"
+        private const val CIPHER_PADDING = "PKCS5Padding"
+        private const val SECRET_KEY_ALGORITHM = "PBKDF2withHmacSHA256"
+        private const val SECRET_KEY_LENGTH = 256
+        private const val KEY_HASH_ALGORITHM = "MD5"
+        private const val VALUE_HASH_ALGORITHM = "SHA-512"
+        private const val VALUE_HASH_LENGTH = 64 // bytes
+        private const val IV_LENGTH = 16 // bytes
+    }
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     open fun onSetEncryptedValue(event: SetEncryptedValueEvent) {
         val valueBytes = event.value.toByteArray()
 
         val cipher = getCipher()
-        val digest = MessageDigest.getInstance("SHA-512")
+        val digest = MessageDigest.getInstance(VALUE_HASH_ALGORITHM)
 
-        cipher.init(Cipher.ENCRYPT_MODE, getSecret(event.password))
+        cipher.init(Cipher.ENCRYPT_MODE, getSecretKey(event.password))
 
         getFile(event.key).writeBytes(cipher.iv + cipher.doFinal(digest.digest(valueBytes) + valueBytes))
 
@@ -82,16 +95,16 @@ open class EncryptedStoragePlugin(
 
             val cipher = getCipher()
 
-            cipher.init(Cipher.DECRYPT_MODE, getSecret(event.password), IvParameterSpec(fileBytes.copyOf(16)))
+            cipher.init(Cipher.DECRYPT_MODE, getSecretKey(event.password), IvParameterSpec(fileBytes.copyOf(IV_LENGTH)))
 
             try {
-                cipher.doFinal(fileBytes.copyOfRange(16, fileBytes.size))
+                cipher.doFinal(fileBytes.copyOfRange(IV_LENGTH, fileBytes.size))
             } catch (_: BadPaddingException) {
                 null
             }
         } else null
 
-        val value = bytes?.run { String(copyOfRange(64, size)) }
+        val value = bytes?.run { String(copyOfRange(VALUE_HASH_LENGTH, size)) }
 
         event.respond(GetEncryptedValueEvent.ResultEvent(value))
     }
@@ -110,17 +123,17 @@ open class EncryptedStoragePlugin(
      * Returns the [Cipher] instance that is used for encoding/decoding.
      */
     protected open fun getCipher(): Cipher {
-        return Cipher.getInstance("AES/CBC/PKCS5Padding")
+        return Cipher.getInstance("$CIPHER_ALGORITHM/$CIPHER_BLOCK_MODE/$CIPHER_PADDING")
     }
 
     /**
-     * Returns the secret for a password.
+     * Returns the secret key for a password.
      */
-    protected open fun getSecret(password: String): SecretKeySpec {
-        val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-        val spec = PBEKeySpec(password.toCharArray(), salt, iterationCount, 256)
+    protected open fun getSecretKey(password: String): SecretKey {
+        val factory = SecretKeyFactory.getInstance(SECRET_KEY_ALGORITHM)
+        val spec = PBEKeySpec(password.toCharArray(), salt, iterationCount, SECRET_KEY_LENGTH)
 
-        return SecretKeySpec(factory.generateSecret(spec).encoded, "AES")
+        return SecretKeySpec(factory.generateSecret(spec).encoded, CIPHER_ALGORITHM)
     }
 
     /**
@@ -129,6 +142,8 @@ open class EncryptedStoragePlugin(
     private fun getFile(key: String): File {
         storageDir.mkdirs()
 
-        return File(storageDir, BigInteger(1, MessageDigest.getInstance("MD5").digest(key.toByteArray())).toString(16))
+        val keyHash = MessageDigest.getInstance(KEY_HASH_ALGORITHM).digest(key.toByteArray())
+
+        return File(storageDir, BigInteger(1, keyHash).toString(16))
     }
 }
