@@ -57,7 +57,7 @@ export interface BiometricManager {
    * Returns the status of the biometric authentication support for a given set of authenticators.
    *
    * @param authenticators The array of authenticators that must be supported for successful result. If omitted, or if
-   * an empty array is provided then {@link BiometricAuthenticator.BIOMETRIC_WEAK} is used.
+   * an empty array is provided then {@link BiometricAuthenticator.BIOMETRIC_STRONG} is used.
    */
   getBiometricStatus(authenticators?: BiometricAuthenticator[]): BiometricStatus;
 
@@ -66,7 +66,7 @@ export interface BiometricManager {
    * without any user interaction.
    *
    * @param authenticators The array of authenticators that must be supported for successful enrollment. If omitted, or
-   * if an empty array is provided then {@link BiometricAuthenticator.BIOMETRIC_WEAK} is used.
+   * if an empty array is provided then {@link BiometricAuthenticator.BIOMETRIC_STRONG} is used.
    * @return `true` if biometric enrollment succeeded, or `false` otherwise.
    */
   enrollBiometric(authenticators?: BiometricAuthenticator[]): Promise<boolean>;

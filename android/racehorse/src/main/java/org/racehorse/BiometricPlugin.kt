@@ -35,7 +35,7 @@ enum class BiometricAuthenticator(val value: Int) {
         fun from(authenticators: Array<BiometricAuthenticator>?): Int {
             val result = authenticators?.map(BiometricAuthenticator::value)?.fold(0, Int::or) ?: 0
 
-            return if (result == 0) BiometricManager.Authenticators.BIOMETRIC_WEAK else result
+            return if (result == 0) BiometricManager.Authenticators.BIOMETRIC_STRONG else result
         }
     }
 }

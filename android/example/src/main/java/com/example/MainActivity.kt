@@ -65,6 +65,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(FacebookLoginPlugin(this))
         eventBus.register(FacebookSharePlugin(this))
         eventBus.register(BiometricPlugin(this))
+        eventBus.register(BiometricEncryptedStoragePlugin(this, File(filesDir, "biometric_storage")))
         eventBus.register(ToastPlugin(this))
 
         @Suppress("DEPRECATION")

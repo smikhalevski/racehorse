@@ -5,7 +5,15 @@ export interface BiometricConfig {
   title?: string;
   subtitle?: string;
   description?: string;
+
+  /**
+   * The label on the button that aborts the authentication.
+   */
   negativeButtonText?: string;
+
+  /**
+   * The list of allowed authenticators.
+   */
   authenticators?: BiometricAuthenticator[];
 }
 

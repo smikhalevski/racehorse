@@ -16,12 +16,14 @@ import { FacebookLoginExample } from './examples/FacebookLoginExample';
 import { FacebookShareExample } from './examples/FacebookShareExample';
 import { DownloadExample } from './examples/DownloadExample';
 import { BiometricExample } from './examples/BiometricExample';
+import { BiometricEncryptedStorageExample } from './examples/BiometricEncryptedStorageExample';
 
 export function App() {
   return (
     <>
       <ToastExample />
       <BiometricExample />
+      <BiometricEncryptedStorageExample />
       <DownloadExample />
       <KeyboardExample />
       <FacebookShareExample />

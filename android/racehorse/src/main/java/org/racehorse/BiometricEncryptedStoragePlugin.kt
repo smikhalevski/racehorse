@@ -8,6 +8,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import org.racehorse.utils.ifNullOrBlank
 import java.io.File
 import java.io.Serializable
 import java.security.KeyStore
@@ -87,7 +88,7 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
 
     private val encryptedStorage = EncryptedStorage(storageDir)
 
-    @Subscribe(threadMode = ThreadMode.ASYNC)
+    @Subscribe(threadMode = ThreadMode.MAIN)
     open fun onSetBiometricEncryptedValue(event: SetBiometricEncryptedValueEvent) {
         val baseCipher = getCipher()
         baseCipher.init(Cipher.ENCRYPT_MODE, getSecretKey(event.key))
@@ -102,7 +103,7 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.ASYNC)
+    @Subscribe(threadMode = ThreadMode.MAIN)
     open fun onGetBiometricEncryptedValue(event: GetBiometricEncryptedValueEvent) {
         val (iv, encryptedBytes) = encryptedStorage.getRecord(event.key)
             ?: return event.respond(GetEncryptedValueEvent.ResultEvent(null))
@@ -153,13 +154,13 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
         }
 
         val promptInfoBuilder = BiometricPrompt.PromptInfo.Builder()
-            .setTitle(config?.title ?: "Authentication required")
+            .setTitle(config?.title.ifNullOrBlank { "Authentication required" })
             .setSubtitle(config?.subtitle)
             .setDescription(config?.description)
             .setAllowedAuthenticators(authenticators)
 
-        if (config?.negativeButtonText != null && authenticators and BiometricManager.Authenticators.BIOMETRIC_WEAK == 0) {
-            promptInfoBuilder.setNegativeButtonText(config.negativeButtonText)
+        if (authenticators and BiometricManager.Authenticators.DEVICE_CREDENTIAL == 0) {
+            promptInfoBuilder.setNegativeButtonText(config?.negativeButtonText.ifNullOrBlank { "Discard" })
         }
 
         try {

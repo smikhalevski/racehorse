@@ -1,20 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { encryptedStorageManager } from 'racehorse';
 import { FormattedJSON } from '../components/FormattedJSON';
+import { BiometricAuthenticator, BiometricConfig, biometricEncryptedStorageManager } from 'racehorse';
 
-export function EncryptedStorageExample() {
+const biometricConfig: BiometricConfig = {
+  title: 'Authentication required',
+  authenticators: [BiometricAuthenticator.BIOMETRIC_STRONG],
+};
+
+export function BiometricEncryptedStorageExample() {
   const [key, setKey] = useState('my_key');
   const [value, setValue] = useState('my_value');
-  const [password, setPassword] = useState('my_password');
   const [persistedValue, setPersistedValue] = useState<string | null>(null);
 
   useEffect(() => {
-    encryptedStorageManager.get(key, password).then(setPersistedValue);
-  }, [key, value, password]);
+    biometricEncryptedStorageManager.get(key).then(setPersistedValue);
+  }, [key, value]);
 
   return (
     <>
-      <h2>{'Encrypted storage'}</h2>
+      <h2>{'Biometric encrypted storage'}</h2>
 
       <div style={{ display: 'flex', gap: '10px' }}>
         <div>
@@ -42,27 +46,14 @@ export function EncryptedStorageExample() {
             }}
           />
         </div>
-
-        <div>
-          {'Password:'}
-          <br />
-          <input
-            type="text"
-            value={password}
-            size={10}
-            onChange={event => {
-              setPassword(event.target.value);
-            }}
-          />
-        </div>
       </div>
 
       <p>
         <button
           onClick={() => {
-            encryptedStorageManager.set(key, value, password).then(ok => {
+            biometricEncryptedStorageManager.set(key, value, biometricConfig).then(ok => {
               if (ok) {
-                encryptedStorageManager.get(key, password).then(setPersistedValue);
+                biometricEncryptedStorageManager.get(key, biometricConfig).then(setPersistedValue);
               }
             });
           }}
@@ -71,8 +62,8 @@ export function EncryptedStorageExample() {
         </button>{' '}
         <button
           onClick={() => {
-            if (encryptedStorageManager.delete(key)) {
-              encryptedStorageManager.get(key, password).then(setPersistedValue);
+            if (biometricEncryptedStorageManager.delete(key)) {
+              biometricEncryptedStorageManager.get(key, biometricConfig).then(setPersistedValue);
             }
           }}
         >
