@@ -30,7 +30,7 @@ export interface Intent {
   extras?: { [key: string]: any };
 
   /**
-   * The list of intent categories.
+   * The array of intent categories.
    */
   categories?: string[];
 

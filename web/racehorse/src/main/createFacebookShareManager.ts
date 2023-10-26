@@ -13,7 +13,7 @@ export interface FacebookShareLinkContent {
   contentUrl?: string;
 
   /**
-   * The list of IDs for taggable people to tag with this content.
+   * The array of IDs for taggable people to tag with this content.
    */
   peopleIds?: string[];
 

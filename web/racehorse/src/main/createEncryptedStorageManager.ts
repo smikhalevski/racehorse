@@ -1,5 +1,4 @@
 import { EventBridge } from './createEventBridge';
-import { noop } from './utils';
 
 export interface EncryptedStorageManager {
   /**
@@ -8,8 +7,9 @@ export interface EncryptedStorageManager {
    * @param key A key to set.
    * @param value A value to write.
    * @param password The password that is used to cipher the value.
+   * @return `true` if the value was written to the storage, or `false` otherwise.
    */
-  set(key: string, value: string, password: string): Promise<void>;
+  set(key: string, value: string, password: string): Promise<boolean>;
 
   /**
    * Retrieves an encrypted value associated with the key.
@@ -36,7 +36,7 @@ export function createEncryptedStorageManager(eventBridge: EventBridge): Encrypt
     set: (key, value, password) =>
       eventBridge
         .requestAsync({ type: 'org.racehorse.SetEncryptedValueEvent', payload: { key, value, password } })
-        .then(noop),
+        .then(event => event.payload.isSuccessful),
 
     get: (key, password) =>
       eventBridge

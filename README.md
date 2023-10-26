@@ -33,6 +33,8 @@ The bootstrapper for WebView-based Android apps.
 - [Network](#network-plugin)
 - [Notifications](#notifications-plugin)
 - [Permissions](#permissions-plugin)
+- [Biometric](#biometric-plugin)
+- [Biometric encrypted storage](#biometric-encrypted-storage-plugin)
 
 🍪&ensp;**Cookbook**
 
@@ -532,6 +534,7 @@ import { encryptedStorageManager } from 'racehorse';
 const PASSWORD = '12345';
 
 await encryptedStorageManager.set('foo', 'bar', PASSWORD);
+// ⮕ true
 
 await encryptedStorageManager.get('foo', PASSWORD);
 // ⮕ 'bar'
@@ -1060,6 +1063,84 @@ permissionsManager.isPermissionGranted('android.permission.ACCESS_WIFI_STATE');
 
 permissionsManager.askForPermission('android.permission.CALL_PHONE');
 // ⮕ Promise<boolean>
+```
+
+# Biometric plugin
+
+[`BiometricManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.BiometricManager.html) provides the
+status of biometric support and allows to enroll for biometric auth.
+
+1. Add [Biometric](https://developer.android.com/jetpack/androidx/releases/biometric#declaring_dependencies) dependency
+   to your Android app:
+
+```kotlin
+dependencies {
+    implementation("androidx.biometric:biometric:1.2.0-alpha05")
+}
+```
+
+2. Initialize the plugin in your Android app:
+
+```kotlin
+import org.racehorse.BiometricPlugin
+
+EventBus.getDefault().register(BiometricPlugin(activity))
+```
+
+3. Read the biometric status or enroll biometric:
+
+```ts
+import { biometricManager, BiometricAuthenticator } from 'racehorse';
+
+biometricManager.getBiometricStatus([BiometricAuthenticator.BIOMETRIC_WEAK]);
+// ⮕ BiometricStatus.NONE_ENROLLED
+
+biometricManager.enrollBiometric();
+// ⮕ Promise<boolean>
+```
+
+# Biometric encrypted storage plugin
+
+[`BiometricEncryptedStorageManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.BiometricEncryptedStorageManager.html)
+enables a file-based persistence of a biometric-protected data.
+
+1. Add [Biometric](https://developer.android.com/jetpack/androidx/releases/biometric#declaring_dependencies) dependency
+   to your Android app:
+
+```kotlin
+dependencies {
+    implementation("androidx.biometric:biometric:1.2.0-alpha05")
+}
+```
+
+2. Initialize the plugin in your Android app:
+
+```kotlin
+import org.racehorse.BiometricEncryptedStoragePlugin
+
+EventBus.getDefault().register(
+    BiometricEncryptedStoragePlugin(
+        activity,
+
+        // The directory where encrypted data is stored
+        File(activity.filesDir, "biometric_storage")
+    )
+)
+```
+
+3. Read and write encrypted key-value pairs to the storage:
+
+```ts
+import { biometricEncryptedStorageManager, BiometricAuthenticator } from 'racehorse';
+
+await biometricEncryptedStorageManager.set('foo', 'bar', {
+  title: 'Authentication required',
+  authenticators: [BiometricAuthenticator.BIOMETRIC_STRONG],
+});
+// ⮕ true
+
+await biometricEncryptedStorageManager.get('foo');
+// ⮕ 'bar'
 ```
 
 # Blurring the app that goes to the background
