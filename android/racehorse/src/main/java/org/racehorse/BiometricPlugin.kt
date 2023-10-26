@@ -32,8 +32,11 @@ enum class BiometricAuthenticator(val value: Int) {
     DEVICE_CREDENTIAL(BiometricManager.Authenticators.DEVICE_CREDENTIAL);
 
     companion object {
-        fun from(authenticators: Array<BiometricAuthenticator>) =
-            authenticators.map(BiometricAuthenticator::value).fold(0, Int::or)
+        fun from(authenticators: Array<BiometricAuthenticator>?): Int {
+            val result = authenticators?.map(BiometricAuthenticator::value)?.fold(0, Int::or) ?: 0
+
+            return if (result == 0) BiometricManager.Authenticators.BIOMETRIC_WEAK else result
+        }
     }
 }
 
@@ -64,11 +67,11 @@ enum class BiometricStatus(val value: Int) {
     }
 }
 
-class GetBiometricStatusEvent(val authenticators: Array<BiometricAuthenticator>) : RequestEvent() {
+class GetBiometricStatusEvent(val authenticators: Array<BiometricAuthenticator>?) : RequestEvent() {
     class ResultEvent(val status: BiometricStatus) : ResponseEvent()
 }
 
-class EnrollBiometricEvent(val authenticators: Array<BiometricAuthenticator>) : RequestEvent() {
+class EnrollBiometricEvent(val authenticators: Array<BiometricAuthenticator>?) : RequestEvent() {
     class ResultEvent(val isEnrolled: Boolean) : ResponseEvent()
 }
 

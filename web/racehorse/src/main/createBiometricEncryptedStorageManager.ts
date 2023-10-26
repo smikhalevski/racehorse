@@ -1,10 +1,10 @@
 import { EventBridge } from './createEventBridge';
-import { noop } from './utils';
 import { BiometricAuthenticator } from './createBiometricManager';
 
-export interface BiometricPromptOptions {
+export interface BiometricConfig {
   title?: string;
   subtitle?: string;
+  description?: string;
   negativeButtonText?: string;
   authenticators?: BiometricAuthenticator[];
 }
@@ -15,16 +15,17 @@ export interface BiometricEncryptedStorageManager {
    *
    * @param key A key to set.
    * @param value A value to write.
-   * @param options The options of the biometric prompt.
+   * @param config The options of the biometric prompt.
+   * @return `true` if the value was written to the storage, or `false` otherwise.
    */
-  set(key: string, value: string, options?: BiometricPromptOptions): Promise<void>;
+  set(key: string, value: string, config?: BiometricConfig): Promise<boolean>;
 
   /**
    * Retrieves an encrypted value associated with the key.
    *
    * @returns The deciphered value, or `null` if key wasn't found or if password is incorrect.
    */
-  get(key: string, options?: BiometricPromptOptions): Promise<string | null>;
+  get(key: string, config?: BiometricConfig): Promise<string | null>;
 
   /**
    * Returns `true` if the key exists in the storage, or `false` otherwise.
@@ -41,14 +42,14 @@ export interface BiometricEncryptedStorageManager {
 
 export function createBiometricEncryptedStorageManager(eventBridge: EventBridge): BiometricEncryptedStorageManager {
   return {
-    set: (key, value, options) =>
+    set: (key, value, config) =>
       eventBridge
-        .requestAsync({ type: 'org.racehorse.SetBiometricEncryptedValueEvent', payload: { key, value, options } })
-        .then(noop),
+        .requestAsync({ type: 'org.racehorse.SetBiometricEncryptedValueEvent', payload: { key, value, config } })
+        .then(event => event.payload.isSuccessful),
 
-    get: (key, options) =>
+    get: (key, config) =>
       eventBridge
-        .requestAsync({ type: 'org.racehorse.GetBiometricEncryptedValueEvent', payload: { key, options } })
+        .requestAsync({ type: 'org.racehorse.GetBiometricEncryptedValueEvent', payload: { key, config } })
         .then(event => event.payload.value),
 
     has: key =>

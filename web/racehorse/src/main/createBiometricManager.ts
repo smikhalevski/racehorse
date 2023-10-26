@@ -56,8 +56,8 @@ export interface BiometricManager {
   /**
    * Returns the status of the biometric authentication support for a given set of authenticators.
    *
-   * @param [authenticators = [BiometricAuthenticator.BIOMETRIC_WEAK]] The array of authenticators that must be supported
-   * for successful result.
+   * @param authenticators The array of authenticators that must be supported for successful result. If omitted, or if
+   * an empty array is provided then {@link BiometricAuthenticator.BIOMETRIC_WEAK} is used.
    */
   getBiometricStatus(authenticators?: BiometricAuthenticator[]): BiometricStatus;
 
@@ -65,8 +65,8 @@ export interface BiometricManager {
    * Prompts the user to register credentials for given authenticators. If user already enrolled then returns a promise
    * without any user interaction.
    *
-   * @param [authenticators = [BiometricAuthenticator.BIOMETRIC_WEAK]] The array of authenticators that must be supported
-   * for successful enrollment.
+   * @param authenticators The array of authenticators that must be supported for successful enrollment. If omitted, or
+   * if an empty array is provided then {@link BiometricAuthenticator.BIOMETRIC_WEAK} is used.
    * @return `true` if biometric enrollment succeeded, or `false` otherwise.
    */
   enrollBiometric(authenticators?: BiometricAuthenticator[]): Promise<boolean>;
@@ -79,13 +79,13 @@ export interface BiometricManager {
  */
 export function createBiometricManager(eventBridge: EventBridge): BiometricManager {
   return {
-    getBiometricStatus: (authenticators = [BiometricAuthenticator.BIOMETRIC_WEAK]) =>
+    getBiometricStatus: authenticators =>
       eventBridge.request({
         type: 'org.racehorse.GetBiometricStatusEvent',
         payload: { authenticators },
       }).payload.status,
 
-    enrollBiometric: (authenticators = [BiometricAuthenticator.BIOMETRIC_WEAK]) =>
+    enrollBiometric: authenticators =>
       eventBridge
         .requestAsync({ type: 'org.racehorse.EnrollBiometricEvent', payload: { authenticators } })
         .then(event => event.payload.isEnrolled),

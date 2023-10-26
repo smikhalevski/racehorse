@@ -10,7 +10,7 @@ export function EncryptedStorageExample() {
 
   useEffect(() => {
     encryptedStorageManager.get(key, password).then(setPersistedValue);
-  });
+  }, [key, value, password]);
 
   return (
     <>
