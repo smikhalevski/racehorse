@@ -1,5 +1,7 @@
 import { createEventBridge } from './createEventBridge';
 import { createActivityManager } from './createActivityManager';
+import { createBiometricEncryptedStorageManager } from './createBiometricEncryptedStorageManager';
+import { createBiometricManager } from './createBiometricManager';
 import { createDeepLinkManager } from './createDeepLinkManager';
 import { createDeviceManager } from './createDeviceManager';
 import { createDownloadManager } from './createDownloadManager';
@@ -16,6 +18,8 @@ import { createNetworkManager } from './createNetworkManager';
 import { createNotificationsManager } from './createNotificationsManager';
 import { createPermissionsManager } from './createPermissionsManager';
 
+export * from './createBiometricEncryptedStorageManager';
+export * from './createBiometricManager';
 export * from './createDeepLinkManager';
 export * from './createDeviceManager';
 export * from './createDownloadManager';
@@ -37,6 +41,10 @@ export * from './createPermissionsManager';
 export const eventBridge = createEventBridge();
 
 export const activityManager = createActivityManager(eventBridge);
+
+export const biometricEncryptedStorageManager = createBiometricEncryptedStorageManager(eventBridge);
+
+export const biometricManager = createBiometricManager(eventBridge);
 
 export const deepLinkManager = createDeepLinkManager(eventBridge);
 

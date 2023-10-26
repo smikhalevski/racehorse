@@ -69,6 +69,9 @@ dependencies {
     // Firebase
     implementation("com.google.firebase:firebase-messaging-ktx:23.1.2")
 
+    // Biometric
+    implementation("androidx.biometric:biometric:1.2.0-alpha05")
+
     implementation(project(":racehorse"))
 
     testImplementation("junit:junit:4.13.2")

@@ -79,7 +79,7 @@ open class EncryptedStoragePlugin(
         val cipher = getCipher()
         val digest = MessageDigest.getInstance(VALUE_HASH_ALGORITHM)
 
-        cipher.init(Cipher.ENCRYPT_MODE, getSecretKey(event.password))
+        cipher.init(Cipher.ENCRYPT_MODE, getOrCreateSecretKey(event.password))
 
         getFile(event.key).writeBytes(cipher.iv + cipher.doFinal(digest.digest(valueBytes) + valueBytes))
 
@@ -95,7 +95,11 @@ open class EncryptedStoragePlugin(
 
             val cipher = getCipher()
 
-            cipher.init(Cipher.DECRYPT_MODE, getSecretKey(event.password), IvParameterSpec(fileBytes.copyOf(IV_LENGTH)))
+            cipher.init(
+                Cipher.DECRYPT_MODE,
+                getOrCreateSecretKey(event.password),
+                IvParameterSpec(fileBytes.copyOf(IV_LENGTH))
+            )
 
             try {
                 cipher.doFinal(fileBytes.copyOfRange(IV_LENGTH, fileBytes.size))
@@ -129,7 +133,7 @@ open class EncryptedStoragePlugin(
     /**
      * Returns the secret key for a password.
      */
-    protected open fun getSecretKey(password: String): SecretKey {
+    protected open fun getOrCreateSecretKey(password: String): SecretKey {
         val factory = SecretKeyFactory.getInstance(SECRET_KEY_ALGORITHM)
         val spec = PBEKeySpec(password.toCharArray(), salt, iterationCount, SECRET_KEY_LENGTH)
 

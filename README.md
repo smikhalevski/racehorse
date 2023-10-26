@@ -1062,6 +1062,36 @@ permissionsManager.askForPermission('android.permission.CALL_PHONE');
 // ⮕ Promise<boolean>
 ```
 
+# Biometric plugin
+
+[`BiometricManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.BiometricManager.html)
+
+1. Add [Biometric](https://developer.android.com/jetpack/androidx/releases/biometric#declaring_dependencies) dependency
+   to your Android app:
+
+```kotlin
+dependencies {
+    implementation("androidx.biometric:biometric:1.2.0-alpha05")
+}
+```
+
+2. Initialize the plugin in your Android app:
+
+```kotlin
+import org.racehorse.BiometricPlugin
+
+EventBus.getDefault().register(BiometricPlugin(activity))
+```
+
+3. Read the Google Play referrer:
+
+```ts
+import { googlePlayReferrerManager } from 'racehorse';
+
+googlePlayReferrerManager.getGooglePlayReferrer();
+// ⮕ Promise<string>
+```
+
 # Blurring the app that goes to the background
 
 Post a custom

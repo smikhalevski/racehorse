@@ -7,15 +7,15 @@ export interface FacebookAccessToken {
   expires: number;
 
   /**
-   * The list of permissions associated with this access token. Note that the most up-to-date list of permissions is
-   * maintained by Facebook, so this list may be outdated if permissions have been added or removed since the time the
+   * The array of permissions associated with this access token. Note that the most up-to-date list of permissions is
+   * maintained by Facebook, so this array may be outdated if permissions have been added or removed since the time the
    * {@link FacebookAccessToken} object was created. For more information on permissions, see
    * [Permissions Reference](https://developers.facebook.com/docs/reference/login/#permissions).
    */
   permissions: string[];
 
   /**
-   * The list of permissions declined by the user with this access token. It represents the entire set of permissions
+   * The array of permissions declined by the user with this access token. It represents the entire set of permissions
    * that have been requested and declined. Note that the most up-to-date list of permissions is maintained by Facebook,
    * so this list may be outdated if permissions have been granted or declined since the last time an AccessToken object
    * was created.
@@ -23,7 +23,7 @@ export interface FacebookAccessToken {
   declinedPermissions: string[];
 
   /**
-   * The list of permissions that were expired with this access token.
+   * The array of permissions that were expired with this access token.
    */
   expiredPermissions: string[];
 

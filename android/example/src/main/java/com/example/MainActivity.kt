@@ -64,6 +64,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(GoogleSignInPlugin(this))
         eventBus.register(FacebookLoginPlugin(this))
         eventBus.register(FacebookSharePlugin(this))
+        eventBus.register(BiometricPlugin(this))
         eventBus.register(ToastPlugin(this))
 
         @Suppress("DEPRECATION")

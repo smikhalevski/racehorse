@@ -62,7 +62,7 @@ export interface DeviceManager {
   /**
    * Returns a locale from `supportedLocales` that best matches one of preferred locales, or returns a `defaultLocale`.
    *
-   * @param supportedLocales The list of locales that your application supports.
+   * @param supportedLocales The array of locales that your application supports.
    * @param defaultLocale The default locale that is returned if there's no matching locale among preferred.
    */
   pickLocale(supportedLocales: string[], defaultLocale: string): string;

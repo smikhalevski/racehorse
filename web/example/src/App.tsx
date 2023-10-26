@@ -15,18 +15,20 @@ import { EventBridgeExample } from './examples/EventBridgeExample';
 import { FacebookLoginExample } from './examples/FacebookLoginExample';
 import { FacebookShareExample } from './examples/FacebookShareExample';
 import { DownloadExample } from './examples/DownloadExample';
+import { BiometricExample } from './examples/BiometricExample';
 
 export function App() {
   return (
     <>
       <ToastExample />
+      <BiometricExample />
       <DownloadExample />
       <KeyboardExample />
       <FacebookShareExample />
       <GoogleSignInExample />
       <FacebookLoginExample />
-      <ActivityExample />
       <PermissionsExample />
+      <ActivityExample />
       <NotificationsExample />
       <NetworkExample />
       <EncryptedStorageExample />
