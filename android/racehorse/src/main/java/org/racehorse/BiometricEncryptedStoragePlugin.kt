@@ -149,8 +149,7 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) =
                 callback(result.cryptoObject)
 
-            override fun onAuthenticationFailed() =
-                callback(null)
+            override fun onAuthenticationFailed() {}
         }
 
         val promptInfoBuilder = BiometricPrompt.PromptInfo.Builder()
