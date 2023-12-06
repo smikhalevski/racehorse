@@ -1,6 +1,7 @@
 package org.racehorse
 
 import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.security.keystore.KeyProperties
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
@@ -91,7 +92,13 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
     @Subscribe(threadMode = ThreadMode.MAIN)
     open fun onSetBiometricEncryptedValue(event: SetBiometricEncryptedValueEvent) {
         val baseCipher = getCipher()
-        baseCipher.init(Cipher.ENCRYPT_MODE, getSecretKey(event.key))
+        try {
+            baseCipher.init(Cipher.ENCRYPT_MODE, getOrCreateSecretKey(event.key))
+        } catch (e: KeyPermanentlyInvalidatedException) {
+            // Recreate a secret key
+            deleteSecretKey(event.key)
+            baseCipher.init(Cipher.ENCRYPT_MODE, getOrCreateSecretKey(event.key))
+        }
 
         authenticate(event.config, baseCipher) { cryptoObject ->
             val cipher = cryptoObject?.cipher
@@ -109,7 +116,15 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
             ?: return event.respond(GetEncryptedValueEvent.ResultEvent(null))
 
         val baseCipher = getCipher()
-        baseCipher.init(Cipher.DECRYPT_MODE, getSecretKey(event.key), IvParameterSpec(iv))
+        try {
+            baseCipher.init(Cipher.DECRYPT_MODE, getOrCreateSecretKey(event.key), IvParameterSpec(iv))
+        } catch (e: KeyPermanentlyInvalidatedException) {
+            // The value cannot ever be decrypted
+            encryptedStorage.delete(event.key)
+            deleteSecretKey(event.key)
+            event.respond(GetEncryptedValueEvent.ResultEvent(null))
+            return
+        }
 
         authenticate(event.config, baseCipher) { cryptoObject ->
             val cipher = cryptoObject?.cipher
@@ -127,7 +142,12 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
 
     @Subscribe
     open fun onDeleteBiometricEncryptedValue(event: DeleteBiometricEncryptedValueEvent) {
-        event.respond(DeleteBiometricEncryptedValueEvent.ResultEvent(encryptedStorage.delete(event.key)))
+        event.respond(DeleteBiometricEncryptedValueEvent.ResultEvent(
+            if (encryptedStorage.delete(event.key)) {
+                deleteSecretKey(event.key)
+                true
+            } else false
+        ))
     }
 
     protected open fun authenticate(
@@ -176,11 +196,13 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
         return Cipher.getInstance("$ENCRYPTION_ALGORITHM/$ENCRYPTION_BLOCK_MODE/$ENCRYPTION_PADDING")
     }
 
-    protected open fun getSecretKey(keyAlias: String): SecretKey {
-        // Return existing key
-        val keyStore = KeyStore.getInstance(SECRET_KEYSTORE_TYPE)
-        keyStore.load(null)
-        keyStore.getKey(keyAlias, null)?.let { return it as SecretKey }
+    protected open fun getKeyStore() = KeyStore.getInstance(SECRET_KEYSTORE_TYPE).apply { load(null) }
+
+    protected open fun getOrCreateSecretKey(keyAlias: String): SecretKey {
+        getKeyStore().getKey(keyAlias, null)?.let { key ->
+            // Key already exists
+            return key as SecretKey
+        }
 
         // Create a new key
         val keyGenParameterSpec =
@@ -196,5 +218,9 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
         keyGenerator.init(keyGenParameterSpec)
 
         return keyGenerator.generateKey()
+    }
+
+    protected open fun deleteSecretKey(keyAlias: String) {
+        getKeyStore().deleteEntry(keyAlias)
     }
 }
