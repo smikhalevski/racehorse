@@ -38,7 +38,7 @@ The bootstrapper for WebView-based Android apps.
 
 🍪&ensp;**Cookbook**
 
-- [Blurring the app that goes to the background](#blurring-the-app-that-goes-to-the-background)
+- [Blur preview on recent apps screen](#blur-preview-on-recent-apps-screen)
 
 # How to run the example app?
 
@@ -1143,7 +1143,30 @@ await biometricEncryptedStorageManager.get('foo');
 // ⮕ 'bar'
 ```
 
-# Blurring the app that goes to the background
+If user enrolls biometric auth (for example, updates fingerprints stored on the device), then all secret keys used by
+the biometric-encrypted storage are invalidated and values become inaccessible. In such scenario keys are automatically
+removed when accessed:
+
+```js
+if (biometricEncryptedStorageManager.has(key)) {
+  // Storage contains the key
+
+  biometricEncryptedStorageManager.get(key).then(value => {
+    if (value !== null) {
+      // The value was successfully decrypted
+    } else if (biometricEncryptedStorageManager.has(key)) {
+      // User canceled a biometric auth or made too many failed attempts
+    } else {
+      // User wasn't prompted a biometric auth and the value was deleted
+      // because the the sectet encryption key was invalidated
+    }
+  })
+}
+```
+
+# Cookbook
+
+## Blur preview on recent apps screen
 
 Post a custom
 [`NoticeEvent`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-notice-event/index.html) event
