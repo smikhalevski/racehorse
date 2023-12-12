@@ -74,6 +74,8 @@ publishing {
 }
 
 dependencies {
+    implementation(kotlin("reflect"))
+
     // Android
     compileOnly("androidx.appcompat:appcompat:1.6.1")
     compileOnly("androidx.webkit:webkit:1.7.0")

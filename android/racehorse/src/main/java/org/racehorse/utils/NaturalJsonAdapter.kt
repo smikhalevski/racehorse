@@ -18,12 +18,6 @@ import java.util.Date
  */
 class NaturalJsonAdapter : JsonDeserializer<Any?>, JsonSerializer<Any?> {
 
-    fun getType(type: Type): Type =
-        (type as? ParameterizedType)?.rawType ?: type
-
-    fun getTypeArgument(type: Type, index: Int): Type =
-        (type as? ParameterizedType)?.actualTypeArguments?.get(index) ?: Any::class.java
-
     override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Any? =
         when (getType(typeOfT)) {
             Pair::class.java -> Pair<Any, Any>(
@@ -34,7 +28,44 @@ class NaturalJsonAdapter : JsonDeserializer<Any?>, JsonSerializer<Any?> {
             else -> deserializeAny(json, typeOfT, context)
         }
 
-    fun deserializeAny(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Any? = when {
+    override fun serialize(src: Any?, typeOfSrc: Type, context: JsonSerializationContext) = when (src) {
+
+        is Number -> JsonPrimitive(src)
+
+        is String -> JsonPrimitive(src)
+
+        is Boolean -> JsonPrimitive(src)
+
+        is Date -> JsonPrimitive(src.time)
+
+        is Char -> JsonPrimitive(src)
+
+        is Array<*> -> serializeArray(src.asIterable(), src::class.java.componentType, context)
+
+        is Map<*, *> -> serializeObject(src.toList(), context)
+
+        is Bundle -> serializeObject(src.keySet().map {
+            @Suppress("DEPRECATION")
+            it to src.get(it)
+        }, context)
+
+        is Pair<*, *> -> JsonArray().apply {
+            add(context.serialize(src.first))
+            add(context.serialize(src.second))
+        }
+
+        is Iterable<*> -> serializeArray(src, getTypeArgument(typeOfSrc, 0), context)
+
+        else -> null
+    }
+
+    private fun getType(type: Type): Type =
+        (type as? ParameterizedType)?.rawType ?: type
+
+    private fun getTypeArgument(type: Type, index: Int): Type =
+        (type as? ParameterizedType)?.actualTypeArguments?.get(index) ?: Any::class.java
+
+    private fun deserializeAny(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Any? = when {
 
         json.isJsonObject -> json.asJsonObject.run {
             keySet().associateWithTo(LinkedHashMap<String, Any>()) {
@@ -71,46 +102,16 @@ class NaturalJsonAdapter : JsonDeserializer<Any?>, JsonSerializer<Any?> {
         }
     }
 
-    override fun serialize(src: Any?, typeOfSrc: Type, context: JsonSerializationContext) = when (src) {
-
-        is Number -> JsonPrimitive(src)
-
-        is String -> JsonPrimitive(src)
-
-        is Boolean -> JsonPrimitive(src)
-
-        is Date -> JsonPrimitive(src.time)
-
-        is Char -> JsonPrimitive(src)
-
-        is Array<*> -> serializeArray(src.asIterable(), context)
-
-        is Map<*, *> -> serializeObject(src.toList(), context)
-
-        is Bundle -> serializeObject(src.keySet().map {
-            @Suppress("DEPRECATION")
-            it to src.get(it)
-        }, context)
-
-        is Pair<*, *> -> JsonArray().apply {
-            add(context.serialize(src.first))
-            add(context.serialize(src.second))
+    private fun serializeArray(src: Iterable<*>, typeOfSrc: Type, context: JsonSerializationContext) =
+        JsonArray().apply {
+            src.forEach { value ->
+                add(context.serialize(value, typeOfSrc))
+            }
         }
-
-        is Iterable<*> -> serializeArray(src, context)
-
-        else -> null
-    }
-
-    private fun serializeArray(src: Iterable<*>, context: JsonSerializationContext) = JsonArray().apply {
-        src.forEach { value ->
-            add(value?.let(context::serialize))
-        }
-    }
 
     private fun serializeObject(src: Iterable<Pair<*, *>>, context: JsonSerializationContext) = JsonObject().apply {
         src.forEach { (key, value) ->
-            add(key.toString(), value?.let(context::serialize))
+            add(key.toString(), value?.let { context.serialize(value, value::class.java) })
         }
     }
 }
