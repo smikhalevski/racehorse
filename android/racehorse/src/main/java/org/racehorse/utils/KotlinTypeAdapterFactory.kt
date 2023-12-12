@@ -10,6 +10,9 @@ import com.google.gson.stream.JsonWriter
 import kotlin.jvm.internal.Reflection
 import kotlin.reflect.full.memberProperties
 
+/**
+ * Provides Kotlin-imposed null-safety checks during deserialization.
+ */
 class KotlinTypeAdapterFactory : TypeAdapterFactory {
 
     override fun <T : Any> create(gson: Gson, type: TypeToken<T>): TypeAdapter<T>? {
@@ -20,11 +23,12 @@ class KotlinTypeAdapterFactory : TypeAdapterFactory {
     }
 }
 
-private class KotlinTypeAdapter<T>(val delegate: TypeAdapter<T>, val type: TypeToken<T>) : TypeAdapter<T>() {
-    override fun write(out: JsonWriter, value: T?) = delegate.write(out, value)
+private class KotlinTypeAdapter<T>(val delegateAdapter: TypeAdapter<T>, val type: TypeToken<T>) : TypeAdapter<T>() {
+
+    override fun write(out: JsonWriter, value: T?) = delegateAdapter.write(out, value)
 
     override fun read(input: JsonReader): T? {
-        val value = delegate.read(input) ?: return null
+        val value = delegateAdapter.read(input) ?: return null
 
         Reflection.createKotlinClass(type.rawType).memberProperties.forEach {
             if (!it.returnType.isMarkedNullable && it.get(value) == null) {
