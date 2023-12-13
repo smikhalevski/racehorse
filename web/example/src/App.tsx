@@ -17,11 +17,13 @@ import { FacebookShareExample } from './examples/FacebookShareExample';
 import { DownloadExample } from './examples/DownloadExample';
 import { BiometricExample } from './examples/BiometricExample';
 import { BiometricEncryptedStorageExample } from './examples/BiometricEncryptedStorageExample';
+import { LifecycleExample } from './examples/LifecycleExample';
 
 export function App() {
   return (
     <>
       <ToastExample />
+      <LifecycleExample />
       <BiometricExample />
       <BiometricEncryptedStorageExample />
       <DownloadExample />
