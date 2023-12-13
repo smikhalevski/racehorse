@@ -1,4 +1,4 @@
-import { PubSub, untilTruthy } from 'parallel-universe';
+import { PubSub, waitFor } from 'parallel-universe';
 
 /**
  * The event transported through the {@link EventBridge}.
@@ -161,7 +161,7 @@ export function createEventBridge(connectionProvider = () => window.racehorseCon
 
     return (connectionPromise = conn
       ? Promise.resolve(establishConnection(conn))
-      : untilTruthy(connectionProvider, () => 2 ** tryCount++ * 100).then(establishConnection));
+      : waitFor(connectionProvider, () => 2 ** tryCount++ * 100).then(establishConnection));
   };
 
   const request = (event: Event): Event => {

@@ -16,7 +16,6 @@ android {
     defaultConfig {
         // https://apilevels.com/
         minSdk = 26
-        targetSdk = 33
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -74,16 +73,20 @@ publishing {
 }
 
 dependencies {
-    // Android
-    compileOnly("androidx.appcompat:appcompat:1.6.1")
-    compileOnly("androidx.webkit:webkit:1.7.0")
+    implementation(kotlin("reflect"))
 
     // EventBridge
     compileOnly("org.greenrobot:eventbus:3.3.1")
-    compileOnly("com.google.code.gson:gson:2.8.9")
+    compileOnly("com.google.code.gson:gson:2.10.1")
+
+    // AssetLoaderPlugin
+    compileOnly("androidx.webkit:webkit:1.9.0")
+
+    // DevicePlugin
+    compileOnly("androidx.appcompat:appcompat:1.6.1")
 
     // Google Sign-In
-    compileOnly("com.google.android.gms:play-services-auth:20.5.0")
+    compileOnly("com.google.android.gms:play-services-auth:20.7.0")
 
     // Facebook Login
     compileOnly("com.facebook.android:facebook-login:latest.release")
@@ -95,12 +98,12 @@ dependencies {
     compileOnly("com.google.android.gms:play-services-tapandpay:18.3.3")
 
     // Push notifications
-    compileOnly("com.google.firebase:firebase-messaging-ktx:23.1.2")
+    compileOnly("com.google.firebase:firebase-messaging-ktx:23.4.0")
 
     // Biometric
     compileOnly("androidx.biometric:biometric:1.2.0-alpha05")
 
-    testImplementation("com.google.code.gson:gson:2.8.9")
+    testImplementation("com.google.code.gson:gson:2.10.1")
     testImplementation("junit:junit:4.13.2")
     testImplementation("com.squareup.okhttp:mockwebserver:1.2.1")
 

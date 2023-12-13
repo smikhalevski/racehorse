@@ -1,4 +1,3 @@
-const nodeResolve = require('@rollup/plugin-node-resolve');
 const typescript = require('@rollup/plugin-typescript');
 const dts = require('rollup-plugin-dts');
 const path = require('path');
@@ -15,7 +14,7 @@ module.exports = [
       { file: './lib/index.mjs', format: 'es' },
     ],
     external,
-    plugins: [nodeResolve(), typescript({ tsconfig: '../../tsconfig.json' })],
+    plugins: [typescript({ tsconfig: '../../tsconfig.json' })],
   },
   {
     input: './src/main/index.ts',

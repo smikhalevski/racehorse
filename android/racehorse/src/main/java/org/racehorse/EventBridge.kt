@@ -13,6 +13,7 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.NoSubscriberEvent
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.SubscriberExceptionEvent
+import org.racehorse.utils.KotlinTypeAdapterFactory
 import org.racehorse.utils.NaturalJsonAdapter
 import java.io.Serializable
 import java.util.Date
@@ -159,6 +160,7 @@ open class EventBridge(
     val eventBus: EventBus = EventBus.getDefault(),
     val gson: Gson = GsonBuilder()
         .serializeNulls()
+        .registerTypeAdapterFactory(KotlinTypeAdapterFactory())
         .registerTypeAdapter(Serializable::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Iterable::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Bundle::class.java, NaturalJsonAdapter())
@@ -208,6 +210,8 @@ open class EventBridge(
         } catch (e: Throwable) {
             return getEventJson(ExceptionEvent(e))
         }
+
+        requireNotNull(event) { "Expected an event" }
 
         if (event !is ChainableEvent) {
             eventBus.post(event)

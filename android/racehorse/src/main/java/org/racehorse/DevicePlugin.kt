@@ -66,7 +66,11 @@ open class DevicePlugin(private val activity: ComponentActivity) {
     @Subscribe
     fun onGetWindowInsets(event: GetWindowInsetsEvent) {
         val density = activity.resources.displayMetrics.density
-        val insets = toWindowInsetsCompat(activity.window.decorView.rootWindowInsets).getInsets(event.typeMask)
+
+        val rootWindowInsets = activity.window.decorView.rootWindowInsets
+            ?: throw IllegalStateException("Cannot get root window insets")
+
+        val insets = toWindowInsetsCompat(rootWindowInsets).getInsets(event.typeMask)
 
         val rect = with(insets) {
             Rect(top / density, right / density, bottom / density, left / density)

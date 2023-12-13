@@ -342,7 +342,7 @@ open class GooglePayPlugin(
     /**
      * This method must be called from the [activity].
      */
-    fun dispatchResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    fun dispatchResult(requestCode: Int, @Suppress("UNUSED_PARAMETER") resultCode: Int, data: Intent?) {
         activityCallbacks.remove(requestCode)?.invoke(data)
     }
 

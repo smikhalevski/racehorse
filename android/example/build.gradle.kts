@@ -6,17 +6,21 @@ plugins {
 
 android {
     namespace = "com.example"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example"
         // https://apilevels.com/
         minSdk = 26
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     signingConfigs {
@@ -51,23 +55,25 @@ android {
 }
 
 dependencies {
-    // Android
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.webkit:webkit:1.7.0")
-
     // EventBridge
     implementation("org.greenrobot:eventbus:3.3.1")
-    implementation("com.google.code.gson:gson:2.8.9")
+    implementation("com.google.code.gson:gson:2.10.1")
+
+    // AssetLoaderPlugin
+    implementation("androidx.webkit:webkit:1.9.0")
+
+    // DevicePlugin
+    implementation("androidx.appcompat:appcompat:1.6.1")
 
     // Google Sign-In
-    implementation("com.google.android.gms:play-services-auth:20.5.0")
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
     implementation(platform("com.google.firebase:firebase-bom:32.1.0"))
 
     // Facebook Login
     implementation("com.facebook.android:facebook-login:latest.release")
 
     // Firebase
-    implementation("com.google.firebase:firebase-messaging-ktx:23.1.2")
+    implementation("com.google.firebase:firebase-messaging-ktx:23.4.0")
 
     // Biometric
     implementation("androidx.biometric:biometric:1.2.0-alpha05")

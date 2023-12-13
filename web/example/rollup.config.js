@@ -24,7 +24,7 @@ module.exports = {
       title: 'Racehorse',
     }),
     zip({
-      dir: './dist',
+      file: 'bundle.zip',
     }),
     process.env.ROLLUP_WATCH && serve('dist'),
     process.env.ROLLUP_WATCH && livereload('dist'),
