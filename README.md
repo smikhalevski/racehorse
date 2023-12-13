@@ -31,6 +31,7 @@ The bootstrapper for WebView-based Android apps.
 - [Google Sign-In](#google-sign-in-plugin)
 - [HTTPS](#https-plugin)
 - [Keyboard](#keyboard-plugin)
+- [Lifecycle](#lifecycle-plugin)
 - [Network](#network-plugin)
 - [Notifications](#notifications-plugin)
 - [Permissions](#permissions-plugin)
@@ -1007,6 +1008,48 @@ status.height;
 // ⮕ 630
 ```
 
+# Lifecycle plugin
+
+[`LifecycleManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.LifecycleManager.html) enables
+lifecycle state monitoring.
+
+1. Add Lifecycle dependency to your Android app:
+
+```kotlin
+dependencies {
+    implementation("androidx.lifecycle:lifecycle-process:2.6.2")
+}
+```
+
+2. Initialize the plugin in your Android app:
+
+```kotlin
+import org.racehorse.LifecyclePlugin
+
+val lifecyclePlugin = LifecyclePlugin()
+
+EventBus.getDefault().register(lifecyclePlugin)
+
+lifecyclePlugin.enable()
+```
+
+3. Synchronously read the lifecycle state or subscribe to its changes:
+
+```ts
+import { lifecycleManager, LifecycleState } from 'racehorse';
+
+lifecycleManager.getLifecycleState();
+// ⮕ LifecycleState.STARTED
+
+lifecycleManager.subscribe(state => {
+  // React to lifecycle state changes
+});
+
+lifecycleManager.subscribe('pause', () => {
+  // React to app being paused
+});
+```
+
 # Network plugin
 
 [`NetworkManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.NetworkManager.html) enables network
@@ -1017,10 +1060,26 @@ connection monitoring support.
 ```kotlin
 import org.racehorse.NetworkPlugin
 
-EventBus.getDefault().register(NetworkPlugin(activity))
+val networkPlugin = NetworkPlugin(activity)
+
+EventBus.getDefault().register(networkPlugin)
 ```
 
-2. Synchronously read the network connection status or subscribe to changes:
+2. Enable the plugin when the app resumes and disable it when the app pauses:
+
+```kotlin
+fun onResume() {
+    super.onResume()
+    networkPlugin.enable()
+}
+
+fun onPause() {
+    super.onPause()
+    networkPlugin.disable()
+}
+```
+
+3. Synchronously read the network connection status or subscribe to changes:
 
 ```ts
 import { networkManager } from 'racehorse';
