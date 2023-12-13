@@ -6,7 +6,8 @@ The bootstrapper for WebView-based Android apps.
 
 🚀&ensp;**Features**
 
-- [Basics](#basics)
+- [Overview](#overview)
+- [Example app](#example-app)
 - [Request-response event chains](#request-response-event-chains)
 - [Event subscriptions](#event-subscriptions)
 - [WebView events](#webview-events)
@@ -40,38 +41,23 @@ The bootstrapper for WebView-based Android apps.
 
 - [Blur preview on recent apps screen](#blur-preview-on-recent-apps-screen)
 
-# How to run the example app?
-
-1. Clone this repo:
-
-```shell
-git clone git@github.com:smikhalevski/racehorse.git
-cd racehorse
-```
-
-2. Install packages and build Racehorse:
-
-```shell
-npm install
-npm run build
-```
-
-3. Start the web server that would serve the app for the debug build:
-
-```shell
-cd web/example
-npm run watch
-```
-
-4. Open `<racehorse>/android` in Android Studio and run `example` app.
-
-# Basics
+# Overview
 
 Racehorse is the pluggable bridge that marshals events between the web app and the native Android app. To showcase how
 Racehorse works, let's create a plugin that would display
 [an Android-native toast](https://developer.android.com/guide/topics/ui/notifiers/toasts) when the web app requests it.
 
-Let's start by creating the WebView:
+Let's start by adding required Racehorse dependencies:
+
+```kotlin
+dependencies {
+    implementation("org.greenrobot:eventbus:3.3.1")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("org.racehorse:racehorse:1.4.2")
+}
+```
+
+Create the WebView:
 
 ```kotlin
 import android.webkit.WebView
@@ -161,9 +147,37 @@ doesn't restrict this process in any way. For example, if your web app is runnin
 webView.loadUrl("https://10.0.2.2:1234")
 ```
 
+# Example app
+
+The example app consists of two parts: [the web app](./web/example) and [the Android app](./android/example). To launch
+the app in the emulator follow the steps below.
+
+1. Clone this repo:
+
+```shell
+git clone git@github.com:smikhalevski/racehorse.git
+cd racehorse
+```
+
+2. Install packages and build Racehorse:
+
+```shell
+npm install
+npm run build
+```
+
+3. Start the web server that would serve the app for the debug build:
+
+```shell
+cd web/example
+npm run watch
+```
+
+4. Open `<racehorse>/android` in Android Studio and run `example` app.
+
 # Request-response event chains
 
-In the [Basics](#basics) section we used an event that extends a
+In the [Overview](#overview) section we used an event that extends a
 [`WebEvent`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-web-event/index.html) interface.
 Such events don't imply the response. To create a request-response chain at least two events are required:
 
@@ -267,7 +281,7 @@ eventBridge.subscribe('com.example.BatteryLowEvent', payload => {
 });
 ```
 
-If you have [an `EventBridge` registered](#basics) in the event bus, then you can post `BatteryLowEvent` event from
+If you have [an `EventBridge` registered](#overview) in the event bus, then you can post `BatteryLowEvent` event from
 anywhere in your Android app, and it would be delivered to a subscriber in the web app:
 
 ```kotlin
@@ -358,8 +372,17 @@ activityManager.startActivity({
 
 # Asset loader plugin
 
-Asset loader plugin requires [WebView events](#webview-events) to be enabled. It loads the static assets from a
-directory when a particular URL is requested in the WebView:
+Asset loader plugin requires [WebView events](#webview-events) to be enabled.
+
+1. Add WebKit dependency:
+
+```kotlin
+dependencies {
+    implementation("androidx.webkit:webkit:1.9.0")
+}
+```
+
+2. Load the static assets from a directory when a particular URL is requested in the WebView:
 
 ```kotlin
 import androidx.webkit.WebViewAssetLoader
@@ -426,7 +449,15 @@ deepLinkManager.subscribe(intent => {
 [`DeviceManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.DeviceManager.html) provides access
 to various device settings.
 
-1. Initialize the plugin in your Android app:
+1. Add compat library dependency, it is used for window insets acquisition:
+
+```kotlin
+dependencies {
+    implementation("androidx.appcompat:appcompat:1.6.1")
+}
+```
+
+2. Initialize the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.DevicePlugin
@@ -434,7 +465,7 @@ import org.racehorse.DevicePlugin
 EventBus.getDefault().register(DevicePlugin(activity))
 ```
 
-2. Synchronously get device info, locale, or other data:
+3. Synchronously get device info, locale, or other data:
 
 ```ts
 import { deviceManager } from 'racehorse';
@@ -545,7 +576,7 @@ await encryptedStorageManager.get('foo', PASSWORD);
 [`EvergreenManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.EvergreenManager.html) provides a
 way to update your app using an archive that is downloadable from your server.
 
-You can find an extensive demo of evergreen plugin usage [in the example app.](#how-to-run-the-example-app)
+You can find an extensive demo of evergreen plugin usage [in the example app.](#example-app)
 
 Init the plugin and start the update download process:
 

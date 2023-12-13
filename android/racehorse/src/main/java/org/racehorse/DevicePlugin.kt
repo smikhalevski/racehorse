@@ -6,7 +6,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsCompat.toWindowInsetsCompat
 import org.greenrobot.eventbus.Subscribe
 import java.io.Serializable
-import java.lang.IllegalStateException
 
 class DeviceInfo(val apiLevel: Int, val brand: String, val model: String) : Serializable
 
@@ -69,7 +68,7 @@ open class DevicePlugin(private val activity: ComponentActivity) {
         val density = activity.resources.displayMetrics.density
 
         val rootWindowInsets = activity.window.decorView.rootWindowInsets
-            ?: throw IllegalStateException("Cannot read root window insets")
+            ?: throw IllegalStateException("Cannot get root window insets")
 
         val insets = toWindowInsetsCompat(rootWindowInsets).getInsets(event.typeMask)
 
