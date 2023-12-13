@@ -14,6 +14,7 @@ import { createGooglePayManager } from './createGooglePayManager';
 import { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager';
 import { createGoogleSignInManager } from './createGoogleSignInManager';
 import { createKeyboardManager } from './createKeyboardManager';
+import { createLifecycleManager } from './createLifecycleManager';
 import { createNetworkManager } from './createNetworkManager';
 import { createNotificationsManager } from './createNotificationsManager';
 import { createPermissionsManager } from './createPermissionsManager';
@@ -34,6 +35,7 @@ export * from './createGooglePlayReferrerManager';
 export * from './createGoogleSignInManager';
 export * from './createActivityManager';
 export * from './createKeyboardManager';
+export * from './createLifecycleManager';
 export * from './createNetworkManager';
 export * from './createNotificationsManager';
 export * from './createPermissionsManager';
@@ -69,6 +71,8 @@ export const googlePlayReferrerManager = createGooglePlayReferrerManager(eventBr
 export const googleSignInManager = createGoogleSignInManager(eventBridge);
 
 export const keyboardManager = createKeyboardManager(eventBridge);
+
+export const lifecycleManager = createLifecycleManager(eventBridge);
 
 export const networkManager = createNetworkManager(eventBridge);
 

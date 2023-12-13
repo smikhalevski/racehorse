@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity() {
     private val webView by lazy { WebView(this) }
     private val eventBus = EventBus.getDefault()
     private val networkPlugin = NetworkPlugin(this)
+    private val lifecyclePlugin = LifecyclePlugin()
     private val cookieManager = CookieManager.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,7 +67,10 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(FacebookSharePlugin(this))
         eventBus.register(BiometricPlugin(this))
         eventBus.register(BiometricEncryptedStoragePlugin(this, File(filesDir, "biometric_storage")))
+        eventBus.register(lifecyclePlugin)
         eventBus.register(ToastPlugin(this))
+
+        lifecyclePlugin.enable()
 
         @Suppress("DEPRECATION")
         FacebookSdk.sdkInitialize(this)
