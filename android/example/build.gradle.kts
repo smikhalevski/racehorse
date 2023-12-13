@@ -59,6 +59,9 @@ dependencies {
     implementation("org.greenrobot:eventbus:3.3.1")
     implementation("com.google.code.gson:gson:2.10.1")
 
+    // LifecyclePlugin
+    implementation("androidx.lifecycle:lifecycle-process:2.6.2")
+
     // AssetLoaderPlugin
     implementation("androidx.webkit:webkit:1.9.0")
 
