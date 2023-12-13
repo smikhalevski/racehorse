@@ -61,6 +61,7 @@
   </div>
   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webView<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/webkit/WebView.html">WebView</a><span class="token punctuation">, </span></span><span class="parameter ">eventBus<span class="token operator">: </span><span data-unresolved-link="org.greenrobot.eventbus/EventBus///PointingToDeclaration/">EventBus</span><span class="token operator"> = </span>EventBus.getDefault()<span class="token punctuation">, </span></span><span class="parameter ">gson<span class="token operator">: </span><span data-unresolved-link="com.google.gson/Gson///PointingToDeclaration/">Gson</span><span class="token operator"> = </span>GsonBuilder()
         .serializeNulls()
+        .registerTypeAdapterFactory(KotlinTypeAdapterFactory())
         .registerTypeAdapter(Serializable::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Iterable::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Bundle::class.java, NaturalJsonAdapter())
