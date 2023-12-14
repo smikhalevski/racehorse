@@ -19,26 +19,59 @@ import { createNetworkManager } from './createNetworkManager';
 import { createNotificationsManager } from './createNotificationsManager';
 import { createPermissionsManager } from './createPermissionsManager';
 
-export * from './createBiometricEncryptedStorageManager';
-export * from './createBiometricManager';
-export * from './createDeepLinkManager';
-export * from './createDeviceManager';
-export * from './createDownloadManager';
-export * from './createEncryptedStorageManager';
-export * from './createEventBridge';
-export * from './createEvergreenManager';
-export * from './createFacebookLoginManager';
-export * from './createFacebookShareManager';
-export * from './createFirebaseManager';
-export * from './createGooglePayManager';
-export * from './createGooglePlayReferrerManager';
-export * from './createGoogleSignInManager';
-export * from './createActivityManager';
-export * from './createKeyboardManager';
-export * from './createLifecycleManager';
-export * from './createNetworkManager';
-export * from './createNotificationsManager';
-export * from './createPermissionsManager';
+export { createBiometricEncryptedStorageManager } from './createBiometricEncryptedStorageManager';
+export { createBiometricManager, BiometricStatus, BiometricAuthenticator } from './createBiometricManager';
+export { createDeepLinkManager } from './createDeepLinkManager';
+export { createDeviceManager, InsetType } from './createDeviceManager';
+export { createDownloadManager, DownloadStatus, DownloadReason } from './createDownloadManager';
+export { createEncryptedStorageManager } from './createEncryptedStorageManager';
+export { createEventBridge } from './createEventBridge';
+export { createEvergreenManager } from './createEvergreenManager';
+export { createFacebookLoginManager } from './createFacebookLoginManager';
+export { createFacebookShareManager } from './createFacebookShareManager';
+export { createFirebaseManager } from './createFirebaseManager';
+export {
+  createGooglePayManager,
+  GooglePayTokenState,
+  GooglePayTokenServiceProvider,
+  GooglePayCardNetwork,
+} from './createGooglePayManager';
+export { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager';
+export { createGoogleSignInManager } from './createGoogleSignInManager';
+export { createActivityManager, Intent, Activity } from './createActivityManager';
+export { createKeyboardManager } from './createKeyboardManager';
+export { createLifecycleManager, LifecycleState } from './createLifecycleManager';
+export { createNetworkManager } from './createNetworkManager';
+export { createNotificationsManager } from './createNotificationsManager';
+export { createPermissionsManager } from './createPermissionsManager';
+
+export type { BiometricEncryptedStorageManager, BiometricConfig } from './createBiometricEncryptedStorageManager';
+export type { BiometricManager } from './createBiometricManager';
+export type { DeepLinkManager } from './createDeepLinkManager';
+export type { DeviceManager, DeviceInfo, Rect } from './createDeviceManager';
+export type { DownloadManager, DownloadOptions, Download } from './createDownloadManager';
+export type { EncryptedStorageManager } from './createEncryptedStorageManager';
+export type { EventBridge, Event, Connection } from './createEventBridge';
+export type { EvergreenManager, UpdateStatus, UpdateMode } from './createEvergreenManager';
+export type { FacebookLoginManager, FacebookAccessToken } from './createFacebookLoginManager';
+export type { FacebookShareManager, FacebookShareLinkContent } from './createFacebookShareManager';
+export type { FirebaseManager } from './createFirebaseManager';
+export type {
+  GooglePayUserAddress,
+  GooglePayTokenStatus,
+  GooglePayTokenizeRequest,
+  GooglePayPushTokenizeRequest,
+  GooglePayTokenInfo,
+  GooglePayManager,
+} from './createGooglePayManager';
+export type { GooglePlayReferrerManager } from './createGooglePlayReferrerManager';
+export type { GoogleSignInManager, GoogleSignInAccount } from './createGoogleSignInManager';
+export type { ActivityManager, ActivityResult, ActivityInfo } from './createActivityManager';
+export type { KeyboardManager, KeyboardStatus } from './createKeyboardManager';
+export type { LifecycleManager } from './createLifecycleManager';
+export type { NetworkManager, NetworkType, NetworkStatus } from './createNetworkManager';
+export type { NotificationsManager } from './createNotificationsManager';
+export type { PermissionsManager } from './createPermissionsManager';
 
 export const eventBridge = createEventBridge();
 
