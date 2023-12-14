@@ -5,6 +5,6 @@
     "paths": {}
   },
   "include": [
-    "./lib/**/*"
+    "./src/main/**/*"
   ]
 }
