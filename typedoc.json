@@ -11,7 +11,7 @@
   "disableSources": true,
   "hideGenerator": true,
   "readme": "none",
-  "tsconfig": "./tsconfig.build.json",
+  "tsconfig": "./tsconfig.json",
   "customCss": "./node_modules/typedoc-custom-css/custom.css",
   "sidebarLinks": {
     "Racehorse Android API": "/racehorse/android/index.html"
