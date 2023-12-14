@@ -1,5 +1,4 @@
 const typescript = require('@rollup/plugin-typescript');
-const dts = require('rollup-plugin-dts');
 const path = require('path');
 
 const pkg = require(path.resolve('package.json'));
@@ -8,18 +7,12 @@ const external = Object.keys(Object.assign({}, pkg.dependencies, pkg.peerDepende
 
 module.exports = [
   {
-    input: './src/main/index.ts',
+    input: './lib/index.ts',
     output: [
-      { file: './lib/index.js', format: 'cjs' },
-      { file: './lib/index.mjs', format: 'es' },
+      { format: 'cjs', entryFileNames: '[name].js', dir: './lib', preserveModules: true, sourcemap: 'inline' },
+      { format: 'es', entryFileNames: '[name].mjs', dir: './lib', preserveModules: true, sourcemap: 'inline' },
     ],
     external,
-    plugins: [typescript({ tsconfig: '../../tsconfig.json' })],
-  },
-  {
-    input: './src/main/index.ts',
-    output: { file: './lib/index.d.ts', format: 'es' },
-    external,
-    plugins: [dts.default()],
+    plugins: [typescript({ tsconfig: './tsconfig.build.json' })],
   },
 ];
