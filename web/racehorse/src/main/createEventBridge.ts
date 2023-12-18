@@ -98,12 +98,12 @@ export interface EventBridge {
    *
    * The connection is automatically established when this method is called.
    *
-   * @param type The type of event to subscribe to.
+   * @param eventType The type of event to subscribe to.
    * @param listener The listener to subscribe.
    * @returns The callback that unsubscribes the listener.
    */
   subscribe(
-    type: string,
+    eventType: string,
     /**
      * @param payload The event payload.
      */
@@ -113,9 +113,9 @@ export interface EventBridge {
   /**
    * Returns `true` if an event of the given type is supported, or `false` otherwise.
    *
-   * @param type The type of event to check.
+   * @param eventType The type of event to check.
    */
-  isSupported(type: string): boolean;
+  isSupported(eventType: string): boolean;
 }
 
 declare global {
