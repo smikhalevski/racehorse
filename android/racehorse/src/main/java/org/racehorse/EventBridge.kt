@@ -276,8 +276,11 @@ open class EventBridge(
         event.respond(
             IsSupportedEvent.ResultEvent(
                 try {
-                    val type = Class.forName(event.eventType)
-                    WebEvent::class.java.isAssignableFrom(type) || NoticeEvent::class.java.isAssignableFrom(type)
+                    val eventClass = Class.forName(event.eventType)
+
+                    eventBus.hasSubscriberForEvent(eventClass) &&
+                        (WebEvent::class.java.isAssignableFrom(eventClass) ||
+                            NoticeEvent::class.java.isAssignableFrom(eventClass))
                 } catch (_: Throwable) {
                     false
                 }
