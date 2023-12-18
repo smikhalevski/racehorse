@@ -232,12 +232,12 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
         }
 
         if (Build.VERSION.SDK_INT >= 29) {
-            event.tryRespond { AddDownloadEvent.ResultEvent(downloadManager.enqueue(request)) }
+            event.respond { AddDownloadEvent.ResultEvent(downloadManager.enqueue(request)) }
             return
         }
 
         activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) { granted ->
-            event.tryRespond {
+            event.respond {
                 check(granted) { "Permission required" }
 
                 AddDownloadEvent.ResultEvent(downloadManager.enqueue(request))
@@ -280,7 +280,7 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
                     cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Downloads.DISPLAY_NAME))
                 }
 
-            event.tryRespond {
+            event.respond {
                 // Android 29 emulator throws java.lang.SecurityException: Unsupported path /storage/emulated/0/Download
                 AddDownloadEvent.ResultEvent(addCompletedDownload(File(saveToDir, displayName), mimeType))
             }
@@ -289,7 +289,7 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
 
         // Create a new file manually
         activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) { granted ->
-            event.tryRespond {
+            event.respond {
                 check(granted) { "Permission required" }
 
                 val file = File(saveToDir, fileName).let {
