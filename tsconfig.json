@@ -3,7 +3,7 @@
     "declaration": true,
     "moduleResolution": "Node",
     "esModuleInterop": true,
-    "resolveJsonModule": true,
+    "isolatedModules": true,
     "strict": true,
     "target": "ES5",
     "module": "ESNext",
@@ -22,7 +22,7 @@
     }
   },
   "include": [
-    "./web/*/src/main/**/*"
+    "./web/*/src/**/*"
   ],
   "exclude": [
     "./web/example/**/*"
