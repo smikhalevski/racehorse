@@ -94,19 +94,21 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
         val baseCipher = getCipher()
         try {
             baseCipher.init(Cipher.ENCRYPT_MODE, getOrCreateSecretKey(event.key))
-        } catch (e: KeyPermanentlyInvalidatedException) {
+        } catch (_: KeyPermanentlyInvalidatedException) {
             // Recreate a secret key
             deleteSecretKey(event.key)
             baseCipher.init(Cipher.ENCRYPT_MODE, getOrCreateSecretKey(event.key))
         }
 
         authenticate(event.config, baseCipher) { cryptoObject ->
-            val cipher = cryptoObject?.cipher
+            event.respond {
+                val cipher = cryptoObject?.cipher
 
-            val result =
-                cipher != null && encryptedStorage.set(cipher, event.key, event.value.toByteArray(Charsets.UTF_8))
+                val result =
+                    cipher != null && encryptedStorage.set(cipher, event.key, event.value.toByteArray(Charsets.UTF_8))
 
-            event.respond(SetBiometricEncryptedValueEvent.ResultEvent(result))
+                SetBiometricEncryptedValueEvent.ResultEvent(result)
+            }
         }
     }
 
@@ -118,7 +120,7 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
         val baseCipher = getCipher()
         try {
             baseCipher.init(Cipher.DECRYPT_MODE, getOrCreateSecretKey(event.key), IvParameterSpec(iv))
-        } catch (e: KeyPermanentlyInvalidatedException) {
+        } catch (_: KeyPermanentlyInvalidatedException) {
             // The value cannot ever be decrypted
             encryptedStorage.delete(event.key)
             deleteSecretKey(event.key)
@@ -127,11 +129,13 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
         }
 
         authenticate(event.config, baseCipher) { cryptoObject ->
-            val cipher = cryptoObject?.cipher
+            event.respond {
+                val cipher = cryptoObject?.cipher
 
-            val value = cipher?.let { encryptedStorage.decrypt(cipher, encryptedBytes)?.toString(Charsets.UTF_8) }
+                val value = cipher?.let { encryptedStorage.decrypt(cipher, encryptedBytes)?.toString(Charsets.UTF_8) }
 
-            event.respond(GetEncryptedValueEvent.ResultEvent(value))
+                GetEncryptedValueEvent.ResultEvent(value)
+            }
         }
     }
 
@@ -142,12 +146,14 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
 
     @Subscribe
     open fun onDeleteBiometricEncryptedValue(event: DeleteBiometricEncryptedValueEvent) {
-        event.respond(DeleteBiometricEncryptedValueEvent.ResultEvent(
-            if (encryptedStorage.delete(event.key)) {
-                deleteSecretKey(event.key)
-                true
-            } else false
-        ))
+        event.respond(
+            DeleteBiometricEncryptedValueEvent.ResultEvent(
+                if (encryptedStorage.delete(event.key)) {
+                    deleteSecretKey(event.key)
+                    true
+                } else false
+            )
+        )
     }
 
     protected open fun authenticate(
