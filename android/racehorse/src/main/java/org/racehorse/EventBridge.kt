@@ -183,9 +183,9 @@ open class EventBridge(
     open fun disable() = webView.removeJavascriptInterface(connectionKey)
 
     @JavascriptInterface
-    open fun post(requestJson: String): String {
+    open fun post(eventJson: String): String {
         val event = try {
-            gson.fromJson(requestJson, JsonObject::class.java).run {
+            gson.fromJson(eventJson, JsonObject::class.java).run {
                 gson.fromJson(get(PAYLOAD_KEY) ?: JsonObject(), getEventClass(get(TYPE_KEY).asString))
             }
         } catch (e: Throwable) {
@@ -220,7 +220,7 @@ open class EventBridge(
     open fun onResponse(event: ResponseEvent) {
         if (event.requestId == ORPHAN_REQUEST_ID) {
             // The response event isn't related to any request event
-            Log.i(TAG, "Orphan response ${event::class.java.name}")
+            Log.w(TAG, "Orphan response ${event::class.java.name}")
             return
         }
         if (syncRequestId == event.requestId) {

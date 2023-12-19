@@ -76,6 +76,8 @@ instance that would be responsible for event marshalling:
 import org.racehorse.EventBridge
 
 val eventBridge = EventBridge(webView)
+
+eventBridge.enable()
 ```
 
 Racehorse uses a [Greenrobot EventBus](https://greenrobot.org/eventbus) to deliver events to subscribers, so bridge must
