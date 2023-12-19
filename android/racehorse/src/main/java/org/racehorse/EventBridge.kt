@@ -161,7 +161,7 @@ open class EventBridge(
     /**
      * The cache of loaded event classes.
      */
-    private val eventClasses = HashMap<String, Class<*>>()
+    private val eventClassCache = HashMap<String, Class<*>>()
 
     /**
      * The ID that would be assigned to the next request.
@@ -185,16 +185,14 @@ open class EventBridge(
     @JavascriptInterface
     open fun post(eventJson: String): String {
         val event = try {
-            gson.fromJson(eventJson, JsonObject::class.java).run {
-                gson.fromJson(get(PAYLOAD_KEY) ?: JsonObject(), getEventClass(get(TYPE_KEY).asString))
-            }
+            parseEvent(eventJson)
         } catch (e: Throwable) {
-            return getEventJson(ExceptionEvent(e))
+            return serializeEvent(ExceptionEvent(IllegalArgumentException("Illegal event: $eventJson", e)))
         }
 
         if (event !is ChainableEvent) {
             eventBus.post(event)
-            return getEventJson(VoidEvent())
+            return serializeEvent(VoidEvent())
         }
 
         return synchronized(this) {
@@ -206,9 +204,9 @@ open class EventBridge(
 
             try {
                 eventBus.post(event)
-                syncResponseEvent?.let(::getEventJson) ?: event.requestId.toString()
+                syncResponseEvent?.let(::serializeEvent) ?: event.requestId.toString()
             } catch (e: Throwable) {
-                getEventJson(ExceptionEvent(e))
+                serializeEvent(ExceptionEvent(e))
             } finally {
                 syncRequestId = ORPHAN_REQUEST_ID
                 syncResponseEvent = null
@@ -220,7 +218,7 @@ open class EventBridge(
     open fun onResponse(event: ResponseEvent) {
         if (event.requestId == ORPHAN_REQUEST_ID) {
             // The response event isn't related to any request event
-            Log.w(TAG, "Orphan response ${event::class.java.name}")
+            Log.w(TAG, "Received an orphan response event ${event::class.java.name}")
             return
         }
         if (syncRequestId == event.requestId) {
@@ -268,24 +266,34 @@ open class EventBridge(
         )
     }
 
-    /**
-     * Returns the class associated with the event type.
-     */
-    private fun getEventClass(eventType: String) = eventClasses.getOrPut(eventType) {
-        Class.forName(eventType).also {
-            require(WebEvent::class.java.isAssignableFrom(it)) { "Not an event: $eventType" }
+    protected fun parseEvent(eventJson: String): Any {
+        val jsonObject = gson.fromJson(eventJson, JsonObject::class.java)
+
+        val eventType = (jsonObject.get(TYPE_KEY) as? JsonPrimitive)?.asString
+            ?: throw IllegalArgumentException("Illegal event type")
+
+        val eventClass = eventClassCache.getOrPut(eventType) {
+            try {
+                Class.forName(eventType).also {
+                    require(WebEvent::class.java.isAssignableFrom(it)) { "Unrecognized event type" }
+                }
+            } catch (_: ClassNotFoundException) {
+                throw IllegalArgumentException("Unrecognized event type")
+            }
         }
+
+        return gson.fromJson(jsonObject.get(PAYLOAD_KEY) ?: JsonObject(), eventClass)
     }
 
-    private fun getEventJson(event: Any) = gson.toJson(JsonObject().apply {
+    protected fun serializeEvent(event: Any) = gson.toJson(JsonObject().apply {
         add(TYPE_KEY, JsonPrimitive(event::class.java.name))
         add(PAYLOAD_KEY, gson.toJsonTree(event))
     })
 
-    private fun publishEvent(requestId: Int, event: Any) = handler.post {
+    protected fun publishEvent(requestId: Int, event: Any) = handler.post {
         webView.evaluateJavascript(
             "(function(conn){" +
-                "conn && conn.inbox && conn.inbox.publish([$requestId, ${getEventJson(event)}])" +
+                "conn && conn.inbox && conn.inbox.publish([$requestId, ${serializeEvent(event)}])" +
                 "})(window.$connectionKey)",
             null
         )
