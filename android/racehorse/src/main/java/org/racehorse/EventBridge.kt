@@ -129,7 +129,7 @@ class IsSupportedEvent(val eventType: String) : RequestEvent() {
  * @param webView The [WebView] to which the event bridge will add the connection Javascript interface.
  * @param eventBus The event bus to which events are posted.
  * @param gson The [Gson] instance that is used for event serialization.
- * @param handler The handler that is used to communicate with the [webView].
+ * @param handler The [Handler] that is used to communicate with the [webView].
  * @param connectionKey The key of the `window` that exposes the connection Javascript interface.
  */
 open class EventBridge(
@@ -158,10 +158,6 @@ open class EventBridge(
         private const val TAG = "EventBridge"
     }
 
-    init {
-        webView.addJavascriptInterface(this, connectionKey)
-    }
-
     /**
      * The cache of loaded event classes.
      */
@@ -181,6 +177,10 @@ open class EventBridge(
      * The response event for the currently pending synchronous request.
      */
     private var syncResponseEvent: ResponseEvent? = null
+
+    open fun enable() = webView.addJavascriptInterface(this, connectionKey)
+
+    open fun disable() = webView.removeJavascriptInterface(connectionKey)
 
     @JavascriptInterface
     open fun post(requestJson: String): String {
