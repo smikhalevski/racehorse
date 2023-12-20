@@ -3,6 +3,7 @@ package org.racehorse
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import com.google.gson.Gson
@@ -37,55 +38,43 @@ open class ChainableEvent {
 
     /**
      * The event bus to which responses to this event are posted, or `null` if origin wasn't set for this event.
+     *
+     * Don't set this manually unless you really have to. This field is always populated during [respond] method call.
      */
     @Transient
     var eventBus: EventBus? = null
-        private set
 
     /**
      * The request ID that links request that originated from the web view with the response.
+     *
+     * Don't set this manually unless you really have to. This field is always populated during [respond] method call.
      */
     @Transient
-    var requestId: Int = -1
-        private set
+    var requestId = EventBridge.ORPHAN_REQUEST_ID
 
     /**
-     * Sets the origin for this event to which consequent events in chain are posted.
-     */
-    fun setOrigin(eventBus: EventBus, requestId: Int): ChainableEvent {
-        this.eventBus = eventBus
-        this.requestId = requestId
-        return this
-    }
-
-    /**
-     * Executes a block and posts the returned event to the chain in the same event bus to which this event was
+     * Executes a block and posts the returned event to the chain using the same event bus to which this event was
      * originally posted.
      *
      * If an exception is thrown in the block, then an [ExceptionEvent] is used as a response.
      */
-    fun respond(block: () -> ChainableEvent) {
-        val eventBus = checkNotNull(eventBus) { "Event has no origin" }
-
-        eventBus.post(ExceptionEvent.unless(block).setOrigin(eventBus, requestId))
-    }
+    fun respond(block: () -> ChainableEvent) = respond(
+        try {
+            block()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            ExceptionEvent(e)
+        }
+    )
 
     /**
      * Posts an [event] to the chain in the same event bus to which this event was originally posted.
      */
-    fun respond(event: ChainableEvent) = respond { event }
+    fun respond(event: ChainableEvent) {
+        event.eventBus = eventBus
+        event.requestId = requestId
 
-    /**
-     * Always executes a block and then posts the returned event to the chain only if this event has an origin.
-     *
-     * If an exception is thrown in the block, then an [ExceptionEvent] is used as a response.
-     */
-    fun tryRespond(block: () -> ChainableEvent) {
-        val event = ExceptionEvent.unless(block)
-
-        if (requestId != -1) {
-            respond(event)
-        }
+        eventBus?.post(event)
     }
 }
 
@@ -110,19 +99,6 @@ class VoidEvent : ResponseEvent()
  * Response that describes an occurred exception.
  */
 class ExceptionEvent(@Transient val cause: Throwable) : ResponseEvent() {
-
-    companion object {
-        /**
-         * Returns an event from the block, or an [ExceptionEvent] if an error is thrown.
-         */
-        fun unless(block: () -> ChainableEvent): ChainableEvent = try {
-            block()
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            ExceptionEvent(e)
-        }
-    }
-
     /**
      * The class name of the [Throwable] that caused the event.
      */
@@ -140,7 +116,8 @@ class ExceptionEvent(@Transient val cause: Throwable) : ResponseEvent() {
 }
 
 /**
- * Checks that there's a class that implements [WebEvent] or [NoticeEvent].
+ * Checks that there's a class that implements [WebEvent] or [NoticeEvent], and there's a registered subscriber that
+ * handled the event of this class.
  */
 class IsSupportedEvent(val eventType: String) : RequestEvent() {
     class ResultEvent(val isSupported: Boolean) : ResponseEvent()
@@ -152,7 +129,7 @@ class IsSupportedEvent(val eventType: String) : RequestEvent() {
  * @param webView The [WebView] to which the event bridge will add the connection Javascript interface.
  * @param eventBus The event bus to which events are posted.
  * @param gson The [Gson] instance that is used for event serialization.
- * @param handler The handler that is used to communicate with the [webView].
+ * @param handler The [Handler] that is used to communicate with the [webView].
  * @param connectionKey The key of the `window` that exposes the connection Javascript interface.
  */
 open class EventBridge(
@@ -175,16 +152,16 @@ open class EventBridge(
     companion object {
         const val TYPE_KEY = "type"
         const val PAYLOAD_KEY = "payload"
-    }
+        const val ORPHAN_REQUEST_ID = -1
+        const val NOTICE_REQUEST_ID = -2
 
-    init {
-        webView.addJavascriptInterface(this, connectionKey)
+        private const val TAG = "EventBridge"
     }
 
     /**
      * The cache of loaded event classes.
      */
-    private val eventClasses = HashMap<String, Class<*>>()
+    private val eventClassCache = HashMap<String, Class<*>>()
 
     /**
      * The ID that would be assigned to the next request.
@@ -192,45 +169,46 @@ open class EventBridge(
     private var nextRequestId = 0
 
     /**
-     * The ID of the currently pending synchronous request, or -1 if there's no pending synchronous request.
+     * The ID of the currently pending synchronous request, or [ORPHAN_REQUEST_ID] if there's no pending sync request.
      */
-    private var syncRequestId = -1
+    private var syncRequestId = ORPHAN_REQUEST_ID
 
     /**
      * The response event for the currently pending synchronous request.
      */
     private var syncResponseEvent: ResponseEvent? = null
 
-    @JavascriptInterface
-    open fun post(requestJson: String): String {
-        val event = try {
-            gson.fromJson(requestJson, JsonObject::class.java).run {
-                gson.fromJson(get(PAYLOAD_KEY) ?: JsonObject(), getEventClass(get(TYPE_KEY).asString))
-            }
-        } catch (e: Throwable) {
-            return getEventJson(ExceptionEvent(e))
-        }
+    open fun enable() = webView.addJavascriptInterface(this, connectionKey)
 
-        requireNotNull(event) { "Expected an event" }
+    open fun disable() = webView.removeJavascriptInterface(connectionKey)
+
+    @JavascriptInterface
+    open fun post(eventJson: String): String {
+        val event = try {
+            parseEvent(eventJson)
+        } catch (e: Throwable) {
+            return serializeEvent(ExceptionEvent(IllegalArgumentException("Illegal event: $eventJson", e)))
+        }
 
         if (event !is ChainableEvent) {
             eventBus.post(event)
-            return getEventJson(VoidEvent())
+            return serializeEvent(VoidEvent())
         }
 
         return synchronized(this) {
-            event.setOrigin(eventBus, nextRequestId++)
+            event.eventBus = eventBus
+            event.requestId = nextRequestId++
 
             syncRequestId = event.requestId
             syncResponseEvent = null
 
             try {
                 eventBus.post(event)
-                syncResponseEvent?.let(::getEventJson) ?: event.requestId.toString()
+                syncResponseEvent?.let(::serializeEvent) ?: event.requestId.toString()
             } catch (e: Throwable) {
-                getEventJson(ExceptionEvent(e))
+                serializeEvent(ExceptionEvent(e))
             } finally {
-                syncRequestId = -1
+                syncRequestId = ORPHAN_REQUEST_ID
                 syncResponseEvent = null
             }
         }
@@ -238,8 +216,11 @@ open class EventBridge(
 
     @Subscribe
     open fun onResponse(event: ResponseEvent) {
-        require(event.requestId != -1) { "The response event isn't related to any request event" }
-
+        if (event.requestId == ORPHAN_REQUEST_ID) {
+            // The response event isn't related to any request event
+            Log.w(TAG, "Received an orphan response event ${event::class.java.name}")
+            return
+        }
         if (syncRequestId == event.requestId) {
             // Synchronously return the response event
             syncResponseEvent = event
@@ -250,7 +231,7 @@ open class EventBridge(
 
     @Subscribe
     open fun onNotice(event: NoticeEvent) {
-        publishEvent(-2, event)
+        publishEvent(NOTICE_REQUEST_ID, event)
     }
 
     @Subscribe
@@ -263,12 +244,9 @@ open class EventBridge(
 
     @Subscribe
     open fun onSubscriberException(event: SubscriberExceptionEvent) {
-        when (val causingEvent = event.causingEvent) {
+        event.throwable.printStackTrace()
 
-            is ExceptionEvent -> causingEvent.cause.printStackTrace()
-
-            is RequestEvent -> causingEvent.respond(ExceptionEvent(event.throwable))
-        }
+        (event.causingEvent as? ChainableEvent)?.respond(ExceptionEvent(event.throwable))
     }
 
     @Subscribe
@@ -288,24 +266,34 @@ open class EventBridge(
         )
     }
 
-    /**
-     * Returns the class associated with the event type.
-     */
-    private fun getEventClass(eventType: String) = eventClasses.getOrPut(eventType) {
-        Class.forName(eventType).also {
-            require(WebEvent::class.java.isAssignableFrom(it)) { "Not an event: $eventType" }
+    protected fun parseEvent(eventJson: String): Any {
+        val jsonObject = gson.fromJson(eventJson, JsonObject::class.java)
+
+        val eventType = (jsonObject.get(TYPE_KEY) as? JsonPrimitive)?.asString
+            ?: throw IllegalArgumentException("Illegal event type")
+
+        val eventClass = eventClassCache.getOrPut(eventType) {
+            try {
+                Class.forName(eventType).also {
+                    require(WebEvent::class.java.isAssignableFrom(it)) { "Unrecognized event type" }
+                }
+            } catch (_: ClassNotFoundException) {
+                throw IllegalArgumentException("Unrecognized event type")
+            }
         }
+
+        return gson.fromJson(jsonObject.get(PAYLOAD_KEY) ?: JsonObject(), eventClass)
     }
 
-    private fun getEventJson(event: Any) = gson.toJson(JsonObject().apply {
+    protected fun serializeEvent(event: Any) = gson.toJson(JsonObject().apply {
         add(TYPE_KEY, JsonPrimitive(event::class.java.name))
         add(PAYLOAD_KEY, gson.toJsonTree(event))
     })
 
-    private fun publishEvent(requestId: Int, event: Any) = handler.post {
+    protected fun publishEvent(requestId: Int, event: Any) = handler.post {
         webView.evaluateJavascript(
             "(function(conn){" +
-                "conn && conn.inbox && conn.inbox.publish([$requestId, ${getEventJson(event)}])" +
+                "conn && conn.inbox && conn.inbox.publish([$requestId, ${serializeEvent(event)}])" +
                 "})(window.$connectionKey)",
             null
         )

@@ -27,7 +27,6 @@ class MainActivity : AppCompatActivity() {
     private val webView by lazy { WebView(this) }
     private val eventBus = EventBus.getDefault()
     private val networkPlugin = NetworkPlugin(this)
-    private val lifecyclePlugin = LifecyclePlugin()
     private val cookieManager = CookieManager.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         cookieManager.setAcceptCookie(true)
         cookieManager.setAcceptThirdPartyCookies(webView, true)
 
-        eventBus.register(EventBridge(webView))
+        eventBus.register(EventBridge(webView).apply { enable() })
         eventBus.register(DevicePlugin(this))
         eventBus.register(EncryptedStoragePlugin(File(filesDir, "storage"), BuildConfig.APPLICATION_ID.toByteArray()))
         eventBus.register(FileChooserPlugin(this, externalCacheDir, "${BuildConfig.APPLICATION_ID}.provider"))
@@ -67,15 +66,13 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(FacebookSharePlugin(this))
         eventBus.register(BiometricPlugin(this))
         eventBus.register(BiometricEncryptedStoragePlugin(this, File(filesDir, "biometric_storage")))
-        eventBus.register(lifecyclePlugin)
+        eventBus.register(LifecyclePlugin().apply { enable() })
         eventBus.register(ToastPlugin(this))
-
-        lifecyclePlugin.enable()
 
         @Suppress("DEPRECATION")
         FacebookSdk.sdkInitialize(this)
 
-        // Run `npm run watch` in `<racehorse>/web/example` to build the web app and start the server.
+        // 🟡 Run `npm run watch` in `<racehorse>/web/example` to build the web app and start the server.
 
         if (BuildConfig.DEBUG) {
             // 1️⃣ Live reload
@@ -88,8 +85,8 @@ class MainActivity : AppCompatActivity() {
         } else {
             // 2️⃣ Evergreen
             //
-            // An update bundle `web/example/dist/bundle.zip` is downloaded using the `EvergreenPlugin` and served from
-            // the internal app cache.
+            // An update bundle `<racehorse>/web/example/dist/bundle.zip` is downloaded using the `EvergreenPlugin` and
+            // served from the internal app cache.
             //
             // If the bundle is downloaded via a non-secure request, then add `android:usesCleartextTraffic="true"`
             // attribute to `AndroidManifest.xml/manifest/application`. `BundleReadyEvent` is emitted after bundle is
@@ -100,9 +97,10 @@ class MainActivity : AppCompatActivity() {
             eventBus.register(this)
             eventBus.register(evergreenPlugin)
 
+            // Download the bundle in the background thread.
             Thread {
-                // The update bundle is downloaded if there's no bundle available, or if provided version differs from
-                // the version of previously downloaded bundle.
+                // The update bundle is downloaded if there's no bundle available, or if the provided version differs
+                // from the version of previously downloaded bundle.
                 evergreenPlugin.start("0.0.0", UpdateMode.MANDATORY) {
                     URL("http://10.0.2.2:10001/bundle.zip").openConnection()
                 }
