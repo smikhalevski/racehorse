@@ -46,6 +46,7 @@ export { createNotificationsManager } from './createNotificationsManager';
 export { createPermissionsManager } from './createPermissionsManager';
 export { createScheduler } from './createScheduler';
 
+export type { ActivityManager, ActivityResult, ActivityInfo } from './createActivityManager';
 export type { BiometricEncryptedStorageManager, BiometricConfig } from './createBiometricEncryptedStorageManager';
 export type { BiometricManager } from './createBiometricManager';
 export type { DeepLinkManager } from './createDeepLinkManager';
@@ -68,7 +69,6 @@ export type {
 export type { GooglePlayReferrerManager } from './createGooglePlayReferrerManager';
 export type { GoogleSignInManager, GoogleSignInAccount } from './createGoogleSignInManager';
 export type { Joiner } from './createJoiner';
-export type { ActivityManager, ActivityResult, ActivityInfo } from './createActivityManager';
 export type { KeyboardManager, KeyboardStatus } from './createKeyboardManager';
 export type { NetworkManager, NetworkType, NetworkStatus } from './createNetworkManager';
 export type { NotificationsManager } from './createNotificationsManager';

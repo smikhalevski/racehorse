@@ -311,7 +311,7 @@ open class GooglePayPlugin(
     )
 
     @Subscribe
-    fun onGooglePayRequestSelectTokenEvent(event: GooglePayRequestSelectTokenEvent) = runOperationInForeground(
+    fun onGooglePayRequestSelectToken(event: GooglePayRequestSelectTokenEvent) = runOperationInForeground(
         { requestCode ->
             tapAndPayClient.requestSelectToken(
                 activity,
@@ -324,7 +324,7 @@ open class GooglePayPlugin(
     )
 
     @Subscribe
-    fun onGooglePayRequestDeleteTokenEvent(event: GooglePayRequestDeleteTokenEvent) = runOperationInForeground(
+    fun onGooglePayRequestDeleteToken(event: GooglePayRequestDeleteTokenEvent) = runOperationInForeground(
         { requestCode ->
             tapAndPayClient.requestDeleteToken(
                 activity,
@@ -337,7 +337,7 @@ open class GooglePayPlugin(
     )
 
     @Subscribe
-    fun onGooglePayCreateWalletEvent(event: GooglePayCreateWalletEvent) = runOperationInForeground(
+    fun onGooglePayCreateWallet(event: GooglePayCreateWalletEvent) = runOperationInForeground(
         { requestCode -> tapAndPayClient.createWallet(activity, requestCode) },
         { event.respond(VoidEvent()) }
     )
