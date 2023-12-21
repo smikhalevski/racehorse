@@ -10,11 +10,11 @@ export interface GooglePlayReferrerManager {
  * @param eventBridge The underlying event bridge.
  */
 export function createGooglePlayReferrerManager(eventBridge: EventBridge): GooglePlayReferrerManager {
-  let referrerPromise: Promise<string> | undefined;
+  let promise: Promise<string> | undefined;
 
   return {
     getGooglePlayReferrer: () =>
-      (referrerPromise ||= eventBridge
+      (promise ||= eventBridge
         .requestAsync({ type: 'org.racehorse.GetGooglePlayReferrerEvent' })
         .then(event => event.payload.referrer)),
   };

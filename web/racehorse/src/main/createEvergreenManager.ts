@@ -1,4 +1,5 @@
 import { EventBridge } from './createEventBridge';
+import { createJoiner } from './createJoiner';
 
 export interface UpdateStatus {
   /**
@@ -77,7 +78,7 @@ export interface EvergreenManager {
  * @param eventBridge The underlying event bridge.
  */
 export function createEvergreenManager(eventBridge: EventBridge): EvergreenManager {
-  let updatePromise: Promise<string> | undefined;
+  const updateJoiner = createJoiner<string | null>();
 
   return {
     getMasterVersion: () =>
@@ -86,10 +87,11 @@ export function createEvergreenManager(eventBridge: EventBridge): EvergreenManag
     getUpdateStatus: () => eventBridge.request({ type: 'org.racehorse.evergreen.GetUpdateStatusEvent' }).payload.status,
 
     applyUpdate: () =>
-      (updatePromise ||= eventBridge.requestAsync({ type: 'org.racehorse.evergreen.ApplyUpdateEvent' }).then(event => {
-        updatePromise = undefined;
-        return event.payload.version;
-      })),
+      updateJoiner.join(() =>
+        eventBridge
+          .requestAsync({ type: 'org.racehorse.evergreen.ApplyUpdateEvent' })
+          .then(event => event.payload.version)
+      ),
 
     subscribe: (eventType, listener) =>
       eventBridge.subscribe(

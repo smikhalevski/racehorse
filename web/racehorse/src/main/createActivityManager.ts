@@ -1,4 +1,5 @@
 import { EventBridge } from './createEventBridge';
+import { Scheduler } from './createScheduler';
 import { noop } from './utils';
 
 /**
@@ -151,6 +152,8 @@ export interface ActivityManager {
   /**
    * Start an activity for the intent and wait for it to return the result.
    *
+   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   *
    * @param intent The intent that starts an activity.
    * @returns The activity result.
    */
@@ -187,8 +190,9 @@ const eventTypeToActivityState = {
  * Launches activities for various intents, and provides info about the current activity.
  *
  * @param eventBridge The underlying event bridge.
+ * @param uiScheduler The callback that schedules an operation that blocks the UI.
  */
-export function createActivityManager(eventBridge: EventBridge): ActivityManager {
+export function createActivityManager(eventBridge: EventBridge, uiScheduler: Scheduler): ActivityManager {
   return {
     getActivityState: () => eventBridge.request({ type: 'org.racehorse.GetActivityStateEvent' }).payload.activityState,
 
@@ -198,9 +202,11 @@ export function createActivityManager(eventBridge: EventBridge): ActivityManager
       eventBridge.request({ type: 'org.racehorse.StartActivityEvent', payload: { intent } }).payload.isStarted,
 
     startActivityForResult: intent =>
-      eventBridge
-        .requestAsync({ type: 'org.racehorse.StartActivityForResultEvent', payload: { intent } })
-        .then(event => event.payload),
+      uiScheduler.schedule(() =>
+        eventBridge
+          .requestAsync({ type: 'org.racehorse.StartActivityForResultEvent', payload: { intent } })
+          .then(event => event.payload)
+      ),
 
     subscribe: (eventTypeOrListener, listener = eventTypeOrListener) => {
       const activityState =

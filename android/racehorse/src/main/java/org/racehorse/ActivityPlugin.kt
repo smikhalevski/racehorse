@@ -7,6 +7,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.SerializableIntent
+import org.racehorse.utils.checkForeground
 import org.racehorse.utils.launchActivity
 import org.racehorse.utils.launchActivityForResult
 import java.io.Serializable
@@ -93,11 +94,15 @@ open class ActivityPlugin(
 
     @Subscribe
     open fun onStartActivity(event: StartActivityEvent) {
+        activity.checkForeground()
+
         event.respond(StartActivityEvent.ResultEvent(activity.launchActivity(event.intent.toIntent())))
     }
 
     @Subscribe
     open fun onStartActivityForResult(event: StartActivityForResultEvent) {
+        activity.checkForeground()
+
         val launched = activity.launchActivityForResult(event.intent.toIntent()) {
             event.respond(StartActivityForResultEvent.ResultEvent(it.resultCode, it.data?.let(::SerializableIntent)))
         }

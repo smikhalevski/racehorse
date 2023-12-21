@@ -11,6 +11,8 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import java.util.UUID
 
 /**
@@ -106,3 +108,10 @@ fun ComponentActivity.askForPermission(permission: String, callback: (granted: B
  */
 fun Context.isPermissionGranted(permission: String) =
     ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+
+/**
+ * Throws if activity isn't in foreground.
+ */
+fun LifecycleOwner.checkForeground() {
+    check(lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) { "Must be in foreground" }
+}

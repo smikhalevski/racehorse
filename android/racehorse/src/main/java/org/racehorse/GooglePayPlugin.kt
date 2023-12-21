@@ -12,6 +12,7 @@ import com.google.android.gms.tapandpay.issuer.UserAddress
 import com.google.android.gms.tapandpay.issuer.ViewTokenRequest
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.racehorse.utils.checkForeground
 import java.io.Serializable
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -159,7 +160,7 @@ open class GooglePayPlugin(
     private val eventBus: EventBus = EventBus.getDefault(),
 ) {
 
-    private val requestCode = AtomicInteger(0x10000000)
+    private val nextRequestCode = AtomicInteger(0x10000000)
 
     private val tapAndPayClient by lazy {
         TapAndPay.getClient(activity).apply {
@@ -256,16 +257,18 @@ open class GooglePayPlugin(
 
     @Subscribe
     fun onGooglePayViewToken(event: GooglePayViewTokenEvent) {
+        activity.checkForeground()
+
         val request = ViewTokenRequest.Builder()
             .setIssuerTokenId(event.tokenId)
             .setTokenServiceProvider(event.tokenServiceProvider)
             .build()
 
-        tapAndPayClient.viewToken(request).addOnCompleteListener {
+        tapAndPayClient.viewToken(request).addOnCompleteListener { task ->
             event.respond(
                 GooglePayViewTokenEvent.ResultEvent(
                     try {
-                        it.result.send()
+                        task.result.send()
                         true
                     } catch (_: Throwable) {
                         false
@@ -276,7 +279,7 @@ open class GooglePayPlugin(
     }
 
     @Subscribe
-    fun onGooglePayPushTokenize(event: GooglePayPushTokenizeEvent) = runOperation(
+    fun onGooglePayPushTokenize(event: GooglePayPushTokenizeEvent) = runOperationInForeground(
         { requestCode ->
             val request = PushTokenizeRequest.Builder()
                 .setOpaquePaymentCard(event.opaquePaymentCard.toByteArray())
@@ -293,7 +296,7 @@ open class GooglePayPlugin(
     )
 
     @Subscribe
-    fun onGooglePayTokenize(event: GooglePayTokenizeEvent) = runOperation(
+    fun onGooglePayTokenize(event: GooglePayTokenizeEvent) = runOperationInForeground(
         { requestCode ->
             tapAndPayClient.tokenize(
                 activity,
@@ -308,7 +311,7 @@ open class GooglePayPlugin(
     )
 
     @Subscribe
-    fun onGooglePayRequestSelectTokenEvent(event: GooglePayRequestSelectTokenEvent) = runOperation(
+    fun onGooglePayRequestSelectTokenEvent(event: GooglePayRequestSelectTokenEvent) = runOperationInForeground(
         { requestCode ->
             tapAndPayClient.requestSelectToken(
                 activity,
@@ -321,7 +324,7 @@ open class GooglePayPlugin(
     )
 
     @Subscribe
-    fun onGooglePayRequestDeleteTokenEvent(event: GooglePayRequestDeleteTokenEvent) = runOperation(
+    fun onGooglePayRequestDeleteTokenEvent(event: GooglePayRequestDeleteTokenEvent) = runOperationInForeground(
         { requestCode ->
             tapAndPayClient.requestDeleteToken(
                 activity,
@@ -334,7 +337,7 @@ open class GooglePayPlugin(
     )
 
     @Subscribe
-    fun onGooglePayCreateWalletEvent(event: GooglePayCreateWalletEvent) = runOperation(
+    fun onGooglePayCreateWalletEvent(event: GooglePayCreateWalletEvent) = runOperationInForeground(
         { requestCode -> tapAndPayClient.createWallet(activity, requestCode) },
         { event.respond(VoidEvent()) }
     )
@@ -346,10 +349,13 @@ open class GooglePayPlugin(
         activityCallbacks.remove(requestCode)?.invoke(data)
     }
 
-    protected open fun getRequestCode() = requestCode.getAndIncrement()
+    protected open fun runOperationInForeground(
+        operation: (requestCode: Int) -> Unit,
+        callback: (data: Intent?) -> Unit
+    ) {
+        activity.checkForeground()
 
-    protected open fun runOperation(operation: (requestCode: Int) -> Unit, callback: (data: Intent?) -> Unit) {
-        val requestCode = getRequestCode()
+        val requestCode = nextRequestCode.getAndIncrement()
         operation(requestCode)
         activityCallbacks[requestCode] = callback
     }

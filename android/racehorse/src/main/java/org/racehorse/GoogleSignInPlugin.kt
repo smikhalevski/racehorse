@@ -7,6 +7,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes
 import com.google.android.gms.common.api.ApiException
 import org.greenrobot.eventbus.Subscribe
+import org.racehorse.utils.checkForeground
 import org.racehorse.utils.launchActivityForResult
 import java.io.Serializable
 
@@ -77,6 +78,8 @@ open class GoogleSignInPlugin(
 
     @Subscribe
     open fun onGoogleSignIn(event: GoogleSignInEvent) {
+        activity.checkForeground()
+
         val launched = activity.launchActivityForResult(googleSignInClient.signInIntent) {
             event.respond {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
