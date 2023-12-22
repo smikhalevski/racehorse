@@ -223,15 +223,15 @@ export function createEventBridge(connectionProvider = () => window.racehorseCon
       );
     },
 
-    subscribe(typeOrListener, listener?: Function) {
+    subscribe(eventTypeOrListener, listener?: Function) {
       void connect();
 
-      if (typeof typeOrListener === 'function') {
-        return noticePubSub.subscribe(typeOrListener);
+      if (typeof eventTypeOrListener === 'function') {
+        return noticePubSub.subscribe(eventTypeOrListener);
       }
 
       return noticePubSub.subscribe(event => {
-        if (event.type === typeOrListener) {
+        if (event.type === eventTypeOrListener) {
           listener!(event.payload);
         }
       });

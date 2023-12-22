@@ -79,7 +79,7 @@ dependencies {
     compileOnly("org.greenrobot:eventbus:3.3.1")
     compileOnly("com.google.code.gson:gson:2.10.1")
 
-    // LifecyclePlugin
+    // ActivityPlugin
     compileOnly("androidx.lifecycle:lifecycle-process:2.6.2")
 
     // AssetLoaderPlugin

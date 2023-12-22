@@ -2,6 +2,9 @@ package org.racehorse
 
 import android.app.Activity
 import androidx.activity.ComponentActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.SerializableIntent
 import org.racehorse.utils.launchActivity
@@ -9,6 +12,12 @@ import org.racehorse.utils.launchActivityForResult
 import java.io.Serializable
 
 class ActivityInfo(val packageName: String) : Serializable
+
+class ActivityStateChangedEvent(val activityState: Int) : NoticeEvent
+
+class GetActivityStateEvent : RequestEvent() {
+    class ResultEvent(val activityState: Int) : ResponseEvent()
+}
 
 class GetActivityInfoEvent : RequestEvent() {
     class ResultEvent(val activityInfo: ActivityInfo) : ResponseEvent()
@@ -31,11 +40,47 @@ class StartActivityForResultEvent(val intent: SerializableIntent) : RequestEvent
 }
 
 /**
- * Opens URL in an external app.
+ * Launches activities for various intents, and provides info about the current activity.
  *
  * @param activity The activity that launches the intent to open a URL.
+ * @param eventBus The event bus to which events are posted.
  */
-open class ActivityPlugin(private val activity: ComponentActivity) {
+open class ActivityPlugin(
+    private val activity: ComponentActivity,
+    private val eventBus: EventBus = EventBus.getDefault()
+) {
+
+    companion object {
+        private const val BACKGROUND = 0
+        private const val FOREGROUND = 1
+        private const val ACTIVE = 2
+    }
+
+    private val lifecycleListener = LifecycleEventObserver { _, event ->
+        when (event.targetState) {
+            Lifecycle.State.CREATED -> eventBus.post(ActivityStateChangedEvent(BACKGROUND))
+            Lifecycle.State.STARTED -> eventBus.post(ActivityStateChangedEvent(FOREGROUND))
+            Lifecycle.State.RESUMED -> eventBus.post(ActivityStateChangedEvent(ACTIVE))
+            else -> {}
+        }
+    }
+
+    open fun enable() = activity.lifecycle.addObserver(lifecycleListener)
+
+    open fun disable() = activity.lifecycle.removeObserver(lifecycleListener)
+
+    @Subscribe
+    open fun onGetActivityState(event: GetActivityStateEvent) {
+        event.respond(
+            GetActivityStateEvent.ResultEvent(
+                when (activity.lifecycle.currentState) {
+                    Lifecycle.State.INITIALIZED, Lifecycle.State.CREATED, Lifecycle.State.DESTROYED -> BACKGROUND
+                    Lifecycle.State.STARTED -> FOREGROUND
+                    Lifecycle.State.RESUMED -> ACTIVE
+                }
+            )
+        )
+    }
 
     @Subscribe
     open fun onGetActivityInfo(event: GetActivityInfoEvent) {

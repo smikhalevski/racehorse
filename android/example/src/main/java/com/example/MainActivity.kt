@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(HttpsPlugin())
         eventBus.register(networkPlugin)
         eventBus.register(KeyboardPlugin(this))
-        eventBus.register(ActivityPlugin(this))
+        eventBus.register(ActivityPlugin(this).apply { enable() })
         eventBus.register(DeepLinkPlugin())
         eventBus.register(PermissionsPlugin(this))
         eventBus.register(NotificationsPlugin(this))
@@ -66,7 +66,6 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(FacebookSharePlugin(this))
         eventBus.register(BiometricPlugin(this))
         eventBus.register(BiometricEncryptedStoragePlugin(this, File(filesDir, "biometric_storage")))
-        eventBus.register(LifecyclePlugin().apply { enable() })
         eventBus.register(ToastPlugin(this))
 
         @Suppress("DEPRECATION")

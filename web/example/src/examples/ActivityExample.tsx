@@ -1,17 +1,41 @@
-import React, { useState } from 'react';
-import { activityManager, ActivityResult, Intent, permissionsManager } from 'racehorse';
+import React, { useEffect, useState } from 'react';
+import { activityManager, ActivityResult, ActivityState, Intent, permissionsManager } from 'racehorse';
 import { FormattedJSON } from '../components/FormattedJSON';
+import { useActivityState } from '@racehorse/react';
+
+const activityStateLabel = {
+  [ActivityState.BACKGROUND]: '🔴 Background',
+  [ActivityState.FOREGROUND]: '🟡 Foreground',
+  [ActivityState.ACTIVE]: '🟢 Active',
+} as const;
 
 export function ActivityExample() {
+  const activityState = useActivityState();
   const [activityInfo] = useState(activityManager.getActivityInfo);
   const [contactActivityResult, setContactActivityResult] = useState<ActivityResult | null>();
+
+  useEffect(
+    () =>
+      activityManager.subscribe(activityState => {
+        console.log(activityStateLabel[activityState]);
+      }),
+    []
+  );
 
   return (
     <>
       <h2>{'Activity'}</h2>
 
-      {'Activity info: '}
-      <FormattedJSON value={activityInfo} />
+      <p>{'Activity state: ' + activityStateLabel[activityState]}</p>
+
+      <p>
+        <i>{'Open WebView console to observe activity state changes'}</i>
+      </p>
+
+      <p>
+        {'Activity info: '}
+        <FormattedJSON value={activityInfo} />
+      </p>
 
       <p>
         <button
