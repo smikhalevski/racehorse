@@ -2,14 +2,14 @@ package org.racehorse
 
 import android.os.Build
 import androidx.activity.ComponentActivity
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsCompat.toWindowInsetsCompat
 import org.greenrobot.eventbus.Subscribe
 import java.io.Serializable
 
 class DeviceInfo(val apiLevel: Int, val brand: String, val model: String) : Serializable
 
-class Rect(val top: Float, val right: Float, val bottom: Float, val left: Float) : Serializable
+class Rect(val top: Float = 0f, val right: Float = 0f, val bottom: Float = 0f, val left: Float = 0f) : Serializable
 
 /**
  * Get OS and device versions.
@@ -67,10 +67,8 @@ open class DevicePlugin(private val activity: ComponentActivity) {
     fun onGetWindowInsets(event: GetWindowInsetsEvent) {
         val density = activity.resources.displayMetrics.density
 
-        val rootWindowInsets = activity.window.decorView.rootWindowInsets
-            ?: throw IllegalStateException("Cannot get root window insets")
-
-        val insets = toWindowInsetsCompat(rootWindowInsets).getInsets(event.typeMask)
+        val insets = ViewCompat.getRootWindowInsets(activity.window.decorView)?.getInsets(event.typeMask)
+            ?: return event.respond(GetWindowInsetsEvent.ResultEvent(Rect()))
 
         val rect = with(insets) {
             Rect(top / density, right / density, bottom / density, left / density)
