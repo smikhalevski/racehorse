@@ -76,8 +76,8 @@ open class EncryptedStoragePlugin(
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     open fun onSetEncryptedValue(event: SetEncryptedValueEvent) {
-        val cipher = getCipher()
-        cipher.init(Cipher.ENCRYPT_MODE, getSecretKey(event.password))
+        val cipher = createCipher()
+        cipher.init(Cipher.ENCRYPT_MODE, createSecretKey(event.password))
 
         val result = encryptedStorage.set(cipher, event.key, event.value.toByteArray(Charsets.UTF_8))
         event.respond(SetEncryptedValueEvent.ResultEvent(result))
@@ -85,13 +85,13 @@ open class EncryptedStoragePlugin(
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     open fun onGetEncryptedValue(event: GetEncryptedValueEvent) {
-        val (iv, encryptedBytes) = encryptedStorage.getRecord(event.key)
+        val record = encryptedStorage.getRecord(event.key)
             ?: return event.respond(GetEncryptedValueEvent.ResultEvent(null))
 
-        val cipher = getCipher()
-        cipher.init(Cipher.DECRYPT_MODE, getSecretKey(event.password), IvParameterSpec(iv))
+        val cipher = createCipher()
+        cipher.init(Cipher.DECRYPT_MODE, createSecretKey(event.password), IvParameterSpec(record.iv))
 
-        val value = encryptedStorage.decrypt(cipher, encryptedBytes)?.toString(Charsets.UTF_8)
+        val value = encryptedStorage.decrypt(cipher, record.encryptedBytes)?.toString(Charsets.UTF_8)
         event.respond(GetEncryptedValueEvent.ResultEvent(value))
     }
 
@@ -108,14 +108,14 @@ open class EncryptedStoragePlugin(
     /**
      * Returns the [Cipher] instance that is used for encoding/decoding.
      */
-    protected open fun getCipher(): Cipher {
+    protected open fun createCipher(): Cipher {
         return Cipher.getInstance("$ENCRYPTION_ALGORITHM/$ENCRYPTION_BLOCK_MODE/$ENCRYPTION_PADDING")
     }
 
     /**
      * Returns the secret key for a password.
      */
-    protected open fun getSecretKey(password: String): SecretKey {
+    protected open fun createSecretKey(password: String): SecretKey {
         val factory = SecretKeyFactory.getInstance(SECRET_KEY_ALGORITHM)
         val keySpec = PBEKeySpec(password.toCharArray(), salt, iterationCount, keySize)
 

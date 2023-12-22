@@ -14,6 +14,7 @@ import java.io.File
 import java.io.Serializable
 import java.security.KeyStore
 import javax.crypto.Cipher
+import javax.crypto.IllegalBlockSizeException
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
@@ -85,56 +86,70 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
         private const val SECRET_KEY_SIZE = 256
     }
 
+    private val secretKeyStore by lazy { KeyStore.getInstance(SECRET_KEYSTORE_TYPE).apply { load(null) } }
+
     private val biometricManager by lazy { BiometricManager.from(activity) }
 
     private val encryptedStorage = EncryptedStorage(storageDir)
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     open fun onSetBiometricEncryptedValue(event: SetBiometricEncryptedValueEvent) {
-        val baseCipher = getCipher()
+        val value = event.value.toByteArray(Charsets.UTF_8)
+
+        val cipher = createCipher()
         try {
-            baseCipher.init(Cipher.ENCRYPT_MODE, getOrCreateSecretKey(event.key))
+            cipher.init(Cipher.ENCRYPT_MODE, getOrCreateSecretKey(event.key))
         } catch (_: KeyPermanentlyInvalidatedException) {
-            // Recreate a secret key
-            deleteSecretKey(event.key)
-            baseCipher.init(Cipher.ENCRYPT_MODE, getOrCreateSecretKey(event.key))
+            // The previous value cannot ever be decrypted, recreate the secret key
+            deleteKey(event.key)
+            cipher.init(Cipher.ENCRYPT_MODE, getOrCreateSecretKey(event.key))
         }
 
-        authenticate(event.config, baseCipher) { cryptoObject ->
+        authenticate(event.config, cipher) { isSuccess ->
             event.respond {
-                val cipher = cryptoObject?.cipher
-
-                val result =
-                    cipher != null && encryptedStorage.set(cipher, event.key, event.value.toByteArray(Charsets.UTF_8))
-
-                SetBiometricEncryptedValueEvent.ResultEvent(result)
+                SetBiometricEncryptedValueEvent.ResultEvent(
+                    if (isSuccess) {
+                        try {
+                            encryptedStorage.set(cipher, event.key, value)
+                        } catch (e: IllegalBlockSizeException) {
+                            // https://stackoverflow.com/questions/36043912
+                            deleteKey(event.key)
+                            throw e
+                        }
+                    } else false
+                )
             }
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     open fun onGetBiometricEncryptedValue(event: GetBiometricEncryptedValueEvent) {
-        val (iv, encryptedBytes) = encryptedStorage.getRecord(event.key)
+        val record = encryptedStorage.getRecord(event.key)
             ?: return event.respond(GetEncryptedValueEvent.ResultEvent(null))
 
-        val baseCipher = getCipher()
+        val cipher = createCipher()
         try {
-            baseCipher.init(Cipher.DECRYPT_MODE, getOrCreateSecretKey(event.key), IvParameterSpec(iv))
+            cipher.init(Cipher.DECRYPT_MODE, getOrCreateSecretKey(event.key), IvParameterSpec(record.iv))
         } catch (_: KeyPermanentlyInvalidatedException) {
             // The value cannot ever be decrypted
-            encryptedStorage.delete(event.key)
-            deleteSecretKey(event.key)
+            deleteKey(event.key)
             event.respond(GetEncryptedValueEvent.ResultEvent(null))
             return
         }
 
-        authenticate(event.config, baseCipher) { cryptoObject ->
+        authenticate(event.config, cipher) { isSuccess ->
             event.respond {
-                val cipher = cryptoObject?.cipher
-
-                val value = cipher?.let { encryptedStorage.decrypt(cipher, encryptedBytes)?.toString(Charsets.UTF_8) }
-
-                GetEncryptedValueEvent.ResultEvent(value)
+                GetEncryptedValueEvent.ResultEvent(
+                    if (isSuccess) {
+                        try {
+                            encryptedStorage.decrypt(cipher, record.encryptedBytes)?.toString(Charsets.UTF_8)
+                        } catch (e: IllegalBlockSizeException) {
+                            // https://stackoverflow.com/questions/36043912
+                            deleteKey(event.key)
+                            throw e
+                        }
+                    } else null
+                )
             }
         }
     }
@@ -146,34 +161,21 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
 
     @Subscribe
     open fun onDeleteBiometricEncryptedValue(event: DeleteBiometricEncryptedValueEvent) {
-        event.respond(
-            DeleteBiometricEncryptedValueEvent.ResultEvent(
-                if (encryptedStorage.delete(event.key)) {
-                    deleteSecretKey(event.key)
-                    true
-                } else false
-            )
-        )
+        event.respond(DeleteBiometricEncryptedValueEvent.ResultEvent(deleteKey(event.key)))
     }
 
-    protected open fun authenticate(
-        config: BiometricConfig?,
-        cipher: Cipher,
-        callback: (cryptoObject: BiometricPrompt.CryptoObject?) -> Unit
-    ) {
+    protected open fun authenticate(config: BiometricConfig?, cipher: Cipher, callback: (isSuccess: Boolean) -> Unit) {
         val authenticators = BiometricAuthenticator.from(config?.authenticators)
 
         if (biometricManager.canAuthenticate(authenticators) != BiometricManager.BIOMETRIC_SUCCESS) {
-            callback(null)
+            callback(false)
             return
         }
 
         val authCallback = object : BiometricPrompt.AuthenticationCallback() {
-            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) =
-                callback(null)
+            override fun onAuthenticationError(errorCode: Int, errorMessage: CharSequence) = callback(false)
 
-            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) =
-                callback(result.cryptoObject)
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) = callback(true)
 
             override fun onAuthenticationFailed() {}
         }
@@ -189,34 +191,32 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
         }
 
         try {
-            val prompt = BiometricPrompt(activity, ContextCompat.getMainExecutor(activity), authCallback)
-
-            prompt.authenticate(promptInfoBuilder.build(), BiometricPrompt.CryptoObject(cipher))
+            BiometricPrompt(activity, ContextCompat.getMainExecutor(activity), authCallback)
+                .authenticate(promptInfoBuilder.build(), BiometricPrompt.CryptoObject(cipher))
         } catch (e: Throwable) {
             e.printStackTrace()
-            callback(null)
+            callback(false)
         }
     }
 
-    protected open fun getCipher(): Cipher {
+    protected open fun createCipher(): Cipher {
         return Cipher.getInstance("$ENCRYPTION_ALGORITHM/$ENCRYPTION_BLOCK_MODE/$ENCRYPTION_PADDING")
     }
 
-    protected open fun getKeyStore() = KeyStore.getInstance(SECRET_KEYSTORE_TYPE).apply { load(null) }
+    /**
+     * Returns the secret key that is used to encrypt/decrypt the value stored in biometric-encrypted storage.
+     *
+     * @param key The biometric-encrypted storage key.
+     */
+    protected open fun getOrCreateSecretKey(key: String): SecretKey {
+        secretKeyStore.getKey(key, null)?.let { return it as SecretKey }
 
-    protected open fun getOrCreateSecretKey(keyAlias: String): SecretKey {
-        getKeyStore().getKey(keyAlias, null)?.let { key ->
-            // Key already exists
-            return key as SecretKey
-        }
-
-        // Create a new key
         val keyGenParameterSpec =
-            KeyGenParameterSpec.Builder(keyAlias, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+            KeyGenParameterSpec.Builder(key, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
                 .setBlockModes(ENCRYPTION_BLOCK_MODE)
                 .setEncryptionPaddings(ENCRYPTION_PADDING)
-                .setUserAuthenticationRequired(true)
                 .setKeySize(SECRET_KEY_SIZE)
+                .setUserAuthenticationRequired(true)
                 .setInvalidatedByBiometricEnrollment(true)
                 .build()
 
@@ -226,7 +226,13 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
         return keyGenerator.generateKey()
     }
 
-    protected open fun deleteSecretKey(keyAlias: String) {
-        getKeyStore().deleteEntry(keyAlias)
+    /**
+     * Deletes the key from the biometric-encrypted storage and the associated secret key from the keystore.
+     */
+    protected open fun deleteKey(key: String): Boolean {
+        if (secretKeyStore.isKeyEntry(key)) {
+            secretKeyStore.deleteEntry(key)
+        }
+        return encryptedStorage.delete(key)
     }
 }

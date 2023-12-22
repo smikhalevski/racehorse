@@ -8,10 +8,7 @@ import java.security.MessageDigest
 import javax.crypto.BadPaddingException
 import javax.crypto.Cipher
 
-class Record(val iv: ByteArray, val encryptedBytes: ByteArray) {
-    operator fun component1() = iv
-    operator fun component2() = encryptedBytes
-}
+class EncryptedRecord(val iv: ByteArray, val encryptedBytes: ByteArray)
 
 /**
  * File-based encrypted storage.
@@ -57,7 +54,7 @@ open class EncryptedStorage(private val storageDir: File) {
      * The first element holds the initialization vector.
      * The second element holds the encrypted bytes. Use [decrypt] to read the value from the encrypted bytes.
      */
-    fun getRecord(key: String): Record? {
+    fun getRecord(key: String): EncryptedRecord? {
         val file = getFile(key)
 
         if (!file.exists()) {
@@ -67,11 +64,9 @@ open class EncryptedStorage(private val storageDir: File) {
         val fileBytes = file.readBytes()
         val ivSize = ByteBuffer.wrap(fileBytes.copyOf(IV_SIZE_SIZE)).int
 
-        return Record(
-            // IV bytes
-            fileBytes.copyOfRange(IV_SIZE_SIZE, IV_SIZE_SIZE + ivSize),
-            // Encrypted bytes
-            fileBytes.copyOfRange(IV_SIZE_SIZE + ivSize, fileBytes.size)
+        return EncryptedRecord(
+            iv = fileBytes.copyOfRange(IV_SIZE_SIZE, IV_SIZE_SIZE + ivSize),
+            encryptedBytes = fileBytes.copyOfRange(IV_SIZE_SIZE + ivSize, fileBytes.size)
         )
     }
 
