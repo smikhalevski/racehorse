@@ -364,7 +364,7 @@ import org.racehorse.ActivityPlugin
 EventBus.getDefault().register(ActivityPlugin().also { enable() })
 ```
 
-3. Start the activity, for example to open settings app and navigate user to the notification settings:
+3. Start a new activity. For example, here's how to open Settings app and navigate user to the notification settings:
 
 ```ts
 import { activityManager, Intent } from 'racehorse';
@@ -378,7 +378,7 @@ activityManager.startActivity({
 });
 ```
 
-4. Synchronously read the activity status or subscribe to its changes:
+4. Synchronously read the status of the current activity or subscribe to its changes:
 
 ```ts
 import { activityManager, ActivityState } from 'racehorse';

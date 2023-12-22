@@ -184,7 +184,7 @@ const eventTypeToActivityState = {
 } as const;
 
 /**
- * Launches activities for various intents.
+ * Launches activities for various intents, and provides info about the current activity.
  *
  * @param eventBridge The underlying event bridge.
  */

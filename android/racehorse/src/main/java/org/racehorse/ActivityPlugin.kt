@@ -40,9 +40,10 @@ class StartActivityForResultEvent(val intent: SerializableIntent) : RequestEvent
 }
 
 /**
- * Opens URL in an external app.
+ * Launches activities for various intents, and provides info about the current activity.
  *
  * @param activity The activity that launches the intent to open a URL.
+ * @param eventBus The event bus to which events are posted.
  */
 open class ActivityPlugin(
     private val activity: ComponentActivity,
