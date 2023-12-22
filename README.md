@@ -31,7 +31,6 @@ The bootstrapper for WebView-based Android apps.
 - [Google Sign-In](#google-sign-in-plugin)
 - [HTTPS](#https-plugin)
 - [Keyboard](#keyboard-plugin)
-- [Lifecycle](#lifecycle-plugin)
 - [Network](#network-plugin)
 - [Notifications](#notifications-plugin)
 - [Permissions](#permissions-plugin)
@@ -75,9 +74,7 @@ instance that would be responsible for event marshalling:
 ```kotlin
 import org.racehorse.EventBridge
 
-val eventBridge = EventBridge(webView)
-
-eventBridge.enable()
+val eventBridge = EventBridge(webView).also { enable() }
 ```
 
 Racehorse uses a [Greenrobot EventBus](https://greenrobot.org/eventbus) to deliver events to subscribers, so bridge must
@@ -351,15 +348,23 @@ class ShowToastEvent(val message: String) : WebEvent
 [`ActivityManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.ActivityManager.html) starts
 activities and provides info about the activity that renders the WebView.
 
-1. Initialize the plugin in your Android app:
+1. Add Lifecycle dependency to your Android app:
+
+```kotlin
+dependencies {
+    implementation("androidx.lifecycle:lifecycle-process:2.6.2")
+}
+```
+
+2. Initialize the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.ActivityPlugin
 
-EventBus.getDefault().register(ActivityPlugin(activity))
+EventBus.getDefault().register(ActivityPlugin().also { enable() })
 ```
 
-2. Start the activity, for example to open settings app and navigate user to the notification settings:
+3. Start the activity, for example to open settings app and navigate user to the notification settings:
 
 ```ts
 import { activityManager, Intent } from 'racehorse';
@@ -371,6 +376,34 @@ activityManager.startActivity({
     'android.provider.extra.APP_PACKAGE': activityManager.getActivityInfo().packageName,
   },
 });
+```
+
+4. Synchronously read the activity status or subscribe to its changes:
+
+```ts
+import { activityManager, ActivityState } from 'racehorse';
+
+activityManager.getActivityState();
+// ⮕ ActivityState.BACKGROUND
+
+activityManager.subscribe(state => {
+  // React to activity state changes
+});
+
+activityManager.subscribe('foreground', () => {
+  // React to activity entering foreground
+});
+```
+
+If you are using React, then refer to
+[`useActivityState`](https://smikhalevski.github.io/racehorse/functions/_racehorse_react.useActivityState.html) hook
+that re-renders a component when activity state changes.
+
+```tsx
+import { useActivityState } from '@racehorse/react';
+
+const state = useActivityState();
+// ⮕ ActivityState.BACKGROUND
 ```
 
 # Asset loader plugin
@@ -1008,48 +1041,6 @@ status.isVisible;
 
 status.height;
 // ⮕ 630
-```
-
-# Lifecycle plugin
-
-[`LifecycleManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.LifecycleManager.html) enables
-lifecycle state monitoring.
-
-1. Add Lifecycle dependency to your Android app:
-
-```kotlin
-dependencies {
-    implementation("androidx.lifecycle:lifecycle-process:2.6.2")
-}
-```
-
-2. Initialize the plugin in your Android app:
-
-```kotlin
-import org.racehorse.LifecyclePlugin
-
-val lifecyclePlugin = LifecyclePlugin()
-
-EventBus.getDefault().register(lifecyclePlugin)
-
-lifecyclePlugin.enable()
-```
-
-3. Synchronously read the lifecycle state or subscribe to its changes:
-
-```ts
-import { lifecycleManager, LifecycleState } from 'racehorse';
-
-lifecycleManager.getLifecycleState();
-// ⮕ LifecycleState.STARTED
-
-lifecycleManager.subscribe(state => {
-  // React to lifecycle state changes
-});
-
-lifecycleManager.subscribe('pause', () => {
-  // React to app being paused
-});
 ```
 
 # Network plugin

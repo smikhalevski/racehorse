@@ -1,4 +1,3 @@
-import { createEventBridge } from './createEventBridge';
 import { createActivityManager } from './createActivityManager';
 import { createBiometricEncryptedStorageManager } from './createBiometricEncryptedStorageManager';
 import { createBiometricManager } from './createBiometricManager';
@@ -6,6 +5,7 @@ import { createDeepLinkManager } from './createDeepLinkManager';
 import { createDeviceManager } from './createDeviceManager';
 import { createDownloadManager } from './createDownloadManager';
 import { createEncryptedStorageManager } from './createEncryptedStorageManager';
+import { createEventBridge } from './createEventBridge';
 import { createEvergreenManager } from './createEvergreenManager';
 import { createFacebookLoginManager } from './createFacebookLoginManager';
 import { createFacebookShareManager } from './createFacebookShareManager';
@@ -14,11 +14,11 @@ import { createGooglePayManager } from './createGooglePayManager';
 import { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager';
 import { createGoogleSignInManager } from './createGoogleSignInManager';
 import { createKeyboardManager } from './createKeyboardManager';
-import { createLifecycleManager } from './createLifecycleManager';
 import { createNetworkManager } from './createNetworkManager';
 import { createNotificationsManager } from './createNotificationsManager';
 import { createPermissionsManager } from './createPermissionsManager';
 
+export { createActivityManager, Intent, Activity, ActivityState } from './createActivityManager';
 export { createBiometricEncryptedStorageManager } from './createBiometricEncryptedStorageManager';
 export { createBiometricManager, BiometricStatus, BiometricAuthenticator } from './createBiometricManager';
 export { createDeepLinkManager } from './createDeepLinkManager';
@@ -38,13 +38,12 @@ export {
 } from './createGooglePayManager';
 export { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager';
 export { createGoogleSignInManager } from './createGoogleSignInManager';
-export { createActivityManager, Intent, Activity } from './createActivityManager';
 export { createKeyboardManager } from './createKeyboardManager';
-export { createLifecycleManager, LifecycleState } from './createLifecycleManager';
 export { createNetworkManager } from './createNetworkManager';
 export { createNotificationsManager } from './createNotificationsManager';
 export { createPermissionsManager } from './createPermissionsManager';
 
+export type { ActivityManager, ActivityResult, ActivityInfo } from './createActivityManager';
 export type { BiometricEncryptedStorageManager, BiometricConfig } from './createBiometricEncryptedStorageManager';
 export type { BiometricManager } from './createBiometricManager';
 export type { DeepLinkManager } from './createDeepLinkManager';
@@ -66,9 +65,7 @@ export type {
 } from './createGooglePayManager';
 export type { GooglePlayReferrerManager } from './createGooglePlayReferrerManager';
 export type { GoogleSignInManager, GoogleSignInAccount } from './createGoogleSignInManager';
-export type { ActivityManager, ActivityResult, ActivityInfo } from './createActivityManager';
 export type { KeyboardManager, KeyboardStatus } from './createKeyboardManager';
-export type { LifecycleManager } from './createLifecycleManager';
 export type { NetworkManager, NetworkType, NetworkStatus } from './createNetworkManager';
 export type { NotificationsManager } from './createNotificationsManager';
 export type { PermissionsManager } from './createPermissionsManager';
@@ -104,8 +101,6 @@ export const googlePlayReferrerManager = createGooglePlayReferrerManager(eventBr
 export const googleSignInManager = createGoogleSignInManager(eventBridge);
 
 export const keyboardManager = createKeyboardManager(eventBridge);
-
-export const lifecycleManager = createLifecycleManager(eventBridge);
 
 export const networkManager = createNetworkManager(eventBridge);
 

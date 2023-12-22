@@ -1,4 +1,5 @@
 import { EventBridge } from './createEventBridge';
+import { noop } from './utils';
 
 /**
  * The intent that can be passed from and to web application.
@@ -41,6 +42,26 @@ export interface Intent {
    */
   selector?: Intent;
 }
+
+export const ActivityState = {
+  /**
+   * An activity is in the background and not visible to the user.
+   */
+  BACKGROUND: 0,
+
+  /**
+   * An activity is in the foreground, and it is visible to the user, but doesn't have focus (for example, covered by a
+   * dialog).
+   */
+  FOREGROUND: 1,
+
+  /**
+   * An activity is in the foreground and user can interact with it.
+   */
+  ACTIVE: 2,
+} as const;
+
+export type ActivityState = (typeof ActivityState)[keyof typeof ActivityState];
 
 export interface ActivityInfo {
   /**
@@ -110,6 +131,11 @@ export const Activity = {
 
 export interface ActivityManager {
   /**
+   * Get the state of the activity.
+   */
+  getActivityState(): ActivityState;
+
+  /**
    * Get info about the current activity.
    */
   getActivityInfo(): ActivityInfo;
@@ -129,7 +155,33 @@ export interface ActivityManager {
    * @returns The activity result.
    */
   startActivityForResult(intent: Intent): Promise<ActivityResult | null>;
+
+  /**
+   * Subscribes a listener to activity status changes.
+   */
+  subscribe(listener: (activityState: ActivityState) => void): () => void;
+
+  /**
+   * The activity went to background: user doesn't see the activity anymore.
+   */
+  subscribe(eventType: 'background', listener: () => void): () => void;
+
+  /**
+   * The activity entered foreground: user can see the activity but cannot interact with it.
+   */
+  subscribe(eventType: 'foreground', listener: () => void): () => void;
+
+  /**
+   * The activity became active: user can see the activity and can interact with it.
+   */
+  subscribe(eventType: 'active', listener: () => void): () => void;
 }
+
+const eventTypeToActivityState = {
+  background: ActivityState.BACKGROUND,
+  foreground: ActivityState.FOREGROUND,
+  active: ActivityState.ACTIVE,
+} as const;
 
 /**
  * Launches activities for various intents.
@@ -138,6 +190,8 @@ export interface ActivityManager {
  */
 export function createActivityManager(eventBridge: EventBridge): ActivityManager {
   return {
+    getActivityState: () => eventBridge.request({ type: 'org.racehorse.GetActivityStateEvent' }).payload.activityState,
+
     getActivityInfo: () => eventBridge.request({ type: 'org.racehorse.GetActivityInfoEvent' }).payload.activityInfo,
 
     startActivity: intent =>
@@ -147,5 +201,25 @@ export function createActivityManager(eventBridge: EventBridge): ActivityManager
       eventBridge
         .requestAsync({ type: 'org.racehorse.StartActivityForResultEvent', payload: { intent } })
         .then(event => event.payload),
+
+    subscribe: (eventTypeOrListener, listener = eventTypeOrListener) => {
+      const activityState =
+        typeof eventTypeOrListener === 'string' ? eventTypeToActivityState[eventTypeOrListener] : -1;
+
+      if (activityState === undefined || typeof listener !== 'function') {
+        return noop;
+      }
+
+      return eventBridge.subscribe(
+        'org.racehorse.ActivityStateChangedEvent',
+        activityState === -1
+          ? payload => listener(payload.activityState)
+          : payload => {
+              if (activityState === payload.activityState) {
+                listener();
+              }
+            }
+      );
+    },
   };
 }
