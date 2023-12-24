@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.ActivityResultRegistryOwner
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -35,7 +36,7 @@ fun Context.launchActivity(intent: Intent) = try {
  * @param callback The callback that receives the result from the started activity.
  * @return `true` if activity has started, or `false` if there's no matching activity.
  */
-fun <I, O> ComponentActivity.launchActivityForResult(
+fun <I, O> ActivityResultRegistryOwner.launchActivityForResult(
     contract: ActivityResultContract<I, O>,
     input: I,
     callback: ActivityResultCallback<O>
@@ -61,7 +62,7 @@ fun <I, O> ComponentActivity.launchActivityForResult(
  * @param callback The callback that receives the result intent from the started activity.
  * @return `true` if activity has started, or `false` if there's no matching activity.
  */
-fun ComponentActivity.launchActivityForResult(intent: Intent, callback: ActivityResultCallback<ActivityResult>) =
+fun ActivityResultRegistryOwner.launchActivityForResult(intent: Intent, callback: ActivityResultCallback<ActivityResult>) =
     launchActivityForResult(ActivityResultContracts.StartActivityForResult(), intent, callback)
 
 /**
