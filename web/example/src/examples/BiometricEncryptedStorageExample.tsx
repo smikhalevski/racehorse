@@ -61,6 +61,8 @@ export function BiometricEncryptedStorageExample() {
             biometricEncryptedStorageManager.set(key, value, biometricConfig).then(ok => {
               if (ok) {
                 biometricEncryptedStorageManager.get(key, biometricConfig).then(setPersistedValue);
+              } else {
+                console.log('Cannot set biometric storage entry: ' + key);
               }
             });
           }}
