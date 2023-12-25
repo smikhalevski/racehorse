@@ -9,14 +9,6 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.io.Serializable
 
-class GetNetworkStatusEvent : RequestEvent() {
-    class ResultEvent(val status: NetworkStatus) : ResponseEvent()
-}
-
-class NetworkStatusChangedEvent(val status: NetworkStatus) : NoticeEvent
-
-data class NetworkStatus(val type: NetworkType, val isConnected: Boolean) : Serializable
-
 enum class NetworkType {
     @SerializedName("wifi")
     WIFI,
@@ -29,6 +21,14 @@ enum class NetworkType {
 
     @SerializedName("unknown")
     UNKNOWN
+}
+
+data class NetworkStatus(val type: NetworkType, val isConnected: Boolean) : Serializable
+
+class NetworkStatusChangedEvent(val status: NetworkStatus) : NoticeEvent
+
+class GetNetworkStatusEvent : RequestEvent() {
+    class ResultEvent(val status: NetworkStatus) : ResponseEvent()
 }
 
 /**

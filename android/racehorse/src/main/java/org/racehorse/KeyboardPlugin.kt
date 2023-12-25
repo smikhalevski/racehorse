@@ -18,6 +18,11 @@ class KeyboardStatus(val height: Int) : Serializable {
     val isVisible = height != 0
 }
 
+/**
+ * Notifies the web app that the keyboard status has changed.
+ */
+class KeyboardStatusChangedEvent(val status: KeyboardStatus) : NoticeEvent
+
 class GetKeyboardStatusEvent : RequestEvent() {
     class ResultEvent(val status: KeyboardStatus) : ResponseEvent()
 }
@@ -27,11 +32,6 @@ class ShowKeyboardEvent : WebEvent
 class HideKeyboardEvent : RequestEvent() {
     class ResultEvent(val isHidden: Boolean) : ResponseEvent()
 }
-
-/**
- * Notifies the web app that the keyboard status has changed.
- */
-class KeyboardStatusChangedEvent(val status: KeyboardStatus) : NoticeEvent
 
 /**
  * Monitors keyboard visibility.

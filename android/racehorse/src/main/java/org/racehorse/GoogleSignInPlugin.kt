@@ -80,7 +80,7 @@ open class GoogleSignInPlugin(
     open fun onGoogleSignIn(event: GoogleSignInEvent) {
         activity.checkForeground()
 
-        val launched = activity.launchActivityForResult(googleSignInClient.signInIntent) {
+        val isLaunched = activity.launchActivityForResult(googleSignInClient.signInIntent) {
             event.respond {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
 
@@ -96,7 +96,7 @@ open class GoogleSignInPlugin(
             }
         }
 
-        if (!launched) {
+        if (!isLaunched) {
             event.respond(GoogleSignInEvent.ResultEvent(null))
         }
     }

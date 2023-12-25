@@ -152,7 +152,10 @@ class GetAllDownloadsEvent : RequestEvent() {
  * longer be accessible through the download manager. If there is a downloaded file, partial or complete, it is deleted.
  */
 class RemoveDownloadEvent(var id: Long) : RequestEvent() {
-    class ResultEvent(val removed: Boolean) : ResponseEvent()
+    class ResultEvent(val isRemoved: Boolean) : ResponseEvent() {
+        @Deprecated("Delete in next release")
+        val removed = isRemoved
+    }
 }
 
 open class DownloadPlugin(private val activity: ComponentActivity) {

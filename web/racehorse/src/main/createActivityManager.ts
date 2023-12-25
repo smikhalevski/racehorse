@@ -194,7 +194,7 @@ const eventTypeToActivityState = {
  */
 export function createActivityManager(eventBridge: EventBridge, uiScheduler: Scheduler): ActivityManager {
   return {
-    getActivityState: () => eventBridge.request({ type: 'org.racehorse.GetActivityStateEvent' }).payload.activityState,
+    getActivityState: () => eventBridge.request({ type: 'org.racehorse.GetActivityStateEvent' }).payload.state,
 
     getActivityInfo: () => eventBridge.request({ type: 'org.racehorse.GetActivityInfoEvent' }).payload.activityInfo,
 
@@ -209,19 +209,19 @@ export function createActivityManager(eventBridge: EventBridge, uiScheduler: Sch
       ),
 
     subscribe: (eventTypeOrListener, listener = eventTypeOrListener) => {
-      const activityState =
+      const expectedState =
         typeof eventTypeOrListener === 'string' ? eventTypeToActivityState[eventTypeOrListener] : -1;
 
-      if (activityState === undefined || typeof listener !== 'function') {
+      if (expectedState === undefined || typeof listener !== 'function') {
         return noop;
       }
 
       return eventBridge.subscribe(
         'org.racehorse.ActivityStateChangedEvent',
-        activityState === -1
-          ? payload => listener(payload.activityState)
+        expectedState === -1
+          ? payload => listener(payload.state)
           : payload => {
-              if (activityState === payload.activityState) {
+              if (expectedState === payload.state) {
                 listener();
               }
             }

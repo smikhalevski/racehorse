@@ -109,11 +109,11 @@ class BiometricPlugin(private val activity: FragmentActivity) {
         val enrollIntent = Intent(Settings.ACTION_BIOMETRIC_ENROLL)
             .putExtra(Settings.EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED, authenticators)
 
-        val launched = activity.launchActivityForResult(enrollIntent) {
+        val isLaunched = activity.launchActivityForResult(enrollIntent) {
             event.respond(EnrollBiometricEvent.ResultEvent(biometricManager.canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS))
         }
 
-        if (!launched) {
+        if (!isLaunched) {
             event.respond(EnrollBiometricEvent.ResultEvent(false))
         }
     }

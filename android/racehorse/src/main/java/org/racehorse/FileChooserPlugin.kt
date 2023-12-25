@@ -115,7 +115,7 @@ private class FileChooserLauncher(
             }
         }
 
-        val launched = activity.launchActivityForResult(intent) {
+        val isLaunched = activity.launchActivityForResult(intent) {
             val uris = parseFileChooserResult(it.resultCode, it.data)
 
             filePathCallback.onReceiveValue(
@@ -135,7 +135,7 @@ private class FileChooserLauncher(
             )
         }
 
-        if (!launched) {
+        if (!isLaunched) {
             // No activity that can provide files
             filePathCallback.onReceiveValue(arrayOf())
         }

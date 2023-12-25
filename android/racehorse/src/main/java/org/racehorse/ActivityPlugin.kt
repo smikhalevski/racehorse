@@ -14,14 +14,17 @@ import java.io.Serializable
 
 class ActivityInfo(val packageName: String) : Serializable
 
-class ActivityStateChangedEvent(val activityState: Int) : NoticeEvent
+class ActivityStateChangedEvent(val state: Int) : NoticeEvent
 
 class GetActivityStateEvent : RequestEvent() {
-    class ResultEvent(val activityState: Int) : ResponseEvent()
+    class ResultEvent(val state: Int) : ResponseEvent()
 }
 
 class GetActivityInfoEvent : RequestEvent() {
-    class ResultEvent(val activityInfo: ActivityInfo) : ResponseEvent()
+    class ResultEvent(val info: ActivityInfo) : ResponseEvent() {
+        @Deprecated("Delete in next release")
+        val activityInfo = info
+    }
 }
 
 /**
@@ -103,11 +106,11 @@ open class ActivityPlugin(
     open fun onStartActivityForResult(event: StartActivityForResultEvent) {
         activity.checkForeground()
 
-        val launched = activity.launchActivityForResult(event.intent.toIntent()) {
+        val isLaunched = activity.launchActivityForResult(event.intent.toIntent()) {
             event.respond(StartActivityForResultEvent.ResultEvent(it.resultCode, it.data?.let(::SerializableIntent)))
         }
 
-        if (!launched) {
+        if (!isLaunched) {
             event.respond(StartActivityForResultEvent.ResultEvent(Activity.RESULT_CANCELED, null))
         }
     }
