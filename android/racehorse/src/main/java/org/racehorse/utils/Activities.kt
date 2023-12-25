@@ -111,8 +111,8 @@ fun Context.isPermissionGranted(permission: String) =
     ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
 
 /**
- * Throws if activity isn't in foreground.
+ * Throws if activity isn't active (in foreground and not covered by a dialog).
  */
-fun LifecycleOwner.checkForeground() {
-    check(lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) { "Must be in foreground" }
+fun LifecycleOwner.checkActive() {
+    check(lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) { "Must be active" }
 }

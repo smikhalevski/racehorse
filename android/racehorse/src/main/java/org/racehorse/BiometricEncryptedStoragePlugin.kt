@@ -9,7 +9,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.racehorse.utils.checkForeground
+import org.racehorse.utils.checkActive
 import org.racehorse.utils.ifNullOrBlank
 import java.io.File
 import java.io.Serializable
@@ -101,7 +101,7 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     open fun onSetBiometricEncryptedValue(event: SetBiometricEncryptedValueEvent) {
-        activity.checkForeground()
+        activity.checkActive()
 
         val value = event.value.toByteArray(Charsets.UTF_8)
 
@@ -133,7 +133,7 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     open fun onGetBiometricEncryptedValue(event: GetBiometricEncryptedValueEvent) {
-        activity.checkForeground()
+        activity.checkActive()
 
         val record = encryptedStorage.getRecord(event.key)
             ?: return event.respond(GetEncryptedValueEvent.ResultEvent(null))
