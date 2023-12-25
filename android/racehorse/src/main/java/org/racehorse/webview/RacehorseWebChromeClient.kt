@@ -80,7 +80,7 @@ class ReceivedTouchIconUrlEvent(
     /**
      * `true` if the url is for a precomposed touch icon.
      */
-    val precomposed: Boolean
+    val isPrecomposed: Boolean
 )
 
 /**
@@ -523,8 +523,8 @@ open class RacehorseWebChromeClient(private val eventBus: EventBus = EventBus.ge
         eventBus.postForSubscriber { ReceivedIconEvent(view, icon) }
     }
 
-    override fun onReceivedTouchIconUrl(view: WebView, url: String, precomposed: Boolean) {
-        eventBus.postForSubscriber { ReceivedTouchIconUrlEvent(view, url, precomposed) }
+    override fun onReceivedTouchIconUrl(view: WebView, url: String, isPrecomposed: Boolean) {
+        eventBus.postForSubscriber { ReceivedTouchIconUrlEvent(view, url, isPrecomposed) }
     }
 
     override fun onShowCustomView(view: View, requestedOrientation: Int, callback: CustomViewCallback) {

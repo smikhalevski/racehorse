@@ -218,7 +218,7 @@ open class EventBridge(
     open fun onResponse(event: ResponseEvent) {
         if (event.requestId == ORPHAN_REQUEST_ID) {
             // The response event isn't related to any request event
-            Log.w(TAG, "Received an orphan response event ${event::class.java.name}")
+            Log.i(TAG, "Received an orphan response event ${event::class.java.name}")
             return
         }
         if (syncRequestId == event.requestId) {

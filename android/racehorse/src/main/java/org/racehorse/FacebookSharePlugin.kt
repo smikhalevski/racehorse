@@ -7,7 +7,7 @@ import com.facebook.share.model.ShareHashtag
 import com.facebook.share.model.ShareLinkContent
 import com.facebook.share.widget.ShareDialog
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.utils.checkForeground
+import org.racehorse.utils.checkActive
 import org.racehorse.utils.launchActivityForResult
 
 class FacebookShareLinkEvent(
@@ -24,7 +24,7 @@ class FacebookSharePlugin(val activity: ComponentActivity) {
 
     @Subscribe
     fun onFacebookShareLink(event: FacebookShareLinkEvent) {
-        activity.checkForeground()
+        activity.checkActive()
 
         val callbackManager = CallbackManager.Factory.create()
 

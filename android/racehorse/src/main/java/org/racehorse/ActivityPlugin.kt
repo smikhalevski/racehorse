@@ -7,21 +7,24 @@ import androidx.lifecycle.LifecycleEventObserver
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.SerializableIntent
-import org.racehorse.utils.checkForeground
+import org.racehorse.utils.checkActive
 import org.racehorse.utils.launchActivity
 import org.racehorse.utils.launchActivityForResult
 import java.io.Serializable
 
 class ActivityInfo(val packageName: String) : Serializable
 
-class ActivityStateChangedEvent(val activityState: Int) : NoticeEvent
+class ActivityStateChangedEvent(val state: Int) : NoticeEvent
 
 class GetActivityStateEvent : RequestEvent() {
-    class ResultEvent(val activityState: Int) : ResponseEvent()
+    class ResultEvent(val state: Int) : ResponseEvent()
 }
 
 class GetActivityInfoEvent : RequestEvent() {
-    class ResultEvent(val activityInfo: ActivityInfo) : ResponseEvent()
+    class ResultEvent(val info: ActivityInfo) : ResponseEvent() {
+        @Deprecated("Delete in next release")
+        val activityInfo = info
+    }
 }
 
 /**
@@ -94,20 +97,20 @@ open class ActivityPlugin(
 
     @Subscribe
     open fun onStartActivity(event: StartActivityEvent) {
-        activity.checkForeground()
+        activity.checkActive()
 
         event.respond(StartActivityEvent.ResultEvent(activity.launchActivity(event.intent.toIntent())))
     }
 
     @Subscribe
     open fun onStartActivityForResult(event: StartActivityForResultEvent) {
-        activity.checkForeground()
+        activity.checkActive()
 
-        val launched = activity.launchActivityForResult(event.intent.toIntent()) {
+        val isLaunched = activity.launchActivityForResult(event.intent.toIntent()) {
             event.respond(StartActivityForResultEvent.ResultEvent(it.resultCode, it.data?.let(::SerializableIntent)))
         }
 
-        if (!launched) {
+        if (!isLaunched) {
             event.respond(StartActivityForResultEvent.ResultEvent(Activity.RESULT_CANCELED, null))
         }
     }

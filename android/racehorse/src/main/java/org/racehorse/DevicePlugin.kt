@@ -15,7 +15,10 @@ class Rect(val top: Float = 0f, val right: Float = 0f, val bottom: Float = 0f, v
  * Get OS and device versions.
  */
 class GetDeviceInfoEvent : RequestEvent() {
-    class ResultEvent(val deviceInfo: DeviceInfo) : ResponseEvent()
+    class ResultEvent(val info: DeviceInfo) : ResponseEvent() {
+        @Deprecated("Delete in next release")
+        val deviceInfo = info
+    }
 }
 
 /**
