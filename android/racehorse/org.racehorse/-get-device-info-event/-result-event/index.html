@@ -58,7 +58,7 @@
   <div class="breadcrumbs"><a href="../../../../index.html">racehorse</a><span class="delimiter">/</span><a href="../../index.html">org.racehorse</a><span class="delimiter">/</span><a href="../index.html">GetDeviceInfoEvent</a><span class="delimiter">/</span><span class="current">ResultEvent</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Result</span><wbr></wbr><span><span>Event</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">ResultEvent</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>deviceInfo<span class="token operator">: </span><a href="../../-device-info/index.html">DeviceInfo</a></span></span><span class="token punctuation">)</span> : <a href="../../-response-event/index.html">ResponseEvent</a></div></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">ResultEvent</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>info<span class="token operator">: </span><a href="../../-device-info/index.html">DeviceInfo</a></span></span><span class="token punctuation">)</span> : <a href="../../-response-event/index.html">ResponseEvent</a></div></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,FUNCTION,PROPERTY">Members</button></div>
@@ -75,7 +75,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">deviceInfo<span class="token operator">: </span><a href="../../-device-info/index.html">DeviceInfo</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">info<span class="token operator">: </span><a href="../../-device-info/index.html">DeviceInfo</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -94,37 +94,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../-chainable-event/respond.html"><span class="token function">respond</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">block<span class="token operator">: </span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span class="token keyword"></span><a href="../../-chainable-event/index.html">ChainableEvent</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Executes a block and posts the returned event to the chain in the same event bus to which this event was originally posted.</p></div><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../-chainable-event/respond.html"><span class="token function">respond</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">event<span class="token operator">: </span><a href="../../-chainable-event/index.html">ChainableEvent</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Posts an <a href="../../-chainable-event/respond.html">event</a> to the chain in the same event bus to which this event was originally posted.</p></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-964070954%2FFunctions%2F-88822016" anchor-label="setOrigin" id="-964070954%2FFunctions%2F-88822016" data-filterable-set=":racehorse:dokkaHtml/staging"></a>
-          <div class="table-row" data-filterable-current=":racehorse:dokkaHtml/staging" data-filterable-set=":racehorse:dokkaHtml/staging">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="../../-chainable-event/set-origin.html"><span>set</span><wbr></wbr><span><span>Origin</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-964070954%2FFunctions%2F-88822016"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../-chainable-event/set-origin.html"><span class="token function">setOrigin</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">eventBus<span class="token operator">: </span><span data-unresolved-link="org.greenrobot.eventbus/EventBus///PointingToDeclaration/">EventBus</span><span class="token punctuation">, </span></span><span class="parameter ">requestId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../-chainable-event/index.html">ChainableEvent</a></div><div class="brief "><p class="paragraph">Sets the origin for this event to which consequent events in chain are posted.</p></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1158455394%2FFunctions%2F-88822016" anchor-label="tryRespond" id="-1158455394%2FFunctions%2F-88822016" data-filterable-set=":racehorse:dokkaHtml/staging"></a>
-          <div class="table-row" data-filterable-current=":racehorse:dokkaHtml/staging" data-filterable-set=":racehorse:dokkaHtml/staging">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="../../-chainable-event/try-respond.html"><span>try</span><wbr></wbr><span><span>Respond</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1158455394%2FFunctions%2F-88822016"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../-chainable-event/try-respond.html"><span class="token function">tryRespond</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">block<span class="token operator">: </span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span class="token keyword"></span><a href="../../-chainable-event/index.html">ChainableEvent</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Always executes a block and then posts the returned event to the chain only if this event has an origin.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../-chainable-event/respond.html"><span class="token function">respond</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">block<span class="token operator">: </span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span class="token keyword"></span><a href="../../-chainable-event/index.html">ChainableEvent</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Executes a block and posts the returned event to the chain using the same event bus to which this event was originally posted.</p></div><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../../-chainable-event/respond.html"><span class="token function">respond</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">event<span class="token operator">: </span><a href="../../-chainable-event/index.html">ChainableEvent</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Posts an <a href="../../-chainable-event/respond.html">event</a> to the chain in the same event bus to which this event was originally posted.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -143,7 +113,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="device-info.html">deviceInfo</a><span class="token operator">: </span><a href="../../-device-info/index.html">DeviceInfo</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="device-info.html"><strike>deviceInfo</strike></a><span class="token operator">: </span><a href="../../-device-info/index.html">DeviceInfo</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -159,6 +129,21 @@
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-transient/index.html"><span class="token annotation builtin">Transient</span></a></div></div><span class="token keyword"></span><span class="token keyword">var </span><a href="../../-chainable-event/event-bus.html">eventBus</a><span class="token operator">: </span><span data-unresolved-link="org.greenrobot.eventbus/EventBus///PointingToDeclaration/">EventBus</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">The event bus to which responses to this event are posted, or <code class="lang-kotlin">null</code> if origin wasn't set for this event.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-179348292%2FProperties%2F-88822016" anchor-label="info" id="-179348292%2FProperties%2F-88822016" data-filterable-set=":racehorse:dokkaHtml/staging"></a>
+          <div class="table-row" data-filterable-current=":racehorse:dokkaHtml/staging" data-filterable-set=":racehorse:dokkaHtml/staging">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="info.html"><span><span>info</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-179348292%2FProperties%2F-88822016"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="info.html">info</a><span class="token operator">: </span><a href="../../-device-info/index.html">DeviceInfo</a></div></div></div>
                 </div>
               </div>
             </div>
