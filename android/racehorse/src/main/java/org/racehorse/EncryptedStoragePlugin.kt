@@ -97,7 +97,7 @@ open class EncryptedStoragePlugin(
         val cipher = createCipher()
         cipher.init(Cipher.DECRYPT_MODE, createSecretKey(event.password), IvParameterSpec(record.iv))
 
-        val value = encryptedStorage.decrypt(cipher, record.encryptedBytes)?.toString(Charsets.UTF_8)
+        val value = encryptedStorage.decrypt(cipher, record.encryptedValue)?.toString(Charsets.UTF_8)
         event.respond(GetEncryptedValueEvent.ResultEvent(value))
     }
 

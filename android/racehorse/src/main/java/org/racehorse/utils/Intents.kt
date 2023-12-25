@@ -31,7 +31,7 @@ import android.os.Build
  * ```
  */
 fun Intent.filterPackageNames(packageManager: PackageManager, predicate: (packageName: String) -> Boolean): Intent? {
-    val resolveInfos = if (Build.VERSION.SDK_INT >= 33) {
+    val resolveInfos = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         packageManager.queryIntentActivities(this, PackageManager.ResolveInfoFlags.of(0L))
     } else {
         @Suppress("DEPRECATION")

@@ -14,7 +14,7 @@ export function BiometricEncryptedStorageExample() {
 
   useEffect(() => {
     biometricEncryptedStorageManager.get(key).then(setPersistedValue);
-  }, [key, value]);
+  }, []);
 
   return (
     <>
@@ -51,14 +51,23 @@ export function BiometricEncryptedStorageExample() {
       <p>
         <button
           onClick={() => {
+            biometricEncryptedStorageManager.get(key).then(setPersistedValue);
+          }}
+        >
+          {'Get'}
+        </button>{' '}
+        <button
+          onClick={() => {
             biometricEncryptedStorageManager.set(key, value, biometricConfig).then(ok => {
               if (ok) {
                 biometricEncryptedStorageManager.get(key, biometricConfig).then(setPersistedValue);
+              } else {
+                console.log('Cannot set biometric storage entry: ' + key);
               }
             });
           }}
         >
-          {'Set value'}
+          {'Set'}
         </button>{' '}
         <button
           onClick={() => {
@@ -67,7 +76,7 @@ export function BiometricEncryptedStorageExample() {
             }
           }}
         >
-          {'Delete value'}
+          {'Delete'}
         </button>
       </p>
 

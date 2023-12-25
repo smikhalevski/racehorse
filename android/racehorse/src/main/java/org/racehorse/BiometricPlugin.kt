@@ -91,23 +91,26 @@ class BiometricPlugin(private val activity: FragmentActivity) {
     fun onEnrollBiometric(event: EnrollBiometricEvent) {
         activity.checkActive()
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-            // Too old for this shit
-            event.respond(EnrollBiometricEvent.ResultEvent(false))
-            return
-        }
-
         val authenticators = BiometricAuthenticator.from(event.authenticators)
         val status = biometricManager.canAuthenticate(authenticators)
 
         if (status != BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED) {
-            // Enrolled or cannot enroll due to an error
+            // Already enrolled, or cannot enroll due to an error
             event.respond(EnrollBiometricEvent.ResultEvent(status == BiometricManager.BIOMETRIC_SUCCESS))
             return
         }
 
-        val enrollIntent = Intent(Settings.ACTION_BIOMETRIC_ENROLL)
-            .putExtra(Settings.EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED, authenticators)
+        val enrollIntent = when {
+            // Biometric
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> Intent(Settings.ACTION_BIOMETRIC_ENROLL)
+                .putExtra(Settings.EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED, authenticators)
+
+            // Fingerprint
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.P -> Intent(Settings.ACTION_FINGERPRINT_ENROLL)
+
+            // Open security settings, so user can navigate to Fingerprint section
+            else -> Intent(Settings.ACTION_SECURITY_SETTINGS)
+        }
 
         val isLaunched = activity.launchActivityForResult(enrollIntent) {
             event.respond(EnrollBiometricEvent.ResultEvent(biometricManager.canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS))

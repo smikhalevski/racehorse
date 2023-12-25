@@ -8,7 +8,11 @@ import java.security.MessageDigest
 import javax.crypto.BadPaddingException
 import javax.crypto.Cipher
 
-class EncryptedRecord(val iv: ByteArray, val encryptedBytes: ByteArray)
+/**
+ * @param iv The initialization vector to init cipher.
+ * @param encryptedValue The encrypted value stored in the record.
+ */
+class EncryptedRecord(val iv: ByteArray, val encryptedValue: ByteArray)
 
 /**
  * File-based encrypted storage.
@@ -66,7 +70,7 @@ open class EncryptedStorage(private val storageDir: File) {
 
         return EncryptedRecord(
             iv = fileBytes.copyOfRange(IV_SIZE_SIZE, IV_SIZE_SIZE + ivSize),
-            encryptedBytes = fileBytes.copyOfRange(IV_SIZE_SIZE + ivSize, fileBytes.size)
+            encryptedValue = fileBytes.copyOfRange(IV_SIZE_SIZE + ivSize, fileBytes.size)
         )
     }
 
@@ -81,13 +85,13 @@ open class EncryptedStorage(private val storageDir: File) {
     fun delete(key: String) = getFile(key).delete()
 
     /**
-     * Decrypts the encrypted data that was retrieved via [getRecord].
+     * Decrypts the encrypted value that was retrieved via [getRecord].
      *
-     * Returns the decrypted bytes or `null` if decryption failed.
+     * Returns the decrypted value or `null` if decryption failed because of the invalid decryption key.
      */
-    fun decrypt(cipher: Cipher, encryptedBytes: ByteArray): ByteArray? {
+    fun decrypt(cipher: Cipher, encryptedValue: ByteArray): ByteArray? {
         return try {
-            val bytes = cipher.doFinal(encryptedBytes)
+            val bytes = cipher.doFinal(encryptedValue)
 
             bytes.copyOfRange(HASH_SIZE, bytes.size)
         } catch (_: BadPaddingException) {
