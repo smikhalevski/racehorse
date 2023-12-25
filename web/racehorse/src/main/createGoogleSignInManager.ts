@@ -1,5 +1,6 @@
 import { EventBridge } from './createEventBridge';
 import { noop } from './utils';
+import { Scheduler } from './createScheduler';
 
 export interface GoogleSignInAccount {
   id: string | null;
@@ -70,14 +71,17 @@ export interface GoogleSignInManager {
  * Manages Google Sign-In integration.
  *
  * @param eventBridge The underlying event bridge.
+ * @param uiScheduler The callback that schedules an operation that blocks the UI.
  */
-export function createGoogleSignInManager(eventBridge: EventBridge): GoogleSignInManager {
+export function createGoogleSignInManager(eventBridge: EventBridge, uiScheduler: Scheduler): GoogleSignInManager {
   return {
     getLastSignedInAccount: () =>
       eventBridge.request({ type: 'org.racehorse.GetLastGoogleSignedInAccountEvent' }).payload.account,
 
     signIn: () =>
-      eventBridge.requestAsync({ type: 'org.racehorse.GoogleSignInEvent' }).then(event => event.payload.account),
+      uiScheduler.schedule(() =>
+        eventBridge.requestAsync({ type: 'org.racehorse.GoogleSignInEvent' }).then(event => event.payload.account)
+      ),
 
     silentSignIn: () =>
       eventBridge.requestAsync({ type: 'org.racehorse.GoogleSilentSignInEvent' }).then(event => event.payload.account),

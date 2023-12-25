@@ -1,5 +1,6 @@
 import { EventBridge } from './createEventBridge';
 import { noop } from './utils';
+import { Scheduler } from './createScheduler';
 
 export interface FacebookShareLinkContent {
   /**
@@ -41,6 +42,8 @@ export interface FacebookShareLinkContent {
 export interface FacebookShareManager {
   /**
    * Opens Facebook link share popup.
+   *
+   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
    */
   shareLink(content: FacebookShareLinkContent): Promise<void>;
 }
@@ -49,10 +52,13 @@ export interface FacebookShareManager {
  * Manages Facebook content sharing.
  *
  * @param eventBridge The underlying event bridge.
+ * @param uiScheduler The callback that schedules an operation that blocks the UI.
  */
-export function createFacebookShareManager(eventBridge: EventBridge): FacebookShareManager {
+export function createFacebookShareManager(eventBridge: EventBridge, uiScheduler: Scheduler): FacebookShareManager {
   return {
     shareLink: content =>
-      eventBridge.requestAsync({ type: 'org.racehorse.FacebookShareLinkEvent', payload: content }).then(noop),
+      uiScheduler.schedule(() =>
+        eventBridge.requestAsync({ type: 'org.racehorse.FacebookShareLinkEvent', payload: content }).then(noop)
+      ),
   };
 }

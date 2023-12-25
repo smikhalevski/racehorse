@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.askForPermissions
+import org.racehorse.utils.checkForeground
 import org.racehorse.utils.isPermissionGranted
 import org.racehorse.webview.GeolocationPermissionsShowPromptEvent
 import org.racehorse.webview.PermissionRequestEvent
@@ -98,6 +99,8 @@ open class PermissionsPlugin(private val activity: ComponentActivity) {
 
     @Subscribe
     open fun onAskForPermission(event: AskForPermissionEvent) {
+        activity.checkForeground()
+
         activity.askForPermissions(event.permissions) {
             event.respond(AskForPermissionEvent.ResultEvent(it))
         }

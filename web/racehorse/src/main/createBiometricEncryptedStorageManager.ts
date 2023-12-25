@@ -1,5 +1,6 @@
 import { EventBridge } from './createEventBridge';
 import { BiometricAuthenticator } from './createBiometricManager';
+import { Scheduler } from './createScheduler';
 
 export interface BiometricConfig {
   title?: string;
@@ -21,6 +22,8 @@ export interface BiometricEncryptedStorageManager {
   /**
    * Associates a value with a key in an encrypted storage.
    *
+   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   *
    * @param key A key to set.
    * @param value A value to write.
    * @param config The options of the biometric prompt.
@@ -30,6 +33,8 @@ export interface BiometricEncryptedStorageManager {
 
   /**
    * Retrieves an encrypted value associated with the key.
+   *
+   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
    *
    * @returns The deciphered value, or `null` if key wasn't found or if password is incorrect.
    */
@@ -48,17 +53,30 @@ export interface BiometricEncryptedStorageManager {
   delete(key: string): boolean;
 }
 
-export function createBiometricEncryptedStorageManager(eventBridge: EventBridge): BiometricEncryptedStorageManager {
+/**
+ * A biometric encrypted key-value file-based storage.
+ *
+ * @param eventBridge The underlying event bridge.
+ * @param uiScheduler The callback that schedules an operation that blocks the UI.
+ */
+export function createBiometricEncryptedStorageManager(
+  eventBridge: EventBridge,
+  uiScheduler: Scheduler
+): BiometricEncryptedStorageManager {
   return {
     set: (key, value, config) =>
-      eventBridge
-        .requestAsync({ type: 'org.racehorse.SetBiometricEncryptedValueEvent', payload: { key, value, config } })
-        .then(event => event.payload.isSuccessful),
+      uiScheduler.schedule(() =>
+        eventBridge
+          .requestAsync({ type: 'org.racehorse.SetBiometricEncryptedValueEvent', payload: { key, value, config } })
+          .then(event => event.payload.isSuccessful)
+      ),
 
     get: (key, config) =>
-      eventBridge
-        .requestAsync({ type: 'org.racehorse.GetBiometricEncryptedValueEvent', payload: { key, config } })
-        .then(event => event.payload.value),
+      uiScheduler.schedule(() =>
+        eventBridge
+          .requestAsync({ type: 'org.racehorse.GetBiometricEncryptedValueEvent', payload: { key, config } })
+          .then(event => event.payload.value)
+      ),
 
     has: key =>
       eventBridge.request({

@@ -1,4 +1,5 @@
 import { EventBridge } from './createEventBridge';
+import { Scheduler } from './createScheduler';
 
 export interface FacebookAccessToken {
   /**
@@ -83,6 +84,8 @@ export interface FacebookLoginManager {
   /**
    * Logs the user in with the requested read permissions.
    *
+   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   *
    * @param permissions The requested permissions.
    */
   logIn(permissions?: string[]): Promise<FacebookAccessToken | null>;
@@ -97,16 +100,19 @@ export interface FacebookLoginManager {
  * Manages Facebook Login integration.
  *
  * @param eventBridge The underlying event bridge.
+ * @param uiScheduler The callback that schedules an operation that blocks the UI.
  */
-export function createFacebookLoginManager(eventBridge: EventBridge): FacebookLoginManager {
+export function createFacebookLoginManager(eventBridge: EventBridge, uiScheduler: Scheduler): FacebookLoginManager {
   return {
     getCurrentAccessToken: () =>
       eventBridge.request({ type: 'org.racehorse.GetCurrentFacebookAccessTokenEvent' }).payload.accessToken,
 
     logIn: permissions =>
-      eventBridge
-        .requestAsync({ type: 'org.racehorse.FacebookLogInEvent', payload: { permissions } })
-        .then(event => event.payload.accessToken),
+      uiScheduler.schedule(() =>
+        eventBridge
+          .requestAsync({ type: 'org.racehorse.FacebookLogInEvent', payload: { permissions } })
+          .then(event => event.payload.accessToken)
+      ),
 
     logOut() {
       eventBridge.request({ type: 'org.racehorse.FacebookLogOutEvent' });

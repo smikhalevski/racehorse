@@ -9,7 +9,9 @@ export function GeolocationExample() {
       <h2>{'Geolocation'}</h2>
 
       {window.location.protocol !== 'https:' && (
-        <p style={{ color: 'red' }}>{'Pick "release" build variant to enable geolocation'}</p>
+        <p style={{ color: 'red' }}>
+          <i>{'Pick "release" build variant to enable geolocation'}</i>
+        </p>
       )}
 
       <button

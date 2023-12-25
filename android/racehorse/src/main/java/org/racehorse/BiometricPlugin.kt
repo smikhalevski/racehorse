@@ -7,6 +7,7 @@ import androidx.biometric.BiometricManager
 import androidx.fragment.app.FragmentActivity
 import com.google.gson.annotations.SerializedName
 import org.greenrobot.eventbus.Subscribe
+import org.racehorse.utils.checkForeground
 import org.racehorse.utils.launchActivityForResult
 
 enum class BiometricAuthenticator(val value: Int) {
@@ -88,6 +89,8 @@ class BiometricPlugin(private val activity: FragmentActivity) {
 
     @Subscribe
     fun onEnrollBiometric(event: EnrollBiometricEvent) {
+        activity.checkForeground()
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
             // Too old for this shit
             event.respond(EnrollBiometricEvent.ResultEvent(false))

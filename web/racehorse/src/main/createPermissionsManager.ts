@@ -1,4 +1,5 @@
 import { EventBridge } from './createEventBridge';
+import { Scheduler } from './createScheduler';
 
 /**
  * Allows checking and requesting application permissions.
@@ -39,6 +40,8 @@ export interface PermissionsManager {
    * should not be granted to your app, and should have protection level dangerous, regardless whether it is declared by
    * the platform or a third-party app.
    *
+   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   *
    * @param permission The requested permission.
    */
   askForPermission(permission: string): Promise<boolean>;
@@ -57,15 +60,17 @@ export interface PermissionsManager {
  * Check permission statuses and ask for permissions.
  *
  * @param eventBridge The underlying event bridge.
+ * @param uiScheduler The callback that schedules an operation that blocks the UI.
  */
-export function createPermissionsManager(eventBridge: EventBridge): PermissionsManager {
+export function createPermissionsManager(eventBridge: EventBridge, uiScheduler: Scheduler): PermissionsManager {
   return {
     shouldShowRequestPermissionRationale: permission =>
       request('org.racehorse.ShouldShowRequestPermissionRationaleEvent', eventBridge, permission),
 
     isPermissionGranted: permission => request('org.racehorse.IsPermissionGrantedEvent', eventBridge, permission),
 
-    askForPermission: permission => requestAsync('org.racehorse.AskForPermissionEvent', eventBridge, permission),
+    askForPermission: permission =>
+      uiScheduler.schedule(() => requestAsync('org.racehorse.AskForPermissionEvent', eventBridge, permission)),
   };
 }
 

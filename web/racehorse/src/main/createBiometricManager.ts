@@ -1,4 +1,5 @@
 import { EventBridge } from './createEventBridge';
+import { Scheduler } from './createScheduler';
 
 /**
  * Types of authenticators, defined at a level of granularity supported by {@link BiometricManager}.
@@ -65,6 +66,8 @@ export interface BiometricManager {
    * Prompts the user to register credentials for given authenticators. If user already enrolled then returns a promise
    * without any user interaction.
    *
+   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   *
    * @param authenticators The array of authenticators that must be supported for successful enrollment. If omitted, or
    * if an empty array is provided then {@link BiometricAuthenticator.BIOMETRIC_STRONG} is used.
    * @return `true` if biometric enrollment succeeded, or `false` otherwise.
@@ -76,8 +79,9 @@ export interface BiometricManager {
  * Provides the status of biometric support and allows to enroll for biometric auth.
  *
  * @param eventBridge The underlying event bridge.
+ * @param uiScheduler The callback that schedules an operation that blocks the UI.
  */
-export function createBiometricManager(eventBridge: EventBridge): BiometricManager {
+export function createBiometricManager(eventBridge: EventBridge, uiScheduler: Scheduler): BiometricManager {
   return {
     getBiometricStatus: authenticators =>
       eventBridge.request({
@@ -86,8 +90,10 @@ export function createBiometricManager(eventBridge: EventBridge): BiometricManag
       }).payload.status,
 
     enrollBiometric: authenticators =>
-      eventBridge
-        .requestAsync({ type: 'org.racehorse.EnrollBiometricEvent', payload: { authenticators } })
-        .then(event => event.payload.isEnrolled),
+      uiScheduler.schedule(() =>
+        eventBridge
+          .requestAsync({ type: 'org.racehorse.EnrollBiometricEvent', payload: { authenticators } })
+          .then(event => event.payload.isEnrolled)
+      ),
   };
 }

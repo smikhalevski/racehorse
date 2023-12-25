@@ -17,6 +17,7 @@ import { createKeyboardManager } from './createKeyboardManager';
 import { createNetworkManager } from './createNetworkManager';
 import { createNotificationsManager } from './createNotificationsManager';
 import { createPermissionsManager } from './createPermissionsManager';
+import { createScheduler } from './createScheduler';
 
 export { createActivityManager, Intent, Activity, ActivityState } from './createActivityManager';
 export { createBiometricEncryptedStorageManager } from './createBiometricEncryptedStorageManager';
@@ -38,10 +39,12 @@ export {
 } from './createGooglePayManager';
 export { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager';
 export { createGoogleSignInManager } from './createGoogleSignInManager';
+export { createJoiner } from './createJoiner';
 export { createKeyboardManager } from './createKeyboardManager';
 export { createNetworkManager } from './createNetworkManager';
 export { createNotificationsManager } from './createNotificationsManager';
 export { createPermissionsManager } from './createPermissionsManager';
+export { createScheduler } from './createScheduler';
 
 export type { ActivityManager, ActivityResult, ActivityInfo } from './createActivityManager';
 export type { BiometricEncryptedStorageManager, BiometricConfig } from './createBiometricEncryptedStorageManager';
@@ -65,18 +68,22 @@ export type {
 } from './createGooglePayManager';
 export type { GooglePlayReferrerManager } from './createGooglePlayReferrerManager';
 export type { GoogleSignInManager, GoogleSignInAccount } from './createGoogleSignInManager';
+export type { Joiner } from './createJoiner';
 export type { KeyboardManager, KeyboardStatus } from './createKeyboardManager';
 export type { NetworkManager, NetworkType, NetworkStatus } from './createNetworkManager';
 export type { NotificationsManager } from './createNotificationsManager';
 export type { PermissionsManager } from './createPermissionsManager';
+export type { Scheduler } from './createScheduler';
+
+export const uiScheduler = createScheduler();
 
 export const eventBridge = createEventBridge();
 
-export const activityManager = createActivityManager(eventBridge);
+export const activityManager = createActivityManager(eventBridge, uiScheduler);
 
-export const biometricEncryptedStorageManager = createBiometricEncryptedStorageManager(eventBridge);
+export const biometricEncryptedStorageManager = createBiometricEncryptedStorageManager(eventBridge, uiScheduler);
 
-export const biometricManager = createBiometricManager(eventBridge);
+export const biometricManager = createBiometricManager(eventBridge, uiScheduler);
 
 export const deepLinkManager = createDeepLinkManager(eventBridge);
 
@@ -86,19 +93,19 @@ export const downloadManager = createDownloadManager(eventBridge);
 
 export const evergreenManager = createEvergreenManager(eventBridge);
 
-export const facebookLoginManager = createFacebookLoginManager(eventBridge);
+export const facebookLoginManager = createFacebookLoginManager(eventBridge, uiScheduler);
 
-export const facebookShareManager = createFacebookShareManager(eventBridge);
+export const facebookShareManager = createFacebookShareManager(eventBridge, uiScheduler);
 
 export const encryptedStorageManager = createEncryptedStorageManager(eventBridge);
 
 export const firebaseManager = createFirebaseManager(eventBridge);
 
-export const googlePayManager = createGooglePayManager(eventBridge);
+export const googlePayManager = createGooglePayManager(eventBridge, uiScheduler);
 
 export const googlePlayReferrerManager = createGooglePlayReferrerManager(eventBridge);
 
-export const googleSignInManager = createGoogleSignInManager(eventBridge);
+export const googleSignInManager = createGoogleSignInManager(eventBridge, uiScheduler);
 
 export const keyboardManager = createKeyboardManager(eventBridge);
 
@@ -106,4 +113,4 @@ export const networkManager = createNetworkManager(eventBridge);
 
 export const notificationsManager = createNotificationsManager(eventBridge);
 
-export const permissionsManager = createPermissionsManager(eventBridge);
+export const permissionsManager = createPermissionsManager(eventBridge, uiScheduler);

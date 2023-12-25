@@ -1,4 +1,4 @@
-import { EventBridge } from './createEventBridge';
+import { Event, EventBridge } from './createEventBridge';
 
 /**
  * The download description.
@@ -249,11 +249,12 @@ export interface DownloadManager {
 export function createDownloadManager(eventBridge: EventBridge): DownloadManager {
   return {
     addDownload: (uri, options) =>
-      new Promise(resolve => {
-        resolve(Object.assign({}, options, { uri, headers: Array.from(new Headers(options?.headers)) }));
-      })
-        .then(payload => eventBridge.requestAsync({ type: 'org.racehorse.AddDownloadEvent', payload }))
-        .then(event => event.payload.id),
+      new Promise<Event>(resolve => {
+        const headers = Array.from(new Headers(options?.headers));
+        const payload = Object.assign({}, options, { uri, headers });
+
+        resolve(eventBridge.requestAsync({ type: 'org.racehorse.AddDownloadEvent', payload }));
+      }).then(event => event.payload.id),
 
     getDownload: id =>
       eventBridge.request({ type: 'org.racehorse.GetDownloadEvent', payload: { id } }).payload.download,
