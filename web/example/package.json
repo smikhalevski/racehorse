@@ -24,8 +24,8 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@racehorse/react": "^1.1.2",
-    "racehorse": "^1.4.3",
+    "@racehorse/react": "^1.2.0",
+    "racehorse": "^1.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   }
