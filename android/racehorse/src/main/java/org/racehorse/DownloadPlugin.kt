@@ -234,7 +234,7 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
             event.headers?.forEach { addRequestHeader(it.first, it.second) }
         }
 
-        if (Build.VERSION.SDK_INT >= 29) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             event.respond { AddDownloadEvent.ResultEvent(downloadManager.enqueue(request)) }
             return
         }
@@ -263,7 +263,7 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
         val saveToDir = Environment.getExternalStoragePublicDirectory(SAVE_TO_DIR)
 
         // Use MediaStore to write a file
-        if (Build.VERSION.SDK_INT >= 29) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val values = ContentValues().apply {
                 put(MediaStore.Downloads.RELATIVE_PATH, SAVE_TO_DIR)
                 put(MediaStore.Downloads.DISPLAY_NAME, fileName)

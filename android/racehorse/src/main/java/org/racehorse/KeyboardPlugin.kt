@@ -90,7 +90,7 @@ class KeyboardObserver(activity: Activity, private val listener: (keyboardHeight
     private val layoutListener = ViewTreeObserver.OnGlobalLayoutListener {
         val frameBottom = Rect().apply { rootView.getWindowVisibleDisplayFrame(this) }.bottom
 
-        val insetBottom = if (Build.VERSION.SDK_INT >= 30) {
+        val insetBottom = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             rootView.rootWindowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars()).bottom
         } else {
             @Suppress("DEPRECATION")
