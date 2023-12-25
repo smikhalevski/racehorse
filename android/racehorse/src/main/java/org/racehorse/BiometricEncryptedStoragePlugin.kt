@@ -63,20 +63,14 @@ class GetBiometricEncryptedValueEvent(val key: String, val config: BiometricConf
  * Checks that the key exists in the storage.
  */
 class HasBiometricEncryptedValueEvent(val key: String) : RequestEvent() {
-    class ResultEvent(val isExisting: Boolean) : ResponseEvent() {
-        @Deprecated("Delete in next release")
-        val exists = isExisting
-    }
+    class ResultEvent(val isExisting: Boolean) : ResponseEvent()
 }
 
 /**
  * Deletes a value associated with the key.
  */
 class DeleteBiometricEncryptedValueEvent(val key: String) : RequestEvent() {
-    class ResultEvent(val isDeleted: Boolean) : ResponseEvent() {
-        @Deprecated("Delete in next release")
-        val deleted = isDeleted
-    }
+    class ResultEvent(val isDeleted: Boolean) : ResponseEvent()
 }
 
 /**

@@ -43,12 +43,16 @@ export function createEncryptedStorageManager(eventBridge: EventBridge): Encrypt
         .requestAsync({ type: 'org.racehorse.GetEncryptedValueEvent', payload: { key, password } })
         .then(event => event.payload.value),
 
-    has: key => eventBridge.request({ type: 'org.racehorse.HasEncryptedValueEvent', payload: { key } }).payload.exists,
+    has: key =>
+      eventBridge.request({
+        type: 'org.racehorse.HasEncryptedValueEvent',
+        payload: { key },
+      }).payload.isExisting,
 
     delete: key =>
       eventBridge.request({
         type: 'org.racehorse.DeleteEncryptedValueEvent',
         payload: { key },
-      }).payload.deleted,
+      }).payload.isDeleted,
   };
 }

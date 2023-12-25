@@ -82,12 +82,12 @@ export function createBiometricEncryptedStorageManager(
       eventBridge.request({
         type: 'org.racehorse.HasBiometricEncryptedValueEvent',
         payload: { key },
-      }).payload.exists,
+      }).payload.isExisting,
 
     delete: key =>
       eventBridge.request({
         type: 'org.racehorse.DeleteBiometricEncryptedValueEvent',
         payload: { key },
-      }).payload.deleted,
+      }).payload.isDeleted,
   };
 }

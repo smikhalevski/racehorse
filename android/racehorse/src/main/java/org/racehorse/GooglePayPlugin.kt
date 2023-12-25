@@ -123,10 +123,7 @@ class GooglePayIsTokenizedEvent(
  * Open Google Pay app and reveal the card.
  */
 class GooglePayViewTokenEvent(val tokenId: String, val tokenServiceProvider: Int) : RequestEvent() {
-    class ResultEvent(val isOpened: Boolean) : ResponseEvent() {
-        @Deprecated("Delete in next release")
-        val opened = isOpened
-    }
+    class ResultEvent(val isOpened: Boolean) : ResponseEvent()
 }
 
 /**

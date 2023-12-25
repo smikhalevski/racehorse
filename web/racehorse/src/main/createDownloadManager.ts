@@ -262,6 +262,6 @@ export function createDownloadManager(eventBridge: EventBridge): DownloadManager
     getAllDownloads: () => eventBridge.request({ type: 'org.racehorse.GetAllDownloadsEvent' }).payload.downloads,
 
     removeDownload: id =>
-      eventBridge.request({ type: 'org.racehorse.RemoveDownloadEvent', payload: { id } }).payload.removed,
+      eventBridge.request({ type: 'org.racehorse.RemoveDownloadEvent', payload: { id } }).payload.isRemoved,
   };
 }

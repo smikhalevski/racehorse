@@ -21,10 +21,7 @@ class GetActivityStateEvent : RequestEvent() {
 }
 
 class GetActivityInfoEvent : RequestEvent() {
-    class ResultEvent(val info: ActivityInfo) : ResponseEvent() {
-        @Deprecated("Delete in next release")
-        val activityInfo = info
-    }
+    class ResultEvent(val info: ActivityInfo) : ResponseEvent()
 }
 
 /**
