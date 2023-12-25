@@ -7,12 +7,13 @@ import com.google.android.gms.tapandpay.TapAndPay
 import com.google.android.gms.tapandpay.TapAndPayStatusCodes
 import com.google.android.gms.tapandpay.issuer.IsTokenizedRequest
 import com.google.android.gms.tapandpay.issuer.PushTokenizeRequest
+import com.google.android.gms.tapandpay.issuer.TokenInfo
 import com.google.android.gms.tapandpay.issuer.TokenStatus
 import com.google.android.gms.tapandpay.issuer.UserAddress
 import com.google.android.gms.tapandpay.issuer.ViewTokenRequest
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.utils.checkForeground
+import org.racehorse.utils.checkActive
 import java.io.Serializable
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -26,7 +27,19 @@ class GooglePayTokenInfo(
     val issuerTokenId: String,
     val portfolioName: String,
     val isDefaultToken: Boolean,
-) : Serializable
+) : Serializable {
+    constructor(tokenInfo: TokenInfo) : this(
+        network = tokenInfo.network,
+        tokenServiceProvider = tokenInfo.tokenServiceProvider,
+        tokenState = tokenInfo.tokenState,
+        dpanLastFour = tokenInfo.dpanLastFour,
+        fpanLastFour = tokenInfo.fpanLastFour,
+        issuerName = tokenInfo.issuerName,
+        issuerTokenId = tokenInfo.issuerTokenId,
+        portfolioName = tokenInfo.portfolioName,
+        isDefaultToken = tokenInfo.isDefaultToken,
+    )
+}
 
 class SerializableGooglePayUserAddress(
     val name: String,
@@ -227,19 +240,7 @@ open class GooglePayPlugin(
     fun onGooglePayListTokens(event: GooglePayListTokensEvent) {
         tapAndPayClient.listTokens().addOnCompleteListener { task ->
             event.respond {
-                val tokenInfos = task.getResult(ApiException::class.java).map {
-                    GooglePayTokenInfo(
-                        network = it.network,
-                        tokenServiceProvider = it.tokenServiceProvider,
-                        tokenState = it.tokenState,
-                        dpanLastFour = it.dpanLastFour,
-                        fpanLastFour = it.fpanLastFour,
-                        issuerName = it.issuerName,
-                        issuerTokenId = it.issuerTokenId,
-                        portfolioName = it.portfolioName,
-                        isDefaultToken = it.isDefaultToken,
-                    )
-                }
+                val tokenInfos = task.getResult(ApiException::class.java).map(::GooglePayTokenInfo)
                 GooglePayListTokensEvent.ResultEvent(tokenInfos)
             }
         }
@@ -260,7 +261,7 @@ open class GooglePayPlugin(
 
     @Subscribe
     fun onGooglePayViewToken(event: GooglePayViewTokenEvent) {
-        activity.checkForeground()
+        activity.checkActive()
 
         val request = ViewTokenRequest.Builder()
             .setIssuerTokenId(event.tokenId)
@@ -283,7 +284,7 @@ open class GooglePayPlugin(
 
     @Subscribe
     fun onGooglePayPushTokenize(event: GooglePayPushTokenizeEvent) = runOperationInForeground(
-        { requestCode ->
+        operation = { requestCode ->
             val request = PushTokenizeRequest.Builder()
                 .setOpaquePaymentCard(event.opaquePaymentCard.toByteArray())
                 .setDisplayName(event.displayName)
@@ -295,12 +296,12 @@ open class GooglePayPlugin(
 
             tapAndPayClient.pushTokenize(activity, request, requestCode)
         },
-        { event.respond(GooglePayPushTokenizeEvent.ResultEvent(it?.getStringExtra(TapAndPay.EXTRA_ISSUER_TOKEN_ID))) }
+        callback = { event.respond(GooglePayPushTokenizeEvent.ResultEvent(it?.getStringExtra(TapAndPay.EXTRA_ISSUER_TOKEN_ID))) }
     )
 
     @Subscribe
     fun onGooglePayTokenize(event: GooglePayTokenizeEvent) = runOperationInForeground(
-        { requestCode ->
+        operation = { requestCode ->
             tapAndPayClient.tokenize(
                 activity,
                 event.tokenId,
@@ -310,12 +311,12 @@ open class GooglePayPlugin(
                 requestCode
             )
         },
-        { event.respond(GooglePayTokenizeEvent.ResultEvent(it?.getStringExtra(TapAndPay.EXTRA_ISSUER_TOKEN_ID))) }
+        callback = { event.respond(GooglePayTokenizeEvent.ResultEvent(it?.getStringExtra(TapAndPay.EXTRA_ISSUER_TOKEN_ID))) }
     )
 
     @Subscribe
     fun onGooglePayRequestSelectToken(event: GooglePayRequestSelectTokenEvent) = runOperationInForeground(
-        { requestCode ->
+        operation = { requestCode ->
             tapAndPayClient.requestSelectToken(
                 activity,
                 event.tokenId,
@@ -323,12 +324,12 @@ open class GooglePayPlugin(
                 requestCode
             )
         },
-        { event.respond(VoidEvent()) }
+        callback = { event.respond(VoidEvent()) }
     )
 
     @Subscribe
     fun onGooglePayRequestDeleteToken(event: GooglePayRequestDeleteTokenEvent) = runOperationInForeground(
-        { requestCode ->
+        operation = { requestCode ->
             tapAndPayClient.requestDeleteToken(
                 activity,
                 event.tokenId,
@@ -336,13 +337,13 @@ open class GooglePayPlugin(
                 requestCode
             )
         },
-        { event.respond(VoidEvent()) }
+        callback = { event.respond(VoidEvent()) }
     )
 
     @Subscribe
     fun onGooglePayCreateWallet(event: GooglePayCreateWalletEvent) = runOperationInForeground(
-        { requestCode -> tapAndPayClient.createWallet(activity, requestCode) },
-        { event.respond(VoidEvent()) }
+        operation = { requestCode -> tapAndPayClient.createWallet(activity, requestCode) },
+        callback = { event.respond(VoidEvent()) }
     )
 
     /**
@@ -356,10 +357,17 @@ open class GooglePayPlugin(
         operation: (requestCode: Int) -> Unit,
         callback: (data: Intent?) -> Unit
     ) {
-        activity.checkForeground()
+        activity.checkActive()
 
         val requestCode = nextRequestCode.getAndIncrement()
-        operation(requestCode)
+
         activityCallbacks[requestCode] = callback
+
+        try {
+            operation(requestCode)
+        } catch (e: Throwable) {
+            activityCallbacks.remove(requestCode)
+            throw e
+        }
     }
 }
