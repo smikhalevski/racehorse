@@ -66,9 +66,25 @@ export type ActivityState = (typeof ActivityState)[keyof typeof ActivityState];
 
 export interface ActivityInfo {
   /**
-   * The package name of the running activity.
+   * The localized application label.
    */
-  packageName: string;
+  applicationLabel: string;
+
+  /**
+   * The [application ID](https://developer.android.com/build/configure-app-module) that uniquely identifies your app on
+   * the device and in the Google Play Store.
+   */
+  applicationId: string;
+
+  /**
+   * The positive integer used as an internal version number.
+   */
+  versionCode: number;
+
+  /**
+   * The string used as the version number shown to users.
+   */
+  versionName: string;
 }
 
 /**

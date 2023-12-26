@@ -46,7 +46,7 @@ export function ActivityExample() {
               flags: Intent.FLAG_ACTIVITY_NEW_TASK,
               extras: {
                 // https://developer.android.com/reference/android/provider/Settings#EXTRA_APP_PACKAGE
-                'android.provider.extra.APP_PACKAGE': activityManager.getActivityInfo().packageName,
+                'android.provider.extra.APP_PACKAGE': activityManager.getActivityInfo().applicationId,
               },
             });
           }}
