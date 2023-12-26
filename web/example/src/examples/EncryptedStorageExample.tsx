@@ -60,8 +60,8 @@ export function EncryptedStorageExample() {
       <p>
         <button
           onClick={() => {
-            encryptedStorageManager.set(key, value, password).then(ok => {
-              if (ok) {
+            encryptedStorageManager.set(key, value, password).then(isSuccessful => {
+              if (isSuccessful) {
                 encryptedStorageManager.get(key, password).then(setPersistedValue);
               }
             });

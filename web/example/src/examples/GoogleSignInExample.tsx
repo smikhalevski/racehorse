@@ -37,7 +37,9 @@ export function GoogleSignInExample() {
       </button>{' '}
       <button
         onClick={() => {
-          googleSignInManager.signOut().then(() => setAccount(null));
+          googleSignInManager.signOut().then(() => {
+            setAccount(null);
+          });
         }}
       >
         {'Sign out'}

@@ -11,7 +11,7 @@ export interface Scheduler {
    *
    * @param operation The operation to schedule.
    */
-  schedule<T>(operation: () => Promise<T>): Promise<T>;
+  schedule<T>(operation: () => PromiseLike<T> | T): Promise<T>;
 }
 
 /**
@@ -19,24 +19,24 @@ export interface Scheduler {
  */
 export function createScheduler(): Scheduler {
   let promise: Promise<unknown> = Promise.resolve();
-  let pending = false;
+  let isPending = false;
 
   return {
-    isPending: () => pending,
+    isPending: () => isPending,
 
     schedule: operation => {
-      pending = true;
+      isPending = true;
 
       const operationPromise = promise
         .then(noop, noop)
         .then(operation)
         .then(
           result => {
-            pending = promise !== operationPromise;
+            isPending = promise !== operationPromise;
             return result;
           },
           reason => {
-            pending = promise !== operationPromise;
+            isPending = promise !== operationPromise;
             throw reason;
           }
         );
