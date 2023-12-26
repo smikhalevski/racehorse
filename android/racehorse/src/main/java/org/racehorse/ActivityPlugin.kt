@@ -1,6 +1,7 @@
 package org.racehorse
 
 import android.app.Activity
+import android.content.pm.PackageManager
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -12,7 +13,12 @@ import org.racehorse.utils.launchActivity
 import org.racehorse.utils.launchActivityForResult
 import java.io.Serializable
 
-class ActivityInfo(val packageName: String) : Serializable
+class ActivityInfo(
+    val applicationName: String,
+    val packageName: String,
+    val versionName: String,
+    val versionCode: Int,
+) : Serializable
 
 class ActivityStateChangedEvent(val state: Int) : NoticeEvent
 
@@ -88,9 +94,16 @@ open class ActivityPlugin(
 
     @Subscribe
     open fun onGetActivityInfo(event: GetActivityInfoEvent) {
+        val packageInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
+
         event.respond(
             GetActivityInfoEvent.ResultEvent(
-                ActivityInfo(packageName = activity.packageName)
+                ActivityInfo(
+                    applicationName = activity.applicationInfo.loadLabel(activity.packageManager).toString(),
+                    packageName = activity.packageName,
+                    versionName = packageInfo.versionName,
+                    versionCode = packageInfo.versionCode,
+                )
             )
         )
     }

@@ -66,9 +66,24 @@ export type ActivityState = (typeof ActivityState)[keyof typeof ActivityState];
 
 export interface ActivityInfo {
   /**
+   * The public name of the application. From the "android:name" attribute.
+   */
+  applicationName: string;
+
+  /**
    * The package name of the running activity.
    */
   packageName: string;
+
+  /**
+   * The positive integer used as an internal version number.
+   */
+  versionCode: number;
+
+  /**
+   * The string used as the version number shown to users.
+   */
+  versionName: string;
 }
 
 /**
