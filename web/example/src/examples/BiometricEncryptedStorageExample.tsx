@@ -54,7 +54,7 @@ export function BiometricEncryptedStorageExample() {
             biometricEncryptedStorageManager.get(key).then(setPersistedValue);
           }}
         >
-          {'Get'}
+          {'Get value'}
         </button>{' '}
         <button
           onClick={() => {
@@ -67,7 +67,7 @@ export function BiometricEncryptedStorageExample() {
             });
           }}
         >
-          {'Set'}
+          {'Set value'}
         </button>{' '}
         <button
           onClick={() => {
@@ -76,7 +76,7 @@ export function BiometricEncryptedStorageExample() {
             }
           }}
         >
-          {'Delete'}
+          {'Delete value'}
         </button>
       </p>
 

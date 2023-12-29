@@ -5,9 +5,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.security.keystore.KeyGenParameterSpec
 import android.webkit.CookieManager
+import android.webkit.WebResourceResponse
+import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.webkit.WebViewAssetLoader
 import com.facebook.FacebookSdk
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -28,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     private val webView by lazy { WebView(this) }
     private val eventBus = EventBus.getDefault()
     private val networkPlugin = NetworkPlugin(this)
+    private val assetLoaderPlugin = AssetLoaderPlugin(this)
     private val cookieManager = CookieManager.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +50,13 @@ class MainActivity : AppCompatActivity() {
         cookieManager.setAcceptCookie(true)
         cookieManager.setAcceptThirdPartyCookies(webView, true)
 
+        // Renders "Hello" in the iframe
+        assetLoaderPlugin.registerAssetLoader("https://iframe.example.com") {
+            WebResourceResponse("text/html", null, "Hello".byteInputStream())
+        }
+
         eventBus.register(EventBridge(webView).apply { enable() })
+        eventBus.register(assetLoaderPlugin)
         eventBus.register(DevicePlugin(this))
         eventBus.register(EncryptedStoragePlugin(File(filesDir, "storage"), BuildConfig.APPLICATION_ID.toByteArray()))
         eventBus.register(FileChooserPlugin(this, externalCacheDir, "${BuildConfig.APPLICATION_ID}.provider"))
@@ -87,15 +95,21 @@ class MainActivity : AppCompatActivity() {
 
         if (BuildConfig.DEBUG) {
             // 1️⃣ Live reload
-            //
-            // Debug in emulator with a server running on the host machine on localhost:10001
 
-            webView.loadUrl("http://10.0.2.2:10001")
+            // Rollup starts server on localhost:10001
+            assetLoaderPlugin.registerAssetLoader("https://example.com", LocalhostDevPathHandler(10001))
+
+            // Example app uses livereload that is loaded from http://10.0.2.2:35729, since the app is rendered using
+            // https://example.com which uses HTTPS, live reload is rejected because of the mixed content policy.
+            // Don't use this setting in production!
+            webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+
+            webView.loadUrl("https://example.com")
 
             setContentView(webView)
         } else {
             // 2️⃣ Evergreen
-            //
+
             // An update bundle `<racehorse>/web/example/dist/bundle.zip` is downloaded using the `EvergreenPlugin` and
             // served from the internal app cache.
             //
@@ -142,15 +156,7 @@ class MainActivity : AppCompatActivity() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onBundleReady(event: BundleReadyEvent) {
-        EventBus.getDefault().register(
-            AssetLoaderPlugin(
-                this,
-                WebViewAssetLoader.Builder()
-                    .setDomain("example.com")
-                    .addPathHandler("/", StaticPathHandler(event.appDir))
-                    .build()
-            )
-        )
+        assetLoaderPlugin.registerAssetLoader("https://example.com", StaticPathHandler(event.appDir))
 
         webView.loadUrl("https://example.com")
 

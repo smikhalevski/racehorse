@@ -8,12 +8,6 @@ export function GeolocationExample() {
     <>
       <h2>{'Geolocation'}</h2>
 
-      {window.location.protocol !== 'https:' && (
-        <p style={{ color: 'red' }}>
-          <i>{'Pick "release" build variant to enable geolocation'}</i>
-        </p>
-      )}
-
       <button
         onClick={() => {
           navigator.geolocation.getCurrentPosition(

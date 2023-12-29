@@ -7,7 +7,7 @@ const TEST_DATA_URI =
   'data:image/gif;base64,R0lGODlhEAAQAMQAAORHHOVSKudfOulrSOp3WOyDZu6QdvCchPGolfO0o/XBs/fNwfjZ0frl3/zy7////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAkAABAALAAAAAAQABAAAAVVICSOZGlCQAosJ6mu7fiyZeKqNKToQGDsM8hBADgUXoGAiqhSvp5QAnQKGIgUhwFUYLCVDFCrKUE1lBavAViFIDlTImbKC5Gm2hB0SlBCBMQiB0UjIQA7';
 
 export function DownloadExample() {
-  const [uri, setUri] = useState(TEST_HTTP_URL);
+  const [uri, setURI] = useState(TEST_HTTP_URL);
   const [downloads, setDownloads] = useState(downloadManager.getAllDownloads);
 
   useEffect(() => {
@@ -94,28 +94,12 @@ export function DownloadExample() {
       </table>
 
       <p>
-        <input
-          value={uri}
-          onChange={event => {
-            setUri(event.target.value);
-          }}
-        />{' '}
-        <button
-          onClick={() => {
-            downloadManager.addDownload(uri, { headers: { 'Example-Header': 'example' } });
-          }}
-        >
-          {'Add download'}
-        </button>
-      </p>
-
-      <p>
         {'Use '}
         <a
           href={'#'}
           onClick={event => {
             event.preventDefault();
-            setUri(TEST_HTTP_URL);
+            setURI(TEST_HTTP_URL);
           }}
         >
           {'HTTP URL'}
@@ -125,11 +109,27 @@ export function DownloadExample() {
           href={'#'}
           onClick={event => {
             event.preventDefault();
-            setUri(TEST_DATA_URI);
+            setURI(TEST_DATA_URI);
           }}
         >
           {'data URI'}
         </a>
+      </p>
+
+      <p>
+        <input
+          value={uri}
+          onChange={event => {
+            setURI(event.target.value);
+          }}
+        />{' '}
+        <button
+          onClick={() => {
+            downloadManager.addDownload(uri, { headers: { 'Example-Header': 'example' } });
+          }}
+        >
+          {'Add download'}
+        </button>
       </p>
 
       <hr />

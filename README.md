@@ -426,22 +426,41 @@ import org.racehorse.AssetLoaderPlugin
 import org.racehorse.StaticPathHandler
 
 EventBus.getDefault().register(
-    AssetLoaderPlugin(
-        activity,
-        WebViewAssetLoader.Builder()
-            .setDomain("example.com")
-            .addPathHandler(
-                "/",
-                StaticPathHandler(File(activity.filesDir, "www"))
-            )
-            .build()
-    )
+    AssetLoaderPlugin(activity).also {
+        registerAssetLoader(
+            "https://example.com",
+            StaticPathHandler(File(activity.filesDir, "www"))
+        )
+    }
 )
 
 webView.loadUrl("https://example.com")
 ```
 
-You can register multiple instances of this plugin.
+During development, if you're running a watcher server on localhost, use `LocalhostDevPathHandler` to serve its content
+to the webview:
+
+```kotlin
+AssetLoaderPlugin(activity).also {
+    registerAssetLoader("https://example.com", LocalhostDevPathHandler(8080))
+}
+```
+
+`AssetLoaderPlugin` would open URL in an external browser app it isn't handled by any of registered asset loaders. Since
+in the example above only https://example.com is handled by the asset loader, all other URLs are opened externally:
+
+```js
+// This would open a browser app and load google.com
+window.location.href = 'https://google.com'
+```
+
+To disable this behaviour:
+
+```kotlin
+AssetLoaderPlugin(activity).also {
+    isUnhandledRequestOpenedInExternalBrowser = false
+}
+```
 
 # Deep link plugin
 

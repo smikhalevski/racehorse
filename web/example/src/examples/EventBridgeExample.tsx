@@ -6,7 +6,7 @@ export function EventBridgeExample() {
 
   return (
     <>
-      <h2>{'EventBridge'}</h2>
+      <h2>{'Event bridge'}</h2>
 
       <p>
         {'Is '}

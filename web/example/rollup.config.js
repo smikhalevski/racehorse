@@ -20,13 +20,15 @@ module.exports = {
     }),
     commonjs(),
     typescript({ tsconfig: './tsconfig.json' }),
-    html({
-      title: 'Racehorse',
-    }),
-    zip({
-      file: 'bundle.zip',
-    }),
-    process.env.ROLLUP_WATCH && serve('dist'),
-    process.env.ROLLUP_WATCH && livereload('dist'),
+    html({ title: 'Racehorse' }),
+    zip({ file: 'bundle.zip' }),
+
+    process.env.ROLLUP_WATCH && serve({ contentBase: './dist' }),
+
+    process.env.ROLLUP_WATCH &&
+      livereload({
+        watch: './dist',
+        clientUrl: 'http://10.0.2.2:35729/livereload.js?snipver=1',
+      }),
   ],
 };
