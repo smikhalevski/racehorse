@@ -60,10 +60,10 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
 
     // ActivityPlugin
-    implementation("androidx.lifecycle:lifecycle-process:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-process:2.7.0")
 
     // AssetLoaderPlugin
-    implementation("androidx.webkit:webkit:1.9.0")
+    implementation("androidx.webkit:webkit:1.10.0")
 
     // DevicePlugin
     implementation("androidx.appcompat:appcompat:1.6.1")

@@ -11,7 +11,7 @@ tasks.dokkaHtml.configure {
 
 android {
     namespace = "org.racehorse"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         // https://apilevels.com/
@@ -80,10 +80,10 @@ dependencies {
     compileOnly("com.google.code.gson:gson:2.10.1")
 
     // ActivityPlugin
-    compileOnly("androidx.lifecycle:lifecycle-process:2.6.2")
+    compileOnly("androidx.lifecycle:lifecycle-process:2.7.0")
 
     // AssetLoaderPlugin
-    compileOnly("androidx.webkit:webkit:1.9.0")
+    compileOnly("androidx.webkit:webkit:1.10.0")
 
     // DevicePlugin
     compileOnly("androidx.appcompat:appcompat:1.6.1")
