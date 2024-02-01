@@ -13,8 +13,11 @@ import org.racehorse.webview.ShouldInterceptRequestEvent
 import org.racehorse.webview.ShouldOverrideUrlLoadingEvent
 import java.io.File
 import java.io.FileInputStream
+import java.io.IOException
+import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLConnection
+import java.util.TreeMap
 
 /**
  * Intercepts requests and serves the responses using an registered asset loaders.
@@ -84,12 +87,10 @@ open class AssetLoaderPlugin(private val activity: ComponentActivity) {
  *
  * @param baseDir The directory on the device from which files are served.
  * @param indexFileName The name of the index file to look for if handled path is a directory.
- * @param headers The map of headers returns with each response.
  */
 open class StaticPathHandler(
     private val baseDir: File,
-    private val indexFileName: String = "index.html",
-    private val headers: Map<String, String>? = null
+    private val indexFileName: String = "index.html"
 ) : PathHandler {
 
     private val baseDirPath = baseDir.canonicalPath
@@ -104,7 +105,7 @@ open class StaticPathHandler(
             }
             if (file.isFile && file.canRead()) {
                 val mimeType = URLConnection.guessContentTypeFromName(path)
-                return WebResourceResponse(mimeType, null, 200, "OK", headers, FileInputStream(file))
+                return WebResourceResponse(mimeType, null, FileInputStream(file))
             }
         }
 
@@ -113,22 +114,47 @@ open class StaticPathHandler(
 }
 
 /**
- * Localhost dev server path handler.
- *
- * @param port The port on the localhost where the dev server is started.
- * @param pathPrefix The path prefix of the dev server.
- * @param headers The map of headers returns with each response.
+ * Redirects content from the given URL.
  */
-open class LocalhostDevPathHandler(
-    private val port: Int,
-    private val pathPrefix: String = "",
-    private val headers: Map<String, String>? = null
-) : PathHandler {
-    override fun handle(path: String): WebResourceResponse? {
-        val connection = URL("http://10.0.2.2:$port$pathPrefix/$path").openConnection()
+open class ProxyPathHandler(private val baseUrl: URL) : PathHandler {
 
-        connection.connectTimeout = 1000
+    constructor(baseUrl: String) : this(URL(baseUrl))
 
-        return WebResourceResponse(connection.contentType, null, 200, "OK", headers, connection.getInputStream())
+    override fun handle(path: String): WebResourceResponse {
+        val connection = openConnection(path)
+
+        val headers = connection.headerFields
+            .toMutableMap()
+            .apply { remove(null) }
+            .mapValuesTo(TreeMap(String.CASE_INSENSITIVE_ORDER)) { it.value.joinToString("; ") }
+
+        headers.remove("Content-Type")
+        headers.remove("Content-Length")
+
+        val mimeType = connection.contentType?.substringBefore(';')
+
+        val inputStream = try {
+            connection.inputStream
+        } catch (_: IOException) {
+            null
+        }
+
+        return WebResourceResponse(
+            mimeType,
+            connection.contentEncoding,
+            connection.responseCode,
+            connection.responseMessage,
+            headers,
+            inputStream
+        )
+    }
+
+    open fun openConnection(path: String): HttpURLConnection {
+        val connection = URL(baseUrl, path).openConnection() as HttpURLConnection
+
+        connection.instanceFollowRedirects = true
+        connection.connectTimeout = 10_000
+
+        return connection
     }
 }

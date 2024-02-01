@@ -5,6 +5,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URLConnection
+import java.util.zip.ZipException
 import java.util.zip.ZipInputStream
 
 /**
@@ -97,7 +98,7 @@ internal class BundleDownload(
                 HttpURLConnection.HTTP_OK -> readLength = 0L
                 HttpURLConnection.HTTP_PARTIAL -> {}
 
-                else -> throw IOException("Cannot download bundle")
+                else -> throw IOException("Cannot download the bundle")
             }
 
             if (connection.getHeaderField("Accept-Ranges")?.contains("bytes") == true) {
@@ -126,18 +127,30 @@ internal class BundleDownload(
     private fun unzip() {
         val unzipDirPath = unzipDir.canonicalPath + File.separator
 
-        ZipInputStream(zipFile.inputStream()).use { inputStream ->
-            while (!isStopped) {
-                val file = File(unzipDir, inputStream.nextEntry?.name ?: break)
+        try {
+            ZipInputStream(zipFile.inputStream()).use { zipInputStream ->
+                while (!isStopped) {
+                    val zipEntry = try {
+                        zipInputStream.nextEntry ?: break
+                    } catch (_: ZipException) {
+                        // https://developer.android.com/about/versions/14/behavior-changes-14#zip-path-traversal
+                        zipInputStream.closeEntry()
+                        continue
+                    }
 
-                // https://snyk.io/research/zip-slip-vulnerability
-                if (file.canonicalPath.startsWith(unzipDirPath)) {
-                    file.parentFile!!.mkdirs()
-                    inputStream.copyTo(FileOutputStream(file))
+                    val file = File(unzipDir, zipEntry.name)
+
+                    // https://snyk.io/research/zip-slip-vulnerability
+                    if (file.canonicalPath.startsWith(unzipDirPath)) {
+                        file.parentFile!!.mkdirs()
+                        zipInputStream.copyTo(FileOutputStream(file))
+                    }
+
+                    zipInputStream.closeEntry()
                 }
-
-                inputStream.closeEntry()
             }
+        } catch (e: Throwable) {
+            throw IllegalStateException("Cannot unzip the bundle", e)
         }
     }
 }
