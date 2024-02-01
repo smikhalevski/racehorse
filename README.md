@@ -418,7 +418,7 @@ dependencies {
 }
 ```
 
-2. Load the static assets from a directory when a particular URL is requested in the WebView:
+2. Load the static assets from a directory on the device when a particular URL is requested in the WebView:
 
 ```kotlin
 import androidx.webkit.WebViewAssetLoader
@@ -426,7 +426,7 @@ import org.racehorse.AssetLoaderPlugin
 import org.racehorse.StaticPathHandler
 
 EventBus.getDefault().register(
-    AssetLoaderPlugin(activity).also {
+    AssetLoaderPlugin(activity).apply {
         registerAssetLoader(
             "https://example.com",
             StaticPathHandler(File(activity.filesDir, "www"))
@@ -437,12 +437,14 @@ EventBus.getDefault().register(
 webView.loadUrl("https://example.com")
 ```
 
-During development, if you're running a watcher server on localhost, use `LocalhostDevPathHandler` to serve its content
-to the webview:
+During development, if you're running a server on localhost, use `ProxyPathHandler` to serve contents to the webview:
 
 ```kotlin
-AssetLoaderPlugin(activity).also {
-    registerAssetLoader("https://example.com", LocalhostDevPathHandler(8080))
+AssetLoaderPlugin(activity).apply {
+    registerAssetLoader(
+        "https://example.com",
+        ProxyPathHandler("http://10.0.2.2:10001")
+    )
 }
 ```
 
@@ -457,7 +459,7 @@ window.location.href = 'https://google.com'
 To disable this behaviour:
 
 ```kotlin
-AssetLoaderPlugin(activity).also {
+AssetLoaderPlugin(activity).apply {
     isUnhandledRequestOpenedInExternalBrowser = false
 }
 ```

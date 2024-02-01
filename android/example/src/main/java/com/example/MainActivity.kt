@@ -97,7 +97,7 @@ class MainActivity : AppCompatActivity() {
             // 1️⃣ Live reload
 
             // Rollup starts server on localhost:10001
-            assetLoaderPlugin.registerAssetLoader("https://example.com", LocalhostDevPathHandler(10001))
+            assetLoaderPlugin.registerAssetLoader("https://example.com", ProxyPathHandler("http://10.0.2.2:10001"))
 
             // Example app uses livereload that is loaded from http://10.0.2.2:35729, since the app is rendered using
             // https://example.com which uses HTTPS, live reload is rejected because of the mixed content policy.
