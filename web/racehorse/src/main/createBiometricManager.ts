@@ -36,6 +36,18 @@ export const BiometricStatus = {
   SUPPORTED: 'supported',
 
   /**
+   * Unable to determine whether the user can authenticate.
+   *
+   * This status code may be returned on older Android versions due to partial incompatibility with a newer API.
+   */
+  UNKNOWN: 'unknown',
+
+  /**
+   * The user can't authenticate because the specified options are incompatible with the current Android version.
+   */
+  UNSUPPORTED: 'unsupported',
+
+  /**
    * No biometric features available on this device.
    */
   NO_HARDWARE: 'no_hardware',
@@ -49,6 +61,12 @@ export const BiometricStatus = {
    * Biometric authentication isn't set up.
    */
   NONE_ENROLLED: 'none_enrolled',
+
+  /**
+   * The user can't authenticate because a security vulnerability has been discovered with one or more hardware sensors.
+   * The affected sensor(s) are unavailable until a security update has addressed the issue.
+   */
+  SECURITY_UPDATE_REQUIRED: 'security_update_required',
 } as const;
 
 export type BiometricStatus = (typeof BiometricStatus)[keyof typeof BiometricStatus];

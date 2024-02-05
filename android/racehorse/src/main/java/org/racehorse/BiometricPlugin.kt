@@ -49,6 +49,20 @@ enum class BiometricStatus(val value: Int) {
     SUPPORTED(BiometricManager.BIOMETRIC_SUCCESS),
 
     /**
+     * Unable to determine whether the user can authenticate.
+     *
+     * This status code may be returned on older Android versions due to partial incompatibility with a newer API.
+     */
+    @SerializedName("unknown")
+    UNKNOWN(BiometricManager.BIOMETRIC_STATUS_UNKNOWN),
+
+    /**
+     * The user can't authenticate because the specified options are incompatible with the current Android version.
+     */
+    @SerializedName("unsupported")
+    UNSUPPORTED(BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED),
+
+    /**
      * No biometric features available on this device.
      */
     @SerializedName("no_hardware")
@@ -60,11 +74,21 @@ enum class BiometricStatus(val value: Int) {
     @SerializedName("hardware_unavailable")
     HARDWARE_UNAVAILABLE(BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE),
 
+    /**
+     * The user can't authenticate because no biometric or device credential is enrolled.
+     */
     @SerializedName("none_enrolled")
-    NONE_ENROLLED(BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED);
+    NONE_ENROLLED(BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED),
+
+    /**
+     * The user can't authenticate because a security vulnerability has been discovered with one or more hardware
+     * sensors. The affected sensor(s) are unavailable until a security update has addressed the issue.
+     */
+    @SerializedName("security_update_required")
+    SECURITY_UPDATE_REQUIRED(BiometricManager.BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED);
 
     companion object {
-        fun from(value: Int) = values().first { it.value == value }
+        fun from(value: Int) = values().firstOrNull { it.value == value } ?: UNKNOWN
     }
 }
 
