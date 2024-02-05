@@ -82,10 +82,10 @@ open class GoogleSignInPlugin(
 
         val isLaunched = activity.launchActivityForResult(googleSignInClient.signInIntent) {
             event.respond {
-                val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
-
                 try {
-                    GoogleSignInEvent.ResultEvent(SerializableGoogleSignInAccount(task.getResult(ApiException::class.java)))
+                    val account = GoogleSignIn.getSignedInAccountFromIntent(it.data).getResult(ApiException::class.java)
+
+                    GoogleSignInEvent.ResultEvent(SerializableGoogleSignInAccount(account))
                 } catch (e: ApiException) {
                     if (e.statusCode == GoogleSignInStatusCodes.SIGN_IN_CANCELLED) {
                         GoogleSignInEvent.ResultEvent(null)
