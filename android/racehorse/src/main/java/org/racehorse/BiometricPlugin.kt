@@ -7,7 +7,6 @@ import androidx.biometric.BiometricManager
 import androidx.fragment.app.FragmentActivity
 import com.google.gson.annotations.SerializedName
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.utils.checkActive
 import org.racehorse.utils.launchActivityForResult
 
 enum class BiometricAuthenticator(val value: Int) {
@@ -113,8 +112,6 @@ class BiometricPlugin(private val activity: FragmentActivity) {
 
     @Subscribe
     fun onEnrollBiometric(event: EnrollBiometricEvent) {
-        activity.checkActive()
-
         val authenticators = BiometricAuthenticator.from(event.authenticators)
         val status = biometricManager.canAuthenticate(authenticators)
 
