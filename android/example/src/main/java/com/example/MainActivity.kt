@@ -78,10 +78,10 @@ class MainActivity : AppCompatActivity() {
             BiometricEncryptedStoragePlugin(this@MainActivity, File(filesDir, "biometric_storage")) {
 
             override fun configureSecretKey(key: String, builder: KeyGenParameterSpec.Builder) {
-                // Allow multiple set and get storage operations during 20 sec
+                // Allow multiple set and get storage operations during 5 seconds
                 // after the user was successfully authenticated using biometrics.
                 builder.setUserAuthenticationRequired(true)
-                builder.setUserAuthenticationValidityDurationSeconds(20)
+                builder.setUserAuthenticationValidityDurationSeconds(5)
             }
         })
 
