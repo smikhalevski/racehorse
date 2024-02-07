@@ -75,6 +75,8 @@ export type { NotificationsManager } from './createNotificationsManager';
 export type { PermissionsManager } from './createPermissionsManager';
 export type { Scheduler } from './createScheduler';
 
+export type * from './types';
+
 export const uiScheduler = createScheduler();
 
 export const eventBridge = createEventBridge();

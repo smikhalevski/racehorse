@@ -1,4 +1,5 @@
 import { PubSub, waitFor } from 'parallel-universe';
+import { Unsubscribe } from './types';
 
 /**
  * The event transported through the {@link EventBridge}.
@@ -91,7 +92,7 @@ export interface EventBridge {
      * @param event The event pushed to the connection inbox.
      */
     listener: (event: Event) => void
-  ): () => void;
+  ): Unsubscribe;
 
   /**
    * Subscribes a listener to notice events of the particular type pushed by Android.
@@ -108,7 +109,7 @@ export interface EventBridge {
      * @param payload The event payload.
      */
     listener: (payload: any) => void
-  ): () => void;
+  ): Unsubscribe;
 
   /**
    * Returns `true` if an event of the given type is supported, or `false` otherwise.

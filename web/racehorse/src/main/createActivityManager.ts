@@ -1,6 +1,7 @@
 import { EventBridge } from './createEventBridge';
 import { Scheduler } from './createScheduler';
 import { noop } from './utils';
+import { Unsubscribe } from './types';
 
 /**
  * The intent that can be passed from and to web application.
@@ -178,22 +179,22 @@ export interface ActivityManager {
   /**
    * Subscribes a listener to activity status changes.
    */
-  subscribe(listener: (activityState: ActivityState) => void): () => void;
+  subscribe(listener: (activityState: ActivityState) => void): Unsubscribe;
 
   /**
    * The activity went to background: user doesn't see the activity anymore.
    */
-  subscribe(eventType: 'background', listener: () => void): () => void;
+  subscribe(eventType: 'background', listener: () => void): Unsubscribe;
 
   /**
    * The activity entered foreground: user can see the activity but cannot interact with it.
    */
-  subscribe(eventType: 'foreground', listener: () => void): () => void;
+  subscribe(eventType: 'foreground', listener: () => void): Unsubscribe;
 
   /**
    * The activity became active: user can see the activity and can interact with it.
    */
-  subscribe(eventType: 'active', listener: () => void): () => void;
+  subscribe(eventType: 'active', listener: () => void): Unsubscribe;
 }
 
 const eventTypeToActivityState = {

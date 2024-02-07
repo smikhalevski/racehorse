@@ -1,6 +1,7 @@
 import { EventBridge } from './createEventBridge';
 import { noop } from './utils';
 import { Scheduler } from './createScheduler';
+import { Unsubscribe } from './types';
 
 export const GooglePayTokenState = {
   UNTOKENIZED: 1,
@@ -273,7 +274,7 @@ export interface GooglePayManager {
    *
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/reading-wallet?authuser=1#data_change_callbacks)
    */
-  subscribe(listener: () => void): () => void;
+  subscribe(listener: () => void): Unsubscribe;
 }
 
 /**

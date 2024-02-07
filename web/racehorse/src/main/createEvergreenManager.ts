@@ -1,5 +1,6 @@
 import { EventBridge } from './createEventBridge';
 import { createJoiner } from './createJoiner';
+import { Unsubscribe } from './types';
 
 export interface UpdateStatus {
   /**
@@ -34,12 +35,12 @@ export interface EvergreenManager {
   /**
    * The new update download has started.
    */
-  subscribe(eventType: 'started', listener: (payload: { updateMode: UpdateMode }) => void): () => void;
+  subscribe(eventType: 'started', listener: (payload: { updateMode: UpdateMode }) => void): Unsubscribe;
 
   /**
    * Failed to download an update.
    */
-  subscribe(eventType: 'failed', listener: (payload: { updateMode: UpdateMode }) => void): () => void;
+  subscribe(eventType: 'failed', listener: (payload: { updateMode: UpdateMode }) => void): Unsubscribe;
 
   /**
    * An update was successfully downloaded and ready to be applied.
@@ -52,7 +53,7 @@ export interface EvergreenManager {
        */
       version: string;
     }) => void
-  ): () => void;
+  ): Unsubscribe;
 
   /**
    * Progress of a pending update download.
@@ -69,7 +70,7 @@ export interface EvergreenManager {
        */
       readLength: number;
     }) => void
-  ): () => void;
+  ): Unsubscribe;
 }
 
 /**
