@@ -32,9 +32,12 @@ export function BiometricExample() {
       {
         {
           [BiometricStatus.SUPPORTED]: '✅ Supported',
+          [BiometricStatus.UNKNOWN]: '❌ Unknown',
+          [BiometricStatus.UNSUPPORTED]: '❌ Unsupported',
           [BiometricStatus.NO_HARDWARE]: '❌ No hardware',
           [BiometricStatus.HARDWARE_UNAVAILABLE]: '❌ Hardware unavailable',
           [BiometricStatus.NONE_ENROLLED]: '❌ None enrolled',
+          [BiometricStatus.SECURITY_UPDATE_REQUIRED]: '❌ Security update required',
         }[status]
       }
 
