@@ -14,11 +14,21 @@ export function ActivityExample() {
   const activityInfo = useMemo(activityManager.getActivityInfo, []);
   const [contactActivityResult, setContactActivityResult] = useState<ActivityResult | null>();
 
+  // Log activity state in console
   useEffect(
     () =>
       activityManager.subscribe(activityState => {
         console.log(activityStateLabel[activityState]);
       }),
+    []
+  );
+
+  // Run action once in the background, or abort if the component unmounts
+  useEffect(
+    () =>
+      activityManager.runIn(ActivityState.BACKGROUND, () => {
+        console.log('Running in background');
+      }).abort,
     []
   );
 
