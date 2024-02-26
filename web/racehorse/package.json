@@ -39,6 +39,6 @@
   "homepage": "https://github.com/smikhalevski/racehorse#readme",
   "dependencies": {
     "locale-matcher": "^2.0.0",
-    "parallel-universe": "^4.0.0"
+    "parallel-universe": "^5.0.0"
   }
 }
