@@ -96,6 +96,7 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
     @Subscribe(threadMode = ThreadMode.MAIN)
     open fun onSetBiometricEncryptedValue(event: SetBiometricEncryptedValueEvent) {
         if (!isBiometricEnrolled(event.config?.authenticators)) {
+            // Fatal: requested authenticators aren't supported
             event.respond(SetBiometricEncryptedValueEvent.ResultEvent(false))
             return
         }
@@ -145,6 +146,7 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
     @Subscribe(threadMode = ThreadMode.MAIN)
     open fun onGetBiometricEncryptedValue(event: GetBiometricEncryptedValueEvent) {
         if (!isBiometricEnrolled(event.config?.authenticators)) {
+            // Fatal: requested authenticators aren't supported
             event.respond(GetEncryptedValueEvent.ResultEvent(null))
             return
         }

@@ -213,8 +213,8 @@ export interface DownloadManager {
    *
    * @param uri The full URI of the content that should be downloaded. Supports HTTP, HTTPS, and data URI.
    * @param options The download options.
-   * @throws Error Permission required.
-   * @throws Error Unsupported URI.
+   * @throws IllegalStateException Permission required.
+   * @throws IllegalStateException Unsupported URI.
    * @return The ID of the download.
    */
   addDownload(uri: string, options?: DownloadOptions): Promise<number>;

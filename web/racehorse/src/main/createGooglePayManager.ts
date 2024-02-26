@@ -121,6 +121,7 @@ export interface GooglePayManager {
   /**
    * Get the ID of the active wallet, or `null` if there's no active wallet.
    *
+   * @throws ApiException
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/reading-wallet?authuser=1#getactivewalletid)
    */
   getActiveWalletId(): Promise<string | null>;
@@ -132,6 +133,7 @@ export interface GooglePayManager {
    * cached values up-to-date. However, in some cases the values returned here may be different from the network values.
    * For example, if a user has cleared data so that the token is no longer on the device, then `null` is returned.
    *
+   * @throws ApiException
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/reading-wallet?authuser=1#gettokenstatus)
    */
   getTokenStatus(
@@ -142,6 +144,7 @@ export interface GooglePayManager {
   /**
    * Returns the name of the current Google Pay environment, for example: PROD, SANDBOX, or DEV.
    *
+   * @throws ApiException
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/reading-wallet?authuser=1#getenvironment)
    */
   getEnvironment(): Promise<string>;
@@ -162,6 +165,7 @@ export interface GooglePayManager {
    *
    * The stable hardware ID may not be accessed by the issuer outside the Push Provisioning flow.
    *
+   * @throws ApiException
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/reading-wallet?authuser=1#getstablehardwareid)
    */
   getStableHardwareId(): Promise<string>;
@@ -172,6 +176,7 @@ export interface GooglePayManager {
    * The API only returns token details for tokens with metadata matching your app package name. You can check if your
    * tokens have this linking by tapping on the card in the Google Wallet app to see the card details view.
    *
+   * @throws ApiException
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/reading-wallet?authuser=1#getactivewalletid)
    */
   listTokens(): Promise<GooglePayTokenInfo[]>;
@@ -182,6 +187,7 @@ export interface GooglePayManager {
    * @returns `true` if it finds a token with same last four FPAN digits as the identifier, as well as matches on the
    * other fields. False positives may be returned since the last four FPAN digits are not necessarily unique among
    * tokens.
+   * @throws ApiException
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/reading-wallet?authuser=1#istokenized)
    */
   isTokenized(
@@ -196,6 +202,7 @@ export interface GooglePayManager {
    * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
    *
    * @returns `true` if Google Pay app was opened, or `false` otherwise.
+   * @throws ApiException
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/reading-wallet?authuser=1#viewtoken)
    */
   viewToken(tokenId: string, tokenServiceProvider: GooglePayTokenServiceProvider): Promise<boolean>;
@@ -207,6 +214,7 @@ export interface GooglePayManager {
    * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
    *
    * @returns The token ID, or `null` if tokenization wasn't completed.
+   * @throws ApiException
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/wallet-operations?authuser=1#push_provisioning_operations)
    * @see [Sequence diagrams for Android Push Provisioning](https://developers.google.com/pay/issuers/apis/push-provisioning/android/integration-steps)
    */
@@ -224,6 +232,7 @@ export interface GooglePayManager {
    * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
    *
    * @returns The token ID, or `null` if tokenization wasn't completed.
+   * @throws ApiException
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/wallet-operations?authuser=1#manual_provisioning)
    */
   tokenize(request: GooglePayTokenizeRequest): Promise<string | null>;
@@ -234,6 +243,7 @@ export interface GooglePayManager {
    *
    * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
    *
+   * @throws ApiException
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/wallet-operations?authuser=1#setting_the_default_token)
    */
   requestSelectToken(tokenId: string, tokenServiceProvider: GooglePayTokenServiceProvider): Promise<void>;
@@ -246,6 +256,7 @@ export interface GooglePayManager {
    *
    * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
    *
+   * @throws ApiException
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/wallet-operations?authuser=1#token_deletion)
    */
   requestDeleteToken(tokenId: string, tokenServiceProvider: GooglePayTokenServiceProvider): Promise<void>;
@@ -257,6 +268,7 @@ export interface GooglePayManager {
    *
    * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
    *
+   * @throws ApiException
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/wallet-operations?authuser=1#create_wallet)
    */
   createWallet(): Promise<void>;
