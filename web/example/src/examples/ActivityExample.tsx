@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { activityManager, ActivityResult, ActivityState, Intent, permissionsManager } from 'racehorse';
 import { FormattedJSON } from '../components/FormattedJSON';
 import { useActivityState } from '@racehorse/react';
@@ -11,7 +11,7 @@ const activityStateLabel = {
 
 export function ActivityExample() {
   const activityState = useActivityState();
-  const [activityInfo] = useState(activityManager.getActivityInfo);
+  const activityInfo = useMemo(activityManager.getActivityInfo, []);
   const [contactActivityResult, setContactActivityResult] = useState<ActivityResult | null>();
 
   useEffect(
@@ -57,8 +57,8 @@ export function ActivityExample() {
 
       <button
         onClick={() => {
-          permissionsManager.askForPermission('android.permission.READ_CONTACTS').then(granted => {
-            if (granted) {
+          permissionsManager.askForPermission('android.permission.READ_CONTACTS').then(isGranted => {
+            if (isGranted) {
               activityManager
                 .startActivityForResult({
                   // https://developer.android.com/guide/components/intents-common#Contacts

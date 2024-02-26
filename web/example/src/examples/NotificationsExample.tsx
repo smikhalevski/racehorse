@@ -5,12 +5,14 @@ export function NotificationsExample() {
   const [areNotificationsEnabled, setAreNotificationsEnabled] = useState(notificationsManager.areNotificationsEnabled);
 
   useEffect(() => {
-    const listener = () => setAreNotificationsEnabled(notificationsManager.areNotificationsEnabled());
+    const visibilityListener = () => {
+      setAreNotificationsEnabled(notificationsManager.areNotificationsEnabled());
+    };
 
-    window.addEventListener('visibilitychange', listener);
+    window.addEventListener('visibilitychange', visibilityListener);
 
     return () => {
-      window.removeEventListener('visibilitychange', listener);
+      window.removeEventListener('visibilitychange', visibilityListener);
     };
   }, []);
 

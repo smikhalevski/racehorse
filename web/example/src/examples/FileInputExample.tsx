@@ -29,7 +29,9 @@ export function FileInputExample() {
         <input
           type="checkbox"
           checked={multiple}
-          onChange={event => setMultiple(event.target.checked)}
+          onChange={event => {
+            setMultiple(event.target.checked);
+          }}
         />
       </p>
 

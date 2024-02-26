@@ -86,7 +86,7 @@ export function createDeviceManager(eventBridge: EventBridge): DeviceManager {
     eventBridge.request({ type: 'org.racehorse.GetPreferredLocalesEvent' }).payload.locales;
 
   return {
-    getDeviceInfo: () => eventBridge.request({ type: 'org.racehorse.GetDeviceInfoEvent' }).payload.deviceInfo,
+    getDeviceInfo: () => eventBridge.request({ type: 'org.racehorse.GetDeviceInfoEvent' }).payload.info,
 
     getPreferredLocales,
 

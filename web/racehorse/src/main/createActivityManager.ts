@@ -212,7 +212,7 @@ export function createActivityManager(eventBridge: EventBridge, uiScheduler: Sch
   return {
     getActivityState: () => eventBridge.request({ type: 'org.racehorse.GetActivityStateEvent' }).payload.state,
 
-    getActivityInfo: () => eventBridge.request({ type: 'org.racehorse.GetActivityInfoEvent' }).payload.activityInfo,
+    getActivityInfo: () => eventBridge.request({ type: 'org.racehorse.GetActivityInfoEvent' }).payload.info,
 
     startActivity: intent =>
       eventBridge.request({ type: 'org.racehorse.StartActivityEvent', payload: { intent } }).payload.isStarted,

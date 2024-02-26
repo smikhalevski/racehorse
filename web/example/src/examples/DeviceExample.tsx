@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import { deviceManager } from 'racehorse';
 import { FormattedJSON } from '../components/FormattedJSON';
 
 export function DeviceExample() {
-  const [deviceInfo] = useState(deviceManager.getDeviceInfo);
-  const [preferredLocales] = useState(deviceManager.getPreferredLocales);
-  const [insets] = useState(deviceManager.getWindowInsets);
+  const deviceInfo = useMemo(deviceManager.getDeviceInfo, []);
+  const preferredLocales = useMemo(deviceManager.getPreferredLocales, []);
+  const insets = useMemo(deviceManager.getWindowInsets, []);
 
   return (
     <>

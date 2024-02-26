@@ -42,10 +42,10 @@ export function BiometricExample() {
         <p>
           <button
             onClick={() => {
-              biometricManager
-                .enrollBiometric(authenticators)
+              biometricManager.enrollBiometric(authenticators).then(() => {
                 // Trigger status update
-                .then(() => setAuthenticators(authenticators => [...authenticators]));
+                setAuthenticators(authenticators => [...authenticators]);
+              });
             }}
           >
             {'Enroll biometric'}

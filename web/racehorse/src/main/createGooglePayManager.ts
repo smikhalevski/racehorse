@@ -329,7 +329,7 @@ export function createGooglePayManager(eventBridge: EventBridge, uiScheduler: Sc
             type: 'org.racehorse.GooglePayViewTokenEvent',
             payload: { tokenId, tokenServiceProvider },
           })
-          .then(event => event.payload.opened)
+          .then(event => event.payload.isOpened)
       ),
 
     pushTokenize: request =>

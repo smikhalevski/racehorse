@@ -58,8 +58,8 @@ export function BiometricEncryptedStorageExample() {
         </button>{' '}
         <button
           onClick={() => {
-            biometricEncryptedStorageManager.set(key, value, biometricConfig).then(ok => {
-              if (ok) {
+            biometricEncryptedStorageManager.set(key, value, biometricConfig).then(isSuccessful => {
+              if (isSuccessful) {
                 biometricEncryptedStorageManager.get(key, biometricConfig).then(setPersistedValue);
               } else {
                 console.log('Cannot set biometric storage entry: ' + key);
