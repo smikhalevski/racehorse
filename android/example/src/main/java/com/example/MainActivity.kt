@@ -3,7 +3,6 @@ package com.example
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.security.keystore.KeyGenParameterSpec
 import android.webkit.CookieManager
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
@@ -74,16 +73,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(FacebookLoginPlugin(this))
         eventBus.register(FacebookSharePlugin(this))
         eventBus.register(BiometricPlugin(this))
-        eventBus.register(object :
-            BiometricEncryptedStoragePlugin(this@MainActivity, File(filesDir, "biometric_storage")) {
-
-            override fun configureSecretKey(key: String, builder: KeyGenParameterSpec.Builder) {
-                // Allow multiple set and get storage operations during 5 seconds
-                // after the user was successfully authenticated using biometrics.
-                builder.setUserAuthenticationRequired(true)
-                builder.setUserAuthenticationValidityDurationSeconds(5)
-            }
-        })
+        eventBus.register(BiometricEncryptedStoragePlugin(this, File(filesDir, "biometric_storage")))
 
         // From the example app
         eventBus.register(ToastPlugin(this))

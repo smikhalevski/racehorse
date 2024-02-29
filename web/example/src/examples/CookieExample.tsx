@@ -25,7 +25,7 @@ export function CookieExample() {
             rerender();
           }}
         >
-          {'Clear value'}
+          {'❌ Delete value'}
         </button>
       </p>
 

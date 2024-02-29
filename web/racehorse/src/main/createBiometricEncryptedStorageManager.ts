@@ -3,8 +3,19 @@ import { BiometricAuthenticator } from './createBiometricManager';
 import { Scheduler } from './createScheduler';
 
 export interface BiometricConfig {
+  /**
+   * The title of the authentication popup.
+   */
   title?: string;
+
+  /**
+   * The subtitle of the authentication popup.
+   */
   subtitle?: string;
+
+  /**
+   * The description label of the authentication popup.
+   */
   description?: string;
 
   /**
@@ -14,6 +25,8 @@ export interface BiometricConfig {
 
   /**
    * The list of allowed authenticators.
+   *
+   * @default [BiometricAuthenticator.STRONG]
    */
   authenticators?: BiometricAuthenticator[];
 }
@@ -27,7 +40,9 @@ export interface BiometricEncryptedStorageManager {
    * @param key A key to set.
    * @param value A value to write.
    * @param config The options of the biometric prompt.
-   * @return `true` if the value was written to the storage, or `false` otherwise.
+   * @return `true` if the value was written to the storage, or `false` if authentication has failed.
+   * @throws InvalidAlgorithmParameterException At least one biometric must be enrolled to create keys requiring user
+   * authentication for every use. Check {@link BiometricManager.getBiometricStatus} before setting the key.
    */
   set(key: string, value: string, config?: BiometricConfig): Promise<boolean>;
 
@@ -36,7 +51,12 @@ export interface BiometricEncryptedStorageManager {
    *
    * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
    *
-   * @returns The deciphered value, or `null` if key wasn't found or if password is incorrect.
+   * @returns The deciphered value, or `null` if key wasn't found, or authentication has failed.
+   * @throws InvalidAlgorithmParameterException At least one biometric must be enrolled to create keys requiring user
+   * authentication for every use. Check {@link BiometricManager.getBiometricStatus} before reading the key.
+   * @throws KeyPermanentlyInvalidatedException Indicates that the key can no longer be read because it has been
+   * permanently invalidated (for example, because of the biometric enrollment). Set a new value or delete the key to
+   * recover from this error.
    */
   get(key: string, config?: BiometricConfig): Promise<string | null>;
 

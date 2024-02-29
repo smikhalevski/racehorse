@@ -37,7 +37,7 @@ open class EncryptedStorage(private val storageDir: File) {
      * @param value The byte array the holds the data.
      * @return `true` if the key was successfully persisted, or `false` otherwise.
      */
-    fun set(cipher: Cipher, key: String, value: ByteArray): Boolean {
+    open fun set(cipher: Cipher, key: String, value: ByteArray): Boolean {
         val valueHash = MessageDigest.getInstance(HASH_ALGORITHM).digest(value)
 
         val ivSize = ByteBuffer.allocate(IV_SIZE_SIZE).putInt(cipher.iv.size).array()
@@ -58,7 +58,7 @@ open class EncryptedStorage(private val storageDir: File) {
      * The first element holds the initialization vector.
      * The second element holds the encrypted bytes. Use [decrypt] to read the value from the encrypted bytes.
      */
-    fun getRecord(key: String): EncryptedRecord? {
+    open fun getRecord(key: String): EncryptedRecord? {
         val file = getFile(key)
 
         if (!file.exists()) {
@@ -77,19 +77,19 @@ open class EncryptedStorage(private val storageDir: File) {
     /**
      * Returns `true` if there's a value associated with the key in the storage, or `false` otherwise.
      */
-    fun has(key: String) = getFile(key).exists()
+    open fun has(key: String) = getFile(key).exists()
 
     /**
      * Deletes the value associated with the key from the storage.
      */
-    fun delete(key: String) = getFile(key).delete()
+    open fun delete(key: String) = getFile(key).delete()
 
     /**
      * Decrypts the encrypted value that was retrieved via [getRecord].
      *
      * Returns the decrypted value or `null` if decryption failed because of the invalid decryption key.
      */
-    fun decrypt(cipher: Cipher, encryptedValue: ByteArray): ByteArray? {
+    open fun decrypt(cipher: Cipher, encryptedValue: ByteArray): ByteArray? {
         return try {
             val bytes = cipher.doFinal(encryptedValue)
 
@@ -99,7 +99,7 @@ open class EncryptedStorage(private val storageDir: File) {
         }
     }
 
-    fun getFile(key: String): File {
+    open fun getFile(key: String): File {
         storageDir.mkdirs()
 
         val keyHash = MessageDigest.getInstance(HASH_ALGORITHM).digest(key.toByteArray())

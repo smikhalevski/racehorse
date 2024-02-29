@@ -6,14 +6,14 @@ import { Scheduler } from './createScheduler';
  */
 export const BiometricAuthenticator = {
   /**
-   * Any biometric (e.g. fingerprint, iris, or face) on the device that meets or exceeds the requirements for
-   * **Class 3**, as defined by the Android CDD.
+   * Any biometric (e.g. fingerprint, iris, or face) on the device that meets or exceeds the requirements for Class 3,
+   * as defined by the Android CDD.
    */
   BIOMETRIC_STRONG: 'biometric_strong',
 
   /**
-   * Any biometric (e.g. fingerprint, iris, or face) on the device that meets or exceeds the requirements for
-   * **Class 2**, as defined by the Android CDD.
+   * Any biometric (e.g. fingerprint, iris, or face) on the device that meets or exceeds the requirements for Class 2,
+   * as defined by the Android CDD.
    */
   BIOMETRIC_WEAK: 'biometric_weak',
 

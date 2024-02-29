@@ -3,7 +3,6 @@ package org.racehorse
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.security.keystore.KeyProperties
-import android.security.keystore.UserNotAuthenticatedException
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
@@ -15,7 +14,6 @@ import java.io.File
 import java.io.Serializable
 import java.security.KeyStore
 import javax.crypto.Cipher
-import javax.crypto.IllegalBlockSizeException
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
@@ -75,6 +73,8 @@ class DeleteBiometricEncryptedValueEvent(val key: String) : RequestEvent() {
 /**
  * A biometric encrypted key-value file-based storage.
  *
+ * [Authenticate using only biometric credentials.](https://developer.android.com/training/sign-in/biometric-auth#biometric-only).
+ *
  * @param storageDir The directory to write files to.
  */
 open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivity, private val storageDir: File) {
@@ -89,116 +89,48 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
 
     private val keyStore by lazy { KeyStore.getInstance(SECRET_KEYSTORE_TYPE).apply { load(null) } }
 
-    private val biometricManager by lazy { BiometricManager.from(activity) }
-
     private val encryptedStorage = EncryptedStorage(storageDir)
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     open fun onSetBiometricEncryptedValue(event: SetBiometricEncryptedValueEvent) {
-        if (!isBiometricEnrolled(event.config?.authenticators)) {
-            // Fatal: requested authenticators aren't supported
-            event.respond(SetBiometricEncryptedValueEvent.ResultEvent(false))
-            return
-        }
-
-        var secretKey = getSecretKey(event.key) ?: createSecretKey(event.key)
-
         val cipher = createCipher()
 
         try {
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+            cipher.init(Cipher.ENCRYPT_MODE, getSecretKey(event.key) ?: createSecretKey(event.key))
         } catch (_: KeyPermanentlyInvalidatedException) {
-            // The key was invalidated due to a biometric enrollment, and storage entry became unrecoverable
-            deleteEntry(event.key)
-            secretKey = createSecretKey(event.key)
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey)
-        } catch (_: UserNotAuthenticatedException) {
-            // The key uses authentication validity duration, and authentication has expired
-            return authenticate(event.config, null) { isAuthenticated ->
-                event.respond {
-                    SetBiometricEncryptedValueEvent.ResultEvent(
-                        if (isAuthenticated) {
-                            cipher.init(Cipher.ENCRYPT_MODE, secretKey)
-                            encrypt(cipher, event.key, event.value)
-                        } else false
-                    )
-                }
-            }
+            deleteSecretKey(event.key)
+            cipher.init(Cipher.ENCRYPT_MODE, createSecretKey(event.key))
         }
 
-        try {
-            // Maybe authentication hasn't expired yet
-            event.respond(SetBiometricEncryptedValueEvent.ResultEvent(encrypt(cipher, event.key, event.value)))
-        } catch (_: IllegalBlockSizeException) {
-            // Authentication has expired or it is required for every key use
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey)
-
-            authenticate(event.config, cipher) { isAuthenticated ->
-                event.respond {
-                    SetBiometricEncryptedValueEvent.ResultEvent(
-                        isAuthenticated && encrypt(cipher, event.key, event.value)
-                    )
-                }
+        authenticate(cipher, event.config) { isAuthenticated ->
+            event.respond {
+                SetBiometricEncryptedValueEvent.ResultEvent(
+                    if (isAuthenticated) {
+                        encryptedStorage.set(cipher, event.key, event.value.toByteArray(Charsets.UTF_8))
+                    } else false
+                )
             }
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     open fun onGetBiometricEncryptedValue(event: GetBiometricEncryptedValueEvent) {
-        if (!isBiometricEnrolled(event.config?.authenticators)) {
-            // Fatal: requested authenticators aren't supported
-            event.respond(GetEncryptedValueEvent.ResultEvent(null))
-            return
-        }
-
         val record = encryptedStorage.getRecord(event.key)
             ?: return event.respond(GetEncryptedValueEvent.ResultEvent(null))
 
         val secretKey = getSecretKey(event.key)
-
-        if (secretKey == null) {
-            // The key was somehow deleted, and storage entry became unrecoverable
-            deleteEntry(event.key)
-            event.respond(GetEncryptedValueEvent.ResultEvent(null))
-            return
-        }
+            ?: throw KeyPermanentlyInvalidatedException("Key permanently invalidated")
 
         val cipher = createCipher()
-        val params = IvParameterSpec(record.iv)
 
-        try {
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, params)
-        } catch (_: KeyPermanentlyInvalidatedException) {
-            // The key was invalidated due to a biometric enrollment, and storage entry became unrecoverable
-            deleteEntry(event.key)
-            event.respond(GetEncryptedValueEvent.ResultEvent(null))
-            return
-        } catch (_: UserNotAuthenticatedException) {
-            // The key uses authentication validity duration, and authentication has expired
-            authenticate(event.config, null) { isAuthenticated ->
-                event.respond {
-                    GetEncryptedValueEvent.ResultEvent(
-                        if (isAuthenticated) {
-                            cipher.init(Cipher.DECRYPT_MODE, secretKey, params)
-                            decrypt(cipher, record)
-                        } else null
-                    )
-                }
-            }
-            return
-        }
-
-        try {
-            // Maybe authentication hasn't expired yet
-            event.respond(GetEncryptedValueEvent.ResultEvent(decrypt(cipher, record)))
-        } catch (_: IllegalBlockSizeException) {
-            // Authentication has expired or it is required for every key use
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, params)
-
-            authenticate(event.config, cipher) { isAuthenticated ->
-                event.respond {
-                    GetEncryptedValueEvent.ResultEvent(if (isAuthenticated) decrypt(cipher, record) else null)
-                }
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(record.iv))
+        authenticate(cipher, event.config) { isAuthenticated ->
+            event.respond {
+                GetEncryptedValueEvent.ResultEvent(
+                    if (isAuthenticated) {
+                        encryptedStorage.decrypt(cipher, record.encryptedValue)?.toString(Charsets.UTF_8)
+                    } else null
+                )
             }
         }
     }
@@ -210,12 +142,13 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
 
     @Subscribe
     open fun onDeleteBiometricEncryptedValue(event: DeleteBiometricEncryptedValueEvent) {
-        event.respond(DeleteBiometricEncryptedValueEvent.ResultEvent(deleteEntry(event.key)))
+        deleteSecretKey(event.key)
+        event.respond(DeleteBiometricEncryptedValueEvent.ResultEvent(encryptedStorage.delete(event.key)))
     }
 
-    protected open fun authenticate(
+    private fun authenticate(
+        cipher: Cipher,
         config: BiometricConfig?,
-        cipher: Cipher?,
         callback: (isAuthenticated: Boolean) -> Unit
     ) {
         val promptCallback = object : BiometricPrompt.AuthenticationCallback() {
@@ -238,20 +171,8 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
             builder.setNegativeButtonText(config?.negativeButtonText.ifNullOrBlank { "Cancel" })
         }
 
-        val prompt = BiometricPrompt(activity, ContextCompat.getMainExecutor(activity), promptCallback)
-
-        if (cipher == null) {
-            prompt.authenticate(builder.build())
-        } else {
-            prompt.authenticate(builder.build(), BiometricPrompt.CryptoObject(cipher))
-        }
-    }
-
-    protected open fun deleteEntry(key: String): Boolean {
-        if (keyStore.isKeyEntry(key)) {
-            keyStore.deleteEntry(key)
-        }
-        return encryptedStorage.delete(key)
+        BiometricPrompt(activity, ContextCompat.getMainExecutor(activity), promptCallback)
+            .authenticate(builder.build(), BiometricPrompt.CryptoObject(cipher))
     }
 
     protected open fun createCipher(): Cipher {
@@ -259,33 +180,24 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
     }
 
     protected open fun createSecretKey(key: String): SecretKey {
-        val builder = KeyGenParameterSpec.Builder(key, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
-
-        configureSecretKey(key, builder)
-
-        builder
+        val params = KeyGenParameterSpec.Builder(key, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+            .setUserAuthenticationRequired(true)
             .setBlockModes(ENCRYPTION_BLOCK_MODE)
             .setEncryptionPaddings(ENCRYPTION_PADDING)
             .setKeySize(SECRET_KEY_SIZE)
+            .build()
 
         val keyGenerator = KeyGenerator.getInstance(ENCRYPTION_ALGORITHM, SECRET_KEYSTORE_TYPE)
-        keyGenerator.init(builder.build())
+        keyGenerator.init(params)
 
         return keyGenerator.generateKey()
     }
 
-    protected open fun configureSecretKey(key: String, builder: KeyGenParameterSpec.Builder) {
-        builder.setUserAuthenticationRequired(true)
-    }
-
     protected open fun getSecretKey(key: String) = keyStore.getKey(key, null) as? SecretKey
 
-    private fun isBiometricEnrolled(authenticators: Array<BiometricAuthenticator>?) =
-        biometricManager.canAuthenticate(BiometricAuthenticator.from(authenticators)) == BiometricManager.BIOMETRIC_SUCCESS
-
-    private fun encrypt(cipher: Cipher, key: String, value: String) =
-        encryptedStorage.set(cipher, key, value.toByteArray(Charsets.UTF_8))
-
-    private fun decrypt(cipher: Cipher, record: EncryptedRecord) =
-        encryptedStorage.decrypt(cipher, record.encryptedValue)?.toString(Charsets.UTF_8)
+    protected open fun deleteSecretKey(key: String) {
+        if (keyStore.isKeyEntry(key)) {
+            keyStore.deleteEntry(key)
+        }
+    }
 }
