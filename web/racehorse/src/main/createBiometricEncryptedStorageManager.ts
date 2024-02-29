@@ -29,6 +29,19 @@ export interface BiometricConfig {
    * @default [BiometricAuthenticator.STRONG]
    */
   authenticators?: BiometricAuthenticator[];
+
+  /**
+   * The duration in seconds for which this key is authorized to be used after the user is successfully authenticated or
+   * -1 if user authentication is required every time the key is accessed.
+   *
+   * If value is greater or equal to 0, then key won't be invalidated by biometric enrollment.
+   *
+   * **Note:** This option is only applicable when the key is set for the first time. To change this option, delete and
+   * set the key again with the updated config.
+   *
+   * @default -1
+   */
+  authenticationValidityDuration?: number;
 }
 
 export interface BiometricEncryptedStorageManager {
@@ -43,6 +56,8 @@ export interface BiometricEncryptedStorageManager {
    * @return `true` if the value was written to the storage, or `false` if authentication has failed.
    * @throws InvalidAlgorithmParameterException At least one biometric must be enrolled to create keys requiring user
    * authentication for every use. Check {@link BiometricManager.getBiometricStatus} before setting the key.
+   * @throws IllegalArgumentException Device credential is not supported on API 28 and below.
+   * @throws IllegalArgumentException Crypto-based authentication is not supported for Class 2 (Weak) biometrics.
    */
   set(key: string, value: string, config?: BiometricConfig): Promise<boolean>;
 
@@ -57,6 +72,8 @@ export interface BiometricEncryptedStorageManager {
    * @throws KeyPermanentlyInvalidatedException Indicates that the key can no longer be read because it has been
    * permanently invalidated (for example, because of the biometric enrollment). Set a new value or delete the key to
    * recover from this error.
+   * @throws IllegalArgumentException Device credential is not supported on API 28 and below.
+   * @throws IllegalArgumentException Crypto-based authentication is not supported for Class 2 (Weak) biometrics.
    */
   get(key: string, config?: BiometricConfig): Promise<string | null>;
 
@@ -66,7 +83,7 @@ export interface BiometricEncryptedStorageManager {
   has(key: string): boolean;
 
   /**
-   * Deletes the encrypted value associated with the key.
+   * Deletes the key and the associated encrypted value.
    *
    * @returns `true` if the key was deleted, or `false` if the key didn't exist.
    */

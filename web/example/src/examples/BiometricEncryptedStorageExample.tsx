@@ -5,6 +5,7 @@ import { BiometricAuthenticator, biometricEncryptedStorageManager } from 'raceho
 export function BiometricEncryptedStorageExample() {
   const [key, setKey] = useState('my_key');
   const [value, setValue] = useState('my_value');
+  const [authenticationValidityDuration, setAuthenticationValidityDuration] = useState(-1);
   const [authenticators, setAuthenticators] = useState<BiometricAuthenticator[]>([
     BiometricAuthenticator.BIOMETRIC_STRONG,
   ]);
@@ -29,6 +30,23 @@ export function BiometricEncryptedStorageExample() {
           <option value={BiometricAuthenticator.BIOMETRIC_WEAK}>{'Biometric weak'}</option>
           <option value={BiometricAuthenticator.DEVICE_CREDENTIAL}>{'Device credential'}</option>
         </select>
+      </p>
+
+      <p>
+        {'Authentication validity duration: ' +
+          (authenticationValidityDuration === -1 ? 'Disabled' : authenticationValidityDuration + ' seconds')}
+        <br />
+        <input
+          type="range"
+          value={authenticationValidityDuration}
+          min={-1}
+          max={10}
+          step={1}
+          style={{ margin: '0.5rem 3rem 0', width: 'calc(100% - 6rem)' }}
+          onChange={event => {
+            setAuthenticationValidityDuration(event.target.valueAsNumber);
+          }}
+        />
       </p>
 
       <p>
@@ -82,6 +100,7 @@ export function BiometricEncryptedStorageExample() {
               .set(key, value, {
                 title: 'Set value to storage',
                 authenticators,
+                authenticationValidityDuration,
               })
               .then(isSuccessful => {
                 if (!isSuccessful) {
