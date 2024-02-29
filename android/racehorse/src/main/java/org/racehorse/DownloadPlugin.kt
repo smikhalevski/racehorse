@@ -187,7 +187,7 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
 
             "http", "https" -> enqueueDownload(event, uri)
 
-            else -> throw IllegalArgumentException("Unsupported URI")
+            else -> event.respond(ExceptionEvent(IllegalArgumentException("Unsupported URI")))
         }
     }
 

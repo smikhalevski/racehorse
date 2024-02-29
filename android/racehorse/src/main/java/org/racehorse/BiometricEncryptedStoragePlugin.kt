@@ -119,7 +119,7 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
             ?: return event.respond(GetEncryptedValueEvent.ResultEvent(null))
 
         val secretKey = getSecretKey(event.key)
-            ?: throw KeyPermanentlyInvalidatedException("Key permanently invalidated")
+            ?: return event.respond(ExceptionEvent(KeyPermanentlyInvalidatedException("Key permanently invalidated")))
 
         val cipher = createCipher()
 
