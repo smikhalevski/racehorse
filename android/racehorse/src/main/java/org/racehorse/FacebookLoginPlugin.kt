@@ -8,7 +8,6 @@ import com.facebook.FacebookException
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.utils.checkActive
 import java.io.Serializable
 
 class SerializableFacebookAccessToken(
@@ -68,8 +67,6 @@ open class FacebookLoginPlugin(private val activity: ComponentActivity) {
 
     @Subscribe
     fun onFacebookLogIn(event: FacebookLogInEvent) {
-        activity.checkActive()
-
         val callbackManager = CallbackManager.Factory.create()
 
         loginManager.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {

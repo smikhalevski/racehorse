@@ -1,4 +1,5 @@
 import { EventBridge } from './createEventBridge';
+import { Unsubscribe } from './types';
 
 export interface KeyboardStatus {
   height: number;
@@ -26,7 +27,7 @@ export interface KeyboardManager {
   /**
    * Subscribes a listener to software keyboard status changes.
    */
-  subscribe(listener: (status: KeyboardStatus) => void): () => void;
+  subscribe(listener: (status: KeyboardStatus) => void): Unsubscribe;
 }
 
 export function createKeyboardManager(eventBridge: EventBridge): KeyboardManager {

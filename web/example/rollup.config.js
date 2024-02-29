@@ -31,4 +31,7 @@ module.exports = {
         clientUrl: 'http://10.0.2.2:35729/livereload.js?snipver=1',
       }),
   ],
+  watch: {
+    buildDelay: 1_000,
+  },
 };

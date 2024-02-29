@@ -10,7 +10,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.racehorse.utils.checkActive
 import org.racehorse.utils.ifNullOrBlank
 import java.io.File
 import java.io.Serializable
@@ -96,9 +95,8 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     open fun onSetBiometricEncryptedValue(event: SetBiometricEncryptedValueEvent) {
-        activity.checkActive()
-
         if (!isBiometricEnrolled(event.config?.authenticators)) {
+            // Fatal: requested authenticators aren't supported
             event.respond(SetBiometricEncryptedValueEvent.ResultEvent(false))
             return
         }
@@ -147,9 +145,8 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     open fun onGetBiometricEncryptedValue(event: GetBiometricEncryptedValueEvent) {
-        activity.checkActive()
-
         if (!isBiometricEnrolled(event.config?.authenticators)) {
+            // Fatal: requested authenticators aren't supported
             event.respond(GetEncryptedValueEvent.ResultEvent(null))
             return
         }

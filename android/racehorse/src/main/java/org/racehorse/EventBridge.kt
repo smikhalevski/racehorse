@@ -102,7 +102,12 @@ class ExceptionEvent(@Transient val cause: Throwable) : ResponseEvent() {
     /**
      * The class name of the [Throwable] that caused the event.
      */
-    val name = cause::class.java.name
+    val javaName = cause::class.java.name
+
+    /**
+     * The name of the [Throwable] that is used as an error name on the JavaScript side.
+     */
+    val name = cause::class.java.simpleName
 
     /**
      * The detail message string.

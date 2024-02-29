@@ -1,5 +1,6 @@
 import { Intent } from './createActivityManager';
 import { EventBridge } from './createEventBridge';
+import { Unsubscribe } from './types';
 
 export interface DeepLinkManager {
   /**
@@ -10,7 +11,7 @@ export interface DeepLinkManager {
   /**
    * Subscribes to incoming deep link intents.
    */
-  subscribe(listener: (intent: Intent) => void): () => void;
+  subscribe(listener: (intent: Intent) => void): Unsubscribe;
 }
 
 /**

@@ -1,4 +1,5 @@
 import { EventBridge } from './createEventBridge';
+import { Unsubscribe } from './types';
 
 export type NetworkType = 'wifi' | 'cellular' | 'none' | 'unknown';
 
@@ -16,7 +17,7 @@ export interface NetworkManager {
   /**
    * Subscribes to network status changes.
    */
-  subscribe(listener: (status: NetworkStatus) => void): () => void;
+  subscribe(listener: (status: NetworkStatus) => void): Unsubscribe;
 }
 
 /**

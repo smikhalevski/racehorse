@@ -13,7 +13,6 @@ import com.google.android.gms.tapandpay.issuer.UserAddress
 import com.google.android.gms.tapandpay.issuer.ViewTokenRequest
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.utils.checkActive
 import java.io.Serializable
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -258,8 +257,6 @@ open class GooglePayPlugin(
 
     @Subscribe
     fun onGooglePayViewToken(event: GooglePayViewTokenEvent) {
-        activity.checkActive()
-
         val request = ViewTokenRequest.Builder()
             .setIssuerTokenId(event.tokenId)
             .setTokenServiceProvider(event.tokenServiceProvider)
@@ -280,7 +277,7 @@ open class GooglePayPlugin(
     }
 
     @Subscribe
-    fun onGooglePayPushTokenize(event: GooglePayPushTokenizeEvent) = runOperationInForeground(
+    fun onGooglePayPushTokenize(event: GooglePayPushTokenizeEvent) = runOperation(
         operation = { requestCode ->
             val request = PushTokenizeRequest.Builder()
                 .setOpaquePaymentCard(event.opaquePaymentCard.toByteArray())
@@ -297,7 +294,7 @@ open class GooglePayPlugin(
     )
 
     @Subscribe
-    fun onGooglePayTokenize(event: GooglePayTokenizeEvent) = runOperationInForeground(
+    fun onGooglePayTokenize(event: GooglePayTokenizeEvent) = runOperation(
         operation = { requestCode ->
             tapAndPayClient.tokenize(
                 activity,
@@ -312,7 +309,7 @@ open class GooglePayPlugin(
     )
 
     @Subscribe
-    fun onGooglePayRequestSelectToken(event: GooglePayRequestSelectTokenEvent) = runOperationInForeground(
+    fun onGooglePayRequestSelectToken(event: GooglePayRequestSelectTokenEvent) = runOperation(
         operation = { requestCode ->
             tapAndPayClient.requestSelectToken(
                 activity,
@@ -325,7 +322,7 @@ open class GooglePayPlugin(
     )
 
     @Subscribe
-    fun onGooglePayRequestDeleteToken(event: GooglePayRequestDeleteTokenEvent) = runOperationInForeground(
+    fun onGooglePayRequestDeleteToken(event: GooglePayRequestDeleteTokenEvent) = runOperation(
         operation = { requestCode ->
             tapAndPayClient.requestDeleteToken(
                 activity,
@@ -338,7 +335,7 @@ open class GooglePayPlugin(
     )
 
     @Subscribe
-    fun onGooglePayCreateWallet(event: GooglePayCreateWalletEvent) = runOperationInForeground(
+    fun onGooglePayCreateWallet(event: GooglePayCreateWalletEvent) = runOperation(
         operation = { requestCode -> tapAndPayClient.createWallet(activity, requestCode) },
         callback = { event.respond(VoidEvent()) }
     )
@@ -350,12 +347,10 @@ open class GooglePayPlugin(
         activityCallbacks.remove(requestCode)?.invoke(data)
     }
 
-    protected open fun runOperationInForeground(
+    protected open fun runOperation(
         operation: (requestCode: Int) -> Unit,
         callback: (data: Intent?) -> Unit
     ) {
-        activity.checkActive()
-
         val requestCode = nextRequestCode.getAndIncrement()
 
         activityCallbacks[requestCode] = callback

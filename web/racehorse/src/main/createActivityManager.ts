@@ -1,6 +1,8 @@
+import { AbortablePromise } from 'parallel-universe';
 import { EventBridge } from './createEventBridge';
 import { Scheduler } from './createScheduler';
 import { noop } from './utils';
+import { Unsubscribe } from './types';
 
 /**
  * The intent that can be passed from and to web application.
@@ -176,24 +178,37 @@ export interface ActivityManager {
   startActivityForResult(intent: Intent): Promise<ActivityResult | null>;
 
   /**
+   * Runs the action once the activity is in the expected state.
+   *
+   * If the activity is in the expected state then the action is run immediately. Otherwise, the expected state is
+   * awaited and then the action is invoked.
+   *
+   * @param expectedState The state when the action must be run.
+   * @param action The action callback that must be invoked.
+   * @returns The promise to the action result.
+   * @template T The result returned by the action.
+   */
+  runIn<T>(expectedState: ActivityState, action: () => T | PromiseLike<T>): AbortablePromise<T>;
+
+  /**
    * Subscribes a listener to activity status changes.
    */
-  subscribe(listener: (activityState: ActivityState) => void): () => void;
+  subscribe(listener: (activityState: ActivityState) => void): Unsubscribe;
 
   /**
    * The activity went to background: user doesn't see the activity anymore.
    */
-  subscribe(eventType: 'background', listener: () => void): () => void;
+  subscribe(eventType: 'background', listener: () => void): Unsubscribe;
 
   /**
    * The activity entered foreground: user can see the activity but cannot interact with it.
    */
-  subscribe(eventType: 'foreground', listener: () => void): () => void;
+  subscribe(eventType: 'foreground', listener: () => void): Unsubscribe;
 
   /**
    * The activity became active: user can see the activity and can interact with it.
    */
-  subscribe(eventType: 'active', listener: () => void): () => void;
+  subscribe(eventType: 'active', listener: () => void): Unsubscribe;
 }
 
 const eventTypeToActivityState = {
@@ -209,8 +224,29 @@ const eventTypeToActivityState = {
  * @param uiScheduler The callback that schedules an operation that blocks the UI.
  */
 export function createActivityManager(eventBridge: EventBridge, uiScheduler: Scheduler): ActivityManager {
+  const getActivityState = () => eventBridge.request({ type: 'org.racehorse.GetActivityStateEvent' }).payload.state;
+
+  const subscribe: ActivityManager['subscribe'] = (eventTypeOrListener, listener = eventTypeOrListener) => {
+    const expectedState = typeof eventTypeOrListener === 'string' ? eventTypeToActivityState[eventTypeOrListener] : -1;
+
+    if (expectedState === undefined || typeof listener !== 'function') {
+      return noop;
+    }
+
+    return eventBridge.subscribe(
+      'org.racehorse.ActivityStateChangedEvent',
+      expectedState === -1
+        ? payload => listener(payload.state)
+        : payload => {
+            if (expectedState === payload.state) {
+              listener();
+            }
+          }
+    );
+  };
+
   return {
-    getActivityState: () => eventBridge.request({ type: 'org.racehorse.GetActivityStateEvent' }).payload.state,
+    getActivityState,
 
     getActivityInfo: () => eventBridge.request({ type: 'org.racehorse.GetActivityInfoEvent' }).payload.info,
 
@@ -224,24 +260,28 @@ export function createActivityManager(eventBridge: EventBridge, uiScheduler: Sch
           .then(event => event.payload)
       ),
 
-    subscribe: (eventTypeOrListener, listener = eventTypeOrListener) => {
-      const expectedState =
-        typeof eventTypeOrListener === 'string' ? eventTypeToActivityState[eventTypeOrListener] : -1;
+    runIn: (expectedState, action) =>
+      new AbortablePromise((resolve, reject, signal) => {
+        const unsubscribe = subscribe(activityState => {
+          if (expectedState < activityState) {
+            return;
+          }
+          unsubscribe();
+          try {
+            resolve(action());
+          } catch (e) {
+            reject(e);
+          }
+        });
 
-      if (expectedState === undefined || typeof listener !== 'function') {
-        return noop;
-      }
+        if (expectedState < getActivityState()) {
+          signal.addEventListener('abort', unsubscribe);
+        } else {
+          unsubscribe();
+          resolve(action());
+        }
+      }),
 
-      return eventBridge.subscribe(
-        'org.racehorse.ActivityStateChangedEvent',
-        expectedState === -1
-          ? payload => listener(payload.state)
-          : payload => {
-              if (expectedState === payload.state) {
-                listener();
-              }
-            }
-      );
-    },
+    subscribe,
   };
 }
