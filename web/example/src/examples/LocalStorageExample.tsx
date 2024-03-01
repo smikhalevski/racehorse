@@ -23,7 +23,7 @@ export function LocalStorageExample() {
             rerender();
           }}
         >
-          {'Clear value'}
+          {'❌ Delete value'}
         </button>
       </p>
 

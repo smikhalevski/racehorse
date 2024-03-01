@@ -187,7 +187,7 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
 
             "http", "https" -> enqueueDownload(event, uri)
 
-            else -> throw IllegalArgumentException("Unsupported URI")
+            else -> event.respond(ExceptionEvent(IllegalArgumentException("Unsupported URI")))
         }
     }
 
@@ -236,9 +236,9 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
             return
         }
 
-        activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) { granted ->
+        activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) { isGranted ->
             event.respond {
-                check(granted) { "Permission required" }
+                check(isGranted) { "Permission required" }
 
                 AddDownloadEvent.ResultEvent(downloadManager.enqueue(request))
             }
@@ -288,9 +288,9 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
         }
 
         // Create a new file manually
-        activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) { granted ->
+        activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) { isGranted ->
             event.respond {
-                check(granted) { "Permission required" }
+                check(isGranted) { "Permission required" }
 
                 val file = File(saveToDir, fileName).let {
                     // Prevent overwrite

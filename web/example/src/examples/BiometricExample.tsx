@@ -3,7 +3,7 @@ import { BiometricAuthenticator, biometricManager, BiometricStatus } from 'raceh
 
 export function BiometricExample() {
   const [authenticators, setAuthenticators] = useState<BiometricAuthenticator[]>([
-    BiometricAuthenticator.BIOMETRIC_WEAK,
+    BiometricAuthenticator.BIOMETRIC_STRONG,
   ]);
 
   const status = useMemo(() => biometricManager.getBiometricStatus(authenticators), [authenticators]);

@@ -249,8 +249,6 @@ open class EventBridge(
 
     @Subscribe
     open fun onSubscriberException(event: SubscriberExceptionEvent) {
-        event.throwable.printStackTrace()
-
         (event.causingEvent as? ChainableEvent)?.respond(ExceptionEvent(event.throwable))
     }
 
