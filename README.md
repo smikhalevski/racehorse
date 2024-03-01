@@ -1247,24 +1247,39 @@ await biometricEncryptedStorageManager.get('foo');
 // ⮕ 'bar'
 ```
 
+4. To allow device credential authentication, provide
+   [`authenticationValidityDuration`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.BiometricConfig.html#authenticationValidityDuration)
+   that is greater or equal to 0:
+
+```ts
+await biometricEncryptedStorageManager.set('foo', 'bar', {
+  authenticators: [BiometricAuthenticator.DEVICE_CREDENTIAL],
+  authenticationValidityDuration: 0
+});
+```
+
 If user enrolls biometric auth (for example, updates fingerprints stored on the device), then all secret keys used by
-the biometric-encrypted storage are invalidated and values become inaccessible. In such scenario keys are automatically
-removed when accessed:
+the biometric-encrypted storage are invalidated and values become inaccessible.
 
 ```js
 if (biometricEncryptedStorageManager.has(key)) {
   // Storage contains the key
 
-  biometricEncryptedStorageManager.get(key).then(value => {
-    if (value !== null) {
-      // The value was successfully decrypted
-    } else if (biometricEncryptedStorageManager.has(key)) {
-      // User canceled a biometric auth or made too many failed attempts
-    } else {
-      // User wasn't prompted a biometric auth and the value was deleted
-      // because the the sectet encryption key was invalidated
+  biometricEncryptedStorageManager.get(key).then(
+    value => {
+      if (value !== null) {
+        // The value was successfully decrypted
+      } else {
+        // User authentication failed
+      }
+    },
+    error => {
+      if (error.name === 'KeyPermanentlyInvalidatedException') {
+        // Key was invaildated and cannot be decrypted anymore
+        biometricEncryptedStorageManager.delete(key)
+      }
     }
-  })
+  )
 }
 ```
 
