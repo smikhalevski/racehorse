@@ -59,7 +59,6 @@ $dokka.location:org.racehorse.evergreen/UpdateStatus/version/#/PointingToDeclara
 $dokka.location:org.racehorse.utils////PointingToDeclaration/racehorse/org.racehorse.utils/index.html
 $dokka.location:org.racehorse.utils//askForPermission/androidx.activity.ComponentActivity#kotlin.String#kotlin.Function1[kotlin.Boolean,kotlin.Unit]/PointingToDeclaration/racehorse/org.racehorse.utils/ask-for-permission.html
 $dokka.location:org.racehorse.utils//askForPermissions/androidx.activity.ComponentActivity#kotlin.collections.Iterable[kotlin.String]#kotlin.Function1[kotlin.collections.Map[kotlin.String,kotlin.Boolean],kotlin.Unit]/PointingToDeclaration/racehorse/org.racehorse.utils/ask-for-permissions.html
-$dokka.location:org.racehorse.utils//checkActive/androidx.lifecycle.LifecycleOwner#/PointingToDeclaration/racehorse/org.racehorse.utils/check-active.html
 $dokka.location:org.racehorse.utils//filterPackageNames/android.content.Intent#android.content.pm.PackageManager#kotlin.Function1[kotlin.String,kotlin.Boolean]/PointingToDeclaration/racehorse/org.racehorse.utils/filter-package-names.html
 $dokka.location:org.racehorse.utils//guessIntentAction/android.net.Uri#/PointingToDeclaration/racehorse/org.racehorse.utils/guess-intent-action.html
 $dokka.location:org.racehorse.utils//ifNullOrBlank/kotlin.String?#kotlin.Function0[kotlin.String]/PointingToDeclaration/racehorse/org.racehorse.utils/if-null-or-blank.html
@@ -375,7 +374,8 @@ $dokka.location:org.racehorse/BiometricAuthenticator/value/#/PointingToDeclarati
 $dokka.location:org.racehorse/BiometricAuthenticator/valueOf/#kotlin.String/PointingToDeclaration/racehorse/org.racehorse/-biometric-authenticator/value-of.html
 $dokka.location:org.racehorse/BiometricAuthenticator/values/#/PointingToDeclaration/racehorse/org.racehorse/-biometric-authenticator/values.html
 $dokka.location:org.racehorse/BiometricConfig///PointingToDeclaration/racehorse/org.racehorse/-biometric-config/index.html
-$dokka.location:org.racehorse/BiometricConfig/BiometricConfig/#kotlin.String?#kotlin.String?#kotlin.String?#kotlin.String?#kotlin.Array[org.racehorse.BiometricAuthenticator]?/PointingToDeclaration/racehorse/org.racehorse/-biometric-config/-biometric-config.html
+$dokka.location:org.racehorse/BiometricConfig/BiometricConfig/#kotlin.String?#kotlin.String?#kotlin.String?#kotlin.String?#kotlin.Array[org.racehorse.BiometricAuthenticator]?#kotlin.Int?/PointingToDeclaration/racehorse/org.racehorse/-biometric-config/-biometric-config.html
+$dokka.location:org.racehorse/BiometricConfig/authenticationValidityDuration/#/PointingToDeclaration/racehorse/org.racehorse/-biometric-config/authentication-validity-duration.html
 $dokka.location:org.racehorse/BiometricConfig/authenticators/#/PointingToDeclaration/racehorse/org.racehorse/-biometric-config/authenticators.html
 $dokka.location:org.racehorse/BiometricConfig/description/#/PointingToDeclaration/racehorse/org.racehorse/-biometric-config/description.html
 $dokka.location:org.racehorse/BiometricConfig/negativeButtonText/#/PointingToDeclaration/racehorse/org.racehorse/-biometric-config/negative-button-text.html
@@ -417,14 +417,12 @@ $dokka.location:org.racehorse/DeepLinkPlugin/onGetLastDeepLink/#org.racehorse.Ge
 $dokka.location:org.racehorse/DeepLinkPlugin/onOpenDeepLink/#org.racehorse.OpenDeepLinkEvent/PointingToDeclaration/racehorse/org.racehorse/-deep-link-plugin/on-open-deep-link.html
 $dokka.location:org.racehorse/DeleteBiometricEncryptedValueEvent.ResultEvent///PointingToDeclaration/racehorse/org.racehorse/-delete-biometric-encrypted-value-event/-result-event/index.html
 $dokka.location:org.racehorse/DeleteBiometricEncryptedValueEvent.ResultEvent/ResultEvent/#kotlin.Boolean/PointingToDeclaration/racehorse/org.racehorse/-delete-biometric-encrypted-value-event/-result-event/-result-event.html
-$dokka.location:org.racehorse/DeleteBiometricEncryptedValueEvent.ResultEvent/deleted/#/PointingToDeclaration/racehorse/org.racehorse/-delete-biometric-encrypted-value-event/-result-event/deleted.html
 $dokka.location:org.racehorse/DeleteBiometricEncryptedValueEvent.ResultEvent/isDeleted/#/PointingToDeclaration/racehorse/org.racehorse/-delete-biometric-encrypted-value-event/-result-event/is-deleted.html
 $dokka.location:org.racehorse/DeleteBiometricEncryptedValueEvent///PointingToDeclaration/racehorse/org.racehorse/-delete-biometric-encrypted-value-event/index.html
 $dokka.location:org.racehorse/DeleteBiometricEncryptedValueEvent/DeleteBiometricEncryptedValueEvent/#kotlin.String/PointingToDeclaration/racehorse/org.racehorse/-delete-biometric-encrypted-value-event/-delete-biometric-encrypted-value-event.html
 $dokka.location:org.racehorse/DeleteBiometricEncryptedValueEvent/key/#/PointingToDeclaration/racehorse/org.racehorse/-delete-biometric-encrypted-value-event/key.html
 $dokka.location:org.racehorse/DeleteEncryptedValueEvent.ResultEvent///PointingToDeclaration/racehorse/org.racehorse/-delete-encrypted-value-event/-result-event/index.html
 $dokka.location:org.racehorse/DeleteEncryptedValueEvent.ResultEvent/ResultEvent/#kotlin.Boolean/PointingToDeclaration/racehorse/org.racehorse/-delete-encrypted-value-event/-result-event/-result-event.html
-$dokka.location:org.racehorse/DeleteEncryptedValueEvent.ResultEvent/deleted/#/PointingToDeclaration/racehorse/org.racehorse/-delete-encrypted-value-event/-result-event/deleted.html
 $dokka.location:org.racehorse/DeleteEncryptedValueEvent.ResultEvent/isDeleted/#/PointingToDeclaration/racehorse/org.racehorse/-delete-encrypted-value-event/-result-event/is-deleted.html
 $dokka.location:org.racehorse/DeleteEncryptedValueEvent///PointingToDeclaration/racehorse/org.racehorse/-delete-encrypted-value-event/index.html
 $dokka.location:org.racehorse/DeleteEncryptedValueEvent/DeleteEncryptedValueEvent/#kotlin.String/PointingToDeclaration/racehorse/org.racehorse/-delete-encrypted-value-event/-delete-encrypted-value-event.html
@@ -509,6 +507,7 @@ $dokka.location:org.racehorse/EventBridge/webView/#/PointingToDeclaration/raceh
 $dokka.location:org.racehorse/ExceptionEvent///PointingToDeclaration/racehorse/org.racehorse/-exception-event/index.html
 $dokka.location:org.racehorse/ExceptionEvent/ExceptionEvent/#kotlin.Throwable/PointingToDeclaration/racehorse/org.racehorse/-exception-event/-exception-event.html
 $dokka.location:org.racehorse/ExceptionEvent/cause/#/PointingToDeclaration/racehorse/org.racehorse/-exception-event/cause.html
+$dokka.location:org.racehorse/ExceptionEvent/javaName/#/PointingToDeclaration/racehorse/org.racehorse/-exception-event/java-name.html
 $dokka.location:org.racehorse/ExceptionEvent/message/#/PointingToDeclaration/racehorse/org.racehorse/-exception-event/message.html
 $dokka.location:org.racehorse/ExceptionEvent/name/#/PointingToDeclaration/racehorse/org.racehorse/-exception-event/name.html
 $dokka.location:org.racehorse/ExceptionEvent/stack/#/PointingToDeclaration/racehorse/org.racehorse/-exception-event/stack.html
@@ -547,7 +546,6 @@ $dokka.location:org.racehorse/FirebasePlugin/FirebasePlugin/#/PointingToDeclarat
 $dokka.location:org.racehorse/FirebasePlugin/onGetFirebaseToken/#org.racehorse.GetFirebaseTokenEvent/PointingToDeclaration/racehorse/org.racehorse/-firebase-plugin/on-get-firebase-token.html
 $dokka.location:org.racehorse/GetActivityInfoEvent.ResultEvent///PointingToDeclaration/racehorse/org.racehorse/-get-activity-info-event/-result-event/index.html
 $dokka.location:org.racehorse/GetActivityInfoEvent.ResultEvent/ResultEvent/#org.racehorse.ActivityInfo/PointingToDeclaration/racehorse/org.racehorse/-get-activity-info-event/-result-event/-result-event.html
-$dokka.location:org.racehorse/GetActivityInfoEvent.ResultEvent/activityInfo/#/PointingToDeclaration/racehorse/org.racehorse/-get-activity-info-event/-result-event/activity-info.html
 $dokka.location:org.racehorse/GetActivityInfoEvent.ResultEvent/info/#/PointingToDeclaration/racehorse/org.racehorse/-get-activity-info-event/-result-event/info.html
 $dokka.location:org.racehorse/GetActivityInfoEvent///PointingToDeclaration/racehorse/org.racehorse/-get-activity-info-event/index.html
 $dokka.location:org.racehorse/GetActivityInfoEvent/GetActivityInfoEvent/#/PointingToDeclaration/racehorse/org.racehorse/-get-activity-info-event/-get-activity-info-event.html
@@ -581,7 +579,6 @@ $dokka.location:org.racehorse/GetCurrentFacebookAccessTokenEvent///PointingToDec
 $dokka.location:org.racehorse/GetCurrentFacebookAccessTokenEvent/GetCurrentFacebookAccessTokenEvent/#/PointingToDeclaration/racehorse/org.racehorse/-get-current-facebook-access-token-event/-get-current-facebook-access-token-event.html
 $dokka.location:org.racehorse/GetDeviceInfoEvent.ResultEvent///PointingToDeclaration/racehorse/org.racehorse/-get-device-info-event/-result-event/index.html
 $dokka.location:org.racehorse/GetDeviceInfoEvent.ResultEvent/ResultEvent/#org.racehorse.DeviceInfo/PointingToDeclaration/racehorse/org.racehorse/-get-device-info-event/-result-event/-result-event.html
-$dokka.location:org.racehorse/GetDeviceInfoEvent.ResultEvent/deviceInfo/#/PointingToDeclaration/racehorse/org.racehorse/-get-device-info-event/-result-event/device-info.html
 $dokka.location:org.racehorse/GetDeviceInfoEvent.ResultEvent/info/#/PointingToDeclaration/racehorse/org.racehorse/-get-device-info-event/-result-event/info.html
 $dokka.location:org.racehorse/GetDeviceInfoEvent///PointingToDeclaration/racehorse/org.racehorse/-get-device-info-event/index.html
 $dokka.location:org.racehorse/GetDeviceInfoEvent/GetDeviceInfoEvent/#/PointingToDeclaration/racehorse/org.racehorse/-get-device-info-event/-get-device-info-event.html
@@ -741,7 +738,6 @@ $dokka.location:org.racehorse/GooglePayTokenizeEvent/tokenServiceProvider/#/Poin
 $dokka.location:org.racehorse/GooglePayViewTokenEvent.ResultEvent///PointingToDeclaration/racehorse/org.racehorse/-google-pay-view-token-event/-result-event/index.html
 $dokka.location:org.racehorse/GooglePayViewTokenEvent.ResultEvent/ResultEvent/#kotlin.Boolean/PointingToDeclaration/racehorse/org.racehorse/-google-pay-view-token-event/-result-event/-result-event.html
 $dokka.location:org.racehorse/GooglePayViewTokenEvent.ResultEvent/isOpened/#/PointingToDeclaration/racehorse/org.racehorse/-google-pay-view-token-event/-result-event/is-opened.html
-$dokka.location:org.racehorse/GooglePayViewTokenEvent.ResultEvent/opened/#/PointingToDeclaration/racehorse/org.racehorse/-google-pay-view-token-event/-result-event/opened.html
 $dokka.location:org.racehorse/GooglePayViewTokenEvent///PointingToDeclaration/racehorse/org.racehorse/-google-pay-view-token-event/index.html
 $dokka.location:org.racehorse/GooglePayViewTokenEvent/GooglePayViewTokenEvent/#kotlin.String#kotlin.Int/PointingToDeclaration/racehorse/org.racehorse/-google-pay-view-token-event/-google-pay-view-token-event.html
 $dokka.location:org.racehorse/GooglePayViewTokenEvent/tokenId/#/PointingToDeclaration/racehorse/org.racehorse/-google-pay-view-token-event/token-id.html
@@ -772,14 +768,12 @@ $dokka.location:org.racehorse/GoogleSilentSignInEvent///PointingToDeclaration/r
 $dokka.location:org.racehorse/GoogleSilentSignInEvent/GoogleSilentSignInEvent/#/PointingToDeclaration/racehorse/org.racehorse/-google-silent-sign-in-event/-google-silent-sign-in-event.html
 $dokka.location:org.racehorse/HasBiometricEncryptedValueEvent.ResultEvent///PointingToDeclaration/racehorse/org.racehorse/-has-biometric-encrypted-value-event/-result-event/index.html
 $dokka.location:org.racehorse/HasBiometricEncryptedValueEvent.ResultEvent/ResultEvent/#kotlin.Boolean/PointingToDeclaration/racehorse/org.racehorse/-has-biometric-encrypted-value-event/-result-event/-result-event.html
-$dokka.location:org.racehorse/HasBiometricEncryptedValueEvent.ResultEvent/exists/#/PointingToDeclaration/racehorse/org.racehorse/-has-biometric-encrypted-value-event/-result-event/exists.html
 $dokka.location:org.racehorse/HasBiometricEncryptedValueEvent.ResultEvent/isExisting/#/PointingToDeclaration/racehorse/org.racehorse/-has-biometric-encrypted-value-event/-result-event/is-existing.html
 $dokka.location:org.racehorse/HasBiometricEncryptedValueEvent///PointingToDeclaration/racehorse/org.racehorse/-has-biometric-encrypted-value-event/index.html
 $dokka.location:org.racehorse/HasBiometricEncryptedValueEvent/HasBiometricEncryptedValueEvent/#kotlin.String/PointingToDeclaration/racehorse/org.racehorse/-has-biometric-encrypted-value-event/-has-biometric-encrypted-value-event.html
 $dokka.location:org.racehorse/HasBiometricEncryptedValueEvent/key/#/PointingToDeclaration/racehorse/org.racehorse/-has-biometric-encrypted-value-event/key.html
 $dokka.location:org.racehorse/HasEncryptedValueEvent.ResultEvent///PointingToDeclaration/racehorse/org.racehorse/-has-encrypted-value-event/-result-event/index.html
 $dokka.location:org.racehorse/HasEncryptedValueEvent.ResultEvent/ResultEvent/#kotlin.Boolean/PointingToDeclaration/racehorse/org.racehorse/-has-encrypted-value-event/-result-event/-result-event.html
-$dokka.location:org.racehorse/HasEncryptedValueEvent.ResultEvent/exists/#/PointingToDeclaration/racehorse/org.racehorse/-has-encrypted-value-event/-result-event/exists.html
 $dokka.location:org.racehorse/HasEncryptedValueEvent.ResultEvent/isExisting/#/PointingToDeclaration/racehorse/org.racehorse/-has-encrypted-value-event/-result-event/is-existing.html
 $dokka.location:org.racehorse/HasEncryptedValueEvent///PointingToDeclaration/racehorse/org.racehorse/-has-encrypted-value-event/index.html
 $dokka.location:org.racehorse/HasEncryptedValueEvent/HasEncryptedValueEvent/#kotlin.String/PointingToDeclaration/racehorse/org.racehorse/-has-encrypted-value-event/-has-encrypted-value-event.html
@@ -870,7 +864,6 @@ $dokka.location:org.racehorse/Rect/top/#/PointingToDeclaration/racehorse/org.ra
 $dokka.location:org.racehorse/RemoveDownloadEvent.ResultEvent///PointingToDeclaration/racehorse/org.racehorse/-remove-download-event/-result-event/index.html
 $dokka.location:org.racehorse/RemoveDownloadEvent.ResultEvent/ResultEvent/#kotlin.Boolean/PointingToDeclaration/racehorse/org.racehorse/-remove-download-event/-result-event/-result-event.html
 $dokka.location:org.racehorse/RemoveDownloadEvent.ResultEvent/isRemoved/#/PointingToDeclaration/racehorse/org.racehorse/-remove-download-event/-result-event/is-removed.html
-$dokka.location:org.racehorse/RemoveDownloadEvent.ResultEvent/removed/#/PointingToDeclaration/racehorse/org.racehorse/-remove-download-event/-result-event/removed.html
 $dokka.location:org.racehorse/RemoveDownloadEvent///PointingToDeclaration/racehorse/org.racehorse/-remove-download-event/index.html
 $dokka.location:org.racehorse/RemoveDownloadEvent/RemoveDownloadEvent/#kotlin.Long/PointingToDeclaration/racehorse/org.racehorse/-remove-download-event/-remove-download-event.html
 $dokka.location:org.racehorse/RemoveDownloadEvent/id/#/PointingToDeclaration/racehorse/org.racehorse/-remove-download-event/id.html
