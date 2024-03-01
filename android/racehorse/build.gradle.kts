@@ -89,7 +89,7 @@ dependencies {
     compileOnly("androidx.appcompat:appcompat:1.6.1")
 
     // Google Sign-In
-    compileOnly("com.google.android.gms:play-services-auth:20.7.0")
+    compileOnly("com.google.android.gms:play-services-auth:21.0.0")
 
     // Facebook Login
     compileOnly("com.facebook.android:facebook-login:latest.release")
@@ -101,7 +101,7 @@ dependencies {
     compileOnly("com.google.android.gms:play-services-tapandpay:18.3.3")
 
     // Push notifications
-    compileOnly("com.google.firebase:firebase-messaging-ktx:23.4.0")
+    compileOnly("com.google.firebase:firebase-messaging-ktx:23.4.1")
 
     // Biometric
     compileOnly("androidx.biometric:biometric:1.2.0-alpha05")
