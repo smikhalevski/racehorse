@@ -1,7 +1,14 @@
 import { EventBridge } from './createEventBridge';
 import { Unsubscribe } from './types';
 
-export type NetworkType = 'wifi' | 'cellular' | 'none' | 'unknown';
+export const NetworkType = {
+  WIFI: 'wifi',
+  CELLULAR: 'cellular',
+  NONE: 'none',
+  UNKNOWN: 'unknown',
+} as const;
+
+export type NetworkType = (typeof NetworkType)[keyof typeof NetworkType];
 
 export interface NetworkStatus {
   type: NetworkType;

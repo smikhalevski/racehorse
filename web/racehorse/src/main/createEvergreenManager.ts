@@ -14,7 +14,13 @@ export interface UpdateStatus {
   isReady: boolean;
 }
 
-export type UpdateMode = 'mandatory' | 'optional' | 'postponed';
+export const UpdateMode = {
+  MANDATORY: 'mandatory',
+  OPTIONAL: 'optional',
+  POSTPONED: 'postponed',
+} as const;
+
+export type UpdateMode = (typeof UpdateMode)[keyof typeof UpdateMode];
 
 export interface EvergreenManager {
   /**
