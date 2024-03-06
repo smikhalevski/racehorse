@@ -27,21 +27,21 @@ export function createScheduler(): Scheduler {
     schedule: operation => {
       isPending = true;
 
-      const operationPromise = promise
+      const operationPromise = (promise = promise
         .then(noop, noop)
         .then(operation)
         .then(
-          result => {
+          value => {
             isPending = promise !== operationPromise;
-            return result;
+            return value;
           },
           reason => {
             isPending = promise !== operationPromise;
             throw reason;
           }
-        );
+        ));
 
-      return (promise = operationPromise);
+      return operationPromise;
     },
   };
 }

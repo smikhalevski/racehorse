@@ -107,10 +107,6 @@ class ShowCustomViewEvent(
      */
 
     val view: View,
-    /**
-     * An orientation constant as used in [ActivityInfo.screenOrientation].
-     */
-    val requestedOrientation: Int,
 
     /**
      * Invoke this callback to request the page to exit full screen mode.
@@ -527,8 +523,8 @@ open class RacehorseWebChromeClient(private val eventBus: EventBus = EventBus.ge
         eventBus.postForSubscriber { ReceivedTouchIconUrlEvent(view, url, isPrecomposed) }
     }
 
-    override fun onShowCustomView(view: View, requestedOrientation: Int, callback: CustomViewCallback) {
-        eventBus.postForSubscriber { ShowCustomViewEvent(view, requestedOrientation, callback) }
+    override fun onShowCustomView(view: View, callback: CustomViewCallback) {
+        eventBus.postForSubscriber { ShowCustomViewEvent(view, callback) }
     }
 
     override fun onHideCustomView() {

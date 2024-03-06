@@ -149,7 +149,7 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
             ?: return event.respond(GetEncryptedValueEvent.ResultEvent(null))
 
         val secretKey = getSecretKey(event.key)
-            ?: return event.respond(ExceptionEvent(KeyPermanentlyInvalidatedException()))
+            ?: return event.respond(ExceptionEvent(KeyPermanentlyInvalidatedException("Secret key not found")))
 
         val cipher = createCipher()
         val params = IvParameterSpec(record.iv)

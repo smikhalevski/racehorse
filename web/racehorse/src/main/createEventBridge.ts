@@ -68,7 +68,7 @@ export interface EventBridge {
   request(event: Event): Event;
 
   /**
-   * Sends an event through a connection to Android and returns a promise that is resolved when a response event.
+   * Sends an event through a connection to Android and returns a promise that is resolved with a response event.
    *
    * The connection is automatically established when this method is called.
    *

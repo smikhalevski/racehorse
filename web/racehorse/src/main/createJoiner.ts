@@ -29,9 +29,9 @@ export function createJoiner<T>(): Joiner<T> {
     isPending: () => promise !== undefined,
 
     join: operation =>
-      (promise ||= operation().then(result => {
+      (promise ||= operation().then(value => {
         promise = undefined;
-        return result;
+        return value;
       })),
   };
 }
