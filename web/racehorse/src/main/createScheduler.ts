@@ -12,6 +12,8 @@ export interface Scheduler {
    * The action callback receives a non-aborted signal.
    *
    * @param action The action to schedule.
+   * @returns The promise that is settled when the action completes.
+   * @template T The result of an action.
    */
   schedule<T>(action: AbortableCallback<T>): AbortablePromise<T>;
 }

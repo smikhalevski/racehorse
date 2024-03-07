@@ -1,26 +1,26 @@
 /**
- * @template T The operation result.
+ * @template T The result of an action.
  */
 export interface Joiner<T> {
   /**
-   * Returns `true` if joiner currently has a pending operation, or `false` otherwise.
+   * Returns `true` if joiner currently has a pending action, or `false` otherwise.
    */
   isPending(): boolean;
 
   /**
-   * Invokes the operation. If there's a pending operation than this call would return its promise, and the given
-   * operation callback won't be called.
+   * Invokes the action. If there's a pending action than this call would return its promise, and the given
+   * action callback won't be called.
    *
-   * @param operation The operation to invoke.
+   * @param action The action to invoke.
    */
-  join(operation: () => Promise<T>): Promise<T>;
+  join(action: () => Promise<T>): Promise<T>;
 }
 
 /**
- * Joiner invokes the operation callback if there's no pending callback, otherwise it returns the result of the pending
- * operation.
+ * Joiner invokes the action callback if there's no pending callback, otherwise it returns the result of the pending
+ * action.
  *
- * @template T The operation result.
+ * @template T The result of an action.
  */
 export function createJoiner<T>(): Joiner<T> {
   let promise: Promise<T> | undefined;
@@ -28,8 +28,8 @@ export function createJoiner<T>(): Joiner<T> {
   return {
     isPending: () => promise !== undefined,
 
-    join: operation =>
-      (promise ||= operation().then(value => {
+    join: action =>
+      (promise ||= action().then(value => {
         promise = undefined;
         return value;
       })),

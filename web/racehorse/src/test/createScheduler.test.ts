@@ -1,69 +1,70 @@
 import { createScheduler } from '../main';
+import { noop } from '../main/utils';
 
 describe('createScheduler', () => {
-  test('invokes the operation', async () => {
-    const operationMock = jest.fn(() => Promise.resolve('aaa'));
+  test('invokes the action', async () => {
+    const actionMock = jest.fn(() => Promise.resolve('aaa'));
     const scheduler = createScheduler();
 
     expect(scheduler.isPending()).toBe(false);
 
-    const promise = scheduler.schedule(operationMock);
+    const promise = scheduler.schedule(actionMock);
 
     expect(scheduler.isPending()).toBe(true);
-    expect(operationMock).toHaveBeenCalledTimes(0);
+    expect(actionMock).toHaveBeenCalledTimes(0);
 
     await expect(promise).resolves.toBe('aaa');
 
-    expect(operationMock).toHaveBeenCalledTimes(1);
+    expect(actionMock).toHaveBeenCalledTimes(1);
   });
 
-  test('invokes operations consequently', async () => {
-    let operation1Completed = false;
+  test('invokes actions consequently', async () => {
+    let action1Completed = false;
 
-    const operation1Mock = jest.fn(() =>
+    const action1Mock = jest.fn(() =>
       Promise.resolve().then(() => {
-        operation1Completed = true;
+        action1Completed = true;
       })
     );
-    const operation2Mock = jest.fn(() => {
-      expect(operation1Completed).toBe(true);
+    const action2Mock = jest.fn(() => {
+      expect(action1Completed).toBe(true);
       return Promise.resolve('aaa');
     });
 
     const scheduler = createScheduler();
 
-    scheduler.schedule(operation1Mock);
+    scheduler.schedule(action1Mock);
 
-    await expect(scheduler.schedule(operation2Mock)).resolves.toBe('aaa');
+    await expect(scheduler.schedule(action2Mock)).resolves.toBe('aaa');
 
-    expect(operation2Mock).toHaveBeenCalledTimes(1);
+    expect(action2Mock).toHaveBeenCalledTimes(1);
     expect(scheduler.isPending()).toBe(false);
   });
 
-  test('result from the previous operation is not visible to the next operation', async () => {
-    const operationMock = jest.fn();
+  test('result from the previous action is not visible to the next action', async () => {
+    const actionMock = jest.fn();
 
     const scheduler = createScheduler();
 
     scheduler.schedule(() => Promise.resolve('aaa'));
 
-    await scheduler.schedule(operationMock);
+    await scheduler.schedule(actionMock);
 
-    expect(operationMock).toHaveBeenCalledTimes(1);
-    expect(operationMock.mock.calls[0]).toStrictEqual([undefined]);
+    expect(actionMock).toHaveBeenCalledTimes(1);
+    expect(actionMock.mock.calls[0]).toStrictEqual([expect.any(AbortSignal)]);
   });
 
-  test('ignores the rejection of the preceding operation', async () => {
-    const operationMock = jest.fn();
+  test('ignores the rejection of the preceding action', async () => {
+    const actionMock = jest.fn();
 
     const scheduler = createScheduler();
 
-    scheduler.schedule(() => Promise.reject('aaa'));
+    scheduler.schedule(() => Promise.reject('aaa')).catch(noop);
 
-    await scheduler.schedule(operationMock);
+    await scheduler.schedule(actionMock);
 
-    expect(operationMock).toHaveBeenCalledTimes(1);
-    expect(operationMock.mock.calls[0]).toStrictEqual([undefined]);
+    expect(actionMock).toHaveBeenCalledTimes(1);
+    expect(actionMock.mock.calls[0]).toStrictEqual([expect.any(AbortSignal)]);
   });
 
   test('pending status is preserved', async () => {
