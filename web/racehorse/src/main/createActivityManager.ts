@@ -1,4 +1,4 @@
-import { AbortablePromise } from 'parallel-universe';
+import { AbortableCallback, AbortablePromise } from 'parallel-universe';
 import { EventBridge } from './createEventBridge';
 import { Scheduler } from './createScheduler';
 import { noop } from './utils';
@@ -178,6 +178,20 @@ export interface ActivityManager {
   startActivityForResult(intent: Intent): Promise<ActivityResult | null>;
 
   /**
+   * Runs an action that blocks the UI.
+   *
+   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   *
+   * If the activity is in {@link ActivityState.ACTIVE the active state} then the action is run immediately. Otherwise,
+   * the active state is awaited and then the action is invoked.
+   *
+   * @param action The action callback that must be invoked.
+   * @returns The promise to the action result.
+   * @template T The result returned by the action.
+   */
+  startUserInteraction<T>(action: AbortableCallback<T>): AbortablePromise<T>;
+
+  /**
    * Runs the action once the activity is in the expected state.
    *
    * If the activity is in the expected state then the action is run immediately. Otherwise, the expected state is
@@ -188,7 +202,7 @@ export interface ActivityManager {
    * @returns The promise to the action result.
    * @template T The result returned by the action.
    */
-  runIn<T>(expectedState: ActivityState, action: () => T | PromiseLike<T>): AbortablePromise<T>;
+  runIn<T>(expectedState: ActivityState, action: AbortableCallback<T>): AbortablePromise<T>;
 
   /**
    * Subscribes a listener to activity status changes.
@@ -245,6 +259,39 @@ export function createActivityManager(eventBridge: EventBridge, uiScheduler: Sch
     );
   };
 
+  const runIn: ActivityManager['runIn'] = (expectedState, action) =>
+    new AbortablePromise((resolve, reject, signal) => {
+      const unsubscribe = subscribe(activityState => {
+        if (expectedState < activityState) {
+          return;
+        }
+        unsubscribe();
+        try {
+          resolve(action(signal));
+        } catch (e) {
+          reject(e);
+        }
+      });
+
+      if (expectedState < getActivityState()) {
+        signal.addEventListener('abort', unsubscribe);
+      } else {
+        unsubscribe();
+        resolve(action(signal));
+      }
+    });
+
+  const startUserInteraction: ActivityManager['startUserInteraction'] = action =>
+    uiScheduler.schedule(signal => {
+      const promise = runIn(ActivityState.ACTIVE, action);
+
+      signal.addEventListener('abort', () => {
+        promise.abort(signal.reason);
+      });
+
+      return promise;
+    });
+
   return {
     getActivityState,
 
@@ -254,33 +301,15 @@ export function createActivityManager(eventBridge: EventBridge, uiScheduler: Sch
       eventBridge.request({ type: 'org.racehorse.StartActivityEvent', payload: { intent } }).payload.isStarted,
 
     startActivityForResult: intent =>
-      uiScheduler.schedule(() =>
+      startUserInteraction(() =>
         eventBridge
           .requestAsync({ type: 'org.racehorse.StartActivityForResultEvent', payload: { intent } })
           .then(event => event.payload)
       ),
 
-    runIn: (expectedState, action) =>
-      new AbortablePromise((resolve, reject, signal) => {
-        const unsubscribe = subscribe(activityState => {
-          if (expectedState < activityState) {
-            return;
-          }
-          unsubscribe();
-          try {
-            resolve(action());
-          } catch (e) {
-            reject(e);
-          }
-        });
+    runIn,
 
-        if (expectedState < getActivityState()) {
-          signal.addEventListener('abort', unsubscribe);
-        } else {
-          unsubscribe();
-          resolve(action());
-        }
-      }),
+    startUserInteraction,
 
     subscribe,
   };

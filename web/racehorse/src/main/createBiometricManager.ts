@@ -1,5 +1,5 @@
 import { EventBridge } from './createEventBridge';
-import { Scheduler } from './createScheduler';
+import { ActivityManager } from './createActivityManager';
 
 /**
  * Types of authenticators, defined at a level of granularity supported by {@link BiometricManager}.
@@ -97,9 +97,9 @@ export interface BiometricManager {
  * Provides the status of biometric support and allows to enroll for biometric auth.
  *
  * @param eventBridge The underlying event bridge.
- * @param uiScheduler The callback that schedules an operation that blocks the UI.
+ * @param activityManager The manager that starts user interactions and blocks the UI.
  */
-export function createBiometricManager(eventBridge: EventBridge, uiScheduler: Scheduler): BiometricManager {
+export function createBiometricManager(eventBridge: EventBridge, activityManager: ActivityManager): BiometricManager {
   return {
     getBiometricStatus: authenticators =>
       eventBridge.request({
@@ -108,7 +108,7 @@ export function createBiometricManager(eventBridge: EventBridge, uiScheduler: Sc
       }).payload.status,
 
     enrollBiometric: authenticators =>
-      uiScheduler.schedule(() =>
+      activityManager.startUserInteraction(() =>
         eventBridge
           .requestAsync({ type: 'org.racehorse.EnrollBiometricEvent', payload: { authenticators } })
           .then(event => event.payload.isEnrolled)

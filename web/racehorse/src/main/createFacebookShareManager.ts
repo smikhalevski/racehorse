@@ -1,6 +1,6 @@
 import { EventBridge } from './createEventBridge';
 import { noop } from './utils';
-import { Scheduler } from './createScheduler';
+import { ActivityManager } from './createActivityManager';
 
 export interface FacebookShareLinkContent {
   /**
@@ -52,12 +52,15 @@ export interface FacebookShareManager {
  * Manages Facebook content sharing.
  *
  * @param eventBridge The underlying event bridge.
- * @param uiScheduler The callback that schedules an operation that blocks the UI.
+ * @param activityManager The manager that starts user interactions and blocks the UI.
  */
-export function createFacebookShareManager(eventBridge: EventBridge, uiScheduler: Scheduler): FacebookShareManager {
+export function createFacebookShareManager(
+  eventBridge: EventBridge,
+  activityManager: ActivityManager
+): FacebookShareManager {
   return {
     shareLink: content =>
-      uiScheduler.schedule(() =>
+      activityManager.startUserInteraction(() =>
         eventBridge.requestAsync({ type: 'org.racehorse.FacebookShareLinkEvent', payload: content }).then(noop)
       ),
   };

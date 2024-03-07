@@ -1,5 +1,5 @@
 import { EventBridge } from './createEventBridge';
-import { Scheduler } from './createScheduler';
+import { ActivityManager } from './createActivityManager';
 
 export interface FacebookAccessToken {
   /**
@@ -100,15 +100,18 @@ export interface FacebookLoginManager {
  * Manages Facebook Login integration.
  *
  * @param eventBridge The underlying event bridge.
- * @param uiScheduler The callback that schedules an operation that blocks the UI.
+ * @param activityManager The manager that starts user interactions and blocks the UI.
  */
-export function createFacebookLoginManager(eventBridge: EventBridge, uiScheduler: Scheduler): FacebookLoginManager {
+export function createFacebookLoginManager(
+  eventBridge: EventBridge,
+  activityManager: ActivityManager
+): FacebookLoginManager {
   return {
     getCurrentAccessToken: () =>
       eventBridge.request({ type: 'org.racehorse.GetCurrentFacebookAccessTokenEvent' }).payload.accessToken,
 
     logIn: permissions =>
-      uiScheduler.schedule(() =>
+      activityManager.startUserInteraction(() =>
         eventBridge
           .requestAsync({ type: 'org.racehorse.FacebookLogInEvent', payload: { permissions } })
           .then(event => event.payload.accessToken)

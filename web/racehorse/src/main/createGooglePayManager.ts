@@ -1,7 +1,7 @@
 import { EventBridge } from './createEventBridge';
 import { noop } from './utils';
-import { Scheduler } from './createScheduler';
 import { Unsubscribe } from './types';
+import { ActivityManager } from './createActivityManager';
 
 export const GooglePayTokenState = {
   UNTOKENIZED: 1,
@@ -295,9 +295,9 @@ export interface GooglePayManager {
  * [Reading wallet state.](https://developers.google.com/pay/issuers/apis/push-provisioning/android/reading-wallet)
  *
  * @param eventBridge The underlying event bridge.
- * @param uiScheduler The callback that schedules an operation that blocks the UI.
+ * @param activityManager The manager that starts user interactions and blocks the UI.
  */
-export function createGooglePayManager(eventBridge: EventBridge, uiScheduler: Scheduler): GooglePayManager {
+export function createGooglePayManager(eventBridge: EventBridge, activityManager: ActivityManager): GooglePayManager {
   return {
     getActiveWalletId: () =>
       eventBridge
@@ -336,7 +336,7 @@ export function createGooglePayManager(eventBridge: EventBridge, uiScheduler: Sc
         .then(event => event.payload.isTokenized),
 
     viewToken: (tokenId, tokenServiceProvider) =>
-      uiScheduler.schedule(() =>
+      activityManager.startUserInteraction(() =>
         eventBridge
           .requestAsync({
             type: 'org.racehorse.GooglePayViewTokenEvent',
@@ -346,21 +346,21 @@ export function createGooglePayManager(eventBridge: EventBridge, uiScheduler: Sc
       ),
 
     pushTokenize: request =>
-      uiScheduler.schedule(() =>
+      activityManager.startUserInteraction(() =>
         eventBridge
           .requestAsync({ type: 'org.racehorse.GooglePayPushTokenizeEvent', payload: request })
           .then(event => event.payload.tokenId)
       ),
 
     tokenize: request =>
-      uiScheduler.schedule(() =>
+      activityManager.startUserInteraction(() =>
         eventBridge
           .requestAsync({ type: 'org.racehorse.GooglePayTokenizeEvent', payload: request })
           .then(event => event.payload.tokenId)
       ),
 
     requestSelectToken: (tokenId, tokenServiceProvider) =>
-      uiScheduler.schedule(() =>
+      activityManager.startUserInteraction(() =>
         eventBridge
           .requestAsync({
             type: 'org.racehorse.GooglePayRequestSelectTokenEvent',
@@ -370,7 +370,7 @@ export function createGooglePayManager(eventBridge: EventBridge, uiScheduler: Sc
       ),
 
     requestDeleteToken: (tokenId, tokenServiceProvider) =>
-      uiScheduler.schedule(() =>
+      activityManager.startUserInteraction(() =>
         eventBridge
           .requestAsync({
             type: 'org.racehorse.GooglePayRequestDeleteTokenEvent',
@@ -380,7 +380,7 @@ export function createGooglePayManager(eventBridge: EventBridge, uiScheduler: Sc
       ),
 
     createWallet: () =>
-      uiScheduler.schedule(() =>
+      activityManager.startUserInteraction(() =>
         eventBridge.requestAsync({ type: 'org.racehorse.GooglePayCreateWalletEvent' }).then(noop)
       ),
 

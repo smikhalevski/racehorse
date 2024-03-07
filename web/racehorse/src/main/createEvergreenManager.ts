@@ -35,6 +35,8 @@ export interface EvergreenManager {
 
   /**
    * Applies the available update bundle and returns its version, or returns `null` if there's no update bundle.
+   *
+   * For changes to take effect you must reload the app.
    */
   applyUpdate(): Promise<string | null>;
 

@@ -1,6 +1,6 @@
 import { EventBridge } from './createEventBridge';
 import { BiometricAuthenticator } from './createBiometricManager';
-import { Scheduler } from './createScheduler';
+import { ActivityManager } from './createActivityManager';
 
 export interface BiometricConfig {
   /**
@@ -94,22 +94,22 @@ export interface BiometricEncryptedStorageManager {
  * A biometric encrypted key-value file-based storage.
  *
  * @param eventBridge The underlying event bridge.
- * @param uiScheduler The callback that schedules an operation that blocks the UI.
+ * @param activityManager The manager that starts user interactions and blocks the UI.
  */
 export function createBiometricEncryptedStorageManager(
   eventBridge: EventBridge,
-  uiScheduler: Scheduler
+  activityManager: ActivityManager
 ): BiometricEncryptedStorageManager {
   return {
     set: (key, value, config) =>
-      uiScheduler.schedule(() =>
+      activityManager.startUserInteraction(() =>
         eventBridge
           .requestAsync({ type: 'org.racehorse.SetBiometricEncryptedValueEvent', payload: { key, value, config } })
           .then(event => event.payload.isSuccessful)
       ),
 
     get: (key, config) =>
-      uiScheduler.schedule(() =>
+      activityManager.startUserInteraction(() =>
         eventBridge
           .requestAsync({ type: 'org.racehorse.GetBiometricEncryptedValueEvent', payload: { key, config } })
           .then(event => event.payload.value)

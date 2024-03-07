@@ -8,6 +8,8 @@ export interface NotificationsManager {
 }
 
 /**
+ * Manages system notifications.
+ *
  * @param eventBridge The underlying event bridge.
  */
 export function createNotificationsManager(eventBridge: EventBridge): NotificationsManager {

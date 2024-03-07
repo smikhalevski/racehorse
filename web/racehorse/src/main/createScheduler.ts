@@ -1,47 +1,53 @@
-import { noop } from './utils';
+import { AbortableCallback, AbortablePromise } from 'parallel-universe';
 
 export interface Scheduler {
   /**
-   * Returns `true` if scheduler currently has a pending operation, or `false` otherwise.
+   * Returns `true` if scheduler currently has a pending action, or `false` otherwise.
    */
   isPending(): boolean;
 
   /**
-   * Schedules an operation callback invocation after all previously scheduled operations are completed.
+   * Schedules an action callback invocation after all previously scheduled actions are completed.
    *
-   * @param operation The operation to schedule.
+   * The action callback receives a non-aborted signal.
+   *
+   * @param action The action to schedule.
    */
-  schedule<T>(operation: () => PromiseLike<T> | T): Promise<T>;
+  schedule<T>(action: AbortableCallback<T>): AbortablePromise<T>;
 }
 
 /**
- * Schedules an operation callback invocation after all previously scheduled operations are completed.
+ * Schedules an action callback invocation after all previously scheduled actions are completed.
  */
 export function createScheduler(): Scheduler {
-  let promise: Promise<unknown> = Promise.resolve();
+  let promise = Promise.resolve();
   let isPending = false;
 
   return {
     isPending: () => isPending,
 
-    schedule: operation => {
+    schedule: action => {
       isPending = true;
 
-      const operationPromise = (promise = promise
-        .then(noop, noop)
-        .then(operation)
-        .then(
-          value => {
-            isPending = promise !== operationPromise;
-            return value;
-          },
-          reason => {
-            isPending = promise !== operationPromise;
-            throw reason;
-          }
-        ));
-
-      return operationPromise;
+      return new AbortablePromise((resolve, reject, signal) => {
+        const actionPromise = (promise = promise
+          .then(() => {
+            if (signal.aborted) {
+              throw signal.reason;
+            }
+            return action(signal);
+          })
+          .then(
+            value => {
+              isPending = promise !== actionPromise;
+              resolve(value);
+            },
+            reason => {
+              isPending = promise !== actionPromise;
+              reject(reason);
+            }
+          ));
+      });
     },
   };
 }

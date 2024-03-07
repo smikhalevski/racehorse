@@ -30,6 +30,11 @@ export interface KeyboardManager {
   subscribe(listener: (status: KeyboardStatus) => void): Unsubscribe;
 }
 
+/**
+ * Manages keyboard visibility and provides its status updates.
+ *
+ * @param eventBridge The underlying event bridge.
+ */
 export function createKeyboardManager(eventBridge: EventBridge): KeyboardManager {
   return {
     getKeyboardStatus: () => eventBridge.request({ type: 'org.racehorse.GetKeyboardStatusEvent' }).payload.status,
