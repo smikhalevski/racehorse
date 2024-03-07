@@ -230,6 +230,8 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
         } else {
             prompt.authenticate(builder.build(), BiometricPrompt.CryptoObject(cipher))
         }
+
+        check(!activity.supportFragmentManager.isStateSaved) { "Unable to start authentication" }
     }
 
     protected open fun createCipher(): Cipher {
