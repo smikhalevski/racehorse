@@ -231,7 +231,8 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
             prompt.authenticate(builder.build(), BiometricPrompt.CryptoObject(cipher))
         }
 
-        check(!activity.supportFragmentManager.isStateSaved) { "Unable to start authentication" }
+        // Check that biometric authentication did actually start
+        checkNotNull(activity.supportFragmentManager.findFragmentByTag("androidx.biometric.BiometricFragment")) { "Expected biometric fragment to be added" }
     }
 
     protected open fun createCipher(): Cipher {
