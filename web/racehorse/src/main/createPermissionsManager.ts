@@ -39,7 +39,7 @@ export interface PermissionsManager {
    * should not be granted to your app, and should have protection level dangerous, regardless whether it is declared by
    * the platform or a third-party app.
    *
-   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
    * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @param permission The requested permission.

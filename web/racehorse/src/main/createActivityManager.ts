@@ -168,9 +168,9 @@ export interface ActivityManager {
   startActivity(intent: Intent): boolean;
 
   /**
-   * Start an activity for the intent and wait for it to return the result.
+   * Starts an activity for the intent and wait for it to return the result.
    *
-   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
    * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @param intent The intent that starts an activity.
@@ -181,17 +181,15 @@ export interface ActivityManager {
   /**
    * Runs an action that blocks the UI.
    *
-   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
-   * to ensure that consequent UI-related operations are suspended until this one is completed.
-   *
    * If the activity is in {@link ActivityState.ACTIVE the active state} then the action is run immediately. Otherwise,
-   * the active state is awaited and then the action is invoked.
+   * the active state is awaited and then the action is invoked. Consequent actions that are run using this method are
+   * deferred until the current action is resolved.
    *
    * @param action The action callback that must be invoked.
    * @returns The promise to the action result.
    * @template T The result returned by the action.
    */
-  startUserInteraction<T>(action: AbortableCallback<T>): AbortablePromise<T>;
+  runUserInteraction<T>(action: AbortableCallback<T>): AbortablePromise<T>;
 
   /**
    * Runs the action once the activity is in the expected state.
@@ -283,16 +281,8 @@ export function createActivityManager(eventBridge: EventBridge, uiScheduler: Sch
       resolve(action(signal));
     });
 
-  const startUserInteraction: ActivityManager['startUserInteraction'] = action =>
-    uiScheduler.schedule(signal => {
-      const promise = runIn(ActivityState.ACTIVE, action);
-
-      signal.addEventListener('abort', () => {
-        promise.abort(signal.reason);
-      });
-
-      return promise;
-    });
+  const runUserInteraction: ActivityManager['runUserInteraction'] = action =>
+    uiScheduler.schedule(signal => runIn(ActivityState.ACTIVE, action).withSignal(signal));
 
   return {
     getActivityState,
@@ -309,7 +299,7 @@ export function createActivityManager(eventBridge: EventBridge, uiScheduler: Sch
 
     runIn,
 
-    startUserInteraction,
+    runUserInteraction,
 
     subscribe,
   };

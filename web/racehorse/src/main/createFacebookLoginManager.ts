@@ -83,7 +83,7 @@ export interface FacebookLoginManager {
   /**
    * Logs the user in with the requested read permissions.
    *
-   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
    * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @param permissions The requested permissions.

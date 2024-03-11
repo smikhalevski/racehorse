@@ -25,7 +25,7 @@ export interface GoogleSignInManager {
    *
    * The returned promise is rejected if an error occurs during sign in.
    *
-   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
    * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @returns The account of the signed-in user or `null` if user cancelled the sign in.

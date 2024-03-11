@@ -199,7 +199,7 @@ export interface GooglePayManager {
   /**
    * Open Google Pay app and reveal the card.
    *
-   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
    * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @returns `true` if Google Pay app was opened, or `false` otherwise.
@@ -212,7 +212,7 @@ export interface GooglePayManager {
    * Starts the push tokenization flow in which the issuer provides most or all card details needed for Google Pay to
    * get a valid token. Tokens added using this method are added to the active wallet.
    *
-   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
    * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @returns The token ID, or `null` if tokenization wasn't completed.
@@ -231,7 +231,7 @@ export interface GooglePayManager {
    * It can also be used as a fallback in error handling (e.g. if the app cannot retrieve an OPC because your server is
    * down). However, it should not be used as a substitute for a proper push provisioning integration.
    *
-   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
    * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @returns The token ID, or `null` if tokenization wasn't completed.
@@ -244,7 +244,7 @@ export interface GooglePayManager {
    * Brings up a dialog asking the user to confirm the intention to set the identified card as their selected (default)
    * card.
    *
-   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
    * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @throws ApiException
@@ -258,7 +258,7 @@ export interface GooglePayManager {
    * Deleting the token does not affect the card-on-file on the user's Google account if one exists. To delete a
    * card-on-file, the user would need to go to the Google Payments Center or use the Google Wallet app.
    *
-   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
    * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @throws ApiException
@@ -271,7 +271,7 @@ export interface GooglePayManager {
    * wallet ID does not need to be included in the opaque payment card, simply let the {@link tokenize} and
    * {@link pushTokenize} manage wallet creation automatically.
    *
-   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
    * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @throws ApiException

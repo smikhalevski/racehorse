@@ -47,7 +47,7 @@ export interface BiometricEncryptedStorageManager {
   /**
    * Associates a value with a key in an encrypted storage.
    *
-   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
    * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @param key A key to set.
@@ -65,7 +65,7 @@ export interface BiometricEncryptedStorageManager {
   /**
    * Retrieves an encrypted value associated with the key.
    *
-   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
    * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @returns The deciphered value, or `null` if key wasn't found, or authentication has failed.

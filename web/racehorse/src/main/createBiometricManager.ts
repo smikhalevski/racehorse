@@ -84,7 +84,7 @@ export interface BiometricManager {
    * Prompts the user to register credentials for given authenticators. If user already enrolled then returns a promise
    * without any user interaction.
    *
-   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
    * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @param authenticators The array of authenticators that must be supported for successful enrollment. If omitted, or

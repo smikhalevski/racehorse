@@ -42,7 +42,7 @@ export interface FacebookShareManager {
   /**
    * Opens Facebook link share popup.
    *
-   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
    * to ensure that consequent UI-related operations are suspended until this one is completed.
    */
   shareLink(content: FacebookShareLinkContent): Promise<void>;
