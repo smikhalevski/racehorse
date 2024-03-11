@@ -1,7 +1,6 @@
 import { EventBridge } from './createEventBridge';
 import { noop } from './utils';
 import { Unsubscribe } from './types';
-import { ActivityManager } from './createActivityManager';
 
 export const GooglePayTokenState = {
   UNTOKENIZED: 1,

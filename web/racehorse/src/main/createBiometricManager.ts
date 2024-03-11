@@ -1,5 +1,4 @@
 import { EventBridge } from './createEventBridge';
-import { ActivityManager } from './createActivityManager';
 
 /**
  * Types of authenticators, defined at a level of granularity supported by {@link BiometricManager}.
