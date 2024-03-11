@@ -84,7 +84,8 @@ export interface BiometricManager {
    * Prompts the user to register credentials for given authenticators. If user already enrolled then returns a promise
    * without any user interaction.
    *
-   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @param authenticators The array of authenticators that must be supported for successful enrollment. If omitted, or
    * if an empty array is provided then {@link BiometricAuthenticator.BIOMETRIC_STRONG} is used.
@@ -97,9 +98,8 @@ export interface BiometricManager {
  * Provides the status of biometric support and allows to enroll for biometric auth.
  *
  * @param eventBridge The underlying event bridge.
- * @param activityManager The manager that starts user interactions and blocks the UI.
  */
-export function createBiometricManager(eventBridge: EventBridge, activityManager: ActivityManager): BiometricManager {
+export function createBiometricManager(eventBridge: EventBridge): BiometricManager {
   return {
     getBiometricStatus: authenticators =>
       eventBridge.request({
@@ -108,10 +108,8 @@ export function createBiometricManager(eventBridge: EventBridge, activityManager
       }).payload.status,
 
     enrollBiometric: authenticators =>
-      activityManager.startUserInteraction(() =>
-        eventBridge
-          .requestAsync({ type: 'org.racehorse.EnrollBiometricEvent', payload: { authenticators } })
-          .then(event => event.payload.isEnrolled)
-      ),
+      eventBridge
+        .requestAsync({ type: 'org.racehorse.EnrollBiometricEvent', payload: { authenticators } })
+        .then(event => event.payload.isEnrolled),
   };
 }

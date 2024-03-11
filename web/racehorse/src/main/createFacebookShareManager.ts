@@ -1,6 +1,5 @@
 import { EventBridge } from './createEventBridge';
 import { noop } from './utils';
-import { ActivityManager } from './createActivityManager';
 
 export interface FacebookShareLinkContent {
   /**
@@ -43,7 +42,8 @@ export interface FacebookShareManager {
   /**
    * Opens Facebook link share popup.
    *
-   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * to ensure that consequent UI-related operations are suspended until this one is completed.
    */
   shareLink(content: FacebookShareLinkContent): Promise<void>;
 }
@@ -52,16 +52,10 @@ export interface FacebookShareManager {
  * Manages Facebook content sharing.
  *
  * @param eventBridge The underlying event bridge.
- * @param activityManager The manager that starts user interactions and blocks the UI.
  */
-export function createFacebookShareManager(
-  eventBridge: EventBridge,
-  activityManager: ActivityManager
-): FacebookShareManager {
+export function createFacebookShareManager(eventBridge: EventBridge): FacebookShareManager {
   return {
     shareLink: content =>
-      activityManager.startUserInteraction(() =>
-        eventBridge.requestAsync({ type: 'org.racehorse.FacebookShareLinkEvent', payload: content }).then(noop)
-      ),
+      eventBridge.requestAsync({ type: 'org.racehorse.FacebookShareLinkEvent', payload: content }).then(noop),
   };
 }

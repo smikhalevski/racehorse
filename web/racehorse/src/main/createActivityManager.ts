@@ -170,7 +170,8 @@ export interface ActivityManager {
   /**
    * Start an activity for the intent and wait for it to return the result.
    *
-   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @param intent The intent that starts an activity.
    * @returns The activity result.
@@ -180,7 +181,8 @@ export interface ActivityManager {
   /**
    * Runs an action that blocks the UI.
    *
-   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * If the activity is in {@link ActivityState.ACTIVE the active state} then the action is run immediately. Otherwise,
    * the active state is awaited and then the action is invoked.
@@ -262,7 +264,7 @@ export function createActivityManager(eventBridge: EventBridge, uiScheduler: Sch
   const runIn: ActivityManager['runIn'] = (expectedState, action) =>
     new AbortablePromise((resolve, reject, signal) => {
       const unsubscribe = subscribe(activityState => {
-        if (expectedState < activityState) {
+        if (expectedState !== activityState) {
           return;
         }
         unsubscribe();
@@ -273,12 +275,12 @@ export function createActivityManager(eventBridge: EventBridge, uiScheduler: Sch
         }
       });
 
-      if (expectedState < getActivityState()) {
+      if (expectedState !== getActivityState()) {
         signal.addEventListener('abort', unsubscribe);
-      } else {
-        unsubscribe();
-        resolve(action(signal));
+        return;
       }
+      unsubscribe();
+      resolve(action(signal));
     });
 
   const startUserInteraction: ActivityManager['startUserInteraction'] = action =>
@@ -301,11 +303,9 @@ export function createActivityManager(eventBridge: EventBridge, uiScheduler: Sch
       eventBridge.request({ type: 'org.racehorse.StartActivityEvent', payload: { intent } }).payload.isStarted,
 
     startActivityForResult: intent =>
-      startUserInteraction(() =>
-        eventBridge
-          .requestAsync({ type: 'org.racehorse.StartActivityForResultEvent', payload: { intent } })
-          .then(event => event.payload)
-      ),
+      eventBridge
+        .requestAsync({ type: 'org.racehorse.StartActivityForResultEvent', payload: { intent } })
+        .then(event => event.payload),
 
     runIn,
 

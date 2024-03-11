@@ -1,6 +1,5 @@
 import { EventBridge } from './createEventBridge';
 import { noop } from './utils';
-import { ActivityManager } from './createActivityManager';
 
 export interface GoogleSignInAccount {
   id: string | null;
@@ -25,6 +24,9 @@ export interface GoogleSignInManager {
    * Starts the sign-in flow.
    *
    * The returned promise is rejected if an error occurs during sign in.
+   *
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.startUserInteraction}
+   * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @returns The account of the signed-in user or `null` if user cancelled the sign in.
    */
@@ -71,20 +73,14 @@ export interface GoogleSignInManager {
  * Manages Google Sign-In integration.
  *
  * @param eventBridge The underlying event bridge.
- * @param activityManager The manager that starts user interactions and blocks the UI.
  */
-export function createGoogleSignInManager(
-  eventBridge: EventBridge,
-  activityManager: ActivityManager
-): GoogleSignInManager {
+export function createGoogleSignInManager(eventBridge: EventBridge): GoogleSignInManager {
   return {
     getLastSignedInAccount: () =>
       eventBridge.request({ type: 'org.racehorse.GetLastGoogleSignedInAccountEvent' }).payload.account,
 
     signIn: () =>
-      activityManager.startUserInteraction(() =>
-        eventBridge.requestAsync({ type: 'org.racehorse.GoogleSignInEvent' }).then(event => event.payload.account)
-      ),
+      eventBridge.requestAsync({ type: 'org.racehorse.GoogleSignInEvent' }).then(event => event.payload.account),
 
     silentSignIn: () =>
       eventBridge.requestAsync({ type: 'org.racehorse.GoogleSilentSignInEvent' }).then(event => event.payload.account),

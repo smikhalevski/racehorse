@@ -95,12 +95,12 @@ export const activityManager = createActivityManager(eventBridge, uiScheduler);
 /**
  * A biometric encrypted key-value file-based storage.
  */
-export const biometricEncryptedStorageManager = createBiometricEncryptedStorageManager(eventBridge, activityManager);
+export const biometricEncryptedStorageManager = createBiometricEncryptedStorageManager(eventBridge);
 
 /**
  * Provides the status of biometric support and allows to enroll for biometric auth.
  */
-export const biometricManager = createBiometricManager(eventBridge, activityManager);
+export const biometricManager = createBiometricManager(eventBridge);
 
 /**
  * Monitors deep link requests.
@@ -125,12 +125,12 @@ export const evergreenManager = createEvergreenManager(eventBridge);
 /**
  * Manages Facebook Login integration.
  */
-export const facebookLoginManager = createFacebookLoginManager(eventBridge, activityManager);
+export const facebookLoginManager = createFacebookLoginManager(eventBridge);
 
 /**
  * Manages Facebook content sharing.
  */
-export const facebookShareManager = createFacebookShareManager(eventBridge, activityManager);
+export const facebookShareManager = createFacebookShareManager(eventBridge);
 
 /**
  * File-based storage where each entry is encrypted with its own password.
@@ -145,7 +145,7 @@ export const firebaseManager = createFirebaseManager(eventBridge);
 /**
  * Manages tokenized cards in Google Pay.
  */
-export const googlePayManager = createGooglePayManager(eventBridge, activityManager);
+export const googlePayManager = createGooglePayManager(eventBridge);
 
 /**
  * Gets [Google Play referrer](https://developer.android.com/google/play/installreferrer/library) information.
@@ -155,7 +155,7 @@ export const googlePlayReferrerManager = createGooglePlayReferrerManager(eventBr
 /**
  * Manages Google Sign-In integration.
  */
-export const googleSignInManager = createGoogleSignInManager(eventBridge, activityManager);
+export const googleSignInManager = createGoogleSignInManager(eventBridge);
 
 /**
  * Manages keyboard visibility and provides its status updates.
@@ -175,4 +175,4 @@ export const notificationsManager = createNotificationsManager(eventBridge);
 /**
  * Checks permission statuses and ask for permissions.
  */
-export const permissionsManager = createPermissionsManager(eventBridge, activityManager);
+export const permissionsManager = createPermissionsManager(eventBridge);
