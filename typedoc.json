@@ -15,5 +15,19 @@
   "customCss": "./node_modules/typedoc-custom-css/custom.css",
   "sidebarLinks": {
     "Racehorse Android API": "/racehorse/android/index.html"
+  },
+  "externalSymbolLinkMappings": {
+    "parallel-universe": {
+      "AbortableCallback": "https://smikhalevski.github.io/parallel-universe/types/AbortableCallback.html",
+      "AbortablePromise": "https://smikhalevski.github.io/parallel-universe/classes/AbortablePromise.html"
+    },
+    "global": {
+      "Error": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error",
+      "Promise": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise"
+    },
+    "typescript": {
+      "Promise": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
+      "AbortSignal": "https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal"
+    }
   }
 }

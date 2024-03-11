@@ -1,6 +1,5 @@
 import { EventBridge } from './createEventBridge';
 import { noop } from './utils';
-import { Scheduler } from './createScheduler';
 import { Unsubscribe } from './types';
 
 export const GooglePayTokenState = {
@@ -199,7 +198,8 @@ export interface GooglePayManager {
   /**
    * Open Google Pay app and reveal the card.
    *
-   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
+   * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @returns `true` if Google Pay app was opened, or `false` otherwise.
    * @throws ApiException
@@ -211,7 +211,8 @@ export interface GooglePayManager {
    * Starts the push tokenization flow in which the issuer provides most or all card details needed for Google Pay to
    * get a valid token. Tokens added using this method are added to the active wallet.
    *
-   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
+   * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @returns The token ID, or `null` if tokenization wasn't completed.
    * @throws ApiException
@@ -229,7 +230,8 @@ export interface GooglePayManager {
    * It can also be used as a fallback in error handling (e.g. if the app cannot retrieve an OPC because your server is
    * down). However, it should not be used as a substitute for a proper push provisioning integration.
    *
-   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
+   * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @returns The token ID, or `null` if tokenization wasn't completed.
    * @throws ApiException
@@ -241,7 +243,8 @@ export interface GooglePayManager {
    * Brings up a dialog asking the user to confirm the intention to set the identified card as their selected (default)
    * card.
    *
-   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
+   * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @throws ApiException
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/wallet-operations?authuser=1#setting_the_default_token)
@@ -254,7 +257,8 @@ export interface GooglePayManager {
    * Deleting the token does not affect the card-on-file on the user's Google account if one exists. To delete a
    * card-on-file, the user would need to go to the Google Payments Center or use the Google Wallet app.
    *
-   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
+   * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @throws ApiException
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/wallet-operations?authuser=1#token_deletion)
@@ -266,7 +270,8 @@ export interface GooglePayManager {
    * wallet ID does not need to be included in the opaque payment card, simply let the {@link tokenize} and
    * {@link pushTokenize} manage wallet creation automatically.
    *
-   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
+   * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @throws ApiException
    * @see [Android Push Provisioning API](https://developers.google.com/pay/issuers/apis/push-provisioning/android/wallet-operations?authuser=1#create_wallet)
@@ -295,9 +300,8 @@ export interface GooglePayManager {
  * [Reading wallet state.](https://developers.google.com/pay/issuers/apis/push-provisioning/android/reading-wallet)
  *
  * @param eventBridge The underlying event bridge.
- * @param uiScheduler The callback that schedules an operation that blocks the UI.
  */
-export function createGooglePayManager(eventBridge: EventBridge, uiScheduler: Scheduler): GooglePayManager {
+export function createGooglePayManager(eventBridge: EventBridge): GooglePayManager {
   return {
     getActiveWalletId: () =>
       eventBridge
@@ -336,53 +340,40 @@ export function createGooglePayManager(eventBridge: EventBridge, uiScheduler: Sc
         .then(event => event.payload.isTokenized),
 
     viewToken: (tokenId, tokenServiceProvider) =>
-      uiScheduler.schedule(() =>
-        eventBridge
-          .requestAsync({
-            type: 'org.racehorse.GooglePayViewTokenEvent',
-            payload: { tokenId, tokenServiceProvider },
-          })
-          .then(event => event.payload.isOpened)
-      ),
+      eventBridge
+        .requestAsync({
+          type: 'org.racehorse.GooglePayViewTokenEvent',
+          payload: { tokenId, tokenServiceProvider },
+        })
+        .then(event => event.payload.isOpened),
 
     pushTokenize: request =>
-      uiScheduler.schedule(() =>
-        eventBridge
-          .requestAsync({ type: 'org.racehorse.GooglePayPushTokenizeEvent', payload: request })
-          .then(event => event.payload.tokenId)
-      ),
+      eventBridge
+        .requestAsync({ type: 'org.racehorse.GooglePayPushTokenizeEvent', payload: request })
+        .then(event => event.payload.tokenId),
 
     tokenize: request =>
-      uiScheduler.schedule(() =>
-        eventBridge
-          .requestAsync({ type: 'org.racehorse.GooglePayTokenizeEvent', payload: request })
-          .then(event => event.payload.tokenId)
-      ),
+      eventBridge
+        .requestAsync({ type: 'org.racehorse.GooglePayTokenizeEvent', payload: request })
+        .then(event => event.payload.tokenId),
 
     requestSelectToken: (tokenId, tokenServiceProvider) =>
-      uiScheduler.schedule(() =>
-        eventBridge
-          .requestAsync({
-            type: 'org.racehorse.GooglePayRequestSelectTokenEvent',
-            payload: { tokenId, tokenServiceProvider },
-          })
-          .then(noop)
-      ),
+      eventBridge
+        .requestAsync({
+          type: 'org.racehorse.GooglePayRequestSelectTokenEvent',
+          payload: { tokenId, tokenServiceProvider },
+        })
+        .then(noop),
 
     requestDeleteToken: (tokenId, tokenServiceProvider) =>
-      uiScheduler.schedule(() =>
-        eventBridge
-          .requestAsync({
-            type: 'org.racehorse.GooglePayRequestDeleteTokenEvent',
-            payload: { tokenId, tokenServiceProvider },
-          })
-          .then(noop)
-      ),
+      eventBridge
+        .requestAsync({
+          type: 'org.racehorse.GooglePayRequestDeleteTokenEvent',
+          payload: { tokenId, tokenServiceProvider },
+        })
+        .then(noop),
 
-    createWallet: () =>
-      uiScheduler.schedule(() =>
-        eventBridge.requestAsync({ type: 'org.racehorse.GooglePayCreateWalletEvent' }).then(noop)
-      ),
+    createWallet: () => eventBridge.requestAsync({ type: 'org.racehorse.GooglePayCreateWalletEvent' }).then(noop),
 
     subscribe: listener =>
       eventBridge.subscribe('org.racehorse.GooglePayDataChangedEvent', () => {

@@ -31,6 +31,11 @@ export interface EncryptedStorageManager {
   delete(key: string): boolean;
 }
 
+/**
+ * File-based storage where each entry is encrypted with its own password.
+ *
+ * @param eventBridge The underlying event bridge.
+ */
 export function createEncryptedStorageManager(eventBridge: EventBridge): EncryptedStorageManager {
   return {
     set: (key, value, password) =>

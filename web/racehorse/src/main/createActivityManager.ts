@@ -1,6 +1,6 @@
-import { AbortablePromise } from 'parallel-universe';
+import { AbortableCallback, AbortablePromise } from 'parallel-universe';
 import { EventBridge } from './createEventBridge';
-import { Scheduler } from './createScheduler';
+import { createScheduler } from './createScheduler';
 import { noop } from './utils';
 import { Unsubscribe } from './types';
 
@@ -168,14 +168,28 @@ export interface ActivityManager {
   startActivity(intent: Intent): boolean;
 
   /**
-   * Start an activity for the intent and wait for it to return the result.
+   * Starts an activity for the intent and wait for it to return the result.
    *
-   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
+   * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @param intent The intent that starts an activity.
    * @returns The activity result.
    */
   startActivityForResult(intent: Intent): Promise<ActivityResult | null>;
+
+  /**
+   * Runs an action that blocks the UI.
+   *
+   * If the activity is in {@link ActivityState.ACTIVE the active state} then the action is run immediately. Otherwise,
+   * the active state is awaited and then the action is invoked. Consequent actions that are run using this method are
+   * deferred until the current action is resolved.
+   *
+   * @param action The action callback that must be invoked.
+   * @returns The promise to the action result.
+   * @template T The result returned by the action.
+   */
+  runUserInteraction<T>(action: AbortableCallback<T>): AbortablePromise<T>;
 
   /**
    * Runs the action once the activity is in the expected state.
@@ -188,7 +202,7 @@ export interface ActivityManager {
    * @returns The promise to the action result.
    * @template T The result returned by the action.
    */
-  runIn<T>(expectedState: ActivityState, action: () => T | PromiseLike<T>): AbortablePromise<T>;
+  runIn<T>(expectedState: ActivityState, action: AbortableCallback<T>): AbortablePromise<T>;
 
   /**
    * Subscribes a listener to activity status changes.
@@ -221,9 +235,9 @@ const eventTypeToActivityState = {
  * Launches activities for various intents, and provides info about the current activity.
  *
  * @param eventBridge The underlying event bridge.
- * @param uiScheduler The callback that schedules an operation that blocks the UI.
+ * @param uiScheduler The scheduler that handles operations that block the UI.
  */
-export function createActivityManager(eventBridge: EventBridge, uiScheduler: Scheduler): ActivityManager {
+export function createActivityManager(eventBridge: EventBridge, uiScheduler = createScheduler()): ActivityManager {
   const getActivityState = () => eventBridge.request({ type: 'org.racehorse.GetActivityStateEvent' }).payload.state;
 
   const subscribe: ActivityManager['subscribe'] = (eventTypeOrListener, listener = eventTypeOrListener) => {
@@ -245,6 +259,31 @@ export function createActivityManager(eventBridge: EventBridge, uiScheduler: Sch
     );
   };
 
+  const runIn: ActivityManager['runIn'] = (expectedState, action) =>
+    new AbortablePromise((resolve, reject, signal) => {
+      const unsubscribe = subscribe(activityState => {
+        if (expectedState !== activityState) {
+          return;
+        }
+        unsubscribe();
+        try {
+          resolve(action(signal));
+        } catch (e) {
+          reject(e);
+        }
+      });
+
+      if (expectedState !== getActivityState()) {
+        signal.addEventListener('abort', unsubscribe);
+        return;
+      }
+      unsubscribe();
+      resolve(action(signal));
+    });
+
+  const runUserInteraction: ActivityManager['runUserInteraction'] = action =>
+    uiScheduler.schedule(signal => runIn(ActivityState.ACTIVE, action).withSignal(signal));
+
   return {
     getActivityState,
 
@@ -254,33 +293,13 @@ export function createActivityManager(eventBridge: EventBridge, uiScheduler: Sch
       eventBridge.request({ type: 'org.racehorse.StartActivityEvent', payload: { intent } }).payload.isStarted,
 
     startActivityForResult: intent =>
-      uiScheduler.schedule(() =>
-        eventBridge
-          .requestAsync({ type: 'org.racehorse.StartActivityForResultEvent', payload: { intent } })
-          .then(event => event.payload)
-      ),
+      eventBridge
+        .requestAsync({ type: 'org.racehorse.StartActivityForResultEvent', payload: { intent } })
+        .then(event => event.payload),
 
-    runIn: (expectedState, action) =>
-      new AbortablePromise((resolve, reject, signal) => {
-        const unsubscribe = subscribe(activityState => {
-          if (expectedState < activityState) {
-            return;
-          }
-          unsubscribe();
-          try {
-            resolve(action());
-          } catch (e) {
-            reject(e);
-          }
-        });
+    runIn,
 
-        if (expectedState < getActivityState()) {
-          signal.addEventListener('abort', unsubscribe);
-        } else {
-          unsubscribe();
-          resolve(action());
-        }
-      }),
+    runUserInteraction,
 
     subscribe,
   };

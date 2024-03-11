@@ -17,7 +17,6 @@ import { createKeyboardManager } from './createKeyboardManager';
 import { createNetworkManager } from './createNetworkManager';
 import { createNotificationsManager } from './createNotificationsManager';
 import { createPermissionsManager } from './createPermissionsManager';
-import { createScheduler } from './createScheduler';
 
 export { createActivityManager, Intent, Activity, ActivityState } from './createActivityManager';
 export { createBiometricEncryptedStorageManager } from './createBiometricEncryptedStorageManager';
@@ -77,42 +76,97 @@ export type { Scheduler } from './createScheduler';
 
 export type * from './types';
 
-export const uiScheduler = createScheduler();
-
+/**
+ * Event bridge delivers events from and to native Android.
+ */
 export const eventBridge = createEventBridge();
 
-export const activityManager = createActivityManager(eventBridge, uiScheduler);
+/**
+ * Launches activities for various intents, and provides info about the current activity.
+ */
+export const activityManager = createActivityManager(eventBridge);
 
-export const biometricEncryptedStorageManager = createBiometricEncryptedStorageManager(eventBridge, uiScheduler);
+/**
+ * A biometric encrypted key-value file-based storage.
+ */
+export const biometricEncryptedStorageManager = createBiometricEncryptedStorageManager(eventBridge);
 
-export const biometricManager = createBiometricManager(eventBridge, uiScheduler);
+/**
+ * Provides the status of biometric support and allows to enroll for biometric auth.
+ */
+export const biometricManager = createBiometricManager(eventBridge);
 
+/**
+ * Monitors deep link requests.
+ */
 export const deepLinkManager = createDeepLinkManager(eventBridge);
 
+/**
+ * Device configuration and general device information.
+ */
 export const deviceManager = createDeviceManager(eventBridge);
 
+/**
+ * Allows starting and monitoring file downloads.
+ */
 export const downloadManager = createDownloadManager(eventBridge);
 
+/**
+ * Handles background updates.
+ */
 export const evergreenManager = createEvergreenManager(eventBridge);
 
-export const facebookLoginManager = createFacebookLoginManager(eventBridge, uiScheduler);
+/**
+ * Manages Facebook Login integration.
+ */
+export const facebookLoginManager = createFacebookLoginManager(eventBridge);
 
-export const facebookShareManager = createFacebookShareManager(eventBridge, uiScheduler);
+/**
+ * Manages Facebook content sharing.
+ */
+export const facebookShareManager = createFacebookShareManager(eventBridge);
 
+/**
+ * File-based storage where each entry is encrypted with its own password.
+ */
 export const encryptedStorageManager = createEncryptedStorageManager(eventBridge);
 
+/**
+ * Provides access to Firebase configuration.
+ */
 export const firebaseManager = createFirebaseManager(eventBridge);
 
-export const googlePayManager = createGooglePayManager(eventBridge, uiScheduler);
+/**
+ * Manages tokenized cards in Google Pay.
+ */
+export const googlePayManager = createGooglePayManager(eventBridge);
 
+/**
+ * Gets [Google Play referrer](https://developer.android.com/google/play/installreferrer/library) information.
+ */
 export const googlePlayReferrerManager = createGooglePlayReferrerManager(eventBridge);
 
-export const googleSignInManager = createGoogleSignInManager(eventBridge, uiScheduler);
+/**
+ * Manages Google Sign-In integration.
+ */
+export const googleSignInManager = createGoogleSignInManager(eventBridge);
 
+/**
+ * Manages keyboard visibility and provides its status updates.
+ */
 export const keyboardManager = createKeyboardManager(eventBridge);
 
+/**
+ * Monitors the network status.
+ */
 export const networkManager = createNetworkManager(eventBridge);
 
+/**
+ * Manages system notifications.
+ */
 export const notificationsManager = createNotificationsManager(eventBridge);
 
-export const permissionsManager = createPermissionsManager(eventBridge, uiScheduler);
+/**
+ * Checks permission statuses and ask for permissions.
+ */
+export const permissionsManager = createPermissionsManager(eventBridge);

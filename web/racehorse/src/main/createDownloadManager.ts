@@ -244,7 +244,7 @@ export interface DownloadManager {
 }
 
 /**
- * Allows staring and monitoring file downloads.
+ * Allows starting and monitoring file downloads.
  *
  * @param eventBridge The underlying event bridge.
  */

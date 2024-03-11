@@ -23,14 +23,16 @@ export function ActivityExample() {
     []
   );
 
-  // Run action once in the background, or abort if the component unmounts
-  useEffect(
-    () =>
-      activityManager.runIn(ActivityState.BACKGROUND, () => {
-        console.log('Running in background');
-      }).abort,
-    []
-  );
+  // Run action once when the app is in the background, or abort if the component unmounts
+  useEffect(() => {
+    const promise = activityManager.runIn(ActivityState.BACKGROUND, () => {
+      console.log('Running in background');
+    });
+
+    return () => {
+      promise.abort();
+    };
+  }, []);
 
   return (
     <>

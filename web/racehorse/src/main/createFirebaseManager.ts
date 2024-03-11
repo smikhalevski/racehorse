@@ -7,6 +7,11 @@ export interface FirebaseManager {
   getFirebaseToken(): Promise<string | null>;
 }
 
+/**
+ * Provides access to Firebase configuration.
+ *
+ * @param eventBridge The underlying event bridge.
+ */
 export function createFirebaseManager(eventBridge: EventBridge): FirebaseManager {
   return {
     getFirebaseToken: () =>

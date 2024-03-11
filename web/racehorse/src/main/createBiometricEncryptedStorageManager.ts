@@ -1,6 +1,5 @@
 import { EventBridge } from './createEventBridge';
 import { BiometricAuthenticator } from './createBiometricManager';
-import { Scheduler } from './createScheduler';
 
 export interface BiometricConfig {
   /**
@@ -48,7 +47,8 @@ export interface BiometricEncryptedStorageManager {
   /**
    * Associates a value with a key in an encrypted storage.
    *
-   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
+   * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @param key A key to set.
    * @param value A value to write.
@@ -58,13 +58,15 @@ export interface BiometricEncryptedStorageManager {
    * authentication for every use. Check {@link BiometricManager.getBiometricStatus} before setting the key.
    * @throws IllegalArgumentException Device credential is not supported on API 28 and below.
    * @throws IllegalArgumentException Crypto-based authentication is not supported for Class 2 (Weak) biometrics.
+   * @throws IllegalStateException Unable to start authentication if the app is in the background.
    */
   set(key: string, value: string, config?: BiometricConfig): Promise<boolean>;
 
   /**
    * Retrieves an encrypted value associated with the key.
    *
-   * **Note:** This is a UI-blocking operation. All consequent UI operations are suspended until this one is completed.
+   * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
+   * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
    * @returns The deciphered value, or `null` if key wasn't found, or authentication has failed.
    * @throws InvalidAlgorithmParameterException At least one biometric must be enrolled to create keys requiring user
@@ -74,6 +76,7 @@ export interface BiometricEncryptedStorageManager {
    * recover from this error.
    * @throws IllegalArgumentException Device credential is not supported on API 28 and below.
    * @throws IllegalArgumentException Crypto-based authentication is not supported for Class 2 (Weak) biometrics.
+   * @throws IllegalStateException Unable to start authentication if the app is in the background.
    */
   get(key: string, config?: BiometricConfig): Promise<string | null>;
 
@@ -94,26 +97,18 @@ export interface BiometricEncryptedStorageManager {
  * A biometric encrypted key-value file-based storage.
  *
  * @param eventBridge The underlying event bridge.
- * @param uiScheduler The callback that schedules an operation that blocks the UI.
  */
-export function createBiometricEncryptedStorageManager(
-  eventBridge: EventBridge,
-  uiScheduler: Scheduler
-): BiometricEncryptedStorageManager {
+export function createBiometricEncryptedStorageManager(eventBridge: EventBridge): BiometricEncryptedStorageManager {
   return {
     set: (key, value, config) =>
-      uiScheduler.schedule(() =>
-        eventBridge
-          .requestAsync({ type: 'org.racehorse.SetBiometricEncryptedValueEvent', payload: { key, value, config } })
-          .then(event => event.payload.isSuccessful)
-      ),
+      eventBridge
+        .requestAsync({ type: 'org.racehorse.SetBiometricEncryptedValueEvent', payload: { key, value, config } })
+        .then(event => event.payload.isSuccessful),
 
     get: (key, config) =>
-      uiScheduler.schedule(() =>
-        eventBridge
-          .requestAsync({ type: 'org.racehorse.GetBiometricEncryptedValueEvent', payload: { key, config } })
-          .then(event => event.payload.value)
-      ),
+      eventBridge
+        .requestAsync({ type: 'org.racehorse.GetBiometricEncryptedValueEvent', payload: { key, config } })
+        .then(event => event.payload.value),
 
     has: key =>
       eventBridge.request({
