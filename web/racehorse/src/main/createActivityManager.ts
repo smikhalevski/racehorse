@@ -1,6 +1,6 @@
 import { AbortableCallback, AbortablePromise } from 'parallel-universe';
 import { EventBridge } from './createEventBridge';
-import { Scheduler } from './createScheduler';
+import { createScheduler } from './createScheduler';
 import { noop } from './utils';
 import { Unsubscribe } from './types';
 
@@ -235,9 +235,9 @@ const eventTypeToActivityState = {
  * Launches activities for various intents, and provides info about the current activity.
  *
  * @param eventBridge The underlying event bridge.
- * @param uiScheduler The callback that schedules an operation that blocks the UI.
+ * @param uiScheduler The scheduler that handles operations that block the UI.
  */
-export function createActivityManager(eventBridge: EventBridge, uiScheduler: Scheduler): ActivityManager {
+export function createActivityManager(eventBridge: EventBridge, uiScheduler = createScheduler()): ActivityManager {
   const getActivityState = () => eventBridge.request({ type: 'org.racehorse.GetActivityStateEvent' }).payload.state;
 
   const subscribe: ActivityManager['subscribe'] = (eventTypeOrListener, listener = eventTypeOrListener) => {

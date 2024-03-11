@@ -17,7 +17,6 @@ import { createKeyboardManager } from './createKeyboardManager';
 import { createNetworkManager } from './createNetworkManager';
 import { createNotificationsManager } from './createNotificationsManager';
 import { createPermissionsManager } from './createPermissionsManager';
-import { createScheduler } from './createScheduler';
 
 export { createActivityManager, Intent, Activity, ActivityState } from './createActivityManager';
 export { createBiometricEncryptedStorageManager } from './createBiometricEncryptedStorageManager';
@@ -78,11 +77,6 @@ export type { Scheduler } from './createScheduler';
 export type * from './types';
 
 /**
- * Scheduler that invokes UI blocking actions.
- */
-export const uiScheduler = createScheduler();
-
-/**
  * Event bridge delivers events from and to native Android.
  */
 export const eventBridge = createEventBridge();
@@ -90,7 +84,7 @@ export const eventBridge = createEventBridge();
 /**
  * Launches activities for various intents, and provides info about the current activity.
  */
-export const activityManager = createActivityManager(eventBridge, uiScheduler);
+export const activityManager = createActivityManager(eventBridge);
 
 /**
  * A biometric encrypted key-value file-based storage.
