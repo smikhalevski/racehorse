@@ -931,14 +931,52 @@ class MainActivity : AppCompatActivity() {
 }
 ```
 
-3. Tokenize the card or use any other Google Pay API methods:
+Usual flow to tokenize a card or resume a previously aborted tokenization:
 
 ```ts
-import { googlePayManager } from 'racehorse';
+import {
+  googlePayManager,
+  GooglePayTokenInfo,
+  GooglePayTokenState,
+  GooglePayCardNetwork,
+  GooglePayTokenServiceProvider,
+} from 'racehorse';
 
-googlePayManager.listTokens().then(tokens => {
-  // Handle the list of tokenized cards
-});
+async function tokenizeCard(lastFour: string): GooglePayTokenInfo {
+  const tokenInfo = await getTokenInfo(lastFour);
+
+  if (!tokenInfo || tokenInfo.tokenState === GooglePayTokenState.UNTOKENIZED) {
+    // 1️⃣ The card isn't tokenized
+    await googlePayManager.pushTokenize({
+      lastFour: lastFour,
+      network: GooglePayCardNetwork.MASTERCARD,
+      tokenServiceProvider: GooglePayTokenServiceProvider.MASTERCARD,
+      // opaquePaymentCard
+      // userAddress
+      // displayName
+    });
+  } else if (tokenInfo.tokenState === GooglePayTokenState.ACTIVE) {
+    // 2️⃣ Card is already tokenized
+    return tokenInfo;
+  } else {
+    // 3️⃣ Resume card tokenization (yellow path)
+    await googlePayManager.tokenize({
+      tokenId: tokenInfo.issuerTokenId,
+      network: GooglePayCardNetwork.MASTERCARD,
+      tokenServiceProvider: GooglePayTokenServiceProvider.MASTERCARD,
+      // displayName
+    })
+  }
+
+  return getTokenInfo(lastFour);
+}
+
+async function getTokenInfo(lastFour: string): GooglePayTokenInfo | undefined {
+  (await googlePayManager.listTokens()).find(tokenInfo =>
+    (tokenInfo.dpanLastFour === lastFour || tokenInfo.fpanLastFour === lastFour) &&
+    tokenInfo.tokenServiceProvider === GooglePayTokenServiceProvider.MASTERCARD
+  );
+}
 ```
 
 # Google Play referrer plugin

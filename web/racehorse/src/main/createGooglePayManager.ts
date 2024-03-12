@@ -188,7 +188,7 @@ export interface GooglePayManager {
   getStableHardwareId(): Promise<string>;
 
   /**
-   * Get all tokens available in the wallet.
+   * Get all tokens available in the wallet. An empty list if there's no active wallet.
    *
    * The API only returns token details for tokens with metadata matching your app package name. You can check if your
    * tokens have this linking by tapping on the card in the Google Wallet app to see the card details view.
