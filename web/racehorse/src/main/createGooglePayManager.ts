@@ -116,6 +116,24 @@ export interface GooglePayTokenizeRequest {
   tokenId?: string | null;
 }
 
+/**
+ * Error codes of the `ApiException`:
+ *
+ * - 15002: No active wallet
+ * - 15003: Token not found
+ * - 15004: Invalid token state
+ * - 15005: Attestation error
+ * - 15009: Unavailable
+ * - 15019: Save card error
+ * - 15021: Ineligible for tokenization
+ * - 15022: Tokenization declined
+ * - 15023: Check eligibility error
+ * - 15024: Tokenize error
+ * - 15025: Token activation required
+ * - 15026: Payment credentials delivery timeout
+ * - 15027: User canceled flow
+ * - 15028: Enroll for virtual cards failed
+ */
 export interface GooglePayManager {
   /**
    * Get the ID of the active wallet, or `null` if there's no active wallet.
@@ -126,7 +144,7 @@ export interface GooglePayManager {
   getActiveWalletId(): Promise<string | null>;
 
   /**
-   * Returns the token status for a token in the active wallet.
+   * Returns the token status for a token in the active wallet, or `null` if there's no active wallet or no such token.
    *
    * The Push Provisioning API caches status values retrieved from the networks and makes a best effort to keep these
    * cached values up-to-date. However, in some cases the values returned here may be different from the network values.
