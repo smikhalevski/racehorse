@@ -74,7 +74,7 @@ instance that would be responsible for event marshalling:
 ```kotlin
 import org.racehorse.EventBridge
 
-val eventBridge = EventBridge(webView).also { enable() }
+val eventBridge = EventBridge(webView).apply { enable() }
 ```
 
 Racehorse uses a [Greenrobot EventBus](https://greenrobot.org/eventbus) to deliver events to subscribers, so bridge must
@@ -361,7 +361,7 @@ dependencies {
 ```kotlin
 import org.racehorse.ActivityPlugin
 
-EventBus.getDefault().register(ActivityPlugin().also { enable() })
+EventBus.getDefault().register(ActivityPlugin().apply { enable() })
 ```
 
 3. Start a new activity. For example, here's how to open Settings app and navigate user to the notification settings:
@@ -1037,7 +1037,10 @@ Google Sign-In support.
 ./gradlew signingReport
 ```
 
-2. Add Google Sign-In SDK dependencies to your Android app:
+2. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials) for your project and add an OAuth
+   client ID for Android.
+
+3. Add Google Sign-In SDK dependencies to your Android app:
 
 ```kotlin
 dependencies {
@@ -1046,7 +1049,7 @@ dependencies {
 }
 ```
 
-3. Register the plugin in your Android app:
+4. Register the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.GoogleSignInPlugin
@@ -1054,7 +1057,7 @@ import org.racehorse.GoogleSignInPlugin
 EventBus.getDefault().register(GoogleSignInPlugin(activity))
 ```
 
-4. Request sign in from the web app that is loaded into the WebView:
+5. Request sign in from the web app that is loaded into the WebView:
 
 ```ts
 import { googleSignInManager } from 'racehorse';

@@ -14,6 +14,13 @@ export interface GoogleSignInAccount {
   isExpired: boolean;
 }
 
+/**
+ * Error codes of the `ApiException`:
+ *
+ * - 12500: Sign in failed
+ * - 12501: Sign in cancelled
+ * - 12502: Sign in currently in progress
+ */
 export interface GoogleSignInManager {
   /**
    * Gets the last account that the user signed in with.
