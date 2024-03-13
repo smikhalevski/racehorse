@@ -931,17 +931,29 @@ class MainActivity : AppCompatActivity() {
 }
 ```
 
-Usual flow to tokenize a card or resume a previously aborted tokenization:
+Check that Google Pay is supported and properly configured by retrieving the current environment:
 
 ```ts
-import {
-  googlePayManager,
-  GooglePayTokenInfo,
-  GooglePayTokenState,
-  GooglePayCardNetwork,
-  GooglePayTokenServiceProvider,
-} from 'racehorse';
+await googlePayManager.getEnvironment();
+// ⮕ 'production'
+```
 
+This call may throw an `ApiException` error that provides the insight on configuration and availability issues.
+
+To get the token info from the wallet use:
+
+```ts
+async function getTokenInfo(lastFour: string): GooglePayTokenInfo | undefined {
+  (await googlePayManager.listTokens()).find(tokenInfo =>
+    (tokenInfo.dpanLastFour === lastFour || tokenInfo.fpanLastFour === lastFour) &&
+    tokenInfo.tokenServiceProvider === GooglePayTokenServiceProvider.MASTERCARD
+  );
+}
+```
+
+To tokenize a card or resume a previously aborted tokenization:
+
+```ts
 async function tokenizeCard(lastFour: string): GooglePayTokenInfo {
   const tokenInfo = await getTokenInfo(lastFour);
 
@@ -965,17 +977,20 @@ async function tokenizeCard(lastFour: string): GooglePayTokenInfo {
       network: GooglePayCardNetwork.MASTERCARD,
       tokenServiceProvider: GooglePayTokenServiceProvider.MASTERCARD,
       // displayName
-    })
+    });
   }
 
   return getTokenInfo(lastFour);
 }
+```
 
-async function getTokenInfo(lastFour: string): GooglePayTokenInfo | undefined {
-  (await googlePayManager.listTokens()).find(tokenInfo =>
-    (tokenInfo.dpanLastFour === lastFour || tokenInfo.fpanLastFour === lastFour) &&
-    tokenInfo.tokenServiceProvider === GooglePayTokenServiceProvider.MASTERCARD
-  );
+To open a wallet app and reveal the tokenized card use:
+
+```ts
+async function revealCard(lastFour: string): Promise<boolean> {
+  const tokenInfo = await getTokenInfo(lastFour);
+
+  return tokenInfo ? googlePayManager.viewToken(tokenInfo.issuerTokenId, tokenInfo.tokenServiceProvider) : false;
 }
 ```
 
