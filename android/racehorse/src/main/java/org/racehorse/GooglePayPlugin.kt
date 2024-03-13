@@ -13,6 +13,7 @@ import com.google.android.gms.tapandpay.issuer.UserAddress
 import com.google.android.gms.tapandpay.issuer.ViewTokenRequest
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.racehorse.utils.apiResult
 import java.io.Serializable
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -188,15 +189,13 @@ open class GooglePayPlugin(
     fun onGooglePayGetActiveWalletId(event: GooglePayGetActiveWalletIdEvent) {
         tapAndPayClient.activeWalletId.addOnCompleteListener {
             event.respond {
-                try {
-                    GooglePayGetActiveWalletIdEvent.ResultEvent(it.result)
-                } catch (e: ApiException) {
-                    if (e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_NO_ACTIVE_WALLET) {
-                        GooglePayGetActiveWalletIdEvent.ResultEvent(null)
-                    } else {
-                        ExceptionEvent(e)
+                GooglePayGetActiveWalletIdEvent.ResultEvent(
+                    try {
+                        it.apiResult
+                    } catch (e: ApiException) {
+                        if (e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_NO_ACTIVE_WALLET) null else throw e
                     }
-                }
+                )
             }
         }
     }
@@ -205,18 +204,16 @@ open class GooglePayPlugin(
     fun onGooglePayGetTokenStatus(event: GooglePayGetTokenStatusEvent) {
         tapAndPayClient.getTokenStatus(event.tokenServiceProvider, event.tokenId).addOnCompleteListener {
             event.respond {
-                try {
-                    GooglePayGetTokenStatusEvent.ResultEvent(GooglePayTokenStatus(it.result))
-                } catch (e: ApiException) {
-                    if (
-                        e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_NO_ACTIVE_WALLET ||
-                        e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_TOKEN_NOT_FOUND
-                    ) {
-                        GooglePayGetTokenStatusEvent.ResultEvent(null)
-                    } else {
-                        ExceptionEvent(e)
+                GooglePayGetTokenStatusEvent.ResultEvent(
+                    try {
+                        GooglePayTokenStatus(it.apiResult)
+                    } catch (e: ApiException) {
+                        if (
+                            e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_NO_ACTIVE_WALLET ||
+                            e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_TOKEN_NOT_FOUND
+                        ) null else throw e
                     }
-                }
+                )
             }
         }
     }
@@ -224,14 +221,14 @@ open class GooglePayPlugin(
     @Subscribe
     fun onGooglePayGetEnvironment(event: GooglePayGetEnvironmentEvent) {
         tapAndPayClient.environment.addOnCompleteListener {
-            event.respond { GooglePayGetEnvironmentEvent.ResultEvent(it.result) }
+            event.respond { GooglePayGetEnvironmentEvent.ResultEvent(it.apiResult) }
         }
     }
 
     @Subscribe
     fun onGooglePayGetStableHardwareId(event: GooglePayGetStableHardwareIdEvent) {
         tapAndPayClient.stableHardwareId.addOnCompleteListener {
-            event.respond { GooglePayGetStableHardwareIdEvent.ResultEvent(it.result) }
+            event.respond { GooglePayGetStableHardwareIdEvent.ResultEvent(it.apiResult) }
         }
     }
 
@@ -239,16 +236,13 @@ open class GooglePayPlugin(
     fun onGooglePayListTokens(event: GooglePayListTokensEvent) {
         tapAndPayClient.listTokens().addOnCompleteListener {
             event.respond {
-                try {
-                    val tokenInfos = it.result.map(::GooglePayTokenInfo)
-                    GooglePayListTokensEvent.ResultEvent(tokenInfos)
-                } catch (e: ApiException) {
-                    if (e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_NO_ACTIVE_WALLET) {
-                        GooglePayListTokensEvent.ResultEvent(emptyList())
-                    } else {
-                        ExceptionEvent(e)
+                GooglePayListTokensEvent.ResultEvent(
+                    try {
+                        it.apiResult.map(::GooglePayTokenInfo)
+                    } catch (e: ApiException) {
+                        if (e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_NO_ACTIVE_WALLET) emptyList() else throw e
                     }
-                }
+                )
             }
         }
     }
@@ -262,15 +256,13 @@ open class GooglePayPlugin(
 
         tapAndPayClient.isTokenized(builder.build()).addOnCompleteListener {
             event.respond {
-                try {
-                    GooglePayIsTokenizedEvent.ResultEvent(it.result)
-                } catch (e: ApiException) {
-                    if (e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_NO_ACTIVE_WALLET) {
-                        GooglePayIsTokenizedEvent.ResultEvent(false)
-                    } else {
-                        ExceptionEvent(e)
+                GooglePayIsTokenizedEvent.ResultEvent(
+                    try {
+                        it.apiResult
+                    } catch (e: ApiException) {
+                        if (e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_NO_ACTIVE_WALLET) false else throw e
                     }
-                }
+                )
             }
         }
     }
@@ -285,7 +277,7 @@ open class GooglePayPlugin(
             event.respond(
                 GooglePayViewTokenEvent.ResultEvent(
                     try {
-                        it.result.send()
+                        it.apiResult.send()
                         true
                     } catch (_: Throwable) {
                         false

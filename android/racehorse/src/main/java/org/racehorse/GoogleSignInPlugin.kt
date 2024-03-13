@@ -7,6 +7,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes
 import com.google.android.gms.common.api.ApiException
 import org.greenrobot.eventbus.Subscribe
+import org.racehorse.utils.apiResult
 import org.racehorse.utils.launchActivityForResult
 import java.io.Serializable
 
@@ -79,17 +80,13 @@ open class GoogleSignInPlugin(
     open fun onGoogleSignIn(event: GoogleSignInEvent) {
         val isLaunched = activity.launchActivityForResult(googleSignInClient.signInIntent) {
             event.respond {
-                try {
-                    val account = GoogleSignIn.getSignedInAccountFromIntent(it.data).getResult(ApiException::class.java)
-
-                    GoogleSignInEvent.ResultEvent(SerializableGoogleSignInAccount(account))
-                } catch (e: ApiException) {
-                    if (e.statusCode == GoogleSignInStatusCodes.SIGN_IN_CANCELLED) {
-                        GoogleSignInEvent.ResultEvent(null)
-                    } else {
-                        ExceptionEvent(e)
+                GoogleSignInEvent.ResultEvent(
+                    try {
+                        SerializableGoogleSignInAccount(GoogleSignIn.getSignedInAccountFromIntent(it.data).apiResult)
+                    } catch (e: ApiException) {
+                        if (e.statusCode == GoogleSignInStatusCodes.SIGN_IN_CANCELLED) null else throw e
                     }
-                }
+                )
             }
         }
 
@@ -103,21 +100,19 @@ open class GoogleSignInPlugin(
         val task = googleSignInClient.silentSignIn()
 
         if (task.isSuccessful) {
-            event.respond(GoogleSilentSignInEvent.ResultEvent(SerializableGoogleSignInAccount(task.result)))
+            event.respond(GoogleSilentSignInEvent.ResultEvent(SerializableGoogleSignInAccount(task.apiResult)))
             return
         }
 
         task.addOnCompleteListener {
             event.respond {
-                try {
-                    GoogleSignInEvent.ResultEvent(SerializableGoogleSignInAccount(task.getResult(ApiException::class.java)))
-                } catch (e: ApiException) {
-                    if (e.statusCode == GoogleSignInStatusCodes.SIGN_IN_REQUIRED) {
-                        GoogleSignInEvent.ResultEvent(null)
-                    } else {
-                        ExceptionEvent(e)
+                GoogleSilentSignInEvent.ResultEvent(
+                    try {
+                        SerializableGoogleSignInAccount(task.apiResult)
+                    } catch (e: ApiException) {
+                        if (e.statusCode == GoogleSignInStatusCodes.SIGN_IN_REQUIRED) null else throw e
                     }
-                }
+                )
             }
         }
     }
