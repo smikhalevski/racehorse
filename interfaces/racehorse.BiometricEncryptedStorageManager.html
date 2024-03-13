@@ -13,6 +13,7 @@ authentication for every use. Check <a href="racehorse.BiometricManager.html#get
 <h4>Throws</h4><p>KeyPermanentlyInvalidatedException Indicates that the key can no longer be read because it has been
 permanently invalidated (for example, because of the biometric enrollment). Set a new value or delete the key to
 recover from this error.</p>
+<h4>Throws</h4><p>UnrecoverableKeyException User changed or deleted their auth credentials.</p>
 <h4>Throws</h4><p>IllegalArgumentException Device credential is not supported on API 28 and below.</p>
 <h4>Throws</h4><p>IllegalArgumentException Crypto-based authentication is not supported for Class 2 (Weak) biometrics.</p>
 <h4>Throws</h4><p>IllegalStateException Unable to start authentication if the app is in the background.</p>
