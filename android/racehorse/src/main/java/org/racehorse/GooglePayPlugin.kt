@@ -13,6 +13,7 @@ import com.google.android.gms.tapandpay.issuer.UserAddress
 import com.google.android.gms.tapandpay.issuer.ViewTokenRequest
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.racehorse.utils.apiResult
 import java.io.Serializable
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -145,7 +146,7 @@ class GooglePayPushTokenizeEvent(
 }
 
 /**
- * Tokenize the card manually or resume the tokenization process it to Google Pay.
+ * Tokenize the card manually or resume the tokenization process in Google Pay.
  */
 class GooglePayTokenizeEvent(
     val displayName: String,
@@ -188,15 +189,13 @@ open class GooglePayPlugin(
     fun onGooglePayGetActiveWalletId(event: GooglePayGetActiveWalletIdEvent) {
         tapAndPayClient.activeWalletId.addOnCompleteListener {
             event.respond {
-                try {
-                    GooglePayGetActiveWalletIdEvent.ResultEvent(it.getResult(ApiException::class.java))
-                } catch (e: ApiException) {
-                    if (e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_NO_ACTIVE_WALLET) {
-                        GooglePayGetActiveWalletIdEvent.ResultEvent(null)
-                    } else {
-                        ExceptionEvent(e)
+                GooglePayGetActiveWalletIdEvent.ResultEvent(
+                    try {
+                        it.apiResult
+                    } catch (e: ApiException) {
+                        if (e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_NO_ACTIVE_WALLET) null else throw e
                     }
-                }
+                )
             }
         }
     }
@@ -205,15 +204,16 @@ open class GooglePayPlugin(
     fun onGooglePayGetTokenStatus(event: GooglePayGetTokenStatusEvent) {
         tapAndPayClient.getTokenStatus(event.tokenServiceProvider, event.tokenId).addOnCompleteListener {
             event.respond {
-                try {
-                    GooglePayGetTokenStatusEvent.ResultEvent(GooglePayTokenStatus(it.getResult(ApiException::class.java)))
-                } catch (e: ApiException) {
-                    if (e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_TOKEN_NOT_FOUND) {
-                        GooglePayGetTokenStatusEvent.ResultEvent(null)
-                    } else {
-                        ExceptionEvent(e)
+                GooglePayGetTokenStatusEvent.ResultEvent(
+                    try {
+                        GooglePayTokenStatus(it.apiResult)
+                    } catch (e: ApiException) {
+                        if (
+                            e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_NO_ACTIVE_WALLET ||
+                            e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_TOKEN_NOT_FOUND
+                        ) null else throw e
                     }
-                }
+                )
             }
         }
     }
@@ -221,52 +221,63 @@ open class GooglePayPlugin(
     @Subscribe
     fun onGooglePayGetEnvironment(event: GooglePayGetEnvironmentEvent) {
         tapAndPayClient.environment.addOnCompleteListener {
-            event.respond { GooglePayGetEnvironmentEvent.ResultEvent(it.getResult(ApiException::class.java)) }
+            event.respond { GooglePayGetEnvironmentEvent.ResultEvent(it.apiResult) }
         }
     }
 
     @Subscribe
     fun onGooglePayGetStableHardwareId(event: GooglePayGetStableHardwareIdEvent) {
         tapAndPayClient.stableHardwareId.addOnCompleteListener {
-            event.respond { GooglePayGetStableHardwareIdEvent.ResultEvent(it.getResult(ApiException::class.java)) }
+            event.respond { GooglePayGetStableHardwareIdEvent.ResultEvent(it.apiResult) }
         }
     }
 
     @Subscribe
     fun onGooglePayListTokens(event: GooglePayListTokensEvent) {
-        tapAndPayClient.listTokens().addOnCompleteListener { task ->
+        tapAndPayClient.listTokens().addOnCompleteListener {
             event.respond {
-                val tokenInfos = task.getResult(ApiException::class.java).map(::GooglePayTokenInfo)
-                GooglePayListTokensEvent.ResultEvent(tokenInfos)
+                GooglePayListTokensEvent.ResultEvent(
+                    try {
+                        it.apiResult.map(::GooglePayTokenInfo)
+                    } catch (e: ApiException) {
+                        if (e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_NO_ACTIVE_WALLET) emptyList() else throw e
+                    }
+                )
             }
         }
     }
 
     @Subscribe
     fun onGooglePayIsTokenized(event: GooglePayIsTokenizedEvent) {
-        val request = IsTokenizedRequest.Builder()
+        val builder = IsTokenizedRequest.Builder()
             .setIdentifier(event.fpanLastFour)
             .setNetwork(event.network)
             .setTokenServiceProvider(event.tokenServiceProvider)
-            .build()
 
-        tapAndPayClient.isTokenized(request).addOnCompleteListener {
-            event.respond { GooglePayIsTokenizedEvent.ResultEvent(it.getResult(ApiException::class.java)) }
+        tapAndPayClient.isTokenized(builder.build()).addOnCompleteListener {
+            event.respond {
+                GooglePayIsTokenizedEvent.ResultEvent(
+                    try {
+                        it.apiResult
+                    } catch (e: ApiException) {
+                        if (e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_NO_ACTIVE_WALLET) false else throw e
+                    }
+                )
+            }
         }
     }
 
     @Subscribe
     fun onGooglePayViewToken(event: GooglePayViewTokenEvent) {
-        val request = ViewTokenRequest.Builder()
+        val builder = ViewTokenRequest.Builder()
             .setIssuerTokenId(event.tokenId)
             .setTokenServiceProvider(event.tokenServiceProvider)
-            .build()
 
-        tapAndPayClient.viewToken(request).addOnCompleteListener { task ->
+        tapAndPayClient.viewToken(builder.build()).addOnCompleteListener {
             event.respond(
                 GooglePayViewTokenEvent.ResultEvent(
                     try {
-                        task.result.send()
+                        it.apiResult.send()
                         true
                     } catch (_: Throwable) {
                         false
@@ -279,16 +290,15 @@ open class GooglePayPlugin(
     @Subscribe
     fun onGooglePayPushTokenize(event: GooglePayPushTokenizeEvent) = runOperation(
         operation = { requestCode ->
-            val request = PushTokenizeRequest.Builder()
+            val builder = PushTokenizeRequest.Builder()
                 .setOpaquePaymentCard(event.opaquePaymentCard.toByteArray())
                 .setDisplayName(event.displayName)
                 .setLastDigits(event.lastFour)
                 .setNetwork(event.network)
                 .setTokenServiceProvider(event.tokenServiceProvider)
                 .setUserAddress(event.userAddress.toUserAddress())
-                .build()
 
-            tapAndPayClient.pushTokenize(activity, request, requestCode)
+            tapAndPayClient.pushTokenize(activity, builder.build(), requestCode)
         },
         callback = { event.respond(GooglePayPushTokenizeEvent.ResultEvent(it?.getStringExtra(TapAndPay.EXTRA_ISSUER_TOKEN_ID))) }
     )
@@ -347,7 +357,7 @@ open class GooglePayPlugin(
         activityCallbacks.remove(requestCode)?.invoke(data)
     }
 
-    protected open fun runOperation(
+    private fun runOperation(
         operation: (requestCode: Int) -> Unit,
         callback: (data: Intent?) -> Unit
     ) {

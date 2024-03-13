@@ -931,14 +931,67 @@ class MainActivity : AppCompatActivity() {
 }
 ```
 
-3. Tokenize the card or use any other Google Pay API methods:
+Check that Google Pay is supported and properly configured by retrieving the current environment:
 
 ```ts
-import { googlePayManager } from 'racehorse';
+await googlePayManager.getEnvironment();
+// ⮕ 'production'
+```
 
-googlePayManager.listTokens().then(tokens => {
-  // Handle the list of tokenized cards
-});
+This call may throw an `ApiException` error that provides the insight on configuration and availability issues.
+
+To get the token info from the wallet use:
+
+```ts
+async function getTokenInfo(lastFour: string): GooglePayTokenInfo | undefined {
+  (await googlePayManager.listTokens()).find(tokenInfo =>
+    (tokenInfo.dpanLastFour === lastFour || tokenInfo.fpanLastFour === lastFour) &&
+    tokenInfo.tokenServiceProvider === GooglePayTokenServiceProvider.MASTERCARD
+  );
+}
+```
+
+To tokenize a card or resume a previously aborted tokenization:
+
+```ts
+async function tokenizeCard(lastFour: string): GooglePayTokenInfo {
+  const tokenInfo = await getTokenInfo(lastFour);
+
+  if (!tokenInfo || tokenInfo.tokenState === GooglePayTokenState.UNTOKENIZED) {
+    // 1️⃣ The card isn't tokenized
+    await googlePayManager.pushTokenize({
+      lastFour: lastFour,
+      network: GooglePayCardNetwork.MASTERCARD,
+      tokenServiceProvider: GooglePayTokenServiceProvider.MASTERCARD,
+      // opaquePaymentCard
+      // userAddress
+      // displayName
+    });
+  } else if (tokenInfo.tokenState === GooglePayTokenState.ACTIVE) {
+    // 2️⃣ Card is already tokenized
+    return tokenInfo;
+  } else {
+    // 3️⃣ Resume card tokenization (yellow path)
+    await googlePayManager.tokenize({
+      tokenId: tokenInfo.issuerTokenId,
+      network: GooglePayCardNetwork.MASTERCARD,
+      tokenServiceProvider: GooglePayTokenServiceProvider.MASTERCARD,
+      // displayName
+    });
+  }
+
+  return getTokenInfo(lastFour);
+}
+```
+
+To open a wallet app and reveal the tokenized card use:
+
+```ts
+async function revealCard(lastFour: string): Promise<boolean> {
+  const tokenInfo = await getTokenInfo(lastFour);
+
+  return tokenInfo ? googlePayManager.viewToken(tokenInfo.issuerTokenId, tokenInfo.tokenServiceProvider) : false;
+}
 ```
 
 # Google Play referrer plugin

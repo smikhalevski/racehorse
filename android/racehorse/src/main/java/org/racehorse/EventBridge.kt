@@ -58,7 +58,7 @@ open class ChainableEvent {
      *
      * If an exception is thrown in the block, then an [ExceptionEvent] is used as a response.
      */
-    fun respond(block: () -> ChainableEvent) = respond(
+    inline fun respond(block: () -> ChainableEvent) = respond(
         try {
             block()
         } catch (e: Throwable) {
