@@ -15,6 +15,7 @@ import org.racehorse.utils.ifNullOrBlank
 import java.io.File
 import java.io.Serializable
 import java.security.KeyStore
+import java.security.UnrecoverableKeyException
 import javax.crypto.Cipher
 import javax.crypto.IllegalBlockSizeException
 import javax.crypto.KeyGenerator
@@ -137,6 +138,8 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
                 return
             } catch (e: KeyPermanentlyInvalidatedException) {
                 deleteSecretKey(event.key)
+            } catch (e: UnrecoverableKeyException) {
+                deleteSecretKey(event.key)
             }
         }
 
@@ -149,7 +152,7 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
             ?: return event.respond(GetEncryptedValueEvent.ResultEvent(null))
 
         val secretKey = getSecretKey(event.key)
-            ?: return event.respond(ExceptionEvent(KeyPermanentlyInvalidatedException("Secret key not found")))
+            ?: return event.respond(ExceptionEvent(UnrecoverableKeyException("Secret key not found")))
 
         val cipher = createCipher()
         val params = IvParameterSpec(record.iv)

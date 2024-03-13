@@ -74,6 +74,7 @@ export interface BiometricEncryptedStorageManager {
    * @throws KeyPermanentlyInvalidatedException Indicates that the key can no longer be read because it has been
    * permanently invalidated (for example, because of the biometric enrollment). Set a new value or delete the key to
    * recover from this error.
+   * @throws UnrecoverableKeyException User changed or deleted their auth credentials.
    * @throws IllegalArgumentException Device credential is not supported on API 28 and below.
    * @throws IllegalArgumentException Crypto-based authentication is not supported for Class 2 (Weak) biometrics.
    * @throws IllegalStateException Unable to start authentication if the app is in the background.
