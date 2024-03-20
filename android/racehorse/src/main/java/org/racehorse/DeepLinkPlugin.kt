@@ -5,7 +5,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.SerializableIntent
 
 /**
- * Triggered by the web to retrieve the latest deep link.
+ * Get the latest deep link dispatched via [OpenDeepLinkEvent].
  */
 class GetLastDeepLinkEvent : RequestEvent() {
 
