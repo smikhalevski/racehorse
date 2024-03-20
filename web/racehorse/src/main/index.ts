@@ -18,6 +18,7 @@ import { createKeyboardManager } from './createKeyboardManager';
 import { createNetworkManager } from './createNetworkManager';
 import { createNotificationsManager } from './createNotificationsManager';
 import { createPermissionsManager } from './createPermissionsManager';
+import { createFsManager } from './createFsManager';
 
 export { createActivityManager, Intent, Activity, ActivityState } from './createActivityManager';
 export { createBiometricEncryptedStorageManager } from './createBiometricEncryptedStorageManager';
@@ -142,6 +143,11 @@ export const encryptedStorageManager = createEncryptedStorageManager(eventBridge
  * Provides access to Firebase configuration.
  */
 export const firebaseManager = createFirebaseManager(eventBridge);
+
+/**
+ * File system CRUD operations.
+ */
+export const fsManager = createFsManager(eventBridge);
 
 /**
  * Manages tokenized cards in Google Pay.
