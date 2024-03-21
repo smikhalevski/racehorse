@@ -107,6 +107,21 @@ open class FsPlugin(val activity: ComponentActivity) {
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    open fun onFsAppend(event: FsAppendTextEvent) {
+        getFile(event.path, event.directory).apply {
+            event.text?.let { appendText(it, Charset.forName(event.encoding)) }
+
+            if (event.text != null) {
+                appendText(event.text, Charset.forName(event.encoding))
+            }
+            if (event.blob != null) {
+                appendBytes(event.blob)
+            }
+        }
+        event.respond(VoidEvent())
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
     open fun onFsAppendText(event: FsAppendTextEvent) {
         getFile(event.path, event.directory).appendText(event.text, Charset.forName(event.encoding))
         event.respond(VoidEvent())
