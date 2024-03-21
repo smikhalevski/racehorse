@@ -42,24 +42,24 @@ class GooglePayTokenInfo(
 }
 
 class SerializableGooglePayUserAddress(
-    val name: String,
-    val address1: String,
-    val address2: String,
-    val locality: String,
-    val administrativeArea: String,
-    val countryCode: String,
-    val postalCode: String,
-    val phoneNumber: String,
+    val name: String?,
+    val address1: String?,
+    val address2: String?,
+    val locality: String?,
+    val administrativeArea: String?,
+    val countryCode: String?,
+    val postalCode: String?,
+    val phoneNumber: String?,
 ) : Serializable {
     fun toUserAddress() = UserAddress.newBuilder()
-        .setName(name)
-        .setAddress1(address1)
-        .setAddress2(address2)
-        .setLocality(locality)
-        .setAdministrativeArea(administrativeArea)
-        .setCountryCode(countryCode)
-        .setPostalCode(postalCode)
-        .setPhoneNumber(phoneNumber)
+        .setName(name.orEmpty())
+        .setAddress1(address1.orEmpty())
+        .setAddress2(address2.orEmpty())
+        .setLocality(locality.orEmpty())
+        .setAdministrativeArea(administrativeArea.orEmpty())
+        .setCountryCode(countryCode.orEmpty())
+        .setPostalCode(postalCode.orEmpty())
+        .setPhoneNumber(phoneNumber.orEmpty())
         .build()
 }
 
@@ -140,7 +140,7 @@ class GooglePayPushTokenizeEvent(
     val lastFour: String,
     val network: Int,
     val tokenServiceProvider: Int,
-    val userAddress: SerializableGooglePayUserAddress,
+    val userAddress: SerializableGooglePayUserAddress?,
 ) : RequestEvent() {
     class ResultEvent(val tokenId: String?) : ResponseEvent()
 }
@@ -296,7 +296,7 @@ open class GooglePayPlugin(
                 .setLastDigits(event.lastFour)
                 .setNetwork(event.network)
                 .setTokenServiceProvider(event.tokenServiceProvider)
-                .setUserAddress(event.userAddress.toUserAddress())
+                .setUserAddress(event.userAddress?.toUserAddress() ?: UserAddress.newBuilder().build())
 
             tapAndPayClient.pushTokenize(activity, builder.build(), requestCode)
         },

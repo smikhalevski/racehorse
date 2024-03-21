@@ -81,17 +81,17 @@ export interface GooglePayPushTokenizeRequest {
   /**
    * The Opaque Payment Card (OPC) binary data.
    */
-  opaquePaymentCard: String;
+  opaquePaymentCard: string;
 
   /**
    * The display name or nickname used to describe the payment card in the user interface.
    */
-  displayName: String;
+  displayName: string;
 
   /**
    * The last 4 digits for the payment card required to correctly display the card in Google Pay UI.
    */
-  lastFour: String;
+  lastFour: string;
 
   /**
    * The card payment network.
@@ -110,7 +110,7 @@ export interface GooglePayPushTokenizeRequest {
 }
 
 export interface GooglePayTokenizeRequest {
-  displayName: String;
+  displayName: string;
   network: GooglePayCardNetwork;
   tokenServiceProvider: GooglePayTokenServiceProvider;
   tokenId?: string | null;

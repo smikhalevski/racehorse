@@ -30,7 +30,7 @@ class FacebookSharePlugin(val activity: ComponentActivity) {
 
             ShareLinkContent.Builder()
                 .setQuote(event.quote)
-                .setContentUrl(event.contentUrl?.let { Uri.parse(it) })
+                .setContentUrl(event.contentUrl?.let(Uri::parse))
                 .setPeopleIds(event.peopleIds)
                 .setPlaceId(event.placeId)
                 .setPageId(event.pageId)
