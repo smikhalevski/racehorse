@@ -84,6 +84,11 @@ class Download(
      * Timestamp when the download was last modified (wall clock time in UTC).
      */
     val lastModifiedTimestamp: Int,
+
+    /**
+     * The client-supplied title for this download.
+     */
+    val title: String
 ) : Serializable {
 
     /**
@@ -103,6 +108,7 @@ class Download(
         totalSize = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)),
         downloadedSize = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)),
         lastModifiedTimestamp = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_LAST_MODIFIED_TIMESTAMP)),
+        title = cursor.getString(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TITLE)),
     )
 }
 
