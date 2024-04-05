@@ -570,7 +570,7 @@ To support older Android models a storage permission must be added to the applic
 
 <uses-permission
     android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-    android:maxSdkVersion="28"/>
+    tools:ignore="ScopedStorage"/>
 ```
 
 ## Downloadable links

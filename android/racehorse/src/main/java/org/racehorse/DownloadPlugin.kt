@@ -84,6 +84,11 @@ class Download(
      * Timestamp when the download was last modified (wall clock time in UTC).
      */
     val lastModifiedTimestamp: Int,
+
+    /**
+     * The client-supplied title for this download.
+     */
+    val title: String
 ) : Serializable {
 
     /**
@@ -103,6 +108,7 @@ class Download(
         totalSize = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)),
         downloadedSize = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)),
         lastModifiedTimestamp = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_LAST_MODIFIED_TIMESTAMP)),
+        title = cursor.getString(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TITLE)),
     )
 }
 
@@ -223,13 +229,12 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
         val fileName = event.fileName
             ?: URLUtil.guessFileName(event.uri, null, event.mimeType)
 
-        val request = DownloadManager.Request(uri).apply {
-            setDestinationInExternalPublicDir(SAVE_TO_DIR, fileName)
-            setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            setMimeType(event.mimeType)
+        val request = DownloadManager.Request(uri)
+            .setDestinationInExternalPublicDir(SAVE_TO_DIR, fileName)
+            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            .setMimeType(event.mimeType)
 
-            event.headers?.forEach { addRequestHeader(it.first, it.second) }
-        }
+        event.headers?.forEach { request.addRequestHeader(it.first, it.second) }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             event.respond { AddDownloadEvent.ResultEvent(downloadManager.enqueue(request)) }
@@ -255,34 +260,34 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
             ?: FALLBACK_MIME_TYPE
 
         val fileName = event.fileName
-            ?: FALLBACK_FILE_NAME.plus(MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: FALLBACK_EXTENSION)
+            ?: (FALLBACK_FILE_NAME + (MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: FALLBACK_EXTENSION))
 
         val saveToDir = Environment.getExternalStoragePublicDirectory(SAVE_TO_DIR)
 
         // Use MediaStore to write a file
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val values = ContentValues().apply {
-                put(MediaStore.Downloads.RELATIVE_PATH, SAVE_TO_DIR)
-                put(MediaStore.Downloads.DISPLAY_NAME, fileName)
-                put(MediaStore.Downloads.MIME_TYPE, mimeType)
-                put(MediaStore.Downloads.IS_DOWNLOAD, true)
-            }
+            val values = ContentValues()
 
-            val resolver = activity.contentResolver
-            val contentUri = requireNotNull(resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values))
-            val outputStream = requireNotNull(resolver.openOutputStream(contentUri))
+            values.put(MediaStore.Downloads.RELATIVE_PATH, SAVE_TO_DIR)
+            values.put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+            values.put(MediaStore.Downloads.MIME_TYPE, mimeType)
+            values.put(MediaStore.Downloads.IS_DOWNLOAD, true)
 
-            outputStream.use { it.write(dataUri.data) }
+            val contentResolver = activity.contentResolver
+            val contentUri = requireNotNull(contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values))
 
-            val displayName =
-                resolver.query(contentUri, arrayOf(MediaStore.Downloads.DISPLAY_NAME), null, null, null).use { cursor ->
+            requireNotNull(contentResolver.openOutputStream(contentUri)).use { it.write(dataUri.data) }
+
+            val filePath =
+                contentResolver.query(contentUri, arrayOf(MediaStore.Downloads.DATA), null, null, null).use { cursor ->
                     requireNotNull(cursor).moveToFirst()
-                    cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Downloads.DISPLAY_NAME))
+                    cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Downloads.DATA))
                 }
 
-            event.respond {
-                // Android 29 emulator throws java.lang.SecurityException: Unsupported path /storage/emulated/0/Download
-                AddDownloadEvent.ResultEvent(addCompletedDownload(File(saveToDir, displayName), mimeType))
+            activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) {
+                event.respond {
+                    AddDownloadEvent.ResultEvent(addCompletedDownload(File(filePath), mimeType))
+                }
             }
             return
         }

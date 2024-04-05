@@ -67,6 +67,11 @@ export interface Download {
    * Timestamp when the download was last modified (wall clock time in UTC).
    */
   lastModifiedTimestamp: number;
+
+  /**
+   * The client-supplied title for this download.
+   */
+  title: string;
 }
 
 /**

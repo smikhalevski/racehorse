@@ -16,12 +16,12 @@ export interface Intent {
   /**
    * The explicit MIME type included in the intent.
    */
-  type?: string;
+  type?: string | null;
 
   /**
    * The URI-encoded data that intent is operating on.
    */
-  data?: string;
+  data?: string | null;
 
   /**
    * Special flags associated with this intent, such as {@link Intent.FLAG_ACTIVITY_NEW_TASK}.
@@ -31,19 +31,19 @@ export interface Intent {
   /**
    * A map of extended data from the intent.
    */
-  extras?: { [key: string]: any };
+  extras?: { [key: string]: any } | null;
 
   /**
    * The array of intent categories.
    */
-  categories?: string[];
+  categories?: string[] | null;
 
   /**
    * A selector for this intent.
    *
    * @see [Intent.setSelector](https://developer.android.com/reference/android/content/Intent#setSelector(android.content.Intent))
    */
-  selector?: Intent;
+  selector?: Intent | null;
 }
 
 export const ActivityState = {

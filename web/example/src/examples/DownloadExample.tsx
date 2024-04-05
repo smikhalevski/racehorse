@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { activityManager, downloadManager, DownloadStatus, Intent } from 'racehorse';
 
 const TEST_HTTP_URL = 'https://upload.wikimedia.org/wikipedia/en/f/f9/Death_star1.png';
@@ -13,136 +13,117 @@ export function DownloadExample() {
   useEffect(() => {
     const timer = setInterval(() => {
       setDownloads(downloadManager.getAllDownloads());
-    }, 200);
+    }, 1000);
 
     return () => {
       clearInterval(timer);
     };
   });
 
+  const addDownload = (uri: string) => {
+    downloadManager.addDownload(uri, { headers: { 'Example-Header': 'example' } }).then(() => {
+      setDownloads(downloadManager.getAllDownloads());
+    });
+  };
+
   return (
     <>
       <h2>{'Download'}</h2>
 
-      <table
-        border={1}
-        cellPadding={7}
-        width={'100%'}
-      >
-        <thead>
-          <tr>
-            <th>{'Title'}</th>
-            <th>{'Status'}</th>
-            <th />
-          </tr>
-        </thead>
-        <tbody>
-          {downloads.length === 0 && (
-            <tr>
-              <td colSpan={3}>
-                <center>{'No downloads'}</center>
-              </td>
-            </tr>
-          )}
-
-          {downloads.map(download => (
-            <tr key={download.id}>
-              <td width={'100%'}>
-                <a
-                  href={download.status === DownloadStatus.SUCCESSFUL ? '#' : undefined}
-                  onClick={event => {
-                    event.preventDefault();
-
-                    if (download.contentUri !== null) {
-                      activityManager.startActivity({
-                        action: Intent.ACTION_VIEW,
-                        flags: Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION,
-                        data: download.contentUri,
-                      });
-                    }
-                  }}
-                >
-                  {decodeURI(download.localUri?.split('/').pop() || '')}
-                </a>
-              </td>
-
-              <td align={'center'}>
-                {
-                  {
-                    [DownloadStatus.PENDING]: '',
-                    [DownloadStatus.RUNNING]: (((download.totalSize / download.downloadedSize) * 100) | 0) + '%',
-                    [DownloadStatus.PAUSED]: '🟡',
-                    [DownloadStatus.SUCCESSFUL]: '🟢',
-                    [DownloadStatus.FAILED]: '🔴',
-                  }[download.status]
-                }
-              </td>
-
-              <td align={'center'}>
-                <a
-                  onClick={event => {
-                    event.preventDefault();
-                    downloadManager.removeDownload(download.id);
-                  }}
-                >
-                  {'❌'}
-                </a>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
       <p>
-        {'Use '}
-        <a
-          href={'#'}
-          onClick={event => {
-            event.preventDefault();
-            setURI(TEST_HTTP_URL);
-          }}
-        >
-          {'HTTP URL'}
-        </a>
-        {' or '}
-        <a
-          href={'#'}
-          onClick={event => {
-            event.preventDefault();
-            setURI(TEST_DATA_URI);
-          }}
-        >
-          {'data URI'}
-        </a>
-      </p>
-
-      <p>
-        <input
-          value={uri}
-          onChange={event => {
-            setURI(event.target.value);
-          }}
-        />{' '}
         <button
           onClick={() => {
-            downloadManager.addDownload(uri, { headers: { 'Example-Header': 'example' } });
+            addDownload(TEST_HTTP_URL);
           }}
         >
-          {'Add download'}
+          {'Download HTTP URL'}
         </button>
       </p>
-
-      <hr />
-
       <p>
-        {'Downloadable '}
+        <button
+          onClick={() => {
+            addDownload(TEST_DATA_URI);
+          }}
+        >
+          {' Download data URI'}
+        </button>
+      </p>
+      <p>
+        <a
+          href={TEST_HTTP_URL}
+          download={true}
+        >
+          {'HTTP link'}
+        </a>
+      </p>
+      <p>
         <a
           href={TEST_DATA_URI}
           download={true}
         >
-          {'data URI link'}
+          {'URI link'}
         </a>
       </p>
+
+      <form
+        onSubmit={event => {
+          event.preventDefault();
+          addDownload(uri);
+        }}
+      >
+        <p>
+          <input
+            value={uri}
+            onChange={event => {
+              setURI(event.target.value);
+            }}
+            required={true}
+          />{' '}
+          <button>{'Add download'}</button>
+        </p>
+      </form>
+
+      {downloads.map(download => {
+        const handleDeleteDownload = () => {
+          downloadManager.removeDownload(download.id);
+          setDownloads(downloadManager.getAllDownloads());
+        };
+
+        const handlePreviewDownload = () => {
+          activityManager.startActivity({
+            action: Intent.ACTION_VIEW,
+            flags: Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION,
+            data: download.contentUri,
+          });
+        };
+
+        return (
+          <Fragment key={download.id}>
+            <hr />
+            <p>
+              {download.id + '. '}
+              <a
+                href={download.status === DownloadStatus.SUCCESSFUL ? '#' : undefined}
+                onClick={handlePreviewDownload}
+              >
+                {download.title}
+              </a>{' '}
+              {
+                {
+                  [DownloadStatus.PENDING]: '⬇️',
+                  [DownloadStatus.RUNNING]: '⬇️ ' + (((download.totalSize / download.downloadedSize) * 100) | 0) + '%',
+                  [DownloadStatus.PAUSED]: '⏸',
+                  [DownloadStatus.SUCCESSFUL]: '',
+                  [DownloadStatus.FAILED]: '🔴',
+                }[download.status]
+              }
+            </p>
+            <p>
+              <button onClick={handleDeleteDownload}>{'❌ Delete'}</button>
+            </p>
+          </Fragment>
+        );
+      })}
     </>
   );
 }
