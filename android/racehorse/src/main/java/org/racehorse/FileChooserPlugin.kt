@@ -7,12 +7,14 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.MediaStore
+import android.webkit.MimeTypeMap
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient.FileChooserParams
 import androidx.activity.ComponentActivity
 import androidx.core.content.FileProvider
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.askForPermission
+import org.racehorse.utils.getMimeTypeFromSignature
 import org.racehorse.utils.launchActivityForResult
 import org.racehorse.webview.ShowFileChooserEvent
 import java.io.File
@@ -87,7 +89,14 @@ private class TempCameraFile(private val file: File, override val contentUri: Ur
             file.delete()
             return null
         }
-        return Uri.fromFile(file)
+
+        return Uri.fromFile(
+            file.getMimeTypeFromSignature()
+                ?.let(MimeTypeMap.getSingleton()::getExtensionFromMimeType)
+                ?.let { File("${file.absolutePath}.$it") }
+                ?.takeIf(file::renameTo)
+                ?: file
+        )
     }
 }
 
@@ -152,10 +161,15 @@ private class FileChooserLauncher(
         }
 
         val isLaunched = activity.launchActivityForResult(intent) { result ->
-            val uris = parseFileChooserResult(result.resultCode, result.data)
-
             filePathCallback.onReceiveValue(
-                cameraFile?.retrieveFileChooserUri()?.let { arrayOf(it) } ?: uris ?: arrayOf()
+                try {
+                    cameraFile?.retrieveFileChooserUri()?.let { arrayOf(it) }
+                        ?: parseFileChooserResult(result.resultCode, result.data)
+                        ?: arrayOf()
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                    arrayOf()
+                }
             )
         }
 

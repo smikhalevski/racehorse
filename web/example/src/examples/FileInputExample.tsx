@@ -49,7 +49,7 @@ export function FileInputExample() {
 
       <ol>
         {files.map((file, index) => (
-          <li key={index}>{file.name + ' (' + file.type + ')'})</li>
+          <li key={index}>{file.name + ' (' + file.type + ')'}</li>
         ))}
       </ol>
     </>
