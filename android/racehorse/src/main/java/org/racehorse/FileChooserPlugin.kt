@@ -95,6 +95,7 @@ private class TempCameraFile(private val file: File, override val contentUri: Ur
                 ?.let(MimeTypeMap.getSingleton()::getExtensionFromMimeType)
                 ?.let { File("${file.absolutePath}.$it") }
                 ?.takeIf(file::renameTo)
+                ?.also(File::deleteOnExit)
                 ?: file
         )
     }
