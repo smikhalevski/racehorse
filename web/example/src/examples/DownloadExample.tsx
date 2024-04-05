@@ -98,30 +98,31 @@ export function DownloadExample() {
         };
 
         return (
-          <Fragment key={download.id}>
-            <hr />
-            <p>
-              {download.id + '. '}
+          <ol
+            key={download.id}
+            start={download.id}
+          >
+            <li>
               <a
                 href={download.status === DownloadStatus.SUCCESSFUL ? '#' : undefined}
                 onClick={handlePreviewDownload}
               >
                 {download.title}
-              </a>{' '}
+              </a>
               {
                 {
-                  [DownloadStatus.PENDING]: '⬇️',
-                  [DownloadStatus.RUNNING]: '⬇️ ' + (((download.totalSize / download.downloadedSize) * 100) | 0) + '%',
-                  [DownloadStatus.PAUSED]: '⏸',
+                  [DownloadStatus.PENDING]: ' ⬇️',
+                  [DownloadStatus.RUNNING]: ' ⬇️ ' + (((download.totalSize / download.downloadedSize) * 100) | 0) + '%',
+                  [DownloadStatus.PAUSED]: ' ⏸',
                   [DownloadStatus.SUCCESSFUL]: '',
-                  [DownloadStatus.FAILED]: '🔴',
+                  [DownloadStatus.FAILED]: ' 🔴',
                 }[download.status]
               }
-            </p>
-            <p>
-              <button onClick={handleDeleteDownload}>{'❌ Delete'}</button>
-            </p>
-          </Fragment>
+              <p>
+                <button onClick={handleDeleteDownload}>{'❌ Delete'}</button>
+              </p>
+            </li>
+          </ol>
         );
       })}
     </>

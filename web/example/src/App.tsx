@@ -22,6 +22,7 @@ import { AssetLoaderExample } from './examples/AssetLoaderExample';
 export function App() {
   return (
     <>
+      <FileInputExample />
       <ToastExample />
       <AssetLoaderExample />
       <BiometricExample />
@@ -37,7 +38,6 @@ export function App() {
       <NetworkExample />
       <EncryptedStorageExample />
       <CookieExample />
-      <FileInputExample />
       <GeolocationExample />
       <LocalStorageExample />
       <DeviceExample />
