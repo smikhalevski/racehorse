@@ -26,15 +26,8 @@ val mimeTypeSignatureMap = arrayListOf(
 /**
  * Returns MIME type of a file from its leading bytes.
  */
-fun File.getMimeTypeFromSignature(): String? = try {
+fun File.getMimeTypeFromSignature(): String?  {
     val signature = DataInputStream(inputStream()).use(DataInputStream::readLong).toULong()
 
-    mimeTypeSignatureMap.find { (mask) -> signature and mask == mask }?.second
-} catch (_: Throwable) {
-    null
+    return mimeTypeSignatureMap.find { (mask) -> signature and mask == mask }?.second
 }
-
-/**
- * Clears the contents of a file. If file doesn't exist it is created.
- */
-fun File.clear() = outputStream().close()

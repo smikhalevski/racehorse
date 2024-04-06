@@ -100,14 +100,18 @@ private class TempCameraFile(private val file: File, override val contentUri: Ur
             file.delete()
             return null
         }
-
         return Uri.fromFile(
-            file.getMimeTypeFromSignature()
-                ?.let(MimeTypeMap.getSingleton()::getExtensionFromMimeType)
-                ?.let { File("${file.absolutePath}.$it") }
-                ?.takeIf(file::renameTo)
-                ?.also(File::deleteOnExit)
-                ?: file
+            try {
+                file.getMimeTypeFromSignature()
+                    ?.let(MimeTypeMap.getSingleton()::getExtensionFromMimeType)
+                    ?.let { File("${file.absolutePath}.$it") }
+                    ?.takeIf(file::renameTo)
+                    ?.also(File::deleteOnExit)
+                    ?: file
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                file
+            }
         )
     }
 }
