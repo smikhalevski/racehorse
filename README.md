@@ -891,8 +891,9 @@ EventBus.getDefault().register(
         activity,
 
         // 🟡 Points to Android/data/com.myapplication/cache
-        activity.externalCacheDir,
-        BuildConfig.APPLICATION_ID + ".provider"
+        externalCacheDir?.let {
+            TempCameraFileFactory(this, it, BuildConfig.APPLICATION_ID + ".provider")
+        }
     )
 )
 ```

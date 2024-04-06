@@ -12,7 +12,30 @@ import com.facebook.FacebookSdk
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.racehorse.*
+import org.racehorse.ActivityPlugin
+import org.racehorse.AssetLoaderPlugin
+import org.racehorse.BiometricEncryptedStoragePlugin
+import org.racehorse.BiometricPlugin
+import org.racehorse.DeepLinkPlugin
+import org.racehorse.DevicePlugin
+import org.racehorse.DownloadPlugin
+import org.racehorse.EncryptedStoragePlugin
+import org.racehorse.EventBridge
+import org.racehorse.FacebookLoginPlugin
+import org.racehorse.FacebookSharePlugin
+import org.racehorse.FileChooserPlugin
+import org.racehorse.FirebasePlugin
+import org.racehorse.GooglePlayReferrerPlugin
+import org.racehorse.GoogleSignInPlugin
+import org.racehorse.HttpsPlugin
+import org.racehorse.KeyboardPlugin
+import org.racehorse.NetworkPlugin
+import org.racehorse.NotificationsPlugin
+import org.racehorse.OpenDeepLinkEvent
+import org.racehorse.PermissionsPlugin
+import org.racehorse.ProxyPathHandler
+import org.racehorse.StaticPathHandler
+import org.racehorse.TempCameraFileFactory
 import org.racehorse.evergreen.BundleReadyEvent
 import org.racehorse.evergreen.EvergreenPlugin
 import org.racehorse.evergreen.UpdateMode
@@ -58,7 +81,14 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(assetLoaderPlugin)
         eventBus.register(DevicePlugin(this))
         eventBus.register(EncryptedStoragePlugin(File(filesDir, "storage"), BuildConfig.APPLICATION_ID.toByteArray()))
-        eventBus.register(FileChooserPlugin(this, externalCacheDir, "${BuildConfig.APPLICATION_ID}.provider"))
+        eventBus.register(
+            FileChooserPlugin(
+                this,
+                externalCacheDir?.let {
+                    TempCameraFileFactory(this, it, "${BuildConfig.APPLICATION_ID}.provider")
+                }
+            )
+        )
         eventBus.register(DownloadPlugin(this))
         eventBus.register(FirebasePlugin())
         eventBus.register(GooglePlayReferrerPlugin(this))
