@@ -84,11 +84,9 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(
             FileChooserPlugin(
                 this,
-                TempCameraFileFactory(
-                    this,
-                    externalCacheDir ?: cacheDir,
-                    "${BuildConfig.APPLICATION_ID}.provider"
-                )
+                externalCacheDir?.let {
+                    TempCameraFileFactory(this, it, "${BuildConfig.APPLICATION_ID}.provider")
+                }
             )
         )
         eventBus.register(DownloadPlugin(this))
