@@ -33,9 +33,9 @@ import org.racehorse.NetworkPlugin
 import org.racehorse.NotificationsPlugin
 import org.racehorse.OpenDeepLinkEvent
 import org.racehorse.PermissionsPlugin
+import org.racehorse.GalleryCameraFileFactory
 import org.racehorse.ProxyPathHandler
 import org.racehorse.StaticPathHandler
-import org.racehorse.TempCameraFileFactory
 import org.racehorse.evergreen.BundleReadyEvent
 import org.racehorse.evergreen.EvergreenPlugin
 import org.racehorse.evergreen.UpdateMode
@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
             FileChooserPlugin(
                 this,
                 externalCacheDir?.let {
-                    TempCameraFileFactory(this, it, "${BuildConfig.APPLICATION_ID}.provider")
+                    GalleryCameraFileFactory(this, File(it, "camera.tmp"), "${BuildConfig.APPLICATION_ID}.provider")
                 }
             )
         )

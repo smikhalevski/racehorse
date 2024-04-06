@@ -33,3 +33,8 @@ fun File.getMimeTypeFromSignature(): String? = try {
 } catch (_: Throwable) {
     null
 }
+
+/**
+ * Clears the contents of a file. If file doesn't exist it is created.
+ */
+fun File.clear() = outputStream().close()

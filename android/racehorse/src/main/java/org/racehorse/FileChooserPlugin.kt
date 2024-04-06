@@ -2,10 +2,12 @@ package org.racehorse
 
 import android.Manifest
 import android.app.Activity
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Environment
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
 import android.webkit.ValueCallback
@@ -19,6 +21,8 @@ import org.racehorse.utils.launchActivityForResult
 import org.racehorse.webview.ShowFileChooserEvent
 import java.io.File
 import java.io.IOException
+import kotlin.io.path.Path
+import kotlin.io.path.nameWithoutExtension
 
 /**
  * Allows the user to choose a file on the device.
@@ -58,10 +62,17 @@ interface CameraFile {
     fun retrieveFileChooserUri(): Uri?
 }
 
+/**
+ * File provider that stored camera files in a cache directory.
+ *
+ * @param context A context used by [FileProvider].
+ * @param cacheDir The directory to store files captured by the camera app.
+ * @param cacheDirAuthority The authority of a [FileProvider] defined in a `<provider>` element in your app's manifest.
+ */
 class TempCameraFileFactory(
     private val context: Context,
     private val cacheDir: File,
-    private val authority: String
+    private val cacheDirAuthority: String
 ) : CameraFileFactory {
 
     override fun create(fileName: String?, callback: (cameraFile: CameraFile?) -> Unit) {
@@ -73,7 +84,7 @@ class TempCameraFileFactory(
             file = File.createTempFile("camera", "", cacheDir)
             file.deleteOnExit()
 
-            callback(TempCameraFile(file, FileProvider.getUriForFile(context, authority, file)))
+            callback(TempCameraFile(file, FileProvider.getUriForFile(context, cacheDirAuthority, file)))
         } catch (e: IOException) {
             file?.delete()
             e.printStackTrace()
@@ -98,6 +109,68 @@ private class TempCameraFile(private val file: File, override val contentUri: Ur
                 ?.also(File::deleteOnExit)
                 ?: file
         )
+    }
+}
+
+class GalleryCameraFileFactory(
+    private val context: Context,
+    private val cacheFile: File,
+    cacheFileAuthority: String,
+) : CameraFileFactory {
+
+    private val cacheContentUri = FileProvider.getUriForFile(context, cacheFileAuthority, cacheFile)
+
+    override fun create(fileName: String?, callback: (cameraFile: CameraFile?) -> Unit) {
+        try {
+            cacheFile.parentFile?.mkdirs()
+            cacheFile.delete()
+            cacheFile.createNewFile()
+
+            callback(GalleryCameraFile(fileName))
+        } catch (e: IOException) {
+            e.printStackTrace()
+            callback(null)
+        }
+    }
+
+    private inner class GalleryCameraFile(private val fileName: String?) : CameraFile {
+
+        override val contentUri = cacheContentUri
+
+        override fun retrieveFileChooserUri(): Uri? {
+            if (cacheFile.length() == 0L) {
+                return null
+            }
+
+            val mimeType = cacheFile.getMimeTypeFromSignature()
+            val extension = mimeType?.let(MimeTypeMap.getSingleton()::getExtensionFromMimeType)?.let { ".$it" } ?: ""
+
+            val values = ContentValues()
+
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+
+            values.put(
+                MediaStore.MediaColumns.DISPLAY_NAME,
+                fileName?.let(::Path)?.nameWithoutExtension?.plus(extension) ?: "camera$extension"
+            )
+
+            values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+
+            val contentResolver = context.contentResolver
+
+            val contentUri = requireNotNull(
+                contentResolver.insert(
+                    MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
+                    values
+                )
+            )
+
+            requireNotNull(contentResolver.openOutputStream(contentUri)).use { it.write(cacheFile.readBytes()) }
+
+            cacheFile.delete()
+
+            return contentUri
+        }
     }
 }
 
