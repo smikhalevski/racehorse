@@ -273,16 +273,14 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
             values.put(MediaStore.Downloads.MIME_TYPE, mimeType)
             values.put(MediaStore.Downloads.IS_DOWNLOAD, true)
 
-            val contentResolver = activity.contentResolver
-            val contentUri = requireNotNull(contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values))
-
-            requireNotNull(contentResolver.openOutputStream(contentUri)).use { it.write(dataUri.data) }
-
+            val contentUri = checkNotNull(activity.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values))
             val filePath =
-                contentResolver.query(contentUri, arrayOf(MediaStore.Downloads.DATA), null, null, null).use { cursor ->
-                    requireNotNull(cursor).moveToFirst()
+                checkNotNull(activity.contentResolver.query(contentUri, arrayOf(MediaStore.Downloads.DATA), null, null, null)).use { cursor ->
+                    cursor.moveToFirst()
                     cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Downloads.DATA))
                 }
+
+            checkNotNull(activity.contentResolver.openOutputStream(contentUri)).use { it.write(dataUri.data) }
 
             activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) {
                 event.respond {
