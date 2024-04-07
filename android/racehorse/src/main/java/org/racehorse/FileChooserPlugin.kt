@@ -19,6 +19,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.askForPermission
 import org.racehorse.utils.getMimeTypeFromSignature
 import org.racehorse.utils.launchActivityForResult
+import org.racehorse.utils.preventOverwrite
 import org.racehorse.webview.ShowFileChooserEvent
 import java.io.File
 
@@ -116,7 +117,9 @@ class GalleryCameraFileFactory(
                 val file = File.createTempFile("camera", "", cacheDir)
                 file.deleteOnExit()
 
-                callback(GalleryCameraFile(activity, file, FileProvider.getUriForFile(activity, cacheDirAuthority, file)))
+                callback(
+                    GalleryCameraFile(activity, file, FileProvider.getUriForFile(activity, cacheDirAuthority, file))
+                )
             } else {
                 callback(null)
             }
@@ -126,47 +129,50 @@ class GalleryCameraFileFactory(
 
 private class GalleryCameraFile(
     private val activity: ComponentActivity,
-    private val file: File,
+    private val tempFile: File,
     override val contentUri: Uri
 ) : CameraFile {
 
     override fun retrieveFileChooserUri(): Uri? {
-        if (file.length() == 0L) {
-            file.delete()
+        if (tempFile.length() == 0L) {
+            tempFile.delete()
             return null
         }
 
-        val mimeType = runCatching(file::getMimeTypeFromSignature).getOrNull()
-        val displayName = mimeType
+        val mimeType = runCatching(tempFile::getMimeTypeFromSignature).getOrNull()
+        val fileName = mimeType
             ?.let(MimeTypeMap.getSingleton()::getExtensionFromMimeType)
-            ?.let { file.nameWithoutExtension + "." + it }
-            ?: file.name
+            ?.let { tempFile.nameWithoutExtension + "." + it }
+            ?: tempFile.name
+
+        val saveToDir = Environment.DIRECTORY_PICTURES
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val values = ContentValues()
-            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
-            values.put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, saveToDir)
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
             values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
 
-            val contentUri = requireNotNull(
+            val contentUri = checkNotNull(
                 activity.contentResolver.insert(
                     MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
                     values
                 )
             )
 
-            requireNotNull(activity.contentResolver.openOutputStream(contentUri)).use { it.write(file.readBytes()) }
-            file.delete()
+            checkNotNull(activity.contentResolver.openOutputStream(contentUri)).use { it.write(tempFile.readBytes()) }
+            tempFile.delete()
             return contentUri
         }
 
-        val saveToDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-        val imageFile = File(saveToDir, displayName).let {
-            if (it.exists()) File.createTempFile(it.nameWithoutExtension, it.extension, saveToDir) else it
-        }
-        imageFile.writeBytes(file.readBytes())
+        val file = File(Environment.getExternalStoragePublicDirectory(saveToDir), fileName).preventOverwrite()
 
-        return Uri.fromFile(imageFile)
+        if (!tempFile.renameTo(file)) {
+            file.writeBytes(tempFile.readBytes())
+        }
+        tempFile.delete()
+
+        return Uri.fromFile(file)
     }
 }
 
@@ -194,7 +200,7 @@ private class FileChooserLauncher(
 
         activity.askForPermission(Manifest.permission.CAMERA) { isGranted ->
             if (isGranted) {
-                requireNotNull(cameraFileFactory).create(::launchChooser)
+                checkNotNull(cameraFileFactory).create(::launchChooser)
             } else {
                 launchChooser(null)
             }

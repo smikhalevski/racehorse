@@ -31,3 +31,8 @@ fun File.getMimeTypeFromSignature(): String? {
 
     return mimeTypeSignatureMap.find { (mask) -> signature and mask == mask }?.second
 }
+
+fun File.createTempFile() =
+    File.createTempFile(nameWithoutExtension, if (extension.isEmpty()) "" else ".$extension", parentFile)
+
+fun File.preventOverwrite() = if (exists()) createTempFile() else this

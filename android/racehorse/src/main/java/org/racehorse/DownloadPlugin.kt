@@ -16,6 +16,8 @@ import androidx.core.database.getStringOrNull
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.utils.askForPermission
+import org.racehorse.utils.createTempFile
+import org.racehorse.utils.preventOverwrite
 import org.racehorse.webview.DownloadStartEvent
 import java.io.File
 import java.io.Serializable
@@ -166,9 +168,9 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
     companion object {
         private val SAVE_TO_DIR = Environment.DIRECTORY_DOWNLOADS
 
-        private const val FALLBACK_MIME_TYPE = "application/octet-stream"
-        private const val FALLBACK_FILE_NAME = "data."
-        private const val FALLBACK_EXTENSION = "bin"
+        private const val MIME_TYPE = "application/octet-stream"
+        private const val FILE_NAME = "data."
+        private const val EXTENSION = "bin"
     }
 
     private val downloadManager by lazy { activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager }
@@ -257,10 +259,10 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
         val mimeType = dataUri.mimeType
             ?: event.mimeType
             ?: MimeTypeMap.getSingleton().getMimeTypeFromExtension(event.fileName?.substringAfterLast('.'))
-            ?: FALLBACK_MIME_TYPE
+            ?: MIME_TYPE
 
         val fileName = event.fileName
-            ?: (FALLBACK_FILE_NAME + (MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: FALLBACK_EXTENSION))
+            ?: (FILE_NAME + (MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: EXTENSION))
 
         val saveToDir = Environment.getExternalStoragePublicDirectory(SAVE_TO_DIR)
 
@@ -295,10 +297,7 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
             event.respond {
                 check(isGranted) { "Permission required" }
 
-                val file = File(saveToDir, fileName).let {
-                    // Prevent overwrite
-                    if (it.exists()) File.createTempFile(it.nameWithoutExtension, it.extension, saveToDir) else it
-                }
+                val file = File(saveToDir, fileName).preventOverwrite()
                 file.writeBytes(dataUri.data)
 
                 AddDownloadEvent.ResultEvent(addCompletedDownload(file, mimeType))
