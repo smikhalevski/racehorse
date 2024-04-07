@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
@@ -20,9 +21,6 @@ import org.racehorse.utils.getMimeTypeFromSignature
 import org.racehorse.utils.launchActivityForResult
 import org.racehorse.webview.ShowFileChooserEvent
 import java.io.File
-import java.io.IOException
-import kotlin.io.path.Path
-import kotlin.io.path.nameWithoutExtension
 
 /**
  * Allows the user to choose a file on the device.
@@ -46,7 +44,7 @@ interface CameraFileFactory {
     /**
      * Creates a new camera file, or returns `null` if file cannot be created.
      */
-    fun create(fileName: String?, callback: (cameraFile: CameraFile?) -> Unit)
+    fun create(callback: (cameraFile: CameraFile?) -> Unit)
 }
 
 interface CameraFile {
@@ -75,21 +73,13 @@ class TempCameraFileFactory(
     private val cacheDirAuthority: String
 ) : CameraFileFactory {
 
-    override fun create(fileName: String?, callback: (cameraFile: CameraFile?) -> Unit) {
-        var file: File? = null
+    override fun create(callback: (cameraFile: CameraFile?) -> Unit) {
+        cacheDir.mkdirs()
 
-        try {
-            cacheDir.mkdirs()
+        val file = File.createTempFile("camera", "", cacheDir)
+        file.deleteOnExit()
 
-            file = File.createTempFile("camera", "", cacheDir)
-            file.deleteOnExit()
-
-            callback(TempCameraFile(file, FileProvider.getUriForFile(context, cacheDirAuthority, file)))
-        } catch (e: IOException) {
-            file?.delete()
-            e.printStackTrace()
-            callback(null)
-        }
+        callback(TempCameraFile(file, FileProvider.getUriForFile(context, cacheDirAuthority, file)))
     }
 }
 
@@ -100,81 +90,83 @@ private class TempCameraFile(private val file: File, override val contentUri: Ur
             file.delete()
             return null
         }
+
         return Uri.fromFile(
-            try {
-                file.getMimeTypeFromSignature()
-                    ?.let(MimeTypeMap.getSingleton()::getExtensionFromMimeType)
-                    ?.let { File("${file.absolutePath}.$it") }
-                    ?.takeIf(file::renameTo)
-                    ?.also(File::deleteOnExit)
-                    ?: file
-            } catch (e: Throwable) {
-                e.printStackTrace()
-                file
-            }
+            runCatching(file::getMimeTypeFromSignature).getOrNull()
+                ?.let(MimeTypeMap.getSingleton()::getExtensionFromMimeType)
+                ?.let { File(file.absolutePath + "." + it) }
+                ?.takeIf(file::renameTo)
+                ?.also(File::deleteOnExit)
+                ?: file
         )
     }
 }
 
 class GalleryCameraFileFactory(
-    private val context: Context,
-    private val cacheFile: File,
-    cacheFileAuthority: String,
+    private val activity: ComponentActivity,
+    private val cacheDir: File,
+    private val cacheDirAuthority: String
 ) : CameraFileFactory {
 
-    private val cacheContentUri = FileProvider.getUriForFile(context, cacheFileAuthority, cacheFile)
+    override fun create(callback: (cameraFile: CameraFile?) -> Unit) {
+        activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) { isGranted ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q || isGranted) {
+                cacheDir.mkdirs()
 
-    override fun create(fileName: String?, callback: (cameraFile: CameraFile?) -> Unit) {
-        try {
-            cacheFile.parentFile?.mkdirs()
-            cacheFile.delete()
-            cacheFile.createNewFile()
+                val file = File.createTempFile("camera", "", cacheDir)
+                file.deleteOnExit()
 
-            callback(GalleryCameraFile(fileName))
-        } catch (e: IOException) {
-            e.printStackTrace()
-            callback(null)
+                callback(GalleryCameraFile(activity, file, FileProvider.getUriForFile(activity, cacheDirAuthority, file)))
+            } else {
+                callback(null)
+            }
         }
     }
+}
 
-    private inner class GalleryCameraFile(private val fileName: String?) : CameraFile {
+private class GalleryCameraFile(
+    private val activity: ComponentActivity,
+    private val file: File,
+    override val contentUri: Uri
+) : CameraFile {
 
-        override val contentUri = cacheContentUri
+    override fun retrieveFileChooserUri(): Uri? {
+        if (file.length() == 0L) {
+            file.delete()
+            return null
+        }
 
-        override fun retrieveFileChooserUri(): Uri? {
-            if (cacheFile.length() == 0L) {
-                return null
-            }
+        val mimeType = runCatching(file::getMimeTypeFromSignature).getOrNull()
+        val displayName = mimeType
+            ?.let(MimeTypeMap.getSingleton()::getExtensionFromMimeType)
+            ?.let { file.nameWithoutExtension + "." + it }
+            ?: file.name
 
-            val mimeType = cacheFile.getMimeTypeFromSignature()
-            val extension = mimeType?.let(MimeTypeMap.getSingleton()::getExtensionFromMimeType)?.let { ".$it" } ?: ""
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val values = ContentValues()
-
             values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
-
-            values.put(
-                MediaStore.MediaColumns.DISPLAY_NAME,
-                fileName?.let(::Path)?.nameWithoutExtension?.plus(extension) ?: "camera$extension"
-            )
-
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
             values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
 
-            val contentResolver = context.contentResolver
-
             val contentUri = requireNotNull(
-                contentResolver.insert(
+                activity.contentResolver.insert(
                     MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
                     values
                 )
             )
 
-            requireNotNull(contentResolver.openOutputStream(contentUri)).use { it.write(cacheFile.readBytes()) }
-
-            cacheFile.delete()
-
+            requireNotNull(activity.contentResolver.openOutputStream(contentUri)).use { it.write(file.readBytes()) }
+            file.delete()
             return contentUri
         }
+
+        val saveToDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+        val imageFile = File(saveToDir, displayName).let {
+            if (it.exists()) File.createTempFile(it.nameWithoutExtension, it.extension, saveToDir) else it
+        }
+        imageFile.writeBytes(file.readBytes())
+
+        return Uri.fromFile(imageFile)
     }
 }
 
@@ -202,7 +194,7 @@ private class FileChooserLauncher(
 
         activity.askForPermission(Manifest.permission.CAMERA) { isGranted ->
             if (isGranted) {
-                requireNotNull(cameraFileFactory).create(fileChooserParams.filenameHint, ::launchChooser)
+                requireNotNull(cameraFileFactory).create(::launchChooser)
             } else {
                 launchChooser(null)
             }
@@ -240,14 +232,9 @@ private class FileChooserLauncher(
 
         val isLaunched = activity.launchActivityForResult(intent) { result ->
             filePathCallback.onReceiveValue(
-                try {
-                    cameraFile?.retrieveFileChooserUri()?.let { arrayOf(it) }
-                        ?: parseFileChooserResult(result.resultCode, result.data)
-                        ?: arrayOf()
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                    arrayOf()
-                }
+                cameraFile?.retrieveFileChooserUri()?.let { arrayOf(it) }
+                    ?: parseFileChooserResult(result.resultCode, result.data)
+                    ?: arrayOf()
             )
         }
 
