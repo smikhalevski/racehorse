@@ -25,6 +25,7 @@ import org.racehorse.FacebookLoginPlugin
 import org.racehorse.FacebookSharePlugin
 import org.racehorse.FileChooserPlugin
 import org.racehorse.FirebasePlugin
+import org.racehorse.GalleryCameraFileFactory
 import org.racehorse.GooglePlayReferrerPlugin
 import org.racehorse.GoogleSignInPlugin
 import org.racehorse.HttpsPlugin
@@ -33,7 +34,6 @@ import org.racehorse.NetworkPlugin
 import org.racehorse.NotificationsPlugin
 import org.racehorse.OpenDeepLinkEvent
 import org.racehorse.PermissionsPlugin
-import org.racehorse.GalleryCameraFileFactory
 import org.racehorse.ProxyPathHandler
 import org.racehorse.StaticPathHandler
 import org.racehorse.evergreen.BundleReadyEvent
@@ -84,9 +84,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(
             FileChooserPlugin(
                 this,
-                externalCacheDir?.let {
-                    GalleryCameraFileFactory(this, File(it, "camera.tmp"), "${BuildConfig.APPLICATION_ID}.provider")
-                }
+                GalleryCameraFileFactory(this, externalCacheDir ?: cacheDir, "${BuildConfig.APPLICATION_ID}.provider")
             )
         )
         eventBus.register(DownloadPlugin(this))

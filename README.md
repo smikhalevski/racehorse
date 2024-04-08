@@ -876,7 +876,8 @@ Camera capture requires a temporary file storage to write captured file to.
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <external-path name="cache" path="Android/data/com.myapplication/cache"/>
+    <external-cache-path name="externalCacheDir" path="/"/>
+    <cache-path name="cacheDir" path="/"/>
 </paths>
 ```
 
@@ -890,10 +891,11 @@ EventBus.getDefault().register(
     FileChooserPlugin(
         activity,
 
-        // 🟡 Points to Android/data/com.myapplication/cache
-        externalCacheDir?.let {
-            TempCameraFileFactory(this, it, BuildConfig.APPLICATION_ID + ".provider")
-        }
+        CachedCameraFileFactory(
+            this,
+            activity.externalCacheDir ?: activity.cacheDir,
+            BuildConfig.APPLICATION_ID + ".provider"
+        )
     )
 )
 ```
