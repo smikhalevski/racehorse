@@ -174,7 +174,7 @@ private class GalleryCameraFile(
         val targetFile = createNewFile(Environment.getExternalStoragePublicDirectory(targetDir), prefix, suffix)
 
         try {
-            tempFile.copyTo(targetFile)
+            tempFile.copyTo(targetFile, true)
             return targetFile.toUri()
         } finally {
             tempFile.delete()
@@ -250,18 +250,18 @@ private class FileChooserLauncher(
         }
 
         val isLaunched = activity.launchActivityForResult(intent) { result ->
-            filePathCallback.onReceiveValue(
-                try {
-                    cameraFile
-                        ?.resolveFileChooserUri()
-                        ?.let { arrayOf(it) }
-                        ?: parseFileChooserResult(result.resultCode, result.data)
-                        ?: arrayOf()
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                    arrayOf()
-                }
-            )
+            val uris = try {
+                cameraFile
+                    ?.resolveFileChooserUri()
+                    ?.let { arrayOf(it) }
+                    ?: parseFileChooserResult(result.resultCode, result.data)
+                    ?: arrayOf()
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                arrayOf()
+            }
+
+            filePathCallback.onReceiveValue(uris)
         }
 
         if (!isLaunched) {
