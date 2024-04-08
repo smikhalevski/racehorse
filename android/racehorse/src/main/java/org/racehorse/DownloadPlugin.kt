@@ -17,7 +17,6 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.utils.askForPermission
 import org.racehorse.utils.createTempFile
-import org.racehorse.utils.preventOverwrite
 import org.racehorse.webview.DownloadStartEvent
 import java.io.File
 import java.io.Serializable
@@ -166,11 +165,11 @@ class RemoveDownloadEvent(var id: Long) : RequestEvent() {
 open class DownloadPlugin(private val activity: ComponentActivity) {
 
     companion object {
-        private val SAVE_TO_DIR = Environment.DIRECTORY_DOWNLOADS
+        private val TARGET_DIR = Environment.DIRECTORY_DOWNLOADS
 
-        private const val MIME_TYPE = "application/octet-stream"
-        private const val FILE_NAME = "data."
-        private const val EXTENSION = "bin"
+        private const val DEFAULT_MIME_TYPE = "application/octet-stream"
+        private const val DEFAULT_FILE_NAME = "data"
+        private const val DEFAULT_EXTENSION = "bin"
     }
 
     private val downloadManager by lazy { activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager }
@@ -232,21 +231,20 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
             ?: URLUtil.guessFileName(event.uri, null, event.mimeType)
 
         val request = DownloadManager.Request(uri)
-            .setDestinationInExternalPublicDir(SAVE_TO_DIR, fileName)
+            .setDestinationInExternalPublicDir(TARGET_DIR, fileName)
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
             .setMimeType(event.mimeType)
 
         event.headers?.forEach { request.addRequestHeader(it.first, it.second) }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            event.respond { AddDownloadEvent.ResultEvent(downloadManager.enqueue(request)) }
+            event.respond(AddDownloadEvent.ResultEvent(downloadManager.enqueue(request)))
             return
         }
 
         activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) { isGranted ->
             event.respond {
                 check(isGranted) { "Permission required" }
-
                 AddDownloadEvent.ResultEvent(downloadManager.enqueue(request))
             }
         }
@@ -259,35 +257,42 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
         val mimeType = dataUri.mimeType
             ?: event.mimeType
             ?: MimeTypeMap.getSingleton().getMimeTypeFromExtension(event.fileName?.substringAfterLast('.'))
-            ?: MIME_TYPE
+            ?: DEFAULT_MIME_TYPE
 
         val fileName = event.fileName
-            ?: (FILE_NAME + (MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: EXTENSION))
+            ?: "$DEFAULT_FILE_NAME.${MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: DEFAULT_EXTENSION}"
 
-        val saveToDir = Environment.getExternalStoragePublicDirectory(SAVE_TO_DIR)
+        val targetDir = Environment.getExternalStoragePublicDirectory(TARGET_DIR)
 
         // Use MediaStore to write a file
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val values = ContentValues()
-
-            values.put(MediaStore.Downloads.RELATIVE_PATH, SAVE_TO_DIR)
-            values.put(MediaStore.Downloads.DISPLAY_NAME, fileName)
-            values.put(MediaStore.Downloads.MIME_TYPE, mimeType)
-            values.put(MediaStore.Downloads.IS_DOWNLOAD, true)
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, TARGET_DIR)
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+            values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+            values.put(MediaStore.MediaColumns.IS_DOWNLOAD, true)
+            values.put(MediaStore.MediaColumns.IS_PENDING, true)
 
             val contentUri = checkNotNull(activity.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values))
+            try {
+                checkNotNull(activity.contentResolver.openOutputStream(contentUri)).use { it.write(dataUri.data) }
+
+                values.clear()
+                values.put(MediaStore.MediaColumns.IS_PENDING, false)
+                activity.contentResolver.update(contentUri, values, null, null)
+            } catch (e: Throwable) {
+                activity.contentResolver.delete(contentUri, null, null)
+                throw e
+            }
+
             val filePath =
                 checkNotNull(activity.contentResolver.query(contentUri, arrayOf(MediaStore.Downloads.DATA), null, null, null)).use { cursor ->
                     cursor.moveToFirst()
                     cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Downloads.DATA))
                 }
 
-            checkNotNull(activity.contentResolver.openOutputStream(contentUri)).use { it.write(dataUri.data) }
-
             activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) {
-                event.respond {
-                    AddDownloadEvent.ResultEvent(addCompletedDownload(File(filePath), mimeType))
-                }
+                event.respond { AddDownloadEvent.ResultEvent(addCompletedDownload(File(filePath), mimeType)) }
             }
             return
         }
@@ -297,7 +302,7 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
             event.respond {
                 check(isGranted) { "Permission required" }
 
-                val file = File(saveToDir, fileName).preventOverwrite()
+                val file = File(targetDir, fileName).let { if (it.createNewFile()) it else it.createTempFile() }
                 file.writeBytes(dataUri.data)
 
                 AddDownloadEvent.ResultEvent(addCompletedDownload(file, mimeType))

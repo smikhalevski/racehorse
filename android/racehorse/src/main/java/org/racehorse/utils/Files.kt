@@ -2,6 +2,7 @@ package org.racehorse.utils
 
 import java.io.DataInputStream
 import java.io.File
+import java.io.OutputStream
 
 /**
  * Map from a file signature to a corresponding MIME type.
@@ -24,15 +25,28 @@ val mimeTypeSignatureMap = arrayListOf(
 )
 
 /**
- * Returns MIME type of a file from its leading bytes.
+ * Returns a MIME type of a file from its leading bytes stored in a file (a file signature).
  */
-fun File.getMimeTypeFromSignature(): String? {
+fun File.guessMimeTypeFromContent(): String? {
     val signature = DataInputStream(inputStream()).use(DataInputStream::readLong).toULong()
 
     return mimeTypeSignatureMap.find { (mask) -> signature and mask == mask }?.second
 }
 
-fun File.createTempFile() =
-    File.createTempFile(nameWithoutExtension, if (extension.isEmpty()) "" else ".$extension", parentFile)
+/**
+ * The extension with the leading dot, or an empty string if there's no extension.
+ */
+val File.extensionSuffix get() = extension.let { if (it.isEmpty()) it else ".$it" }
 
-fun File.preventOverwrite() = if (exists()) createTempFile() else this
+/**
+ * Creates a new temp file in the same directory, with the same extension, and name that has a unique numeric suffix.
+ */
+fun File.createTempFile() = File.createTempFile(nameWithoutExtension, extensionSuffix, parentFile)
+
+/**
+ * Copies file contents to the output stream.
+ *
+ * **Note:** Output stream isn't closed after operation is completed!
+ */
+fun File.copyTo(outputStream: OutputStream, bufferSize: Int = DEFAULT_BUFFER_SIZE) =
+    inputStream().use { it.copyTo(outputStream, bufferSize) }
