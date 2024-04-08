@@ -262,8 +262,6 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
         val fileName = event.fileName
             ?: "$DEFAULT_FILE_NAME.${MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: DEFAULT_EXTENSION}"
 
-        val targetDir = Environment.getExternalStoragePublicDirectory(TARGET_DIR)
-
         // Use MediaStore to write a file
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val values = ContentValues()
@@ -291,9 +289,7 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
                     cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Downloads.DATA))
                 }
 
-            activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) {
-                event.respond { AddDownloadEvent.ResultEvent(addCompletedDownload(File(filePath), mimeType)) }
-            }
+            event.respond(AddDownloadEvent.ResultEvent(addCompletedDownload(File(filePath), mimeType)))
             return
         }
 
@@ -301,6 +297,8 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
         activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) { isGranted ->
             event.respond {
                 check(isGranted) { "Permission required" }
+
+                val targetDir = Environment.getExternalStoragePublicDirectory(TARGET_DIR)
 
                 val file = File(targetDir, fileName).let { if (it.createNewFile()) it else it.createTempFile() }
                 file.writeBytes(dataUri.data)
