@@ -23,6 +23,9 @@ import org.racehorse.utils.guessMimeTypeFromContent
 import org.racehorse.utils.launchActivityForResult
 import org.racehorse.webview.ShowFileChooserEvent
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * Allows the user to choose a file on the device.
@@ -42,11 +45,6 @@ open class FileChooserPlugin(
     }
 }
 
-/**
- * The name of the camera file without extension.
- */
-private const val CAMERA_FILE_NAME = "camera"
-
 interface CameraFileFactory {
     /**
      * Creates a new camera file, or returns `null` if file cannot be created.
@@ -56,7 +54,7 @@ interface CameraFileFactory {
 
 interface CameraFile {
     /**
-     * File URI that is shared with the camera app that flushes captured data to it.
+     * The URI that camera app uses to store the captured data.
      */
     val cameraContentUri: Uri
 
@@ -68,7 +66,7 @@ interface CameraFile {
 }
 
 /**
- * File provider that stored camera files in a cache directory.
+ * File provider that stores camera files in a cache directory.
  *
  * @param context A context used by [FileProvider].
  * @param cacheDir The directory to store files captured by the camera app.
@@ -81,10 +79,7 @@ class CachedCameraFileFactory(
 ) : CameraFileFactory {
 
     override fun create(callback: (cameraFile: CameraFile?) -> Unit) {
-        cacheDir.mkdirs()
-
-        val file = File.createTempFile(CAMERA_FILE_NAME, "", cacheDir)
-        file.deleteOnExit()
+        val file = createNewFile(cacheDir, DEFAULT_PREFIX).apply { deleteOnExit() }
 
         callback(CachedCameraFile(file, FileProvider.getUriForFile(context, cacheDirAuthority, file)))
     }
@@ -98,9 +93,11 @@ private class CachedCameraFile(private val file: File, override val cameraConten
             return null
         }
 
-        return runCatching(file::guessMimeTypeFromContent).getOrNull()
+        val mimeType = runCatching(file::guessMimeTypeFromContent).getOrNull()
+
+        return mimeType
             ?.let(MimeTypeMap.getSingleton()::getExtensionFromMimeType)
-            ?.let { File("${file.absolutePath}.$it") }
+            ?.let { createNewFile(checkNotNull(file.parentFile), getPrefixForMimeType(mimeType), ".$it") }
             ?.takeIf(file::renameTo)
             ?.also(File::deleteOnExit)
             ?.toUri()
@@ -115,23 +112,15 @@ class GalleryCameraFileFactory(
 ) : CameraFileFactory {
 
     override fun create(callback: (cameraFile: CameraFile?) -> Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            callback(createCameraFile())
-            return
-        }
-
         activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) { isGranted ->
-            callback(if (isGranted) createCameraFile() else null)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q || isGranted) {
+                val tempFile = createNewFile(tempDir, DEFAULT_PREFIX).apply { deleteOnExit() }
+
+                callback(GalleryCameraFile(activity, tempFile, FileProvider.getUriForFile(activity, tempDirAuthority, tempFile)))
+            } else {
+                callback(null)
+            }
         }
-    }
-
-    private fun createCameraFile(): CameraFile {
-        tempDir.mkdirs()
-
-        val file = File.createTempFile(CAMERA_FILE_NAME, "", tempDir)
-        file.deleteOnExit()
-
-        return GalleryCameraFile(activity, file, FileProvider.getUriForFile(activity, tempDirAuthority, file))
     }
 }
 
@@ -153,11 +142,12 @@ private class GalleryCameraFile(
         }
 
         val mimeType = runCatching(tempFile::guessMimeTypeFromContent).getOrNull() ?: DEFAULT_MIME_TYPE
-        val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: DEFAULT_EXTENSION
+        val prefix = getPrefixForMimeType(mimeType)
+        val suffix = ".${MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: DEFAULT_EXTENSION}"
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val values = ContentValues()
-            values.put(MediaStore.MediaColumns.DISPLAY_NAME, "$CAMERA_FILE_NAME.$extension")
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, getFileName(prefix, suffix))
             values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
             values.put(MediaStore.MediaColumns.IS_PENDING, true)
 
@@ -181,7 +171,7 @@ private class GalleryCameraFile(
         }
 
         val targetDir = if ("video/" in mimeType) Environment.DIRECTORY_MOVIES  else Environment.DIRECTORY_PICTURES
-        val targetFile = File.createTempFile(CAMERA_FILE_NAME, ".$extension", Environment.getExternalStoragePublicDirectory(targetDir))
+        val targetFile = createNewFile(Environment.getExternalStoragePublicDirectory(targetDir), prefix, suffix)
 
         try {
             tempFile.copyTo(targetFile)
@@ -261,12 +251,16 @@ private class FileChooserLauncher(
 
         val isLaunched = activity.launchActivityForResult(intent) { result ->
             filePathCallback.onReceiveValue(
-                cameraFile
-                    ?.runCatching(CameraFile::resolveFileChooserUri)
-                    ?.getOrNull()
-                    ?.let { arrayOf(it) }
-                    ?: parseFileChooserResult(result.resultCode, result.data)
-                    ?: arrayOf()
+                try {
+                    cameraFile
+                        ?.resolveFileChooserUri()
+                        ?.let { arrayOf(it) }
+                        ?: parseFileChooserResult(result.resultCode, result.data)
+                        ?: arrayOf()
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                    arrayOf()
+                }
             )
         }
 
@@ -288,4 +282,19 @@ private class FileChooserLauncher(
         }
         return null
     }
+}
+
+private const val DEFAULT_PREFIX = "CAMERA"
+
+private val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
+
+private fun getPrefixForMimeType(mimeType: String) = if ("video/" in mimeType) "VID" else "IMG"
+
+private fun getFileName(prefix: String, suffix: String) = "${prefix}_${dateFormat.format(Date())}${suffix}"
+
+private fun createNewFile(targetDir: File, prefix: String, suffix: String = ""): File {
+    targetDir.mkdirs()
+
+    return File(targetDir, getFileName(prefix, suffix)).takeIf(File::createNewFile)
+        ?: File.createTempFile(getFileName(prefix, "_"), suffix, targetDir)
 }
