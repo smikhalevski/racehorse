@@ -893,13 +893,14 @@ Camera capture requires a temporary file storage to write captured file to.
 
 ```kotlin
 import org.racehorse.FileChooserPlugin
+import org.racehorse.TempCameraFileFactory
 
 EventBus.getDefault().register(
     FileChooserPlugin(
         activity,
 
         TempCameraFileFactory(
-            this,
+            activity,
             activity.externalCacheDir ?: activity.cacheDir,
             BuildConfig.APPLICATION_ID + ".provider"
         )
@@ -907,7 +908,7 @@ EventBus.getDefault().register(
 )
 ```
 
-If you want to store images and videos in the gallery app after tey were captured through file chooser, use
+If you want to store images and videos in the gallery app after they were captured through file chooser, use
 [`GalleryCameraFileFactory`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-gallery-camera-file-factory/index.html).
 
 # Google Pay plugin
