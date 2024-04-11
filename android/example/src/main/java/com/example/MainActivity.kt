@@ -25,6 +25,7 @@ import org.racehorse.FacebookLoginPlugin
 import org.racehorse.FacebookSharePlugin
 import org.racehorse.FileChooserPlugin
 import org.racehorse.FirebasePlugin
+import org.racehorse.GalleryCameraFileFactory
 import org.racehorse.GooglePlayReferrerPlugin
 import org.racehorse.GoogleSignInPlugin
 import org.racehorse.HttpsPlugin
@@ -84,7 +85,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(
             FileChooserPlugin(
                 this,
-                TempCameraFileFactory(this, externalCacheDir ?: cacheDir, "${BuildConfig.APPLICATION_ID}.provider")
+                GalleryCameraFileFactory(this, externalCacheDir ?: cacheDir, "${BuildConfig.APPLICATION_ID}.provider")
             )
         )
         eventBus.register(DownloadPlugin(this))

@@ -898,7 +898,7 @@ EventBus.getDefault().register(
     FileChooserPlugin(
         activity,
 
-        CachedCameraFileFactory(
+        TempCameraFileFactory(
             this,
             activity.externalCacheDir ?: activity.cacheDir,
             BuildConfig.APPLICATION_ID + ".provider"
@@ -906,6 +906,9 @@ EventBus.getDefault().register(
     )
 )
 ```
+
+If you want to store images and videos in the gallery app after tey were captured through file chooser, use
+[`GalleryCameraFileFactory`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-gallery-camera-file-factory/index.html).
 
 # Google Pay plugin
 
