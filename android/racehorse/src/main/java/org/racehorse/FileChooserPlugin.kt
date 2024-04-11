@@ -197,7 +197,7 @@ private class GalleryCameraFile(
 private class FileChooserLauncher(
     private val activity: ComponentActivity,
     private val cameraFileFactory: CameraFileFactory?,
-    private val filePathCallback: ValueCallback<Array<Uri>>,
+    private val filePathCallback: ValueCallback<Array<Uri>?>,
     private val fileChooserParams: FileChooserParams,
 ) {
 
@@ -262,23 +262,22 @@ private class FileChooserLauncher(
         }
 
         val isLaunched = activity.launchActivityForResult(intent) { result ->
-            val uris = try {
-                cameraFile
-                    ?.resolveOutputUri()
-                    ?.let { arrayOf(it) }
-                    ?: parseFileChooserResult(result.resultCode, result.data)
-                    ?: arrayOf()
-            } catch (e: Throwable) {
-                e.printStackTrace()
-                arrayOf()
-            }
-
-            filePathCallback.onReceiveValue(uris)
+            filePathCallback.onReceiveValue(
+                try {
+                    cameraFile
+                        ?.resolveOutputUri()
+                        ?.let { arrayOf(it) }
+                        ?: parseFileChooserResult(result.resultCode, result.data)
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                    null
+                }
+            )
         }
 
         if (!isLaunched) {
             // No activity that can provide files
-            filePathCallback.onReceiveValue(arrayOf())
+            filePathCallback.onReceiveValue(null)
         }
     }
 
