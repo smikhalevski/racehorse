@@ -39,12 +39,12 @@ fun File.guessMimeTypeFromContent(): String? {
 val File.extensionSuffix get() = extension.let { if (it.isEmpty()) it else ".$it" }
 
 /**
- * Creates a new temp file in the same directory, with the same extension, and name that has a unique numeric suffix.
+ * Creates a new file in the same directory, with the same extension, and name that has a unique numeric suffix.
  */
-fun File.createTempFile() = File.createTempFile(nameWithoutExtension, extensionSuffix, parentFile)
+fun File.createTempFile() = File.createTempFile(nameWithoutExtension, extensionSuffix, checkNotNull(parentFile))
 
 /**
- * Copies file contents to the output stream.
+ * Copies a normal file contents to the output stream.
  *
  * **Note:** Output stream isn't closed after operation is completed!
  */

@@ -564,13 +564,20 @@ downloadManager.getAllDownloads();
 [`Download`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.Download.html) instance carries the download
 status, progress, and file details.
 
-To support older Android models a storage permission must be added to the application manifest:
+A storage permission must be added and legacy storage mode must be enabled to support Android devices with API level
+<= 29:
 
 ```xml
 
-<uses-permission
-    android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-    tools:ignore="ScopedStorage"/>
+<manifest>
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage"/>
+
+    <application
+        android:requestLegacyExternalStorage="true">
+    </application>
+</manifest>
 ```
 
 ## Downloadable links

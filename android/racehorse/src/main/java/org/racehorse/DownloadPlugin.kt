@@ -289,7 +289,9 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
                     cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Downloads.DATA))
                 }
 
-            event.respond(AddDownloadEvent.ResultEvent(addCompletedDownload(File(filePath), mimeType)))
+            activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) {
+                event.respond { AddDownloadEvent.ResultEvent(addCompletedDownload(File(filePath), mimeType)) }
+            }
             return
         }
 
