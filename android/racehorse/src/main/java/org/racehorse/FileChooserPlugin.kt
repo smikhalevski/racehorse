@@ -214,11 +214,12 @@ private class FileChooserLauncher(
         ) {
             // No camera-related MIME types, camera isn't supported, or capture result cannot be saved
             launchChooser(null)
+            return
         }
 
         activity.askForPermission(Manifest.permission.CAMERA) { isGranted ->
             if (isGranted) {
-                checkNotNull(cameraFileFactory).create(::launchChooser)
+                cameraFileFactory.create(::launchChooser)
             } else {
                 launchChooser(null)
             }
