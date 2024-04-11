@@ -2,28 +2,33 @@ package org.racehorse
 
 import android.Manifest
 import android.app.Activity
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient.FileChooserParams
 import androidx.activity.ComponentActivity
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.askForPermission
-import org.racehorse.utils.getMimeTypeFromSignature
+import org.racehorse.utils.copyTo
+import org.racehorse.utils.guessMimeTypeFromContent
 import org.racehorse.utils.launchActivityForResult
 import org.racehorse.webview.ShowFileChooserEvent
 import java.io.File
-import java.io.IOException
 
 /**
  * Allows the user to choose a file on the device.
  *
  * @param activity The activity that starts intents.
+ * @param cameraFileFactory Crates a file that camera app uses to store the captured data.
  */
 open class FileChooserPlugin(
     private val activity: ComponentActivity,
@@ -42,12 +47,12 @@ interface CameraFileFactory {
     /**
      * Creates a new camera file, or returns `null` if file cannot be created.
      */
-    fun create(fileName: String?, callback: (cameraFile: CameraFile?) -> Unit)
+    fun create(callback: (cameraFile: CameraFile?) -> Unit)
 }
 
 interface CameraFile {
     /**
-     * File URI that is shared with the camera app that flushes captured data to it.
+     * The URI that camera app should use to store the captured data.
      */
     val contentUri: Uri
 
@@ -55,63 +60,156 @@ interface CameraFile {
      * Returns the persisted file URI that is returned by the file chooser to web view, or `null` if file cannot be
      * returned from file chooser (for example, if file is empty, or non-existent).
      */
-    fun retrieveFileChooserUri(): Uri?
+    fun getOutputUri(): Uri?
 }
 
+private const val CAMERA_FILE_PREFIX = "camera"
+
+/**
+ * Camera file factory that stores camera files in a temporary cache.
+ *
+ * @param context A context used by [FileProvider].
+ * @param tempDir The directory to store files captured by the camera app.
+ * @param tempDirAuthority The authority of a [FileProvider] defined in a `<provider>` element in your app's manifest.
+ */
 class TempCameraFileFactory(
     private val context: Context,
-    private val cacheDir: File,
-    private val authority: String
+    private val tempDir: File,
+    private val tempDirAuthority: String
 ) : CameraFileFactory {
 
-    override fun create(fileName: String?, callback: (cameraFile: CameraFile?) -> Unit) {
-        var file: File? = null
+    override fun create(callback: (cameraFile: CameraFile?) -> Unit) {
+        val tempFile = File.createTempFile(CAMERA_FILE_PREFIX, "", tempDir)
+        tempFile.deleteOnExit()
 
-        try {
-            cacheDir.mkdirs()
-
-            file = File.createTempFile("camera", "", cacheDir)
-            file.deleteOnExit()
-
-            callback(TempCameraFile(file, FileProvider.getUriForFile(context, authority, file)))
-        } catch (e: IOException) {
-            file?.delete()
-            e.printStackTrace()
-            callback(null)
-        }
+        callback(TempCameraFile(FileProvider.getUriForFile(context, tempDirAuthority, tempFile), tempFile))
     }
 }
 
-private class TempCameraFile(private val file: File, override val contentUri: Uri) : CameraFile {
+private class TempCameraFile(override val contentUri: Uri, private val tempFile: File) : CameraFile {
 
-    override fun retrieveFileChooserUri(): Uri? {
-        if (file.length() == 0L) {
-            file.delete()
+    override fun getOutputUri(): Uri? {
+        if (tempFile.length() == 0L) {
+            tempFile.delete()
             return null
         }
 
-        return Uri.fromFile(
-            file.getMimeTypeFromSignature()
-                ?.let(MimeTypeMap.getSingleton()::getExtensionFromMimeType)
-                ?.let { File("${file.absolutePath}.$it") }
-                ?.takeIf(file::renameTo)
-                ?.also(File::deleteOnExit)
-                ?: file
+        return tempFile.guessMimeTypeFromContent()
+            ?.let(MimeTypeMap.getSingleton()::getExtensionFromMimeType)
+            ?.let { File(tempFile.absolutePath + ".$it") }
+            ?.takeIf(tempFile::renameTo)
+            ?.apply(File::deleteOnExit)
+            ?.toUri()
+            ?: tempFile.toUri()
+    }
+}
+
+/**
+ * Camera file factory that stores camera files in picture gallery.
+ *
+ * @param activity An activity used by [FileProvider].
+ * @param tempDir The directory to store files captured by the camera app.
+ * @param tempDirAuthority The authority of a [FileProvider] defined in a `<provider>` element in your app's manifest.
+ */
+class GalleryCameraFileFactory(
+    private val activity: ComponentActivity,
+    private val tempDir: File,
+    private val tempDirAuthority: String
+) : CameraFileFactory {
+
+    override fun create(callback: (cameraFile: CameraFile?) -> Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            callback(createCameraFile())
+            return
+        }
+
+        activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) { isGranted ->
+            callback(if (isGranted) createCameraFile() else null)
+        }
+    }
+
+    private fun createCameraFile(): CameraFile {
+        val tempFile = File.createTempFile(CAMERA_FILE_PREFIX, "", tempDir)
+        tempFile.deleteOnExit()
+
+        return GalleryCameraFile(FileProvider.getUriForFile(activity, tempDirAuthority, tempFile), activity, tempFile)
+    }
+}
+
+private class GalleryCameraFile(
+    override val contentUri: Uri,
+    private val activity: ComponentActivity,
+    private val tempFile: File,
+) : CameraFile {
+
+    companion object {
+        private const val DEFAULT_MIME_TYPE = "application/octet-stream"
+        private const val DEFAULT_EXTENSION = "bin"
+    }
+
+    override fun getOutputUri(): Uri? {
+        if (tempFile.length() == 0L) {
+            tempFile.delete()
+            return null
+        }
+
+        val mimeType = tempFile.guessMimeTypeFromContent() ?: DEFAULT_MIME_TYPE
+        val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: DEFAULT_EXTENSION
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val values = ContentValues()
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, "$CAMERA_FILE_PREFIX.$extension")
+            values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+            values.put(MediaStore.MediaColumns.IS_PENDING, true)
+
+            val storageUri =
+                if ("video/" in mimeType) MediaStore.Video.Media.EXTERNAL_CONTENT_URI else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            val contentUri = checkNotNull(activity.contentResolver.insert(storageUri, values))
+
+            try {
+                checkNotNull(activity.contentResolver.openOutputStream(contentUri)).use(tempFile::copyTo)
+
+                values.clear()
+                values.put(MediaStore.MediaColumns.IS_PENDING, false)
+                activity.contentResolver.update(contentUri, values, null, null)
+
+                return contentUri
+            } catch (e: Throwable) {
+                activity.contentResolver.delete(contentUri, null, null)
+                throw e
+            } finally {
+                tempFile.delete()
+            }
+        }
+
+        val storageDir = Environment.getExternalStoragePublicDirectory(
+            if ("video/" in mimeType) Environment.DIRECTORY_MOVIES else Environment.DIRECTORY_PICTURES
         )
+        val file = File.createTempFile(CAMERA_FILE_PREFIX, ".$extension", storageDir)
+
+        try {
+            tempFile.copyTo(file.outputStream())
+            return file.toUri()
+        } catch (e: Throwable) {
+            file.delete()
+            throw e
+        } finally {
+            tempFile.delete()
+        }
     }
 }
 
 private class FileChooserLauncher(
     private val activity: ComponentActivity,
     private val cameraFileFactory: CameraFileFactory?,
-    private val filePathCallback: ValueCallback<Array<Uri>>,
+    private val filePathCallback: ValueCallback<Array<Uri>?>,
     private val fileChooserParams: FileChooserParams,
 ) {
 
-    private val mimeTypes = fileChooserParams.acceptTypes.joinToString(",")
+    private val mimeTypes = fileChooserParams.acceptTypes.filter { it.isNotBlank() }
 
-    private val isImage = mimeTypes.isEmpty() || "*/*" in mimeTypes || "image/" in mimeTypes
-    private val isVideo = mimeTypes.isEmpty() || "*/*" in mimeTypes || "video/" in mimeTypes
+    private val isImage = mimeTypes.any { it.startsWith("*/*") || it.startsWith("image/") }
+    private val isVideo = mimeTypes.any { it.startsWith("*/*") || it.startsWith("video/") }
 
     fun start() {
         if (
@@ -121,11 +219,12 @@ private class FileChooserLauncher(
         ) {
             // No camera-related MIME types, camera isn't supported, or capture result cannot be saved
             launchChooser(null)
+            return
         }
 
         activity.askForPermission(Manifest.permission.CAMERA) { isGranted ->
             if (isGranted) {
-                requireNotNull(cameraFileFactory).create(fileChooserParams.filenameHint, ::launchChooser)
+                cameraFileFactory.create(::launchChooser)
             } else {
                 launchChooser(null)
             }
@@ -134,9 +233,16 @@ private class FileChooserLauncher(
 
     private fun launchChooser(cameraFile: CameraFile?) {
         var intent = Intent(Intent.ACTION_GET_CONTENT)
-            .setType(mimeTypes)
             .addCategory(Intent.CATEGORY_OPENABLE)
             .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, fileChooserParams.mode == FileChooserParams.MODE_OPEN_MULTIPLE)
+
+        if (mimeTypes.isNotEmpty()) {
+            if (mimeTypes.size == 1) {
+                intent.setTypeAndNormalize(mimeTypes[0])
+            } else {
+                intent.setType("*/*").putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes.toTypedArray())
+            }
+        }
 
         if (cameraFile != null) {
             val cameraIntents = ArrayList<Intent>()
@@ -164,19 +270,20 @@ private class FileChooserLauncher(
         val isLaunched = activity.launchActivityForResult(intent) { result ->
             filePathCallback.onReceiveValue(
                 try {
-                    cameraFile?.retrieveFileChooserUri()?.let { arrayOf(it) }
+                    cameraFile
+                        ?.getOutputUri()
+                        ?.let { arrayOf(it) }
                         ?: parseFileChooserResult(result.resultCode, result.data)
-                        ?: arrayOf()
                 } catch (e: Throwable) {
                     e.printStackTrace()
-                    arrayOf()
+                    null
                 }
             )
         }
 
         if (!isLaunched) {
             // No activity that can provide files
-            filePathCallback.onReceiveValue(arrayOf())
+            filePathCallback.onReceiveValue(null)
         }
     }
 

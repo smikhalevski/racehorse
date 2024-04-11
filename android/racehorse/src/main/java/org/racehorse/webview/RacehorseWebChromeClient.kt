@@ -487,7 +487,7 @@ class ShowFileChooserEvent(
      * Invoke this callback to supply the list of paths to files to upload, or `null` to cancel.
      * Must only be called if the [ShowFileChooserEvent] implementation returns `true`.
      */
-    val filePathCallback: ValueCallback<Array<Uri>>,
+    val filePathCallback: ValueCallback<Array<Uri>?>,
 
     /**
      * Describes the mode of file chooser to be opened, and options to be used with it.
@@ -594,7 +594,7 @@ open class RacehorseWebChromeClient(private val eventBus: EventBus = EventBus.ge
 
     override fun onShowFileChooser(
         view: WebView,
-        filePathCallback: ValueCallback<Array<Uri>>,
+        filePathCallback: ValueCallback<Array<Uri>?>,
         fileChooserParams: FileChooserParams
     ): Boolean {
         return eventBus.postForSyncHandler { ShowFileChooserEvent(view, filePathCallback, fileChooserParams) }

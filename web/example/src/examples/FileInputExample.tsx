@@ -52,6 +52,32 @@ export function FileInputExample() {
           <li key={index}>{file.name + ' (' + file.type + ')'}</li>
         ))}
       </ol>
+
+      <p>
+        <button
+          onClick={() => {
+            Promise.allSettled(files.map(readFileAsBase64)).then(results => {
+              console.log(results.map(result => (result.status === 'fulfilled' ? result.value : null)));
+            });
+          }}
+        >
+          {'Print contents to console'}
+        </button>
+      </p>
     </>
   );
+}
+
+function readFileAsBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const fileReader = new FileReader();
+
+    fileReader.addEventListener('loadend', () => {
+      resolve(fileReader.result as string);
+    });
+    fileReader.addEventListener('error', () => {
+      reject(new Error('Failed to read file'));
+    });
+    fileReader.readAsDataURL(file);
+  });
 }

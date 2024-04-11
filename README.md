@@ -564,13 +564,20 @@ downloadManager.getAllDownloads();
 [`Download`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.Download.html) instance carries the download
 status, progress, and file details.
 
-To support older Android models a storage permission must be added to the application manifest:
+A storage permission must be added and legacy storage mode must be enabled to support Android devices with API level
+<= 29:
 
 ```xml
 
-<uses-permission
-    android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-    tools:ignore="ScopedStorage"/>
+<manifest>
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage"/>
+
+    <application
+        android:requestLegacyExternalStorage="true">
+    </application>
+</manifest>
 ```
 
 ## Downloadable links
@@ -876,7 +883,8 @@ Camera capture requires a temporary file storage to write captured file to.
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <external-path name="cache" path="Android/data/com.myapplication/cache"/>
+    <external-cache-path name="externalCacheDir" path="/"/>
+    <cache-path name="cacheDir" path="/"/>
 </paths>
 ```
 
@@ -885,18 +893,23 @@ Camera capture requires a temporary file storage to write captured file to.
 
 ```kotlin
 import org.racehorse.FileChooserPlugin
+import org.racehorse.TempCameraFileFactory
 
 EventBus.getDefault().register(
     FileChooserPlugin(
         activity,
 
-        // 🟡 Points to Android/data/com.myapplication/cache
-        externalCacheDir?.let {
-            TempCameraFileFactory(this, it, BuildConfig.APPLICATION_ID + ".provider")
-        }
+        TempCameraFileFactory(
+            activity,
+            activity.externalCacheDir ?: activity.cacheDir,
+            BuildConfig.APPLICATION_ID + ".provider"
+        )
     )
 )
 ```
+
+If you want to store images and videos in the gallery app after they were captured through file chooser, use
+[`GalleryCameraFileFactory`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-gallery-camera-file-factory/index.html).
 
 # Google Pay plugin
 
