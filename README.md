@@ -573,6 +573,8 @@ A storage permission must be added to support Android devices with API level <= 
     tools:ignore="ScopedStorage"/>
 ```
 
+## Android 29 support
+
 On Android 29 a `SecurityException` is thrown when calling a deprecated method
 [`DownloadManager.addCompletedDownload`](https://developer.android.com/reference/android/app/DownloadManager#addCompletedDownload(java.lang.String,%20java.lang.String,%20boolean,%20java.lang.String,%20java.lang.String,%20long,%20boolean))
 if permission `android.permission.WRITE_EXTERNAL_STORAGE` isn't granted. This method is used by Racehorse to populate
@@ -598,7 +600,7 @@ must be enabled in Android manifest for API level 29.
 </resources>
 ```
 
-3. In Android manifest file configure the legacy external storage setting:
+3. Configure the legacy external storage setting in Android manifest file:
 
 ```xml
 
@@ -612,8 +614,11 @@ must be enabled in Android manifest for API level 29.
 Downloadable links have a [`download`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a) attribute:
 
 ```html
-<a href="http://example.com" download>
-  Download me!
+<a
+  href="data:image/gif;base64,R0lGODlhBwAGAJEAAAAAAP////RDNv///yH/C05FVFNDQVBFMi4wAwEAAAAh+QQFAAADACwAAAAABwAGAAACCpxkeMudOyKMkhYAOw=="
+  download
+>
+  Download image
 </a>
 ```
 
@@ -624,7 +629,7 @@ as described in the previous section, and add a Racehorse listener to enable aut
 ```kotlin
 import org.racehorse.webview.RacehorseDownloadListener
 
-webView.setDownloadListener(RacehorseDownloadListener)
+webView.setDownloadListener(RacehorseDownloadListener())
 ```
 
 # Encrypted storage plugin
