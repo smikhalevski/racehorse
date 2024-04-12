@@ -29,7 +29,7 @@ open class AssetLoaderPlugin(private val activity: ComponentActivity) {
     /**
      * If `true` then URLs that cannot be handled by registered asset loaders are opened in an external browser app.
      */
-    val isUnhandledRequestOpenedInExternalBrowser = true
+    var isUnhandledRequestOpenedInExternalBrowser = true
 
     private val assetLoaders = LinkedHashSet<WebViewAssetLoader>()
 
