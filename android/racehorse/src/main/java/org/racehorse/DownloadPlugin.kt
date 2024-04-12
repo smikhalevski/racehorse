@@ -164,12 +164,12 @@ class RemoveDownloadEvent(var id: Long) : RequestEvent() {
 
 open class DownloadPlugin(private val activity: ComponentActivity) {
 
-    companion object {
-        private val TARGET_DIR = Environment.DIRECTORY_DOWNLOADS
+    private companion object {
+        val TARGET_DIR = Environment.DIRECTORY_DOWNLOADS
 
-        private const val DEFAULT_MIME_TYPE = "application/octet-stream"
-        private const val DEFAULT_FILE_NAME = "data"
-        private const val DEFAULT_EXTENSION = "bin"
+        const val DEFAULT_MIME_TYPE = "application/octet-stream"
+        const val DEFAULT_FILE_NAME = "data"
+        const val DEFAULT_EXTENSION = "bin"
     }
 
     private val downloadManager by lazy { activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager }

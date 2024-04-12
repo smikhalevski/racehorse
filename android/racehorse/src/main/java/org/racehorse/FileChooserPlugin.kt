@@ -142,9 +142,9 @@ private class GalleryCameraFile(
     private val tempFile: File,
 ) : CameraFile {
 
-    companion object {
-        private const val DEFAULT_MIME_TYPE = "application/octet-stream"
-        private const val DEFAULT_EXTENSION = "bin"
+    private companion object {
+        const val DEFAULT_MIME_TYPE = "application/octet-stream"
+        const val DEFAULT_EXTENSION = "bin"
     }
 
     override fun getOutputUri(): Uri? {

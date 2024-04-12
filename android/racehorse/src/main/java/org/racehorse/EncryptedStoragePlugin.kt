@@ -65,11 +65,11 @@ open class EncryptedStoragePlugin(
     private val keySize: Int = 256
 ) {
 
-    companion object {
-        private const val ENCRYPTION_ALGORITHM = "AES"
-        private const val ENCRYPTION_BLOCK_MODE = "CBC"
-        private const val ENCRYPTION_PADDING = "PKCS5Padding"
-        private const val SECRET_KEY_ALGORITHM = "PBKDF2withHmacSHA256"
+    private companion object {
+        const val ENCRYPTION_ALGORITHM = "AES"
+        const val ENCRYPTION_BLOCK_MODE = "CBC"
+        const val ENCRYPTION_PADDING = "PKCS5Padding"
+        const val SECRET_KEY_ALGORITHM = "PBKDF2withHmacSHA256"
     }
 
     private val encryptedStorage = EncryptedStorage(storageDir)

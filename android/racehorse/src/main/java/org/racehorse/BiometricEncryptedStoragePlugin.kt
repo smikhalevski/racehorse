@@ -84,12 +84,12 @@ class DeleteBiometricEncryptedValueEvent(val key: String) : RequestEvent() {
  */
 open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivity, private val storageDir: File) {
 
-    companion object {
-        protected const val ENCRYPTION_ALGORITHM = KeyProperties.KEY_ALGORITHM_AES
-        protected const val ENCRYPTION_BLOCK_MODE = KeyProperties.BLOCK_MODE_CBC
-        protected const val ENCRYPTION_PADDING = KeyProperties.ENCRYPTION_PADDING_PKCS7
-        protected const val SECRET_KEYSTORE_TYPE = "AndroidKeyStore"
-        protected const val SECRET_KEY_SIZE = 256
+    protected companion object {
+        const val ENCRYPTION_ALGORITHM = KeyProperties.KEY_ALGORITHM_AES
+        const val ENCRYPTION_BLOCK_MODE = KeyProperties.BLOCK_MODE_CBC
+        const val ENCRYPTION_PADDING = KeyProperties.ENCRYPTION_PADDING_PKCS7
+        const val SECRET_KEYSTORE_TYPE = "AndroidKeyStore"
+        const val SECRET_KEY_SIZE = 256
     }
 
     private val keyStore by lazy { KeyStore.getInstance(SECRET_KEYSTORE_TYPE).apply { load(null) } }

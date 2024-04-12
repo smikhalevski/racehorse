@@ -19,14 +19,14 @@ class EncryptedRecord(val iv: ByteArray, val encryptedValue: ByteArray)
  */
 open class EncryptedStorage(private val storageDir: File) {
 
-    companion object {
-        private const val HASH_ALGORITHM = "SHA-512"
-        private const val HASH_SIZE = 64 // bytes
+    private companion object {
+        const val HASH_ALGORITHM = "SHA-512"
+        const val HASH_SIZE = 64 // bytes
 
         /**
          * The size in bytes of the IV array.
          */
-        private const val IV_SIZE_SIZE = 4 // bytes
+        const val IV_SIZE_SIZE = 4 // bytes
     }
 
     /**
