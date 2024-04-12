@@ -5,4 +5,6 @@
     <string name="facebook_app_id">960865975256181</string>
     <string name="fb_login_protocol_scheme">fb960865975256181</string>
     <string name="facebook_client_token">512f780afa36037fd10d1adaa4b85183</string>
+
+    <bool name="request_legacy_external_storage">false</bool>
 </resources>
