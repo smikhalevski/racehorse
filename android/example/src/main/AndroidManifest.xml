@@ -32,7 +32,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
-        android:requestLegacyExternalStorage="true"
+        android:requestLegacyExternalStorage="@bool/request_legacy_external_storage"
         android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"

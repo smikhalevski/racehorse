@@ -55,10 +55,10 @@ open class ActivityPlugin(
     private val eventBus: EventBus = EventBus.getDefault()
 ) {
 
-    companion object {
-        private const val BACKGROUND = 0
-        private const val FOREGROUND = 1
-        private const val ACTIVE = 2
+    private companion object {
+        const val BACKGROUND = 0
+        const val FOREGROUND = 1
+        const val ACTIVE = 2
     }
 
     private val lifecycleListener = LifecycleEventObserver { _, event ->

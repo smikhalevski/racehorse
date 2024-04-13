@@ -564,20 +564,49 @@ downloadManager.getAllDownloads();
 [`Download`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.Download.html) instance carries the download
 status, progress, and file details.
 
-A storage permission must be added and legacy storage mode must be enabled to support Android devices with API level
-<= 29:
+A storage permission must be added to support Android devices with API level <= 29:
 
 ```xml
 
-<manifest>
-    <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        tools:ignore="ScopedStorage"/>
+<uses-permission
+    android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    tools:ignore="ScopedStorage"/>
+```
 
-    <application
-        android:requestLegacyExternalStorage="true">
-    </application>
-</manifest>
+## Android 29 support
+
+On Android 29 a `SecurityException` is thrown when calling a deprecated method
+[`DownloadManager.addCompletedDownload`](https://developer.android.com/reference/android/app/DownloadManager#addCompletedDownload(java.lang.String,%20java.lang.String,%20boolean,%20java.lang.String,%20java.lang.String,%20long,%20boolean))
+if permission `android.permission.WRITE_EXTERNAL_STORAGE` isn't granted. This method is used by Racehorse to populate
+the list of previous downloads when a data URI is downloaded. To fix this exception
+[the legacy external storage model](https://developer.android.com/training/data-storage/use-cases#opt-out-in-production-app)
+must be enabled in Android manifest for API level 29.
+
+1. Create a resource file used for default config values `src/main/res/values/config.xml`
+
+```xml
+
+<resources>
+    <bool name="request_legacy_external_storage">false</bool>
+</resources>
+```
+
+2. Create a resource file that is specific for API level 29 `src/main/res/values-v29/config.xml`
+
+```xml
+
+<resources>
+    <bool name="request_legacy_external_storage">true</bool>
+</resources>
+```
+
+3. Configure the legacy external storage setting in Android manifest file:
+
+```xml
+
+<application
+    android:requestLegacyExternalStorage="@bool/request_legacy_external_storage"
+/>
 ```
 
 ## Downloadable links
@@ -585,8 +614,11 @@ A storage permission must be added and legacy storage mode must be enabled to su
 Downloadable links have a [`download`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a) attribute:
 
 ```html
-<a href="http://example.com" download>
-  Download me!
+<a
+  href="data:image/gif;base64,R0lGODlhBwAGAJEAAAAAAP////RDNv///yH/C05FVFNDQVBFMi4wAwEAAAAh+QQFAAADACwAAAAABwAGAAACCpxkeMudOyKMkhYAOw=="
+  download
+>
+  Download image
 </a>
 ```
 
@@ -597,7 +629,7 @@ as described in the previous section, and add a Racehorse listener to enable aut
 ```kotlin
 import org.racehorse.webview.RacehorseDownloadListener
 
-webView.setDownloadListener(RacehorseDownloadListener)
+webView.setDownloadListener(RacehorseDownloadListener())
 ```
 
 # Encrypted storage plugin
