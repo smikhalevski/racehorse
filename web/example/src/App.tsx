@@ -18,10 +18,12 @@ import { DownloadExample } from './examples/DownloadExample';
 import { BiometricExample } from './examples/BiometricExample';
 import { BiometricEncryptedStorageExample } from './examples/BiometricEncryptedStorageExample';
 import { AssetLoaderExample } from './examples/AssetLoaderExample';
+import { ContactsExample } from './examples/ContactsExample';
 
 export function App() {
   return (
     <>
+      <ContactsExample />
       <FileInputExample />
       <ToastExample />
       <AssetLoaderExample />

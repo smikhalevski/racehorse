@@ -284,8 +284,8 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
             }
 
             val filePath =
-                checkNotNull(activity.contentResolver.query(contentUri, arrayOf(MediaStore.Downloads.DATA), null, null, null)).use { cursor ->
-                    cursor.moveToFirst()
+                activity.contentResolver.query(contentUri, arrayOf(MediaStore.Downloads.DATA), null, null, null).use { cursor ->
+                    checkNotNull(cursor).moveToFirst()
                     cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Downloads.DATA))
                 }
 
