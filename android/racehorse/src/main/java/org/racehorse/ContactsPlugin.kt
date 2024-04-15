@@ -90,7 +90,7 @@ open class ContactsPlugin(private val activity: ComponentActivity) {
             ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER,
             ContactsContract.CommonDataKinds.Phone.NUMBER,
         ),
-        ContactsContract.CommonDataKinds.Email.CONTACT_ID + "=$contactId"
+        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=$contactId"
     ) {
         buildList {
             while (moveToNext()) {
