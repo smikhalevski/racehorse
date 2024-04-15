@@ -11,7 +11,7 @@ export function FacebookLoginExample() {
       {accessToken !== null && (
         <p>
           <img
-            style={{ width: '100px', height: '100px', borderRadius: '50%' }}
+            style={{ display: 'block', width: '100px', height: '100px', borderRadius: '50%' }}
             src={`https://graph.facebook.com/${accessToken.userId}/picture?width=200&height=200`}
             alt={accessToken.userId}
           />
