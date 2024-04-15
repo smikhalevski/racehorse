@@ -4,6 +4,8 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.database.Cursor
+import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
@@ -12,8 +14,6 @@ import androidx.activity.result.ActivityResultRegistryOwner
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
 import java.util.UUID
 
 /**
@@ -62,7 +62,10 @@ fun <I, O> ActivityResultRegistryOwner.launchActivityForResult(
  * @param callback The callback that receives the result intent from the started activity.
  * @return `true` if activity has started, or `false` if there's no matching activity.
  */
-fun ActivityResultRegistryOwner.launchActivityForResult(intent: Intent, callback: ActivityResultCallback<ActivityResult>) =
+fun ActivityResultRegistryOwner.launchActivityForResult(
+    intent: Intent,
+    callback: ActivityResultCallback<ActivityResult>
+) =
     launchActivityForResult(ActivityResultContracts.StartActivityForResult(), intent, callback)
 
 /**
@@ -109,3 +112,23 @@ fun ComponentActivity.askForPermission(permission: String, callback: (isGranted:
  */
 fun Context.isPermissionGranted(permission: String) =
     ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+
+/**
+ * Shortcut for query to content resolver.
+ */
+fun <T> Context.queryContent(
+    uri: Uri,
+    projection: Array<String>? = null,
+    selection: String? = null,
+    selectionArgs: Array<String>? = null,
+    sortOrder: String? = null,
+    block: Cursor.() -> T
+) = checkNotNull(
+    contentResolver.query(
+        uri,
+        projection,
+        selection,
+        selectionArgs,
+        sortOrder,
+    )
+) { "Content resolver query cannot acquire a cursor" }.use(block)

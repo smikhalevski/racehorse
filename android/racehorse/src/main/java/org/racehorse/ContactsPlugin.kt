@@ -8,13 +8,14 @@ import androidx.core.database.getStringOrNull
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.askForPermission
 import org.racehorse.utils.launchActivityForResult
+import org.racehorse.utils.queryContent
 import java.io.Serializable
 
 class Contact(
     val name: String?,
     val photoUri: String?,
-    val emails: Array<String>,
-    val phoneNumbers: Array<String>
+    val emails: List<String>,
+    val phoneNumbers: List<String>
 ) : Serializable
 
 class PickContactEvent : RequestEvent() {
@@ -33,75 +34,63 @@ open class ContactsPlugin(private val activity: ComponentActivity) {
 
             val isLaunched =
                 activity.launchActivityForResult(ActivityResultContracts.PickContact(), null) { contactUri ->
-                    if (contactUri == null) {
-                        event.respond(PickContactEvent.ResultEvent(null))
-                        return@launchActivityForResult
-                    }
-
                     event.respond {
-                        val selection =
-                            ContactsContract.CommonDataKinds.Email.CONTACT_ID + "=" + checkNotNull(contactUri.lastPathSegment)
+                        val contactId = contactUri?.lastPathSegment
+                            ?: return@respond PickContactEvent.ResultEvent(null)
 
-                        val emails = buildList<String> {
-                            activity.contentResolver.query(
-                                ContactsContract.CommonDataKinds.Email.CONTENT_URI,
-                                arrayOf(ContactsContract.CommonDataKinds.Email.ADDRESS),
-                                selection,
-                                null,
-                                null
-                            ).use { cursor ->
-                                while (checkNotNull(cursor).moveToNext()) {
-                                    add(cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Email.ADDRESS)))
-                                }
-                            }
-                        }
-
-                        val phoneNumbers = buildList<String> {
-                            activity.contentResolver.query(
-                                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                                arrayOf(
-                                    ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER,
-                                    ContactsContract.CommonDataKinds.Phone.NUMBER,
-                                ),
-                                selection,
-                                null,
-                                null
-                            ).use { cursor ->
-                                while (checkNotNull(cursor).moveToNext()) {
-                                    add(
-                                        cursor.getStringOrNull(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER))
-                                            ?: cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER))
-                                    )
-                                }
-                            }
-                        }
-
-                        activity.contentResolver.query(
+                        activity.queryContent(
                             contactUri,
                             arrayOf(
                                 ContactsContract.Contacts.DISPLAY_NAME,
                                 ContactsContract.Contacts.PHOTO_URI
                             ),
-                            null,
-                            null,
-                            null
-                        ).use { cursor ->
-                            checkNotNull(cursor).moveToFirst()
+                        ) {
+                            moveToFirst()
 
-                            val contact = Contact(
-                                name = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME)),
-                                photoUri = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(ContactsContract.Contacts.PHOTO_URI)),
-                                emails = emails.toTypedArray(),
-                                phoneNumbers = phoneNumbers.toTypedArray()
+                            PickContactEvent.ResultEvent(
+                                Contact(
+                                    name = getStringOrNull(getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME)),
+                                    photoUri = getStringOrNull(getColumnIndexOrThrow(ContactsContract.Contacts.PHOTO_URI)),
+                                    emails = queryEmails(contactId),
+                                    phoneNumbers = queryPhoneNumbers(contactId)
+                                )
                             )
-
-                            PickContactEvent.ResultEvent(contact)
                         }
                     }
                 }
 
             if (!isLaunched) {
                 event.respond(PickContactEvent.ResultEvent(null))
+            }
+        }
+    }
+
+    private fun queryEmails(contactId: String) = activity.queryContent(
+        ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+        arrayOf(ContactsContract.CommonDataKinds.Email.ADDRESS),
+        ContactsContract.CommonDataKinds.Email.CONTACT_ID + "=$contactId"
+    ) {
+        buildList {
+            while (moveToNext()) {
+                add(getString(getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Email.ADDRESS)))
+            }
+        }
+    }
+
+    private fun queryPhoneNumbers(contactId: String) = activity.queryContent(
+        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+        arrayOf(
+            ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER,
+            ContactsContract.CommonDataKinds.Phone.NUMBER,
+        ),
+        ContactsContract.CommonDataKinds.Email.CONTACT_ID + "=$contactId"
+    ) {
+        buildList {
+            while (moveToNext()) {
+                add(
+                    getStringOrNull(getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER))
+                        ?: getString(getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER))
+                )
             }
         }
     }
