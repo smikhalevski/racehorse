@@ -175,6 +175,7 @@ open class FsPlugin(val activity: ComponentActivity) {
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     open fun onFsStat(event: FsStatEvent) {
+        File("").
         getFile(event.path, event.directory).toPath().readAttributes<BasicFileAttributes>().run {
             event.respond(
                 FsStatEvent.ResultEvent(

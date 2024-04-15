@@ -18,7 +18,7 @@ import { createKeyboardManager } from './createKeyboardManager';
 import { createNetworkManager } from './createNetworkManager';
 import { createNotificationsManager } from './createNotificationsManager';
 import { createPermissionsManager } from './createPermissionsManager';
-import { createFs } from './createFs';
+import { createFs, FileDir } from './createFs';
 
 export { createActivityManager, Intent, Activity, ActivityState } from './createActivityManager';
 export { createBiometricEncryptedStorageManager } from './createBiometricEncryptedStorageManager';
@@ -148,6 +148,8 @@ export const firebaseManager = createFirebaseManager(eventBridge);
  * File system CRUD operations.
  */
 export const fs = createFs(eventBridge);
+
+fs.File(FileDir.DOCUMENTS, 'foo');
 
 /**
  * Manages tokenized cards in Google Pay.

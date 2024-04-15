@@ -2,224 +2,160 @@ import { Event, EventBridge } from './createEventBridge';
 import { noop } from './utils';
 
 export const FileDir = {
-  DOCUMENTS: 'documents',
-  DATA: 'data',
-  LIBRARY: 'library',
-  CACHE: 'cache',
-  EXTERNAL: 'external',
-  EXTERNAL_STORAGE: 'external_storage',
+  DOCUMENTS: 'racehorse://documents',
+  DATA: 'racehorse://data',
+  LIBRARY: 'racehorse://library',
+  CACHE: 'racehorse://cache',
+  EXTERNAL: 'racehorse://external',
+  EXTERNAL_STORAGE: 'racehorse://external_storage',
 } as const;
 
 export type FileDir = (typeof FileDir)[keyof typeof FileDir];
 
+export interface FileStats {
+  lastModifiedTime: number;
+  lastAccessTime: number;
+  creationTime: number;
+  isFile: boolean;
+  isDirectory: boolean;
+  isSymbolicLink: boolean;
+  isOther: boolean;
+  size: number;
+}
+
 export class File {
   constructor(
     private eventBridge: EventBridge,
-    public path: string,
-    public dir: FileDir | null = null
+    public readonly uri: string
   ) {}
 
-  get lastModifiedTime(): number {
+  getLastModifiedTime(): number {
     return 0;
   }
 
-  get lastAccessTime(): number {
+  getLastAccessTime(): number {
     return 0;
   }
 
-  get creationTime(): number {
+  getCreationTime(): number {
     return 0;
   }
 
-  get isFile(): boolean {
+  isFile(): boolean {
     return false;
   }
 
-  get isDir(): boolean {
+  isDirectory(): boolean {
     return false;
   }
 
-  get isSymbolicLink(): boolean {
+  isSymbolicLink(): boolean {
     return false;
   }
 
-  get isExisting(): boolean {
+  isExisting(): boolean {
     return this.eventBridge.request({
       type: 'org.racehorse.FsExistsEvent',
-      payload: { path: this.path, dir: this.dir },
+      payload: { uri: this.uri },
     }).payload.isExisting;
   }
 
-  get size(): number {
+  getSize(): number {
     return 0;
   }
 
-  createDir(): Promise<boolean> {
-    return this.eventBridge
-      .requestAsync({
-        type: 'org.racehorse.FsMkdirEvent',
-        payload: { path: this.path, dir: this.dir },
-      })
-      .then(event => event.payload.isSuccessful);
+  getStats(): FileStats {
+    return this.eventBridge.request({
+      type: 'org.racehorse.FsStatsEvent',
+      payload: { uri: this.uri },
+    }).payload.stats;
   }
 
-  listFiles(glob?: string): Promise<File[]> {
-    return this.eventBridge
-      .requestAsync({
-        type: 'org.racehorse.FsReadDirEvent',
-        payload: { path: this.path, dir: this.dir },
-      })
-      .then(event => event.payload.files);
+  getParent(): File {
+    return null!;
   }
 
-  read(): Promise<Blob>;
-
-  read(encoding: string): Promise<string>;
-
-  read(encoding?: string) {
+  mkdir(): Promise<boolean> {
     return this.eventBridge
-      .requestAsync({
-        type: 'org.racehorse.FsReadTextEvent',
-        payload: { path: this.path, dir: this.dir, encoding },
-      })
-      .then(event => event.payload.text || event.payload.blob);
+      .requestAsync({ type: 'org.racehorse.FsMkdirEvent', payload: { uri: this.uri } })
+      .then(isSuccessful);
   }
 
-  append(text: string, encoding?: string): Promise<void>;
+  readDir(): Promise<File[]> {
+    return this.eventBridge
+      .requestAsync({ type: 'org.racehorse.FsReadDirEvent', payload: { uri: this.uri } })
+      .then(event => event.payload.uris.map((uri: string) => new File(this.eventBridge, uri)));
+  }
 
-  append(blob: Blob): Promise<void>;
+  readText(encoding = 'utf8'): Promise<string> {
+    return this.eventBridge
+      .requestAsync({ type: 'org.racehorse.FsReadEvent', payload: { uri: this.uri, encoding } })
+      .then(event => event.payload.text);
+  }
 
-  append(data: string | Blob, encoding?: string): Promise<void> {
-    if (data instanceof Blob) {
-      return this.eventBridge
-        .requestAsync({
-          type: 'org.racehorse.FsAppendBytesEvent',
-          payload: { path: this.path, dir: this.dir, blob: data },
-        })
-        .then(noop);
-    }
+  readBytes(): Promise<string> {
+    return this.eventBridge
+      .requestAsync({ type: 'org.racehorse.FsReadEvent', payload: { uri: this.uri } })
+      .then(event => event.payload.data);
+  }
 
+  appendText(text: string, encoding = 'utf8'): Promise<void> {
     return this.eventBridge
       .requestAsync({
-        type: 'org.racehorse.FsAppendTextEvent',
-        payload: { path: this.path, dir: this.dir, text: data, encoding },
+        type: 'org.racehorse.FsWriteEvent',
+        payload: { uri: this.uri, text, encoding, isAppended: true },
       })
       .then(noop);
   }
 
-  write(blob: Blob): Promise<void>;
-
-  write(data: string | Blob, encoding?: string): Promise<void> {
-    let event: Event;
-    if (data instanceof Blob) {
-      event = {
-        type: 'org.racehorse.FsWriteBytesEvent',
-        payload: { path: this.path, dir: this.dir, blob: data },
-      };
-    } else {
-      event = {
-        type: 'org.racehorse.FsWriteTextEvent',
-        payload: { path: this.path, dir: this.dir, text: data, encoding },
-      };
-    }
-    return this.eventBridge
-      .requestAsync(
-        data instanceof Blob
-          ? {
-              type: 'org.racehorse.FsWriteBytesEvent',
-              payload: { path: this.path, dir: this.dir, blob: data },
-            }
-          : {
-              type: 'org.racehorse.FsWriteTextEvent',
-              payload: { path: this.path, dir: this.dir, text: data, encoding },
-            }
+  appendBytes(data: string | Blob | ArrayBuffer): Promise<void> {
+    return encodeBase64(data)
+      .then(data =>
+        this.eventBridge.requestAsync({
+          type: 'org.racehorse.FsWriteEvent',
+          payload: { uri: this.uri, data, isAppended: true },
+        })
       )
       .then(noop);
   }
 
-  // -------------------------------------
-  // -------------------------------------
-  // -------------------------------------
-  // -------------------------------------
-  // -------------------------------------
-
   writeText(text: string, encoding?: string): Promise<void> {
     return this.eventBridge
-      .requestAsync({
-        type: 'org.racehorse.FsWriteTextEvent',
-        payload: { path: this.path, dir: this.dir, text, encoding },
-      })
+      .requestAsync({ type: 'org.racehorse.FsWriteEvent', payload: { uri: this.uri, text, encoding } })
       .then(noop);
   }
 
   writeBytes(data: string | Blob | ArrayBuffer): Promise<void> {
-    const request = (data: unknown) =>
-      this.eventBridge
-        .requestAsync({
-          type: 'org.racehorse.FsWriteBytesEvent',
-          payload: { path: this.path, dir: this.dir, data },
-        })
-        .then(noop);
-
-    if (data instanceof ArrayBuffer) {
-      data = new Blob([data]);
-    }
-
-    if (data instanceof Blob) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-
-        reader.onload = () => {
-          resolve(request(reader.result));
-        };
-        reader.onerror = () => {
-          reject(new Error('Cannot read blob'));
-        };
-      });
-    }
-
-    return request(data);
-  }
-
-  copy(to: File, overwrite?: boolean): Promise<void> {
-    return this.eventBridge
-      .requestAsync({
-        type: 'org.racehorse.FsCopyEvent',
-        payload: { path: this.path, dir: this.dir, toPath: to.path, toDir: to.dir, overwrite },
-      })
+    return encodeBase64(data)
+      .then(data =>
+        this.eventBridge.requestAsync({ type: 'org.racehorse.FsWriteEvent', payload: { uri: this.uri, data } })
+      )
       .then(noop);
   }
 
-  move(to: File, overwrite?: boolean): Promise<void> {
+  copy(to: File, overwrite?: boolean): Promise<boolean> {
     return this.eventBridge
-      .requestAsync({
-        type: 'org.racehorse.FsMoveEvent',
-        payload: { path: this.path, dir: this.dir, toPath: to.path, toDir: to.dir, overwrite },
-      })
-      .then(noop);
+      .requestAsync({ type: 'org.racehorse.FsCopyEvent', payload: { uri: this.uri, toUri: to.uri, overwrite } })
+      .then(isSuccessful);
+  }
+
+  move(to: File, overwrite?: boolean): Promise<boolean> {
+    return this.eventBridge
+      .requestAsync({ type: 'org.racehorse.FsMoveEvent', payload: { uri: this.uri, toUri: to.uri, overwrite } })
+      .then(isSuccessful);
   }
 
   delete(): Promise<boolean> {
     return this.eventBridge
-      .requestAsync({
-        type: 'org.racehorse.FsDeleteEvent',
-        payload: { path: this.path, dir: this.dir },
-      })
-      .then(event => event.payload.isSuccessful);
+      .requestAsync({ type: 'org.racehorse.FsDeleteEvent', payload: { uri: this.uri } })
+      .then(isSuccessful);
   }
 }
 
-// ---------------------------------------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------------------------------------
-
 export interface Fs {
-  File(path: string, dir?: FileDir | null): File;
+  File(uri: string): File;
+
+  File(parent: File | string, path: string): File;
 }
 
 /**
@@ -229,8 +165,42 @@ export interface Fs {
  */
 export function createFs(eventBridge: EventBridge): Fs {
   return {
-    File(path: string, dir: FileDir | null = null) {
-      return new File(eventBridge, path, dir);
-    },
+    File: (uriOrParent, path?: string) =>
+      new File(
+        eventBridge,
+        typeof uriOrParent === 'string'
+          ? uriOrParent
+          : path !== undefined
+            ? resolve(uriOrParent.uri, path)
+            : uriOrParent.uri
+      ),
   };
+}
+
+function encodeBase64(data: string | Blob | ArrayBuffer): Promise<string> {
+  if (data instanceof ArrayBuffer) {
+    data = new Blob([data]);
+  }
+
+  if (data instanceof Blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.addEventListener('load', () => {
+        resolve(String(reader.result));
+      });
+
+      reader.addEventListener('error', () => {
+        reject(new Error('Failed to read blob'));
+      });
+
+      reader.readAsDataURL(data);
+    });
+  }
+
+  return Promise.resolve(data);
+}
+
+function isSuccessful(event: Event): boolean {
+  return event.payload.isSuccessful;
 }
