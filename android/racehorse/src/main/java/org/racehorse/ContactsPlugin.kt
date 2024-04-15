@@ -12,6 +12,7 @@ import org.racehorse.utils.queryContent
 import java.io.Serializable
 
 class Contact(
+    val id: String,
     val name: String?,
     val photoUri: String?,
     val emails: List<String>,
@@ -22,42 +23,23 @@ class PickContactEvent : RequestEvent() {
     class ResultEvent(val contact: Contact?) : ResponseEvent()
 }
 
+class GetContactEvent(val contactId: String) : RequestEvent() {
+    class ResultEvent(val contact: Contact?) : ResponseEvent()
+}
+
 open class ContactsPlugin(private val activity: ComponentActivity) {
 
     @Subscribe
     open fun onPickContact(event: PickContactEvent) {
         activity.askForPermission(Manifest.permission.READ_CONTACTS) { isGranted ->
             if (!isGranted) {
-                event.respond(PickContactEvent.ResultEvent(null))
+                event.respond(ExceptionEvent(IllegalStateException("Permission required")))
                 return@askForPermission
             }
 
-            val isLaunched =
-                activity.launchActivityForResult(ActivityResultContracts.PickContact(), null) { contactUri ->
-                    event.respond {
-                        val contactId = contactUri?.lastPathSegment
-                            ?: return@respond PickContactEvent.ResultEvent(null)
-
-                        activity.queryContent(
-                            contactUri,
-                            arrayOf(
-                                ContactsContract.Contacts.DISPLAY_NAME,
-                                ContactsContract.Contacts.PHOTO_URI
-                            ),
-                        ) {
-                            moveToFirst()
-
-                            PickContactEvent.ResultEvent(
-                                Contact(
-                                    name = getStringOrNull(getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME)),
-                                    photoUri = getStringOrNull(getColumnIndexOrThrow(ContactsContract.Contacts.PHOTO_URI)),
-                                    emails = queryEmails(contactId),
-                                    phoneNumbers = queryPhoneNumbers(contactId)
-                                )
-                            )
-                        }
-                    }
-                }
+            val isLaunched = activity.launchActivityForResult(ActivityResultContracts.PickContact(), null) {
+                event.respond { PickContactEvent.ResultEvent(it?.lastPathSegment?.let(::getContact)) }
+            }
 
             if (!isLaunched) {
                 event.respond(PickContactEvent.ResultEvent(null))
@@ -65,7 +47,32 @@ open class ContactsPlugin(private val activity: ComponentActivity) {
         }
     }
 
-    private fun queryEmails(contactId: String) = activity.queryContent(
+    @Subscribe
+    open fun onGetContact(event: GetContactEvent) {
+        activity.askForPermission(Manifest.permission.READ_CONTACTS) { isGranted ->
+            event.respond { GetContactEvent.ResultEvent(if (isGranted) getContact(event.contactId) else null) }
+        }
+    }
+
+    private fun getContact(contactId: String) = activity.queryContent(
+        ContactsContract.Contacts.CONTENT_URI.buildUpon().appendPath(contactId).build(),
+        arrayOf(
+            ContactsContract.Contacts.DISPLAY_NAME,
+            ContactsContract.Contacts.PHOTO_URI
+        ),
+    ) {
+        moveToFirst()
+
+        Contact(
+            id = contactId,
+            name = getStringOrNull(getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME)),
+            photoUri = getStringOrNull(getColumnIndexOrThrow(ContactsContract.Contacts.PHOTO_URI)),
+            emails = getContactEmails(contactId),
+            phoneNumbers = getContactPhoneNumbers(contactId)
+        )
+    }
+
+    private fun getContactEmails(contactId: String) = activity.queryContent(
         ContactsContract.CommonDataKinds.Email.CONTENT_URI,
         arrayOf(ContactsContract.CommonDataKinds.Email.ADDRESS),
         ContactsContract.CommonDataKinds.Email.CONTACT_ID + "=$contactId"
@@ -77,7 +84,7 @@ open class ContactsPlugin(private val activity: ComponentActivity) {
         }
     }
 
-    private fun queryPhoneNumbers(contactId: String) = activity.queryContent(
+    private fun getContactPhoneNumbers(contactId: String) = activity.queryContent(
         ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
         arrayOf(
             ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER,

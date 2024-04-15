@@ -12,10 +12,7 @@ export function ContactsExample() {
       <p>
         <button
           onClick={() => {
-            contactsManager.pickContact().then(xxx => {
-              console.log(xxx);
-              setContact(xxx);
-            });
+            contactsManager.pickContact().then(setContact);
           }}
         >
           {'Pick contact'}
