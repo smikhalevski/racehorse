@@ -36,6 +36,7 @@ The bootstrapper for WebView-based Android apps.
 - [Permissions](#permissions-plugin)
 - [Biometric](#biometric-plugin)
 - [Biometric encrypted storage](#biometric-encrypted-storage-plugin)
+- [Contacts](#contacts-plugin)
 
 🍪&ensp;**Cookbook**
 
@@ -1383,6 +1384,38 @@ if (biometricEncryptedStorageManager.has(key)) {
     }
   )
 }
+```
+
+# Contacts plugin
+
+[`ContactsManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.ContactsManager.html) provides access
+to contacts stored on the device.
+
+1. Add permission to the app manifest:
+
+```xml
+
+<uses-permission android:name="android.permission.READ_CONTACTS"/>
+```
+
+2. Initialize the plugin in your Android app:
+
+```kotlin
+import org.racehorse.ContactsPlugin
+
+EventBus.getDefault().register(ContactsPlugin(activity))
+```
+
+3. Ask user to pick a contact or get contact by ID:
+
+```ts
+import { contactsManager } from 'racehorse';
+
+contactsManager.pickContact();
+// ⮕ Promise<Contact | null>
+
+contactsManager.getContact(42);
+// ⮕ Contact | null
 ```
 
 # Cookbook
