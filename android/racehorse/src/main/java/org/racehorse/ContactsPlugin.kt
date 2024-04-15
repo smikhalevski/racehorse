@@ -12,7 +12,7 @@ import org.racehorse.utils.queryContent
 import java.io.Serializable
 
 class Contact(
-    val id: String,
+    val id: Long,
     val name: String?,
     val photoUri: String?,
     val emails: List<String>,
@@ -23,7 +23,7 @@ class PickContactEvent : RequestEvent() {
     class ResultEvent(val contact: Contact?) : ResponseEvent()
 }
 
-class GetContactEvent(val contactId: String) : RequestEvent() {
+class GetContactEvent(val contactId: Long) : RequestEvent() {
     class ResultEvent(val contact: Contact?) : ResponseEvent()
 }
 
@@ -35,7 +35,7 @@ open class ContactsPlugin(private val activity: ComponentActivity) {
             isGranted || return@askForPermission event.respond(PickContactEvent.ResultEvent(null))
 
             val isLaunched = activity.launchActivityForResult(ActivityResultContracts.PickContact(), null) {
-                event.respond { PickContactEvent.ResultEvent(it?.lastPathSegment?.let(::getContact)) }
+                event.respond { PickContactEvent.ResultEvent(it?.lastPathSegment?.toLong()?.let(::getContact)) }
             }
 
             if (!isLaunched) {
@@ -51,8 +51,8 @@ open class ContactsPlugin(private val activity: ComponentActivity) {
         }
     }
 
-    private fun getContact(contactId: String) = activity.queryContent(
-        ContactsContract.Contacts.CONTENT_URI.buildUpon().appendPath(contactId).build(),
+    private fun getContact(contactId: Long) = activity.queryContent(
+        ContactsContract.Contacts.CONTENT_URI.buildUpon().appendPath(contactId.toString()).build(),
         arrayOf(
             ContactsContract.Contacts.DISPLAY_NAME,
             ContactsContract.Contacts.PHOTO_URI
@@ -69,7 +69,7 @@ open class ContactsPlugin(private val activity: ComponentActivity) {
         )
     }
 
-    private fun getContactEmails(contactId: String) = activity.queryContent(
+    private fun getContactEmails(contactId: Long) = activity.queryContent(
         ContactsContract.CommonDataKinds.Email.CONTENT_URI,
         arrayOf(ContactsContract.CommonDataKinds.Email.ADDRESS),
         ContactsContract.CommonDataKinds.Email.CONTACT_ID + "=$contactId"
@@ -81,7 +81,7 @@ open class ContactsPlugin(private val activity: ComponentActivity) {
         }
     }
 
-    private fun getContactPhoneNumbers(contactId: String) = activity.queryContent(
+    private fun getContactPhoneNumbers(contactId: Long) = activity.queryContent(
         ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
         arrayOf(
             ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER,

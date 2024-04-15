@@ -1,7 +1,7 @@
 import { EventBridge } from './createEventBridge';
 
 export interface Contact {
-  id: string;
+  id: number;
   name: string | null;
   photoUri: string | null;
   emails: string[];
@@ -22,7 +22,7 @@ export interface ContactsManager {
    * @param contactId The ID of the contact to retrieve.
    * @returns The contact or `null` if there's no such contact.
    */
-  getContact(contactId: string): Contact | null;
+  getContact(contactId: number): Contact | null;
 }
 
 /**
