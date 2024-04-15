@@ -13,7 +13,6 @@ export interface ContactsManager {
    * Returns a contact picked by the user.
    *
    * @returns The contact or `null` if user didn't pick a contact or didn't grant permissions.
-   * @throws IllegalStateException Permission required.
    */
   pickContact(): Promise<Contact | null>;
 

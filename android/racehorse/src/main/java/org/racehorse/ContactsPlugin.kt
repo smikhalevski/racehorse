@@ -32,10 +32,7 @@ open class ContactsPlugin(private val activity: ComponentActivity) {
     @Subscribe
     open fun onPickContact(event: PickContactEvent) {
         activity.askForPermission(Manifest.permission.READ_CONTACTS) { isGranted ->
-            if (!isGranted) {
-                event.respond(ExceptionEvent(IllegalStateException("Permission required")))
-                return@askForPermission
-            }
+            isGranted || return@askForPermission event.respond(PickContactEvent.ResultEvent(null))
 
             val isLaunched = activity.launchActivityForResult(ActivityResultContracts.PickContact(), null) {
                 event.respond { PickContactEvent.ResultEvent(it?.lastPathSegment?.let(::getContact)) }

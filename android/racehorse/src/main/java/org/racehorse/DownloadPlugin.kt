@@ -245,7 +245,8 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
 
         activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) { isGranted ->
             event.respond {
-                check(isGranted) { "Permission required" }
+                isGranted || return@respond ExceptionEvent(PermissionRequiredException())
+
                 AddDownloadEvent.ResultEvent(downloadManager.enqueue(request))
             }
         }
@@ -298,7 +299,7 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
         // Create a new file manually
         activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) { isGranted ->
             event.respond {
-                check(isGranted) { "Permission required" }
+                isGranted || return@respond ExceptionEvent(PermissionRequiredException())
 
                 val targetDir = Environment.getExternalStoragePublicDirectory(TARGET_DIR)
 
