@@ -52,8 +52,37 @@ export class File {
    */
   getStat(): Promise<FileStat> {
     return this._eventBridge
-      .requestAsync({ type: 'org.racehorse.FsStatsEvent', payload: { uri: this.uri } })
-      .then(event => event.payload.stats);
+      .requestAsync({ type: 'org.racehorse.FsGetStatEvent', payload: { uri: this.uri } })
+      .then(event => event.payload);
+  }
+
+  /**
+   * Returns a URL that points to the file and can be loaded by the web view.
+   */
+  getParent(): File | null {
+    const parentUri = this._eventBridge.request({
+      type: 'org.racehorse.FsGetParentUriEvent',
+      payload: { uri: this.uri },
+    }).payload.uri;
+
+    return parentUri !== null ? new File(this._eventBridge, parentUri) : null;
+  }
+
+  /**
+   * Returns a URL that points to the file and can be loaded by the web view.
+   */
+  getUrl(): string {
+    return this._eventBridge.request({ type: 'org.racehorse.FsGetUrlEvent', payload: { uri: this.uri } }).payload.url;
+  }
+
+  /**
+   * Returns a URI of the file that can be shared with other applications.
+   */
+  getExposableUri(): string {
+    return this._eventBridge.request({
+      type: 'org.racehorse.FsGetExposableUriEvent',
+      payload: { uri: this.uri },
+    }).payload.uri;
   }
 
   /**
@@ -217,15 +246,6 @@ export class File {
     return this._eventBridge
       .requestAsync({ type: 'org.racehorse.FsDeleteEvent', payload: { uri: this.uri } })
       .then(isSuccessful);
-  }
-
-  /**
-   * Returns a URL that points to the file and can be loaded by the web view.
-   */
-  toUrl(): string {
-    const { urlBase } = this._eventBridge.request({ type: 'org.racehorse.FsGetUrlBaseEvent' }).payload;
-
-    return urlBase + '?uri=' + encodeURIComponent(this.uri);
   }
 }
 

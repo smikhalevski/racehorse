@@ -23,7 +23,7 @@ export function ContactsExample() {
         <p>
           <img
             style={{ display: 'block', width: '100px', height: '100px', borderRadius: '50%' }}
-            src={fs.File(contact.photoUri).toUrl()}
+            src={fs.File(contact.photoUri).getUrl()}
             alt={contact.name || ''}
           />
         </p>
