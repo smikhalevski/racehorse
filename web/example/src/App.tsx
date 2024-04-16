@@ -19,10 +19,12 @@ import { BiometricExample } from './examples/BiometricExample';
 import { BiometricEncryptedStorageExample } from './examples/BiometricEncryptedStorageExample';
 import { AssetLoaderExample } from './examples/AssetLoaderExample';
 import { ContactsExample } from './examples/ContactsExample';
+import { FsExample } from './examples/FsExample';
 
 export function App() {
   return (
     <>
+      <FsExample />
       <ContactsExample />
       <FileInputExample />
       <ToastExample />

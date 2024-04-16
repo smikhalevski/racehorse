@@ -1,88 +1,281 @@
 package org.racehorse
 
 import android.net.Uri
+import android.os.Environment
 import android.webkit.WebResourceResponse
 import androidx.activity.ComponentActivity
 import androidx.core.net.toFile
+import androidx.core.net.toUri
 import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
+import org.racehorse.utils.guessMimeTypeFromContent
+import org.racehorse.utils.queryContent
 import org.racehorse.webview.ShouldInterceptRequestEvent
 import java.io.ByteArrayInputStream
+import java.io.File
 import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.net.URLConnection
+import java.nio.charset.Charset
+import java.nio.file.attribute.BasicFileAttributes
+import java.util.Base64
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.moveTo
+import kotlin.io.path.readAttributes
 
-//class FsMkdirEvent(val path: String, val directory: String?) : RequestEvent() {
-//    class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
-//}
-//
-//class FsReadDirEvent(val path: String, val directory: String?, val glob: String = "*") : RequestEvent() {
-//    class ResultEvent(val files: List<String>) : ResponseEvent()
-//}
-//
-//class FsReadTextEvent(val path: String, val directory: String?, val encoding: String? = "utf-8") : RequestEvent() {
-//    class ResultEvent(val text: String) : ResponseEvent()
-//}
-//
-//class FsReadBytesEvent(val path: String, val directory: String?) : RequestEvent() {
-//    class ResultEvent(val buffer: ByteArray) : ResponseEvent()
-//}
-//
-//class FsAppendTextEvent(val path: String, val directory: String?, val text: String, val encoding: String? = "utf-8") :
-//    RequestEvent()
-//
-//class FsAppendBytesEvent(val path: String, val directory: String?, val buffer: ByteArray) : RequestEvent()
-//
-//class FsWriteTextEvent(val path: String, val directory: String?, val text: String, val encoding: String? = "utf-8") :
-//    RequestEvent()
-//
-//class FsWriteBytesEvent(val path: String, val directory: String?, val buffer: ByteArray) : RequestEvent()
-//
-//class FsCopyEvent(
-//    val sourcePath: String,
-//    val sourceDirectory: String?,
-//    val targetPath: String,
-//    val targetDirectory: String?,
-//    val overwrite: Boolean = false
-//) : RequestEvent() {
-//    class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
-//}
-//
-//class FsMoveEvent(
-//    val sourcePath: String,
-//    val sourceDirectory: String?,
-//    val targetPath: String,
-//    val targetDirectory: String?
-//) : RequestEvent()
-//
-//class FsDeleteEvent(val path: String, val directory: String?) : RequestEvent() {
-//    class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
-//}
-//
-//class FsExistsEvent(val path: String, val directory: String?) : RequestEvent() {
-//    class ResultEvent(val isExisting: Boolean) : ResponseEvent()
-//}
-//
-//class FsStatEvent(val path: String, val directory: String?) : RequestEvent() {
-//    class ResultEvent(
-//        val lastModifiedTime: Long,
-//        val lastAccessTime: Long,
-//        val creationTime: Long,
-//        val isFile: Boolean,
-//        val isDirectory: Boolean,
-//        val isSymbolicLink: Boolean,
-//        val isOther: Boolean,
-//        val size: Long,
-//    ) : ResponseEvent()
-//}
-
-class GetFsServerUrlBaseEvent : RequestEvent() {
-    class ResultEvent(val serverUrlBase: String) : ResponseEvent()
+class FsIsExistingEvent(val uri: String) : RequestEvent() {
+    class ResultEvent(val isExisting: Boolean) : ResponseEvent()
 }
 
-open class FsPlugin(val activity: ComponentActivity, val serverUrlBase: String = "https://org.racehorse/fs/") {
+class FsGetStatEvent(val uri: String) : RequestEvent() {
+    class ResultEvent(
+        val lastModifiedTime: Long,
+        val lastAccessTime: Long,
+        val creationTime: Long,
+        val isFile: Boolean,
+        val isDirectory: Boolean,
+        val isSymbolicLink: Boolean,
+        val isOther: Boolean,
+        val size: Long,
+    ) : ResponseEvent()
+}
+
+class FsGetMimeTypeEvent(val uri: String) : RequestEvent() {
+    class ResultEvent(val mimeType: String?) : ResponseEvent()
+}
+
+class FsMkdirEvent(val uri: String) : RequestEvent() {
+    class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
+}
+
+class FsReadDirEvent(val uri: String) : RequestEvent() {
+    class ResultEvent(val uris: List<String>) : ResponseEvent()
+}
+
+class FsReadEvent(val uri: String, val encoding: String?) : RequestEvent() {
+    class ResultEvent(val data: String) : ResponseEvent()
+}
+
+class FsAppendEvent(val uri: String, val data: String, val encoding: String?) : RequestEvent()
+
+class FsWriteEvent(val uri: String, val data: String, val encoding: String?) : RequestEvent()
+
+class FsCopyEvent(val uri: String, val toUri: String, val overwrite: Boolean) : RequestEvent() {
+    class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
+}
+
+class FsMoveEvent(val uri: String, val toUri: String, val overwrite: Boolean) : RequestEvent() {
+    class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
+}
+
+class FsDeleteEvent(val uri: String) : RequestEvent() {
+    class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
+}
+
+class FsGetUrlBaseEvent : RequestEvent() {
+    class ResultEvent(val urlBase: String) : ResponseEvent()
+}
+
+class FsResolveEvent(val uri: String, val path: String) : RequestEvent() {
+    class ResultEvent(val uri: String) : ResponseEvent()
+}
+
+open class FsPlugin(val activity: ComponentActivity, val urlBase: String = "https://racehorse.local/fs/") {
+
+    private companion object {
+        const val SCHEME_FILE = "file"
+        const val SCHEME_CONTENT = "content"
+        const val SCHEME_RACEHORSE = "racehorse"
+
+        const val SYSTEM_DIR_DOCUMENTS = "documents"
+        const val SYSTEM_DIR_DATA = "data"
+        const val SYSTEM_DIR_LIBRARY = "library"
+        const val SYSTEM_DIR_CACHE = "cache"
+        const val SYSTEM_DIR_EXTERNAL = "external"
+        const val SYSTEM_DIR_EXTERNAL_STORAGE = "external_storage"
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    open fun onFsIsExisting(event: FsIsExistingEvent) {
+        val uri = getCanonicalUri(event.uri)
+
+        event.respond(FsIsExistingEvent.ResultEvent(
+            when (uri.scheme) {
+
+                SCHEME_FILE -> uri.toFile().exists()
+
+                SCHEME_CONTENT -> activity.queryContent(uri) { moveToFirst() }
+
+                else -> throw UnsupportedSchemeException()
+            }
+        ))
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    open fun onFsGetStat(event: FsGetStatEvent) {
+        event.respond(getFile(event.uri).toPath().readAttributes<BasicFileAttributes>().run {
+            FsGetStatEvent.ResultEvent(
+                lastModifiedTime = lastModifiedTime().toMillis(),
+                lastAccessTime = lastAccessTime().toMillis(),
+                creationTime = creationTime().toMillis(),
+                isFile = isRegularFile,
+                isDirectory = isDirectory,
+                isSymbolicLink = isSymbolicLink,
+                isOther = isOther,
+                size = size(),
+            )
+        })
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    open fun onFsGetMimeType(event: FsGetMimeTypeEvent) {
+        val uri = getCanonicalUri(event.uri)
+
+        event.respond(
+            FsGetMimeTypeEvent.ResultEvent(
+                when (uri.scheme) {
+
+                    SCHEME_FILE -> runCatching { uri.toFile().guessMimeTypeFromContent() }.getOrNull()
+
+                    SCHEME_CONTENT -> activity.contentResolver.getType(uri)
+
+                    else -> throw UnsupportedSchemeException()
+                }
+            )
+        )
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    open fun onFsMkdir(event: FsMkdirEvent) {
+        event.respond(FsMkdirEvent.ResultEvent(getFile(event.uri).mkdirs()))
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    open fun onFsReadDir(event: FsReadDirEvent) {
+        event.respond(
+            FsReadDirEvent.ResultEvent(
+                getFile(event.uri).toPath().listDirectoryEntries().map { it.fileName.toString() }
+            )
+        )
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    open fun onFsRead(event: FsReadEvent) {
+        val uri = getCanonicalUri(event.uri)
+
+        val bytes = when (uri.scheme) {
+
+            SCHEME_FILE -> uri.toFile().readBytes()
+
+            SCHEME_CONTENT -> requireNotNull(activity.contentResolver.openInputStream(uri)).use { it.readBytes() }
+
+            else -> throw UnsupportedSchemeException()
+        }
+
+        val data = if (event.encoding == null) {
+            String(Base64.getEncoder().encode(bytes))
+        } else {
+            String(bytes, Charset.forName(event.encoding))
+        }
+
+        event.respond(FsReadEvent.ResultEvent(data))
+    }
+
+    private fun write(uri: Uri, data: String, encoding: String?, append: Boolean) {
+        val outputStream = when (uri.scheme) {
+
+            SCHEME_FILE -> FileOutputStream(uri.toFile(), append)
+
+            SCHEME_CONTENT -> requireNotNull(activity.contentResolver.openOutputStream(uri, if (append) "wa" else "w"))
+
+            else -> throw UnsupportedSchemeException()
+        }
+
+        outputStream.use {
+            val bytes = if (encoding == null) {
+                Base64.getDecoder().decode(data)
+            } else {
+                data.toByteArray(Charset.forName(encoding))
+            }
+            it.write(bytes)
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    open fun onFsAppend(event: FsAppendEvent) {
+        write(getCanonicalUri(event.uri), event.data, event.encoding, true)
+        event.respond(VoidEvent())
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    open fun onFsWrite(event: FsWriteEvent) {
+        write(getCanonicalUri(event.uri), event.data, event.encoding, false)
+        event.respond(VoidEvent())
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    open fun onFsCopy(event: FsCopyEvent) {
+        event.respond(
+            FsCopyEvent.ResultEvent(
+                getFile(event.uri).copyRecursively(getFile(event.toUri), event.overwrite)
+            )
+        )
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    open fun onFsMove(event: FsMoveEvent) {
+        getFile(event.uri).toPath().moveTo(getFile(event.toUri).toPath(), event.overwrite)
+
+        event.respond(FsCopyEvent.ResultEvent(true))
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    open fun onFsDelete(event: FsDeleteEvent) {
+        val uri = getCanonicalUri(event.uri)
+
+        event.respond(
+            FsDeleteEvent.ResultEvent(
+                when (uri.scheme) {
+
+                    SCHEME_FILE -> uri.toFile().deleteRecursively()
+
+                    SCHEME_CONTENT -> activity.contentResolver.delete(uri, null, null) == 1
+
+                    else -> throw UnsupportedSchemeException()
+                }
+            )
+        )
+    }
+
+    @Subscribe
+    open fun onFsGetUrlBase(event: FsGetUrlBaseEvent) {
+        event.respond(FsGetUrlBaseEvent.ResultEvent(urlBase))
+    }
+
+    @Subscribe
+    open fun onFsResolve(event: FsResolveEvent) {
+        val baseUri = getCanonicalUri(event.uri)
+
+        baseUri.scheme == SCHEME_FILE || throw UnsupportedSchemeException()
+
+        val uri = Uri.parse(event.path)
+
+        event.respond(
+            FsResolveEvent.ResultEvent(
+                when {
+                    !uri.scheme.isNullOrBlank() -> uri.toString()
+
+                    uri.pathSegments.isEmpty() -> baseUri.toString()
+
+                    else -> baseUri.buildUpon().apply { uri.pathSegments.forEach(::appendPath) }.build().toString()
+                }
+            )
+        )
+    }
 
     @Subscribe
     open fun onShouldInterceptRequest(event: ShouldInterceptRequestEvent) {
-        if (!event.request.url.toString().startsWith(serverUrlBase)) {
+        if (!event.request.url.toString().startsWith(urlBase)) {
             return
         }
 
@@ -91,16 +284,16 @@ open class FsPlugin(val activity: ComponentActivity, val serverUrlBase: String =
 
             when (uri.scheme) {
 
-                "content" -> WebResourceResponse(
-                    activity.contentResolver.getType(uri),
-                    null,
-                    activity.contentResolver.openInputStream(uri)
-                )
-
-                "file" -> WebResourceResponse(
+                SCHEME_FILE -> WebResourceResponse(
                     URLConnection.guessContentTypeFromName(uri.path),
                     null,
                     FileInputStream(uri.toFile())
+                )
+
+                SCHEME_CONTENT -> WebResourceResponse(
+                    activity.contentResolver.getType(uri),
+                    null,
+                    activity.contentResolver.openInputStream(uri)
                 )
 
                 // 404
@@ -111,147 +304,41 @@ open class FsPlugin(val activity: ComponentActivity, val serverUrlBase: String =
                 null,
                 null,
                 500,
-                e.message ?: "Exception occurred",
+                e.message ?: "Cannot read from URI",
                 null,
                 ByteArrayInputStream(e.stackTraceToString().toByteArray())
             )
         }
     }
 
-    @Subscribe
-    fun onGetFsServerUrlBase(event: GetFsServerUrlBaseEvent) {
-        event.respond(GetFsServerUrlBaseEvent.ResultEvent(serverUrlBase))
+    protected fun getCanonicalUri(uriSource: String): Uri {
+        val uri = Uri.parse(uriSource)
+
+        return when (uri.scheme) {
+            SCHEME_FILE, SCHEME_CONTENT -> uri
+
+            SCHEME_RACEHORSE -> {
+                val baseDir = when (uri.authority) {
+                    SYSTEM_DIR_DOCUMENTS ->
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+
+                    SYSTEM_DIR_DATA, SYSTEM_DIR_LIBRARY -> activity.filesDir
+                    SYSTEM_DIR_CACHE -> activity.cacheDir
+                    SYSTEM_DIR_EXTERNAL -> activity.getExternalFilesDir(null)
+                    SYSTEM_DIR_EXTERNAL_STORAGE -> Environment.getExternalStorageDirectory()
+                    else -> null
+                }
+
+                requireNotNull(baseDir) { "Unrecognized directory" }
+
+                File(baseDir, uri.pathSegments.joinToString(File.separator)).toUri()
+            }
+
+            else -> throw UnsupportedSchemeException()
+        }
     }
 
-//    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-//    open fun onFsMkdir(event: FsMkdirEvent) {
-//        event.respond(FsMkdirEvent.ResultEvent(getFile(event.path, event.directory).mkdirs()))
-//    }
-//
-//    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-//    open fun onFsReadDir(event: FsReadDirEvent) {
-//        event.respond(FsReadDirEvent.ResultEvent(
-//            getFile(event.path, event.directory).toPath().listDirectoryEntries(event.glob)
-//                .map { it.fileName.toString() }
-//        ))
-//    }
-//
-//    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-//    open fun onFsReadText(event: FsReadTextEvent) {
-//        event.respond(
-//            FsReadTextEvent.ResultEvent(
-//                getFile(event.path, event.directory).readText(Charset.forName(event.encoding))
-//            )
-//        )
-//    }
-//
-//    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-//    open fun onFsReadBytes(event: FsReadBytesEvent) {
-//        event.respond(FsReadBytesEvent.ResultEvent(getFile(event.path, event.directory).readBytes()))
-//    }
-//
-//    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-//    open fun onFsAppend(event: FsAppendTextEvent) {
-//        getFile(event.path, event.directory).apply {
-//            event.text?.let { appendText(it, Charset.forName(event.encoding)) }
-//
-//            if (event.text != null) {
-//                appendText(event.text, Charset.forName(event.encoding))
-//            }
-//            if (event.blob != null) {
-//                appendBytes(event.blob)
-//            }
-//        }
-//        event.respond(VoidEvent())
-//    }
-//
-//    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-//    open fun onFsAppendText(event: FsAppendTextEvent) {
-//        getFile(event.path, event.directory).appendText(event.text, Charset.forName(event.encoding))
-//        event.respond(VoidEvent())
-//    }
-//
-//    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-//    open fun onFsAppendBytes(event: FsAppendBytesEvent) {
-//        getFile(event.path, event.directory).appendBytes(event.buffer)
-//        event.respond(VoidEvent())
-//    }
-//
-//    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-//    open fun onFsWriteText(event: FsWriteTextEvent) {
-//        getFile(event.path, event.directory).writeText(event.text, Charset.forName(event.encoding))
-//        event.respond(VoidEvent())
-//    }
-//
-//    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-//    open fun onFsWriteBytes(event: FsWriteBytesEvent) {
-//        getFile(event.path, event.directory).writeBytes(event.buffer)
-//        event.respond(VoidEvent())
-//    }
-//
-//    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-//    open fun onFsCopy(event: FsCopyEvent) {
-//        event.respond(
-//            FsCopyEvent.ResultEvent(
-//                getFile(event.sourcePath, event.sourceDirectory)
-//                    .copyRecursively(getFile(event.targetPath, event.targetDirectory), event.overwrite)
-//            )
-//        )
-//    }
-//
-//    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-//    open fun onFsMove(event: FsMoveEvent) {
-//        getFile(event.sourcePath, event.sourceDirectory).toPath()
-//            .moveTo(getFile(event.targetPath, event.targetDirectory).toPath())
-//
-//        event.respond(VoidEvent())
-//    }
-//
-//    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-//    open fun onFsDelete(event: FsDeleteEvent) {
-//        event.respond(FsCopyEvent.ResultEvent(getFile(event.path, event.directory).deleteRecursively()))
-//    }
-//
-//    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-//    open fun onFsExists(event: FsExistsEvent) {
-//        event.respond(FsExistsEvent.ResultEvent(getFile(event.path, event.directory).exists()))
-//    }
-//
-//    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-//    open fun onFsStat(event: FsStatEvent) {
-//        File("").
-//        getFile(event.path, event.directory).toPath().readAttributes<BasicFileAttributes>().run {
-//            event.respond(
-//                FsStatEvent.ResultEvent(
-//                    lastModifiedTime = lastModifiedTime().toMillis(),
-//                    lastAccessTime = lastAccessTime().toMillis(),
-//                    creationTime = creationTime().toMillis(),
-//                    isFile = isRegularFile,
-//                    isDirectory = isDirectory,
-//                    isSymbolicLink = isSymbolicLink,
-//                    isOther = isOther,
-//                    size = size(),
-//                )
-//            )
-//        }
-//    }
-//
-//    private fun getFile(path: String, directory: String?): File {
-//        val dir = getDirectory(directory) ?: return Uri.parse(path).toFile()
-//
-//        dir.mkdirs()
-//
-//        return File(dir, path)
-//    }
-//
-//    fun getDirectory(directory: String?): File? {
-//        return when (directory) {
-//            "documents" -> Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-//            "data", "library" -> activity.filesDir
-//            "cache" -> activity.cacheDir
-//            "external" -> activity.getExternalFilesDir(null)
-//            "external_storage" -> Environment.getExternalStorageDirectory()
-//            else -> null
-//        }
-//    }
+    protected fun getFile(uri: String) = getCanonicalUri(uri).toFile()
 }
+
+class UnsupportedSchemeException : Exception()
