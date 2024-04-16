@@ -30,11 +30,11 @@ export class File {
   /**
    * Creates a new {@link File} instance.
    *
-   * @param eventBridge The underlying event bridge.
+   * @param _eventBridge The underlying event bridge.
    * @param uri The URI that denotes the file.
    */
   constructor(
-    private eventBridge: EventBridge,
+    private _eventBridge: EventBridge,
     public readonly uri: string
   ) {}
 
@@ -42,7 +42,7 @@ export class File {
    * Returns `true` if the file exists, of `false` otherwise.
    */
   isExisting(): Promise<boolean> {
-    return this.eventBridge
+    return this._eventBridge
       .requestAsync({ type: 'org.racehorse.FsIsExistingEvent', payload: { uri: this.uri } })
       .then(event => event.payload.isExisting);
   }
@@ -51,7 +51,7 @@ export class File {
    * Returns filesystem attributes of the file.
    */
   getStat(): Promise<FileStat> {
-    return this.eventBridge
+    return this._eventBridge
       .requestAsync({ type: 'org.racehorse.FsStatsEvent', payload: { uri: this.uri } })
       .then(event => event.payload.stats);
   }
@@ -60,7 +60,7 @@ export class File {
    * Returns the [MIME type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types) of the file.
    */
   getMimeType(): Promise<string> {
-    return this.eventBridge
+    return this._eventBridge
       .requestAsync({ type: 'org.racehorse.FsGetMimeTypeEvent', payload: { uri: this.uri } })
       .then(event => event.payload.mimeType);
   }
@@ -69,7 +69,7 @@ export class File {
    * Creates a directory denoted by this file.
    */
   mkdir(): Promise<boolean> {
-    return this.eventBridge
+    return this._eventBridge
       .requestAsync({ type: 'org.racehorse.FsMkdirEvent', payload: { uri: this.uri } })
       .then(isSuccessful);
   }
@@ -78,9 +78,9 @@ export class File {
    * Reads the list of files contained in the directory.
    */
   readDir(): Promise<File[]> {
-    return this.eventBridge
+    return this._eventBridge
       .requestAsync({ type: 'org.racehorse.FsReadDirEvent', payload: { uri: this.uri } })
-      .then(event => event.payload.uris.map((uri: string) => new File(this.eventBridge, uri)));
+      .then(event => event.payload.uris.map((uri: string) => new File(this._eventBridge, uri)));
   }
 
   /**
@@ -88,8 +88,8 @@ export class File {
    *
    * @param encoding The expected file encoding.
    */
-  readText(encoding = 'utf8'): Promise<string> {
-    return this.eventBridge
+  readText(encoding = 'utf-8'): Promise<string> {
+    return this._eventBridge
       .requestAsync({ type: 'org.racehorse.FsReadEvent', payload: { uri: this.uri, encoding } })
       .then(event => event.payload.data);
   }
@@ -98,7 +98,7 @@ export class File {
    * Reads the file contents as base64-encoded string.
    */
   readBytes(): Promise<string> {
-    return this.eventBridge
+    return this._eventBridge
       .requestAsync({ type: 'org.racehorse.FsReadEvent', payload: { uri: this.uri } })
       .then(event => event.payload.data);
   }
@@ -132,8 +132,8 @@ export class File {
    * @param text The text to append.
    * @param encoding The expected file encoding.
    */
-  appendText(text: string, encoding = 'utf8'): Promise<void> {
-    return this.eventBridge
+  appendText(text: string, encoding = 'utf-8'): Promise<void> {
+    return this._eventBridge
       .requestAsync({ type: 'org.racehorse.FsAppendEvent', payload: { uri: this.uri, data: text, encoding } })
       .then(noop);
   }
@@ -146,7 +146,7 @@ export class File {
   appendBytes(data: string | Blob | ArrayBuffer): Promise<void> {
     return encodeBase64(data)
       .then(data =>
-        this.eventBridge.requestAsync({ type: 'org.racehorse.FsAppendEvent', payload: { uri: this.uri, data } })
+        this._eventBridge.requestAsync({ type: 'org.racehorse.FsAppendEvent', payload: { uri: this.uri, data } })
       )
       .then(noop);
   }
@@ -159,8 +159,8 @@ export class File {
    * @param text The new text file contents.
    * @param encoding The expected file encoding.
    */
-  writeText(text: string, encoding = 'utf8'): Promise<void> {
-    return this.eventBridge
+  writeText(text: string, encoding = 'utf-8'): Promise<void> {
+    return this._eventBridge
       .requestAsync({ type: 'org.racehorse.FsWriteEvent', payload: { uri: this.uri, data: text, encoding } })
       .then(noop);
   }
@@ -175,7 +175,7 @@ export class File {
   writeBytes(data: string | Blob | ArrayBuffer): Promise<void> {
     return encodeBase64(data)
       .then(data =>
-        this.eventBridge.requestAsync({ type: 'org.racehorse.FsWriteEvent', payload: { uri: this.uri, data } })
+        this._eventBridge.requestAsync({ type: 'org.racehorse.FsWriteEvent', payload: { uri: this.uri, data } })
       )
       .then(noop);
   }
@@ -189,7 +189,7 @@ export class File {
    * @param overwrite If `true` then destination is overwritten.
    */
   copy(to: File, overwrite = false): Promise<boolean> {
-    return this.eventBridge
+    return this._eventBridge
       .requestAsync({ type: 'org.racehorse.FsCopyEvent', payload: { uri: this.uri, toUri: to.uri, overwrite } })
       .then(isSuccessful);
   }
@@ -203,7 +203,7 @@ export class File {
    * @param overwrite If `true` then destination is overwritten.
    */
   move(to: File, overwrite = false): Promise<boolean> {
-    return this.eventBridge
+    return this._eventBridge
       .requestAsync({ type: 'org.racehorse.FsMoveEvent', payload: { uri: this.uri, toUri: to.uri, overwrite } })
       .then(isSuccessful);
   }
@@ -214,7 +214,7 @@ export class File {
    * @returns `true` if the file was deleted, or `false` otherwise.
    */
   delete(): Promise<boolean> {
-    return this.eventBridge
+    return this._eventBridge
       .requestAsync({ type: 'org.racehorse.FsDeleteEvent', payload: { uri: this.uri } })
       .then(isSuccessful);
   }
@@ -223,7 +223,7 @@ export class File {
    * Returns a URL that points to the file and can be loaded by the web view.
    */
   toUrl(): string {
-    const { urlBase } = this.eventBridge.request({ type: 'org.racehorse.FsGetUrlBaseEvent' }).payload;
+    const { urlBase } = this._eventBridge.request({ type: 'org.racehorse.FsGetUrlBaseEvent' }).payload;
 
     return urlBase + '?uri=' + encodeURIComponent(this.uri);
   }

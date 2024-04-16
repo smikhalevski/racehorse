@@ -89,7 +89,7 @@ export function DownloadExample() {
           setDownloads(downloadManager.getAllDownloads());
         };
 
-        const handlePreviewDownload = () => {
+        const handleOpenPreview = () => {
           activityManager.startActivity({
             action: Intent.ACTION_VIEW,
             flags: Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION,
@@ -105,7 +105,7 @@ export function DownloadExample() {
             <li>
               <a
                 href={download.status === DownloadStatus.SUCCESSFUL ? '#' : undefined}
-                onClick={handlePreviewDownload}
+                onClick={handleOpenPreview}
               >
                 {download.title}
               </a>
