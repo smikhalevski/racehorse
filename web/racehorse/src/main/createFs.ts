@@ -106,8 +106,8 @@ export class File {
   /**
    * Reads file contents as a [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs).
    */
-  readDataUrl(): Promise<string> {
-    return this.getMimeType().then(mimeType => this.readBytes().then(data => `data:${mimeType};base64],${data}`));
+  readDataUri(): Promise<string> {
+    return this.getMimeType().then(mimeType => this.readBytes().then(data => `data:${mimeType};base64,${data}`));
   }
 
   /**

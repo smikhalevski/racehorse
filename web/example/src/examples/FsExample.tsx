@@ -15,7 +15,7 @@ export function FsExample() {
           console.log(file.uri, await file.readText());
         }}
       >
-        {'Go'}
+        {'Create test file'}
       </button>
     </>
   );
