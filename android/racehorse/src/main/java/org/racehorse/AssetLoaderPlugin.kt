@@ -1,6 +1,7 @@
 package org.racehorse
 
 import android.content.Intent
+import android.net.Uri
 import android.webkit.WebResourceResponse
 import androidx.activity.ComponentActivity
 import androidx.annotation.WorkerThread
@@ -8,6 +9,7 @@ import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewAssetLoader.PathHandler
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.guessIntentAction
+import org.racehorse.utils.ifNullOrBlank
 import org.racehorse.utils.launchActivity
 import org.racehorse.webview.ShouldInterceptRequestEvent
 import org.racehorse.webview.ShouldOverrideUrlLoadingEvent
@@ -41,17 +43,17 @@ open class AssetLoaderPlugin(private val activity: ComponentActivity) {
     /**
      * Registers the new asset loader that uses the handler for a given URL.
      */
-    fun registerAssetLoader(url: String, handler: PathHandler) = registerAssetLoader(URL(url), handler)
+    fun registerAssetLoader(uri: String, handler: PathHandler) = registerAssetLoader(Uri.parse(uri), handler)
 
     /**
      * Registers the new asset loader that uses the handler for a given URL.
      */
-    fun registerAssetLoader(url: URL, handler: PathHandler) {
+    fun registerAssetLoader(uri: Uri, handler: PathHandler) {
         registerAssetLoader(
             WebViewAssetLoader.Builder()
-                .setHttpAllowed(url.protocol == "http")
-                .setDomain(url.authority)
-                .addPathHandler(url.path.ifEmpty { "/" }, handler)
+                .setHttpAllowed(uri.scheme == "http")
+                .setDomain(uri.authority ?: WebViewAssetLoader.DEFAULT_DOMAIN)
+                .addPathHandler(uri.path.ifNullOrBlank { "/" }, handler)
                 .build()
         )
     }

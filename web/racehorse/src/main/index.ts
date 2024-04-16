@@ -1,6 +1,7 @@
 import { createActivityManager } from './createActivityManager';
 import { createBiometricEncryptedStorageManager } from './createBiometricEncryptedStorageManager';
 import { createBiometricManager } from './createBiometricManager';
+import { createContactsManager } from './createContactsManager';
 import { createDeepLinkManager } from './createDeepLinkManager';
 import { createDeviceManager } from './createDeviceManager';
 import { createDownloadManager } from './createDownloadManager';
@@ -48,6 +49,7 @@ export { createScheduler } from './createScheduler';
 export type { ActivityManager, ActivityResult, ActivityInfo } from './createActivityManager';
 export type { BiometricEncryptedStorageManager, BiometricConfig } from './createBiometricEncryptedStorageManager';
 export type { BiometricManager } from './createBiometricManager';
+export type { ContactsManager, Contact } from './createContactsManager';
 export type { DeepLinkManager } from './createDeepLinkManager';
 export type { DeviceManager, DeviceInfo, Rect } from './createDeviceManager';
 export type { DownloadManager, DownloadOptions, Download } from './createDownloadManager';
@@ -95,6 +97,11 @@ export const biometricEncryptedStorageManager = createBiometricEncryptedStorageM
  * Provides the status of biometric support and allows to enroll for biometric auth.
  */
 export const biometricManager = createBiometricManager(eventBridge);
+
+/**
+ * Provides access to phone contacts.
+ */
+export const contactsManager = createContactsManager(eventBridge);
 
 /**
  * Monitors deep link requests.

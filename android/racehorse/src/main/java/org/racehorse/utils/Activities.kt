@@ -4,6 +4,8 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.database.Cursor
+import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
@@ -12,8 +14,6 @@ import androidx.activity.result.ActivityResultRegistryOwner
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
 import java.util.UUID
 
 /**
@@ -71,10 +71,7 @@ fun ActivityResultRegistryOwner.launchActivityForResult(intent: Intent, callback
  * @param permissions The array of permissions that must be granted.
  * @param callback The callback the receives a map from a permission name to its granted status.
  */
-fun ComponentActivity.askForPermissions(
-    permissions: Iterable<String>,
-    callback: (statuses: Map<String, Boolean>) -> Unit
-) {
+fun ComponentActivity.askForPermissions(permissions: Iterable<String>, callback: (statuses: Map<String, Boolean>) -> Unit) {
     val statuses = permissions.associateWith { true }
     val missingPermissions = permissions.filterNot(::isPermissionGranted).toTypedArray()
 
@@ -109,3 +106,23 @@ fun ComponentActivity.askForPermission(permission: String, callback: (isGranted:
  */
 fun Context.isPermissionGranted(permission: String) =
     ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+
+/**
+ * Shortcut for query to content resolver.
+ */
+fun <T> Context.queryContent(
+    uri: Uri,
+    projection: Array<String>? = null,
+    selection: String? = null,
+    selectionArgs: Array<String>? = null,
+    sortOrder: String? = null,
+    block: Cursor.() -> T
+) = checkNotNull(
+    contentResolver.query(
+        uri,
+        projection,
+        selection,
+        selectionArgs,
+        sortOrder,
+    )
+) { "Cannot acquire a cursor from content resolver" }.use(block)

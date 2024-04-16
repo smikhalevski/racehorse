@@ -16,6 +16,7 @@ import org.racehorse.ActivityPlugin
 import org.racehorse.AssetLoaderPlugin
 import org.racehorse.BiometricEncryptedStoragePlugin
 import org.racehorse.BiometricPlugin
+import org.racehorse.ContactsPlugin
 import org.racehorse.DeepLinkPlugin
 import org.racehorse.DevicePlugin
 import org.racehorse.DownloadPlugin
@@ -36,7 +37,6 @@ import org.racehorse.OpenDeepLinkEvent
 import org.racehorse.PermissionsPlugin
 import org.racehorse.ProxyPathHandler
 import org.racehorse.StaticPathHandler
-import org.racehorse.TempCameraFileFactory
 import org.racehorse.evergreen.BundleReadyEvent
 import org.racehorse.evergreen.EvergreenPlugin
 import org.racehorse.evergreen.UpdateMode
@@ -103,6 +103,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(FacebookSharePlugin(this))
         eventBus.register(BiometricPlugin(this))
         eventBus.register(BiometricEncryptedStoragePlugin(this, File(filesDir, "biometric_storage")))
+        eventBus.register(ContactsPlugin(this))
 
         // From the example app
         eventBus.register(ToastPlugin(this))

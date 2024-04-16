@@ -17,6 +17,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.utils.askForPermission
 import org.racehorse.utils.createTempFile
+import org.racehorse.utils.queryContent
 import org.racehorse.webview.DownloadStartEvent
 import java.io.File
 import java.io.Serializable
@@ -61,7 +62,7 @@ class Download(
 
     /**
      * The URI where downloaded file will be stored. If a destination is supplied by client, that URI will be used here.
-     * Otherwise, the value will initially be null and will be filled in with a generated URI once the download has
+     * Otherwise, the value will initially be `null` and will be filled in with a generated URI once the download has
      * started.
      */
     val localUri: String?,
@@ -244,7 +245,8 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
 
         activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) { isGranted ->
             event.respond {
-                check(isGranted) { "Permission required" }
+                isGranted || return@respond ExceptionEvent(PermissionRequiredException())
+
                 AddDownloadEvent.ResultEvent(downloadManager.enqueue(request))
             }
         }
@@ -283,11 +285,10 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
                 throw e
             }
 
-            val filePath =
-                checkNotNull(activity.contentResolver.query(contentUri, arrayOf(MediaStore.Downloads.DATA), null, null, null)).use { cursor ->
-                    cursor.moveToFirst()
-                    cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Downloads.DATA))
-                }
+            val filePath = activity.queryContent(contentUri, arrayOf(MediaStore.Downloads.DATA)) {
+                moveToFirst()
+                getString(getColumnIndexOrThrow(MediaStore.Downloads.DATA))
+            }
 
             activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) {
                 event.respond { AddDownloadEvent.ResultEvent(addCompletedDownload(File(filePath), mimeType)) }
@@ -298,7 +299,7 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
         // Create a new file manually
         activity.askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) { isGranted ->
             event.respond {
-                check(isGranted) { "Permission required" }
+                isGranted || return@respond ExceptionEvent(PermissionRequiredException())
 
                 val targetDir = Environment.getExternalStoragePublicDirectory(TARGET_DIR)
 
