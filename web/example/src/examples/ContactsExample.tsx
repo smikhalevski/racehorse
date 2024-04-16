@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Contact, contactsManager } from 'racehorse';
+import { Contact, contactsManager, fs } from 'racehorse';
 import { FormattedJSON } from '../components/FormattedJSON';
 
 export function ContactsExample() {
@@ -23,7 +23,7 @@ export function ContactsExample() {
         <p>
           <img
             style={{ display: 'block', width: '100px', height: '100px', borderRadius: '50%' }}
-            src={contact.photoUri || ''}
+            src={fs.File(contact.photoUri).toUrl()}
             alt={contact.name || ''}
           />
         </p>
