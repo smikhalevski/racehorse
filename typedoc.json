@@ -26,8 +26,10 @@
       "Promise": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise"
     },
     "typescript": {
-      "Promise": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
-      "AbortSignal": "https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal"
+      "AbortSignal": "https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal",
+      "ArrayBuffer": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer",
+      "Blob": "https://developer.mozilla.org/en-US/docs/Web/API/Blob",
+      "Promise": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise"
     }
   }
 }
