@@ -1,87 +1,93 @@
-import React, { useEffect, useState } from 'react';
-import { activityManager, File, fsManager, Intent, SystemDir } from 'racehorse';
+import { useEffect, useState } from 'react';
+import { activityManager, Directory, File, fsManager, Intent } from 'racehorse';
 
 export function FsExample() {
-  const [rootDir, setRootDir] = useState<string>(SystemDir.EXTERNAL_STORAGE);
-  const [folder, setFolder] = useState<{ dir: File; files: File[] }>();
+  const [goToUri, setGoToUri] = useState<string>(Directory.EXTERNAL_STORAGE);
+  const [dir, setDir] = useState<File>();
+  const [files, setFiles] = useState<File[]>();
 
   useEffect(() => {
-    handleGoToFile(fsManager.File(rootDir, '/'));
-  }, [rootDir]);
+    handleOpenFile(fsManager.File(goToUri));
+  }, [goToUri]);
 
-  const handleGoToParent = () => {
-    const parentFile = folder?.dir.getParent();
+  const handleOpenFile = (file: File) => {
+    const attributes = file.getAttributes();
 
-    if (parentFile) {
-      handleGoToFile(parentFile);
-    }
-  };
-
-  const handleGoToFile = async (file: File) => {
-    const stat = await file.getStat();
-
-    if (stat.isDirectory) {
+    if (attributes.isDirectory) {
       file.readDir().then(files => {
-        setFolder({ dir: file, files });
+        setDir(file);
+        setFiles(files);
       });
     }
 
-    if (stat.isFile) {
-      activityManager.startActivity({
-        action: Intent.ACTION_VIEW,
-        flags: Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION,
-        type: await file.getMimeType(),
-        data: file.getExposableUri(),
-      });
+    if (attributes.isFile) {
+      file.getMimeType().then(mimeType =>
+        activityManager.startActivity({
+          action: Intent.ACTION_VIEW,
+          flags: Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION,
+          type: mimeType,
+          data: file.contentUri,
+        })
+      );
     }
   };
 
   return (
     <>
-      <h2>{'Filesystem'}</h2>
+      <h2>{'File system'}</h2>
 
       <p>
-        {'Root: '}
+        {'Go to: '}
         <select
+          value={goToUri}
           onChange={event => {
-            setRootDir(event.target.value);
+            setGoToUri(event.target.value);
           }}
         >
-          {Object.values(SystemDir).map(dir => (
-            <option value={dir}>{dir}</option>
+          {Object.values(Directory).map(uri => (
+            <option value={uri}>{uri}</option>
           ))}
         </select>
       </p>
 
-      {folder !== undefined && (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5em',
-            width: '100%',
-            alignItems: 'flex-start',
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5em',
+          width: '100%',
+          alignItems: 'flex-start',
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {dir?.uri}
+
+        <a
+          onClick={() => {
+            if (dir !== undefined && dir.parentFile !== null) {
+              handleOpenFile(dir.parentFile);
+            }
           }}
         >
-          {folder.dir.uri}
+          {'⤴️'}
+        </a>
 
-          <a onClick={handleGoToParent}>{'⤴️'}</a>
+        {files?.map(file => (
+          <a
+            href={'#'}
+            onClick={event => {
+              event.preventDefault();
+              handleOpenFile(file);
+            }}
+          >
+            {file.uri.split('/').filter(Boolean).pop()}
+          </a>
+        ))}
 
-          {folder.files.map(file => (
-            <a
-              href={'#'}
-              onClick={event => {
-                event.preventDefault();
-                handleGoToFile(file);
-              }}
-            >
-              {file.uri.split('/').filter(Boolean).pop()}
-            </a>
-          ))}
-        </div>
-      )}
+        {'Total files: '}
+        {files?.length || 0}
+      </div>
     </>
   );
 }

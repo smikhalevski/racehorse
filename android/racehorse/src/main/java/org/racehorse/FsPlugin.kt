@@ -10,25 +10,25 @@ import androidx.core.net.toUri
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.utils.guessMimeType
-import org.racehorse.utils.queryContent
 import org.racehorse.webview.ShouldInterceptRequestEvent
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.io.FileOutputStream
+import java.net.HttpURLConnection
 import java.net.URLConnection
 import java.nio.charset.Charset
+import java.nio.file.NotDirectoryException
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.Base64
-import kotlin.io.path.listDirectoryEntries
-import kotlin.io.path.moveTo
 import kotlin.io.path.readAttributes
 
-class FsIsExistingEvent(val uri: String) : RequestEvent() {
+class FsIsExistingEvent(val uri: Uri) : RequestEvent() {
     class ResultEvent(val isExisting: Boolean) : ResponseEvent()
 }
 
-class FsGetStatEvent(val uri: String) : RequestEvent() {
+class FsGetAttributesEvent(val uri: Uri) : RequestEvent() {
     class ResultEvent(
         val lastModifiedTime: Long,
         val lastAccessTime: Long,
@@ -41,58 +41,53 @@ class FsGetStatEvent(val uri: String) : RequestEvent() {
     ) : ResponseEvent()
 }
 
-class FsGetParentUriEvent(val uri: String) : RequestEvent() {
-    class ResultEvent(val uri: String?) : ResponseEvent()
+class FsGetParentUriEvent(val uri: Uri) : RequestEvent() {
+    class ResultEvent(val parentUri: Uri?) : ResponseEvent()
 }
 
-class FsGetUrlEvent(val uri: String) : RequestEvent() {
-    class ResultEvent(val url: String) : ResponseEvent()
+class FsGetLocalUrlEvent(val uri: Uri) : RequestEvent() {
+    class ResultEvent(val localUrl: Uri) : ResponseEvent()
 }
 
-class FsGetExposableUriEvent(val uri: String) : RequestEvent() {
-    class ResultEvent(val uri: String) : ResponseEvent()
+class FsGetContentUriEvent(val uri: Uri) : RequestEvent() {
+    class ResultEvent(val contentUri: Uri) : ResponseEvent()
 }
 
-class FsGetMimeTypeEvent(val uri: String) : RequestEvent() {
+class FsGetMimeTypeEvent(val uri: Uri) : RequestEvent() {
     class ResultEvent(val mimeType: String?) : ResponseEvent()
 }
 
-class FsMkdirEvent(val uri: String) : RequestEvent() {
+class FsMkdirEvent(val uri: Uri) : RequestEvent() {
     class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
 }
 
-class FsReadDirEvent(val uri: String) : RequestEvent() {
-    class ResultEvent(val uris: List<String>) : ResponseEvent()
+class FsReadDirEvent(val uri: Uri) : RequestEvent() {
+    class ResultEvent(val fileUris: List<Uri>) : ResponseEvent()
 }
 
-class FsReadEvent(val uri: String, val encoding: String?) : RequestEvent() {
+class FsReadEvent(val uri: Uri, val encoding: String?) : RequestEvent() {
     class ResultEvent(val data: String) : ResponseEvent()
 }
 
-class FsAppendEvent(val uri: String, val data: String, val encoding: String?) : RequestEvent()
+class FsWriteEvent(val uri: Uri, val data: String, val encoding: String?, val append: Boolean) : RequestEvent()
 
-class FsWriteEvent(val uri: String, val data: String, val encoding: String?) : RequestEvent()
+class FsCopyEvent(val uri: Uri, val toUri: Uri) : RequestEvent()
 
-class FsCopyEvent(val uri: String, val toUri: String, val overwrite: Boolean) : RequestEvent() {
+class FsDeleteEvent(val uri: Uri) : RequestEvent() {
     class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
 }
 
-class FsMoveEvent(val uri: String, val toUri: String, val overwrite: Boolean) : RequestEvent() {
-    class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
-}
-
-class FsDeleteEvent(val uri: String) : RequestEvent() {
-    class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
-}
-
-class FsResolveEvent(val uri: String, val path: String) : RequestEvent() {
-    class ResultEvent(val uri: String) : ResponseEvent()
-}
-
+/**
+ * File system CRUD operations.
+ *
+ * @param activity The activity that provides access to content resolver.
+ * @param providerAuthority The authority of a [FileProvider] defined in a `<provider>` element in your app's manifest.
+ * @param baseLocalUrl The base local URL from which files are served to the web view.
+ */
 open class FsPlugin(
     val activity: ComponentActivity,
-    val fileAuthority: String? = null,
-    val baseUrl: String = "https://racehorse.local/fs/"
+    val providerAuthority: String? = null,
+    val baseLocalUrl: String = "https://fs.racehorse.local"
 ) {
 
     private companion object {
@@ -100,19 +95,21 @@ open class FsPlugin(
         const val SCHEME_CONTENT = "content"
         const val SCHEME_RACEHORSE = "racehorse"
 
-        const val SYSTEM_DIR_DOCUMENTS = "documents"
-        const val SYSTEM_DIR_DATA = "data"
-        const val SYSTEM_DIR_LIBRARY = "library"
-        const val SYSTEM_DIR_CACHE = "cache"
-        const val SYSTEM_DIR_EXTERNAL = "external"
-        const val SYSTEM_DIR_EXTERNAL_STORAGE = "external_storage"
+        const val DIRECTORY_DOCUMENTS = "documents"
+        const val DIRECTORY_DATA = "data"
+        const val DIRECTORY_LIBRARY = "library"
+        const val DIRECTORY_CACHE = "cache"
+        const val DIRECTORY_EXTERNAL = "external"
+        const val DIRECTORY_EXTERNAL_STORAGE = "external_storage"
 
-        const val QUERY_PARAM_URI = "uri"
+        const val LOCAL_URI_PARAM = "uri"
     }
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    private val baseLocalUri = Uri.parse(baseLocalUrl)
+
+    @Subscribe
     open fun onFsIsExisting(event: FsIsExistingEvent) {
-        val uri = getCanonicalUri(event.uri)
+        val uri = event.uri.toSupportedUri()
 
         event.respond(
             FsIsExistingEvent.ResultEvent(
@@ -120,69 +117,111 @@ open class FsPlugin(
 
                     SCHEME_FILE -> uri.toFile().exists()
 
-                    SCHEME_CONTENT -> activity.queryContent(uri) { moveToFirst() }
+                    SCHEME_CONTENT -> try {
+                        uri.getOutputStream().close()
+                        true
+                    } catch (_: FileNotFoundException) {
+                        false
+                    }
 
-                    else -> throw UnsupportedSchemeException()
+                    else -> throw UnsupportedUriException()
                 }
             )
-        )
-    }
-
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    open fun onFsGetStat(event: FsGetStatEvent) {
-        event.respond(
-            getFile(event.uri).toPath().readAttributes<BasicFileAttributes>().run {
-                FsGetStatEvent.ResultEvent(
-                    lastModifiedTime = lastModifiedTime().toMillis(),
-                    lastAccessTime = lastAccessTime().toMillis(),
-                    creationTime = creationTime().toMillis(),
-                    isFile = isRegularFile,
-                    isDirectory = isDirectory,
-                    isSymbolicLink = isSymbolicLink,
-                    isOther = isOther,
-                    size = size(),
-                )
-            }
         )
     }
 
     @Subscribe
     open fun onFsGetParentUri(event: FsGetParentUriEvent) {
-        event.respond(FsGetParentUriEvent.ResultEvent(getFile(event.uri).parentFile?.toUri().toString()))
-    }
-
-    @Subscribe
-    open fun onFsGetUrl(event: FsGetUrlEvent) {
-        event.respond(
-            FsGetUrlEvent.ResultEvent(
-                Uri.parse(baseUrl).buildUpon().appendQueryParameter(QUERY_PARAM_URI, event.uri).build().toString()
-            )
-        )
-    }
-
-    @Subscribe
-    open fun onFsGetExposableUri(event: FsGetExposableUriEvent) {
-        checkNotNull(fileAuthority) { "Expected a provider authority" }
-
-        val uri = getCanonicalUri(event.uri)
+        val uri = event.uri.toSupportedUri()
 
         event.respond(
-            FsGetExposableUriEvent.ResultEvent(
+            FsGetParentUriEvent.ResultEvent(
                 when (uri.scheme) {
 
-                    SCHEME_FILE -> FileProvider.getUriForFile(activity, fileAuthority, uri.toFile()).toString()
+                    SCHEME_FILE -> uri.toFile().parentFile?.toUri()
 
-                    SCHEME_CONTENT -> uri.toString()
+                    SCHEME_CONTENT -> null
 
-                    else -> throw UnsupportedSchemeException()
+                    else -> throw UnsupportedUriException()
                 }
             )
         )
     }
 
+    @Subscribe
+    open fun onFsGetLocalUrl(event: FsGetLocalUrlEvent) {
+        event.respond(
+            FsGetLocalUrlEvent.ResultEvent(
+                baseLocalUri.buildUpon().appendQueryParameter(LOCAL_URI_PARAM, event.uri.toString()).build()
+            )
+        )
+    }
+
+    @Subscribe
+    open fun onFsGetContentUri(event: FsGetContentUriEvent) {
+        val uri = event.uri.toSupportedUri()
+
+        event.respond(
+            FsGetContentUriEvent.ResultEvent(
+                when (uri.scheme) {
+
+                    SCHEME_FILE -> FileProvider.getUriForFile(
+                        activity,
+                        checkNotNull(providerAuthority) { "No provider authority" },
+                        uri.toFile()
+                    )
+
+                    SCHEME_CONTENT -> uri
+
+                    else -> throw UnsupportedUriException()
+                }
+            )
+        )
+    }
+
+    @Subscribe
+    open fun onFsGetAttributes(event: FsGetAttributesEvent) {
+        val uri = event.uri.toSupportedUri()
+
+        event.respond(
+            when (uri.scheme) {
+
+                SCHEME_FILE -> uri.toFile().toPath().readAttributes<BasicFileAttributes>().run {
+                    FsGetAttributesEvent.ResultEvent(
+                        lastModifiedTime = lastModifiedTime().toMillis(),
+                        lastAccessTime = lastAccessTime().toMillis(),
+                        creationTime = creationTime().toMillis(),
+                        isFile = isRegularFile,
+                        isDirectory = isDirectory,
+                        isSymbolicLink = isSymbolicLink,
+                        isOther = isOther,
+                        size = size(),
+                    )
+                }
+
+                SCHEME_CONTENT -> {
+                    uri.getOutputStream().close()
+
+                    FsGetAttributesEvent.ResultEvent(
+                        lastModifiedTime = 0,
+                        lastAccessTime = 0,
+                        creationTime = 0,
+                        isFile = false,
+                        isDirectory = false,
+                        isSymbolicLink = false,
+                        isOther = true,
+                        size = -1,
+                    )
+                }
+
+                else -> throw UnsupportedUriException()
+            }
+        )
+    }
+
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     open fun onFsGetMimeType(event: FsGetMimeTypeEvent) {
-        val uri = getCanonicalUri(event.uri)
+        val uri = event.uri.toSupportedUri()
 
         event.respond(
             FsGetMimeTypeEvent.ResultEvent(
@@ -192,7 +231,7 @@ open class FsPlugin(
 
                     SCHEME_CONTENT -> activity.contentResolver.getType(uri)
 
-                    else -> throw UnsupportedSchemeException()
+                    else -> throw UnsupportedUriException()
                 }
             )
         )
@@ -200,71 +239,59 @@ open class FsPlugin(
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     open fun onFsMkdir(event: FsMkdirEvent) {
-        event.respond(FsMkdirEvent.ResultEvent(getFile(event.uri).mkdirs()))
+        event.respond(FsMkdirEvent.ResultEvent(event.uri.toSupportedUri().toFile().mkdirs()))
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     open fun onFsReadDir(event: FsReadDirEvent) {
+        val dir = event.uri.toSupportedUri().toFile()
+
         event.respond(
             FsReadDirEvent.ResultEvent(
-                getFile(event.uri).toPath().listDirectoryEntries().map { it.toUri().toString() }
+                dir.list()?.map { File(dir, it).toUri() } ?: throw NotDirectoryException(dir.absolutePath)
             )
         )
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     open fun onFsRead(event: FsReadEvent) {
-        val uri = getCanonicalUri(event.uri)
+        val bytes = event.uri.toSupportedUri().getInputStream().use { it.readBytes() }
 
-        val bytes = when (uri.scheme) {
-
-            SCHEME_FILE -> uri.toFile().readBytes()
-
-            SCHEME_CONTENT -> requireNotNull(activity.contentResolver.openInputStream(uri)).use { it.readBytes() }
-
-            else -> throw UnsupportedSchemeException()
-        }
-
-        val data = if (event.encoding == null) {
-            String(Base64.getEncoder().encode(bytes))
-        } else {
-            String(bytes, Charset.forName(event.encoding))
-        }
-
-        event.respond(FsReadEvent.ResultEvent(data))
-    }
-
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    open fun onFsAppend(event: FsAppendEvent) {
-        write(getCanonicalUri(event.uri), event.data, event.encoding, true)
-        event.respond(VoidEvent())
-    }
-
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    open fun onFsWrite(event: FsWriteEvent) {
-        write(getCanonicalUri(event.uri), event.data, event.encoding, false)
-        event.respond(VoidEvent())
-    }
-
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    open fun onFsCopy(event: FsCopyEvent) {
         event.respond(
-            FsCopyEvent.ResultEvent(
-                getFile(event.uri).copyRecursively(getFile(event.toUri), event.overwrite)
+            FsReadEvent.ResultEvent(
+                if (event.encoding == null) {
+                    String(Base64.getEncoder().encode(bytes))
+                } else {
+                    String(bytes, Charset.forName(event.encoding))
+                }
             )
         )
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    open fun onFsMove(event: FsMoveEvent) {
-        getFile(event.uri).toPath().moveTo(getFile(event.toUri).toPath(), event.overwrite)
+    open fun onFsWrite(event: FsWriteEvent) {
+        val bytes = if (event.encoding == null) {
+            Base64.getDecoder().decode(event.data)
+        } else {
+            event.data.toByteArray(Charset.forName(event.encoding))
+        }
 
-        event.respond(FsCopyEvent.ResultEvent(true))
+        event.uri.toSupportedUri().getOutputStream(event.append).use { it.write(bytes) }
+
+        event.respond(VoidEvent())
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    open fun onFsCopy(event: FsCopyEvent) {
+        event.uri.toSupportedUri().getInputStream().use {
+            event.toUri.toSupportedUri().getOutputStream().use(it::copyTo)
+        }
+        event.respond(VoidEvent())
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     open fun onFsDelete(event: FsDeleteEvent) {
-        val uri = getCanonicalUri(event.uri)
+        val uri = event.uri.toSupportedUri()
 
         event.respond(
             FsDeleteEvent.ResultEvent(
@@ -274,28 +301,7 @@ open class FsPlugin(
 
                     SCHEME_CONTENT -> activity.contentResolver.delete(uri, null, null) == 1
 
-                    else -> throw UnsupportedSchemeException()
-                }
-            )
-        )
-    }
-
-    @Subscribe
-    open fun onFsResolve(event: FsResolveEvent) {
-        val baseUri = getCanonicalUri(event.uri)
-
-        baseUri.scheme == SCHEME_FILE || throw UnsupportedSchemeException()
-
-        val uri = Uri.parse(event.path)
-
-        event.respond(
-            FsResolveEvent.ResultEvent(
-                when {
-                    !uri.scheme.isNullOrBlank() -> uri.toString()
-
-                    uri.pathSegments.isEmpty() -> baseUri.toString()
-
-                    else -> baseUri.buildUpon().apply { uri.pathSegments.forEach(::appendPath) }.build().toString()
+                    else -> throw UnsupportedUriException()
                 }
             )
         )
@@ -303,14 +309,13 @@ open class FsPlugin(
 
     @Subscribe
     open fun onShouldInterceptRequest(event: ShouldInterceptRequestEvent) {
-        if (!event.request.url.toString().startsWith(baseUrl)) {
+        if (!event.request.url.toString().startsWith(baseLocalUrl)) {
             // Unrelated request
             return
         }
 
         event.response = try {
-            val uri =
-                getCanonicalUri(requireNotNull(event.request.url.getQueryParameter(QUERY_PARAM_URI)) { "Expected a resource URI" })
+            val uri = Uri.parse(event.request.url.getQueryParameter(LOCAL_URI_PARAM)).toSupportedUri()
 
             when (uri.scheme) {
 
@@ -323,7 +328,7 @@ open class FsPlugin(
                 SCHEME_CONTENT -> WebResourceResponse(
                     activity.contentResolver.getType(uri),
                     null,
-                    activity.contentResolver.openInputStream(uri)
+                    uri.getInputStream()
                 )
 
                 // 404
@@ -333,62 +338,57 @@ open class FsPlugin(
             WebResourceResponse(
                 null,
                 null,
-                500,
-                e.message ?: "Cannot read the resource from the URI",
+                HttpURLConnection.HTTP_INTERNAL_ERROR,
+                e.message ?: "Internal error",
                 null,
                 ByteArrayInputStream(e.stackTraceToString().toByteArray())
             )
         }
     }
 
-    protected fun getCanonicalUri(uriSource: String): Uri {
-        val uri = Uri.parse(uriSource)
+    /**
+     * Returns [Uri] with `file:` or `content:` scheme. Resolves `racehorse:` scheme as a file.
+     */
+    protected fun Uri.toSupportedUri() = when (scheme) {
+        SCHEME_FILE, SCHEME_CONTENT -> this
 
-        return when (uri.scheme) {
-            SCHEME_FILE, SCHEME_CONTENT -> uri
+        SCHEME_RACEHORSE -> {
+            val baseDir = when (authority) {
+                DIRECTORY_DOCUMENTS ->
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
 
-            SCHEME_RACEHORSE -> {
-                val baseDir = when (uri.authority) {
-                    SYSTEM_DIR_DOCUMENTS ->
-                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-
-                    SYSTEM_DIR_DATA, SYSTEM_DIR_LIBRARY -> activity.filesDir
-                    SYSTEM_DIR_CACHE -> activity.cacheDir
-                    SYSTEM_DIR_EXTERNAL -> activity.getExternalFilesDir(null)
-                    SYSTEM_DIR_EXTERNAL_STORAGE -> Environment.getExternalStorageDirectory()
-                    else -> null
-                }
-
-                requireNotNull(baseDir) { "Unrecognized directory" }
-
-                File(baseDir, uri.pathSegments.joinToString(File.separator)).toUri()
+                DIRECTORY_DATA, DIRECTORY_LIBRARY -> activity.filesDir
+                DIRECTORY_CACHE -> activity.cacheDir
+                DIRECTORY_EXTERNAL -> activity.getExternalFilesDir(null)
+                DIRECTORY_EXTERNAL_STORAGE -> Environment.getExternalStorageDirectory()
+                else -> null
             }
 
-            else -> throw UnsupportedSchemeException()
+            requireNotNull(baseDir) { "Unrecognized directory" }
+
+            File(baseDir, pathSegments.joinToString(File.separator)).toUri()
         }
+
+        else -> throw UnsupportedUriException()
     }
 
-    protected fun getFile(uri: String) = getCanonicalUri(uri).toFile()
+    protected fun Uri.getInputStream() = when (scheme) {
 
-    private fun write(uri: Uri, data: String, encoding: String?, append: Boolean) {
-        val outputStream = when (uri.scheme) {
+        SCHEME_FILE -> toFile().inputStream()
 
-            SCHEME_FILE -> FileOutputStream(uri.toFile(), append)
+        SCHEME_CONTENT -> requireNotNull(activity.contentResolver.openInputStream(this))
 
-            SCHEME_CONTENT -> requireNotNull(activity.contentResolver.openOutputStream(uri, if (append) "wa" else "w"))
+        else -> throw UnsupportedUriException()
+    }
 
-            else -> throw UnsupportedSchemeException()
-        }
+    protected fun Uri.getOutputStream(append: Boolean = false) = when (scheme) {
 
-        outputStream.use {
-            val bytes = if (encoding == null) {
-                Base64.getDecoder().decode(data)
-            } else {
-                data.toByteArray(Charset.forName(encoding))
-            }
-            it.write(bytes)
-        }
+        SCHEME_FILE -> FileOutputStream(toFile(), append)
+
+        SCHEME_CONTENT -> requireNotNull(activity.contentResolver.openOutputStream(this, if (append) "wa" else "w"))
+
+        else -> throw UnsupportedUriException()
     }
 }
 
-class UnsupportedSchemeException : Exception()
+private class UnsupportedUriException : Exception()

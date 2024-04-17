@@ -1,5 +1,6 @@
 package org.racehorse
 
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -148,6 +149,7 @@ open class EventBridge(
         .registerTypeAdapter(Bundle::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Pair::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Date::class.java, NaturalJsonAdapter())
+        .registerTypeAdapter(Uri::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Any::class.java, NaturalJsonAdapter())
         .create(),
     val handler: Handler = Handler(Looper.getMainLooper()),

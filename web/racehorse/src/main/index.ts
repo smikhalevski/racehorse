@@ -33,7 +33,7 @@ export { createEvergreenManager } from './createEvergreenManager';
 export { createFacebookLoginManager } from './createFacebookLoginManager';
 export { createFacebookShareManager } from './createFacebookShareManager';
 export { createFirebaseManager } from './createFirebaseManager';
-export { createFsManager, File, SystemDir } from './createFsManager';
+export { createFsManager, File, Directory } from './createFsManager';
 export {
   createGooglePayManager,
   GooglePayTokenState,
@@ -62,7 +62,7 @@ export type { EvergreenManager, UpdateStatus, UpdateMode } from './createEvergre
 export type { FacebookLoginManager, FacebookAccessToken } from './createFacebookLoginManager';
 export type { FacebookShareManager, FacebookShareLinkContent } from './createFacebookShareManager';
 export type { FirebaseManager } from './createFirebaseManager';
-export type { FileStat, FsManager } from './createFsManager';
+export type { FileAttributes, FsManager } from './createFsManager';
 export type {
   GooglePayUserAddress,
   GooglePayTokenStatus,

@@ -1,25 +1,67 @@
-import { Event, EventBridge } from './createEventBridge';
+import { EventBridge } from './createEventBridge';
 import { noop } from './utils';
 
-export const SystemDir = {
-  DOCUMENTS: 'racehorse://documents',
-  DATA: 'racehorse://data',
-  LIBRARY: 'racehorse://library',
-  CACHE: 'racehorse://cache',
-  EXTERNAL: 'racehorse://external',
-  EXTERNAL_STORAGE: 'racehorse://external_storage',
+const SCHEME_RACEHORSE = 'racehorse';
+
+/**
+ * Device-independent URIs for well-known directories.
+ */
+export const Directory = {
+  DOCUMENTS: `${SCHEME_RACEHORSE}://documents`,
+  DATA: `${SCHEME_RACEHORSE}://data`,
+  LIBRARY: `${SCHEME_RACEHORSE}://library`,
+  CACHE: `${SCHEME_RACEHORSE}://cache`,
+  EXTERNAL: `${SCHEME_RACEHORSE}://external`,
+  EXTERNAL_STORAGE: `${SCHEME_RACEHORSE}://external_storage`,
 } as const;
 
-export type SystemDir = (typeof SystemDir)[keyof typeof SystemDir];
+export type Directory = (typeof Directory)[keyof typeof Directory];
 
-export interface FileStat {
+/**
+ * Attributes associated with a file in a file system.
+ */
+export interface FileAttributes {
+  /**
+   * The time of last modification.
+   */
   lastModifiedTime: number;
+
+  /**
+   * The time of last access.
+   */
   lastAccessTime: number;
+
+  /**
+   * The creation time. The creation time is the time that the file was created.
+   */
   creationTime: number;
+
+  /**
+   * Tells whether the file is a regular file with opaque content.
+   */
   isFile: boolean;
+
+  /**
+   * Tells whether the file is a directory.
+   */
   isDirectory: boolean;
+
+  /**
+   * Tells whether the file is a symbolic link.
+   */
   isSymbolicLink: boolean;
+
+  /**
+   * Tells whether the file is something other than a regular file, directory, or symbolic link.
+   */
   isOther: boolean;
+
+  /**
+   * The size of the file (in bytes).
+   *
+   * The size may differ from the actual size on the file system due to compression, support for sparse files, or other
+   * reasons. The size of files that are not regular files is implementation specific and therefore unspecified.
+   */
   size: number;
 }
 
@@ -39,56 +81,148 @@ export class File {
   ) {}
 
   /**
-   * Returns `true` if the file exists, of `false` otherwise.
+   * The time of the last modification.
+   *
+   * @see {@link getAttributes}
    */
-  isExisting(): Promise<boolean> {
-    return this._eventBridge
-      .requestAsync({ type: 'org.racehorse.FsIsExistingEvent', payload: { uri: this.uri } })
-      .then(event => event.payload.isExisting);
+  get lastModifiedTime(): number {
+    return this.getAttributes().lastModifiedTime;
   }
 
   /**
-   * Returns filesystem attributes of the file.
+   * The time of the last access.
+   *
+   * @see {@link getAttributes}
    */
-  getStat(): Promise<FileStat> {
-    return this._eventBridge
-      .requestAsync({ type: 'org.racehorse.FsGetStatEvent', payload: { uri: this.uri } })
-      .then(event => event.payload);
+  get lastAccessTime(): number {
+    return this.getAttributes().lastAccessTime;
   }
 
   /**
-   * Returns a URL that points to the file and can be loaded by the web view.
+   * The time when the file was created.
+   *
+   * @see {@link getAttributes}
    */
-  getParent(): File | null {
-    const parentUri = this._eventBridge.request({
+  get creationTime(): number {
+    return this.getAttributes().creationTime;
+  }
+
+  /**
+   * `true` if the file is a regular file with opaque content.
+   *
+   * @see {@link getAttributes}
+   */
+  get isFile(): boolean {
+    return this.getAttributes().isFile;
+  }
+
+  /**
+   * `true` if the file is a directory.
+   *
+   * @see {@link getAttributes}
+   */
+  get isDirectory(): boolean {
+    return this.getAttributes().isDirectory;
+  }
+
+  /**
+   * `true` if the file is a symbolic link.
+   *
+   * @see {@link getAttributes}
+   */
+  get isSymbolicLink(): boolean {
+    return this.getAttributes().isSymbolicLink;
+  }
+
+  /**
+   * `true` if the file is something other than a regular file, directory, or symbolic link.
+   *
+   * @see {@link getAttributes}
+   */
+  get isOther(): boolean {
+    return this.getAttributes().isOther;
+  }
+
+  /**
+   * The size of the file (in bytes).
+   *
+   * The size may differ from the actual size on the file system due to compression, support for sparse files, or other
+   * reasons. The size of files that are not regular files is implementation specific and therefore unspecified.
+   *
+   * @see {@link getAttributes}
+   */
+  get size(): number {
+    return this.getAttributes().size;
+  }
+
+  /**
+   * `true` is the file exists.
+   */
+  get isExisting(): number {
+    return this._eventBridge.request({
+      type: 'org.racehorse.FsIsExistingEvent',
+      payload: { uri: this.uri },
+    }).payload.isExisting;
+  }
+
+  /**
+   * The file that represents the parent directory, or `null` if there's no parent directory.
+   */
+  get parentFile(): File | null {
+    const { parentUri } = this._eventBridge.request({
       type: 'org.racehorse.FsGetParentUriEvent',
       payload: { uri: this.uri },
-    }).payload.uri;
+    }).payload;
 
-    return parentUri !== null ? new File(this._eventBridge, parentUri) : null;
+    const parentFile = parentUri !== null ? new File(this._eventBridge, parentUri) : null;
+
+    Object.defineProperty(this, 'parentFile', { value: parentFile, configurable: true });
+
+    return parentFile;
   }
 
   /**
-   * Returns a URL that points to the file and can be loaded by the web view.
+   * The URL that can be loaded by the web view.
    */
-  getUrl(): string {
-    return this._eventBridge.request({ type: 'org.racehorse.FsGetUrlEvent', payload: { uri: this.uri } }).payload.url;
-  }
-
-  /**
-   * Returns a URI of the file that can be shared with other applications.
-   */
-  getExposableUri(): string {
-    return this._eventBridge.request({
-      type: 'org.racehorse.FsGetExposableUriEvent',
+  get localUrl(): string {
+    const { localUrl } = this._eventBridge.request({
+      type: 'org.racehorse.FsGetLocalUrlEvent',
       payload: { uri: this.uri },
-    }).payload.uri;
+    }).payload;
+
+    Object.defineProperty(this, 'localUrl', { value: localUrl, configurable: true });
+
+    return localUrl;
+  }
+
+  /**
+   * The content URI of the file that can be shared with other applications.
+   */
+  get contentUri(): string {
+    const { contentUri } = this._eventBridge.request({
+      type: 'org.racehorse.FsGetContentUriEvent',
+      payload: { uri: this.uri },
+    }).payload;
+
+    Object.defineProperty(this, 'contentUri', { value: contentUri, configurable: true });
+
+    return contentUri;
+  }
+
+  /**
+   * Reads a file's attributes as a bulk operation.
+   */
+  getAttributes(): FileAttributes {
+    return this._eventBridge.request({
+      type: 'org.racehorse.FsGetAttributesEvent',
+      payload: { uri: this.uri },
+    }).payload;
   }
 
   /**
    * Returns the [MIME type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types) of the file.
    */
-  getMimeType(): Promise<string> {
+  getMimeType(): Promise<string | null> {
     return this._eventBridge
       .requestAsync({ type: 'org.racehorse.FsGetMimeTypeEvent', payload: { uri: this.uri } })
       .then(event => event.payload.mimeType);
@@ -100,7 +234,7 @@ export class File {
   mkdir(): Promise<boolean> {
     return this._eventBridge
       .requestAsync({ type: 'org.racehorse.FsMkdirEvent', payload: { uri: this.uri } })
-      .then(isSuccessful);
+      .then(event => event.payload.isSuccessful);
   }
 
   /**
@@ -109,11 +243,11 @@ export class File {
   readDir(): Promise<File[]> {
     return this._eventBridge
       .requestAsync({ type: 'org.racehorse.FsReadDirEvent', payload: { uri: this.uri } })
-      .then(event => event.payload.uris.map((uri: string) => new File(this._eventBridge, uri)));
+      .then(event => event.payload.fileUris.map((fileUri: string) => new File(this._eventBridge, fileUri)));
   }
 
   /**
-   * Reads file contents as a string.
+   * Reads text file contents as a string.
    *
    * @param encoding The expected file encoding.
    */
@@ -124,7 +258,7 @@ export class File {
   }
 
   /**
-   * Reads the file contents as base64-encoded string.
+   * Reads the binary file contents as base64-encoded string.
    */
   readBytes(): Promise<string> {
     return this._eventBridge
@@ -133,24 +267,25 @@ export class File {
   }
 
   /**
-   * Reads file contents as a [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs).
+   * Reads the binary file contents as a
+   * [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs).
    */
   readDataUri(): Promise<string> {
-    return this.getMimeType().then(mimeType => this.readBytes().then(data => `data:${mimeType};base64,${data}`));
+    return this.readBytes().then(data => this.getMimeType().then(mimeType => `data:${mimeType || ''};base64,${data}`));
   }
 
   /**
-   * Reads the file contents as a [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob).
+   * Reads the binary file contents as a [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob).
    */
   readBlob(): Promise<Blob> {
-    return this.getMimeType().then(mimeType =>
-      this.readBytes().then(data => {
+    return this.readBytes().then(data =>
+      this.getMimeType().then(mimeType => {
         const buffer = new Uint8Array(data.length);
 
         for (let i = 0; i < data.length; ++i) {
           buffer[i] = data.charCodeAt(i);
         }
-        return new Blob([buffer], { type: mimeType });
+        return new Blob([buffer], { type: mimeType || undefined });
       })
     );
   }
@@ -163,7 +298,10 @@ export class File {
    */
   appendText(text: string, encoding = 'utf-8'): Promise<void> {
     return this._eventBridge
-      .requestAsync({ type: 'org.racehorse.FsAppendEvent', payload: { uri: this.uri, data: text, encoding } })
+      .requestAsync({
+        type: 'org.racehorse.FsWriteEvent',
+        payload: { uri: this.uri, data: text, encoding, append: true },
+      })
       .then(noop);
   }
 
@@ -175,7 +313,10 @@ export class File {
   appendBytes(data: string | Blob | ArrayBuffer): Promise<void> {
     return encodeBase64(data)
       .then(data =>
-        this._eventBridge.requestAsync({ type: 'org.racehorse.FsAppendEvent', payload: { uri: this.uri, data } })
+        this._eventBridge.requestAsync({
+          type: 'org.racehorse.FsWriteEvent',
+          payload: { uri: this.uri, data, append: true },
+        })
       )
       .then(noop);
   }
@@ -210,31 +351,14 @@ export class File {
   }
 
   /**
-   * Copies file to a new location.
-   *
-   * If file is a directory then its contents are copied recursively.
+   * Copies file contents to a new location.
    *
    * @param to The location to which contents must be copied.
-   * @param overwrite If `true` then destination is overwritten.
    */
-  copy(to: File, overwrite = false): Promise<boolean> {
+  copy(to: File): Promise<void> {
     return this._eventBridge
-      .requestAsync({ type: 'org.racehorse.FsCopyEvent', payload: { uri: this.uri, toUri: to.uri, overwrite } })
-      .then(isSuccessful);
-  }
-
-  /**
-   * Moves file to a new location.
-   *
-   * If file is a directory then its contents are moved recursively.
-   *
-   * @param to The location to which contents must be moved.
-   * @param overwrite If `true` then destination is overwritten.
-   */
-  move(to: File, overwrite = false): Promise<boolean> {
-    return this._eventBridge
-      .requestAsync({ type: 'org.racehorse.FsMoveEvent', payload: { uri: this.uri, toUri: to.uri, overwrite } })
-      .then(isSuccessful);
+      .requestAsync({ type: 'org.racehorse.FsCopyEvent', payload: { uri: this.uri, toUri: to.uri } })
+      .then(noop);
   }
 
   /**
@@ -245,43 +369,38 @@ export class File {
   delete(): Promise<boolean> {
     return this._eventBridge
       .requestAsync({ type: 'org.racehorse.FsDeleteEvent', payload: { uri: this.uri } })
-      .then(isSuccessful);
+      .then(event => event.payload.isSuccessful);
+  }
+
+  toString(): string {
+    return this.uri;
   }
 }
 
+/**
+ * File system CRUD operations.
+ */
 export interface FsManager {
   /**
    * Creates a new {@link File} instance.
    *
-   * @param uri The file URI.
+   * @param uri The URI that points to the file on the file system.
    */
   File(uri: string): File;
 
-  /**
-   * Creates a new {@link File} instance.
-   *
-   * @param parent The parent file or URI.
-   * @param path The relative file path.
-   */
-  File(parent: File | string, path: string): File;
+  resolve(uri: string, path: string): string;
 }
 
 /**
- * Filesystem CRUD operations.
+ * File system CRUD operations.
  *
  * @param eventBridge The underlying event bridge.
  */
 export function createFsManager(eventBridge: EventBridge): FsManager {
   return {
-    File: (uriOrParent, path?: string) => {
-      let uri = uriOrParent instanceof File ? uriOrParent.uri : uriOrParent;
+    File: uri => new File(eventBridge, uri),
 
-      if (path !== undefined) {
-        uri = eventBridge.request({ type: 'org.racehorse.FsResolveEvent', payload: { uri, path } }).payload.uri;
-      }
-
-      return new File(eventBridge, uri);
-    },
+    resolve: (uri, path) => uri + (path.length === 0 || uri.endsWith('/') || path.startsWith('/') ? path : '/' + path),
   };
 }
 
@@ -306,9 +425,5 @@ function encodeBase64(data: string | Blob | ArrayBuffer): Promise<string> {
     });
   }
 
-  return Promise.resolve(data);
-}
-
-function isSuccessful(event: Event): boolean {
-  return event.payload.isSuccessful;
+  return Promise.resolve(String(data));
 }
