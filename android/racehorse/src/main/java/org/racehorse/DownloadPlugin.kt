@@ -17,7 +17,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.utils.askForPermission
 import org.racehorse.utils.createTempFile
-import org.racehorse.utils.queryContent
+import org.racehorse.utils.queryAll
 import org.racehorse.webview.DownloadStartEvent
 import java.io.File
 import java.io.Serializable
@@ -285,7 +285,7 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
                 throw e
             }
 
-            val filePath = activity.queryContent(contentUri, arrayOf(MediaStore.Downloads.DATA)) {
+            val filePath = activity.contentResolver.queryAll(contentUri, arrayOf(MediaStore.Downloads.DATA)) {
                 moveToFirst()
                 getString(getColumnIndexOrThrow(MediaStore.Downloads.DATA))
             }

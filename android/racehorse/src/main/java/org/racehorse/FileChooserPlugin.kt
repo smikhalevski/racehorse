@@ -188,7 +188,7 @@ private class GalleryCameraFile(
         val file = File.createTempFile(CAMERA_FILE_PREFIX, ".$extension", storageDir)
 
         try {
-            tempFile.copyTo(file.outputStream())
+            file.outputStream().use(tempFile::copyTo)
             return file.toUri()
         } catch (e: Throwable) {
             file.delete()

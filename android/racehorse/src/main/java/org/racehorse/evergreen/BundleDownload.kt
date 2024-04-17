@@ -128,13 +128,13 @@ internal class BundleDownload(
         val unzipDirPath = unzipDir.canonicalPath + File.separator
 
         try {
-            ZipInputStream(zipFile.inputStream()).use { zipInputStream ->
+            ZipInputStream(zipFile.inputStream()).use { inputStream ->
                 while (!isStopped) {
                     val zipEntry = try {
-                        zipInputStream.nextEntry ?: break
+                        inputStream.nextEntry ?: break
                     } catch (_: ZipException) {
                         // https://developer.android.com/about/versions/14/behavior-changes-14#zip-path-traversal
-                        zipInputStream.closeEntry()
+                        inputStream.closeEntry()
                         continue
                     }
 
@@ -142,11 +142,11 @@ internal class BundleDownload(
 
                     // https://snyk.io/research/zip-slip-vulnerability
                     if (file.canonicalPath.startsWith(unzipDirPath)) {
-                        file.parentFile!!.mkdirs()
-                        zipInputStream.copyTo(FileOutputStream(file))
+                        file.parentFile.mkdirs()
+                        FileOutputStream(file).use(inputStream::copyTo)
                     }
 
-                    zipInputStream.closeEntry()
+                    inputStream.closeEntry()
                 }
             }
         } catch (e: Throwable) {

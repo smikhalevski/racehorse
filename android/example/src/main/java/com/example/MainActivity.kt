@@ -86,7 +86,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(
             FileChooserPlugin(
                 this,
-                GalleryCameraFileFactory(this, externalCacheDir ?: cacheDir, "${BuildConfig.APPLICATION_ID}.provider")
+                GalleryCameraFileFactory(this, cacheDir, "${BuildConfig.APPLICATION_ID}.provider")
             )
         )
         eventBus.register(DownloadPlugin(this))

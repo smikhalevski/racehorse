@@ -44,8 +44,8 @@ enum class UpdateMode {
  */
 open class Bootstrapper(private val bundlesDir: File) {
 
-    val masterVersion get() = masterVersionFile.takeIf { it.exists() }?.readText()
-    val updateVersion get() = updateVersionFile.takeIf { it.exists() }?.readText()
+    val masterVersion get() = masterVersionFile.takeIf(File::exists)?.readText()
+    val updateVersion get() = updateVersionFile.takeIf(File::exists)?.readText()
 
     val isMasterReady get() = masterDir.exists()
     val isUpdateReady get() = updateDir.exists() && updateDownload == null

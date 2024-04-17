@@ -1062,7 +1062,6 @@ Camera capture requires a temporary file storage to write captured file to.
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <external-cache-path name="externalCacheDir" path="/"/>
     <cache-path name="cacheDir" path="/"/>
 </paths>
 ```
@@ -1080,7 +1079,7 @@ EventBus.getDefault().register(
 
         TempCameraFileFactory(
             activity,
-            activity.externalCacheDir ?: activity.cacheDir,
+            activity.cacheDir,
             BuildConfig.APPLICATION_ID + ".provider"
         )
     )

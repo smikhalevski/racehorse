@@ -8,7 +8,7 @@ import androidx.core.database.getStringOrNull
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.askForPermission
 import org.racehorse.utils.launchActivityForResult
-import org.racehorse.utils.queryContent
+import org.racehorse.utils.queryAll
 import java.io.Serializable
 
 class Contact(
@@ -51,7 +51,7 @@ open class ContactsPlugin(private val activity: ComponentActivity) {
         }
     }
 
-    private fun getContact(contactId: Long) = activity.queryContent(
+    private fun getContact(contactId: Long) = activity.contentResolver.queryAll(
         ContactsContract.Contacts.CONTENT_URI.buildUpon().appendPath(contactId.toString()).build(),
         arrayOf(
             ContactsContract.Contacts.DISPLAY_NAME,
@@ -69,7 +69,7 @@ open class ContactsPlugin(private val activity: ComponentActivity) {
         )
     }
 
-    private fun getContactEmails(contactId: Long) = activity.queryContent(
+    private fun getContactEmails(contactId: Long) = activity.contentResolver.queryAll(
         ContactsContract.CommonDataKinds.Email.CONTENT_URI,
         arrayOf(ContactsContract.CommonDataKinds.Email.ADDRESS),
         ContactsContract.CommonDataKinds.Email.CONTACT_ID + "=$contactId"
@@ -81,7 +81,7 @@ open class ContactsPlugin(private val activity: ComponentActivity) {
         }
     }
 
-    private fun getContactPhoneNumbers(contactId: Long) = activity.queryContent(
+    private fun getContactPhoneNumbers(contactId: Long) = activity.contentResolver.queryAll(
         ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
         arrayOf(
             ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER,
