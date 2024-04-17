@@ -11,7 +11,7 @@ import { createEvergreenManager } from './createEvergreenManager';
 import { createFacebookLoginManager } from './createFacebookLoginManager';
 import { createFacebookShareManager } from './createFacebookShareManager';
 import { createFirebaseManager } from './createFirebaseManager';
-import { createFs } from './createFs';
+import { createFsManager } from './createFsManager';
 import { createGooglePayManager } from './createGooglePayManager';
 import { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager';
 import { createGoogleSignInManager } from './createGoogleSignInManager';
@@ -33,7 +33,7 @@ export { createEvergreenManager } from './createEvergreenManager';
 export { createFacebookLoginManager } from './createFacebookLoginManager';
 export { createFacebookShareManager } from './createFacebookShareManager';
 export { createFirebaseManager } from './createFirebaseManager';
-export { createFs, File, SystemDir } from './createFs';
+export { createFsManager, File, SystemDir } from './createFsManager';
 export {
   createGooglePayManager,
   GooglePayTokenState,
@@ -62,7 +62,7 @@ export type { EvergreenManager, UpdateStatus, UpdateMode } from './createEvergre
 export type { FacebookLoginManager, FacebookAccessToken } from './createFacebookLoginManager';
 export type { FacebookShareManager, FacebookShareLinkContent } from './createFacebookShareManager';
 export type { FirebaseManager } from './createFirebaseManager';
-export type { FileStat, Fs } from './createFs';
+export type { FileStat, FsManager } from './createFsManager';
 export type {
   GooglePayUserAddress,
   GooglePayTokenStatus,
@@ -150,7 +150,7 @@ export const firebaseManager = createFirebaseManager(eventBridge);
 /**
  * File system CRUD operations.
  */
-export const fs = createFs(eventBridge);
+export const fsManager = createFsManager(eventBridge);
 
 /**
  * Manages tokenized cards in Google Pay.

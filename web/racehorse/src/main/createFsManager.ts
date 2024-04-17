@@ -249,7 +249,7 @@ export class File {
   }
 }
 
-export interface Fs {
+export interface FsManager {
   /**
    * Creates a new {@link File} instance.
    *
@@ -271,7 +271,7 @@ export interface Fs {
  *
  * @param eventBridge The underlying event bridge.
  */
-export function createFs(eventBridge: EventBridge): Fs {
+export function createFsManager(eventBridge: EventBridge): FsManager {
   return {
     File: (uriOrParent, path?: string) => {
       let uri = uriOrParent instanceof File ? uriOrParent.uri : uriOrParent;

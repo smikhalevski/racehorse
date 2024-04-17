@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { activityManager, File, fs, Intent, SystemDir } from 'racehorse';
+import { activityManager, File, fsManager, Intent, SystemDir } from 'racehorse';
 
 export function FsExample() {
   const [rootDir, setRootDir] = useState<string>(SystemDir.EXTERNAL_STORAGE);
   const [folder, setFolder] = useState<{ dir: File; files: File[] }>();
 
   useEffect(() => {
-    handleGoToFile(fs.File(rootDir, '/'));
+    handleGoToFile(fsManager.File(rootDir, '/'));
   }, [rootDir]);
 
   const handleGoToParent = () => {
