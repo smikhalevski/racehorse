@@ -376,7 +376,7 @@ open class FsPlugin(
 
         SCHEME_FILE -> toFile().inputStream()
 
-        SCHEME_CONTENT -> requireNotNull(activity.contentResolver.openInputStream(this))
+        SCHEME_CONTENT -> checkNotNull(activity.contentResolver.openInputStream(this)) { "Content resolver crashed" }
 
         else -> throw UnsupportedUriException()
     }
@@ -385,7 +385,7 @@ open class FsPlugin(
 
         SCHEME_FILE -> FileOutputStream(toFile(), append)
 
-        SCHEME_CONTENT -> requireNotNull(activity.contentResolver.openOutputStream(this, if (append) "wa" else "w"))
+        SCHEME_CONTENT -> checkNotNull(activity.contentResolver.openOutputStream(this, if (append) "wa" else "w")) { "Content resolver crashed" }
 
         else -> throw UnsupportedUriException()
     }

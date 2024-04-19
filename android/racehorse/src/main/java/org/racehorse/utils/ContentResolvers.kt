@@ -19,4 +19,4 @@ fun <T> ContentResolver.queryAll(
         selectionArgs,
         sortOrder,
     )
-).use(callback)
+) { "Content resolver crashed" }.use(callback)

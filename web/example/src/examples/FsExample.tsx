@@ -53,7 +53,7 @@ export function FsExample() {
           width: '100%',
           alignItems: 'flex-start',
           overflow: 'hidden',
-          whiteSpace: 'nowrap',
+          wordBreak: 'break-word',
         }}
       >
         {dir?.uri && decodeURIComponent(dir.uri)}
