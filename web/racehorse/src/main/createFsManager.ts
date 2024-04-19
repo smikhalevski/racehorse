@@ -388,6 +388,13 @@ export interface FsManager {
    */
   File(uri: string): File;
 
+  /**
+   * Concatenates URI and relative path.
+   *
+   * @param uri The base URI.
+   * @param path The relative path to concatenate.
+   * @returns The concatenated URI.
+   */
   resolve(uri: string, path: string): string;
 }
 
