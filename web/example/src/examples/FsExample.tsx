@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
-import { activityManager, Directory, File, fsManager, Intent } from 'racehorse';
+import React, { useEffect, useState } from 'react';
+import { Directory, File, fsManager } from 'racehorse';
 
 export function FsExample() {
   const [goToUri, setGoToUri] = useState<string>(Directory.EXTERNAL_STORAGE);
   const [dir, setDir] = useState<File>();
   const [files, setFiles] = useState<File[]>();
+  const [url, setUrl] = useState<string>();
 
   useEffect(() => {
     handleOpenFile(fsManager.File(goToUri));
@@ -17,18 +18,12 @@ export function FsExample() {
       file.readDir().then(files => {
         setDir(file);
         setFiles(files);
+        setUrl(undefined);
       });
     }
 
     if (attributes.isFile) {
-      file.getMimeType().then(mimeType =>
-        activityManager.startActivity({
-          action: Intent.ACTION_VIEW,
-          flags: Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION,
-          type: mimeType,
-          data: file.contentUri,
-        })
-      );
+      setUrl(file.localUrl);
     }
   };
 
@@ -61,7 +56,7 @@ export function FsExample() {
           whiteSpace: 'nowrap',
         }}
       >
-        {dir?.uri}
+        {dir?.uri && decodeURIComponent(dir.uri)}
 
         <a
           onClick={() => {
@@ -81,13 +76,19 @@ export function FsExample() {
               handleOpenFile(file);
             }}
           >
-            {file.uri.split('/').filter(Boolean).pop()}
+            {decodeURIComponent(file.uri.split('/').filter(Boolean).pop()!)}
           </a>
         ))}
 
         {'Total files: '}
         {files?.length || 0}
       </div>
+
+      {url !== undefined && (
+        <p>
+          <iframe src={url} />
+        </p>
+      )}
     </>
   );
 }

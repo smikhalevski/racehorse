@@ -87,7 +87,7 @@ class FsDeleteEvent(val uri: Uri) : RequestEvent() {
 open class FsPlugin(
     val activity: ComponentActivity,
     val providerAuthority: String? = null,
-    val baseLocalUrl: String = "https://fs.racehorse.local"
+    val baseLocalUrl: String = "https://racehorse.local/fs"
 ) {
 
     private companion object {

@@ -105,7 +105,13 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(BiometricPlugin(this))
         eventBus.register(BiometricEncryptedStoragePlugin(this, File(filesDir, "biometric_storage")))
         eventBus.register(ContactsPlugin(this))
-        eventBus.register(FsPlugin(this, providerAuthority = "${BuildConfig.APPLICATION_ID}.provider"))
+        eventBus.register(
+            FsPlugin(
+                activity = this,
+                providerAuthority = "${BuildConfig.APPLICATION_ID}.provider",
+                baseLocalUrl = "https://example.com/fs"
+            )
+        )
 
         // From the example app
         eventBus.register(ToastPlugin(this))
