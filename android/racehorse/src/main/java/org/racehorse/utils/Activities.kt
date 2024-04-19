@@ -1,6 +1,7 @@
 package org.racehorse.utils
 
 import android.content.ActivityNotFoundException
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -106,23 +107,3 @@ fun ComponentActivity.askForPermission(permission: String, callback: (isGranted:
  */
 fun Context.isPermissionGranted(permission: String) =
     ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
-
-/**
- * Shortcut for query to content resolver.
- */
-fun <T> Context.queryContent(
-    uri: Uri,
-    projection: Array<String>? = null,
-    selection: String? = null,
-    selectionArgs: Array<String>? = null,
-    sortOrder: String? = null,
-    block: Cursor.() -> T
-) = checkNotNull(
-    contentResolver.query(
-        uri,
-        projection,
-        selection,
-        selectionArgs,
-        sortOrder,
-    )
-) { "Cannot acquire a cursor from content resolver" }.use(block)

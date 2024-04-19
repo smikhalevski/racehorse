@@ -1,5 +1,6 @@
 package org.racehorse.utils
 
+import android.net.Uri
 import android.os.Bundle
 import com.google.gson.JsonArray
 import com.google.gson.JsonDeserializationContext
@@ -20,6 +21,7 @@ class NaturalJsonAdapter : JsonDeserializer<Any?>, JsonSerializer<Any?> {
 
     override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Any? =
         when (getType(typeOfT)) {
+
             Pair::class.java -> Pair<Any, Any>(
                 context.deserialize(json.asJsonArray.get(0), getTypeArgument(typeOfT, 0)),
                 context.deserialize(json.asJsonArray.get(1), getTypeArgument(typeOfT, 1)),
@@ -29,6 +31,8 @@ class NaturalJsonAdapter : JsonDeserializer<Any?>, JsonSerializer<Any?> {
         }
 
     override fun serialize(src: Any?, typeOfSrc: Type, context: JsonSerializationContext) = when (src) {
+
+        is Uri -> JsonPrimitive(src.toString())
 
         is Number -> JsonPrimitive(src)
 
@@ -84,7 +88,16 @@ class NaturalJsonAdapter : JsonDeserializer<Any?>, JsonSerializer<Any?> {
 
     private fun deserializePrimitive(json: JsonPrimitive, typeOfT: Type): Any = when {
 
-        json.isString -> json.asString
+        json.isString -> {
+            val value = json.asString
+
+            when (typeOfT) {
+
+                Uri::class.java -> Uri.parse(value)
+
+                else -> value
+            }
+        }
 
         json.isBoolean -> json.asBoolean
 
@@ -94,10 +107,12 @@ class NaturalJsonAdapter : JsonDeserializer<Any?>, JsonSerializer<Any?> {
             } catch (_: ArithmeticException) {
                 json.asDouble
             }
-            if (typeOfT == Date::class.java) {
-                Date(value.toLong())
-            } else {
-                value
+
+            when (typeOfT) {
+
+                Date::class.java -> Date(value.toLong())
+
+                else -> value
             }
         }
     }

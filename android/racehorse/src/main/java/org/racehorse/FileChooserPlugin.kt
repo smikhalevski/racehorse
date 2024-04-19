@@ -19,7 +19,7 @@ import androidx.core.net.toUri
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.askForPermission
 import org.racehorse.utils.copyTo
-import org.racehorse.utils.guessMimeTypeFromContent
+import org.racehorse.utils.guessMimeType
 import org.racehorse.utils.launchActivityForResult
 import org.racehorse.webview.ShowFileChooserEvent
 import java.io.File
@@ -94,7 +94,7 @@ private class TempCameraFile(override val contentUri: Uri, private val tempFile:
             return null
         }
 
-        return tempFile.guessMimeTypeFromContent()
+        return tempFile.guessMimeType()
             ?.let(MimeTypeMap.getSingleton()::getExtensionFromMimeType)
             ?.let { File(tempFile.absolutePath + ".$it") }
             ?.takeIf(tempFile::renameTo)
@@ -153,7 +153,7 @@ private class GalleryCameraFile(
             return null
         }
 
-        val mimeType = tempFile.guessMimeTypeFromContent() ?: DEFAULT_MIME_TYPE
+        val mimeType = tempFile.guessMimeType() ?: DEFAULT_MIME_TYPE
         val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: DEFAULT_EXTENSION
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -188,7 +188,7 @@ private class GalleryCameraFile(
         val file = File.createTempFile(CAMERA_FILE_PREFIX, ".$extension", storageDir)
 
         try {
-            tempFile.copyTo(file.outputStream())
+            file.outputStream().use(tempFile::copyTo)
             return file.toUri()
         } catch (e: Throwable) {
             file.delete()

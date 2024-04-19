@@ -29,6 +29,7 @@ The bootstrapper for WebView-based Android apps.
 - [Facebook Login](#facebook-login-plugin)
 - [Facebook Share](#facebook-share-plugin)
 - [File chooser](#file-chooser-plugin)
+- [File system](#file-system-plugin)
 - [Google Pay](#google-pay-plugin)
 - [Google Play referrer](#google-play-referrer-plugin)
 - [Google Sign-In](#google-sign-in-plugin)
@@ -1062,7 +1063,6 @@ Camera capture requires a temporary file storage to write captured file to.
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <external-cache-path name="externalCacheDir" path="/"/>
     <cache-path name="cacheDir" path="/"/>
 </paths>
 ```
@@ -1080,7 +1080,7 @@ EventBus.getDefault().register(
 
         TempCameraFileFactory(
             activity,
-            activity.externalCacheDir ?: activity.cacheDir,
+            activity.cacheDir,
             BuildConfig.APPLICATION_ID + ".provider"
         )
     )
@@ -1089,6 +1089,54 @@ EventBus.getDefault().register(
 
 If you want to store images and videos in the gallery app after they were captured through file chooser, use
 [`GalleryCameraFileFactory`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-gallery-camera-file-factory/index.html).
+
+# File system plugin
+
+[`FsManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.FsManager.html) enables file system CRUD
+operations.
+
+1. Initialize the plugin in your Android app:
+
+```kotlin
+import org.racehorse.FsPlugin
+
+EventBus.getDefault().register(FsPlugin(activity))
+```
+
+2. Access files stored on the device:
+
+```ts
+import { fsManager, Directory } from 'racehorse';
+
+const uri = fsManager.resolve(Directory.CACHE, 'temp.txt');
+
+const file = fsManager.File(uri);
+
+await file.writeText('Hello world!');
+
+await file.readDataUri();
+// ⮕ 'data:text/plain;base64,SGVsbG8gd29ybGQh'
+```
+
+## Serving local files
+
+To load an arbitrary file from the web view,
+use [`localUrl`](https://smikhalevski.github.io/racehorse/classes/racehorse.File.html#localUrl):
+
+```ts
+import { contactsManager, fsManager } from 'racehorse';
+
+const contact = await contactsManager.pickContact();
+
+const photoUrl = fsManager.File(contact.photoUri).localUrl;
+// ⮕ 'https://racehorce.local/fs?uri=…'
+```
+
+The local URL can be used as a source for an image or an iframe:
+
+```ts
+document.getElementsByTagName('img')[0].src = photoUrl;
+```
 
 # Google Pay plugin
 

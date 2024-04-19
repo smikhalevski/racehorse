@@ -26,6 +26,7 @@ import org.racehorse.FacebookLoginPlugin
 import org.racehorse.FacebookSharePlugin
 import org.racehorse.FileChooserPlugin
 import org.racehorse.FirebasePlugin
+import org.racehorse.FsPlugin
 import org.racehorse.GalleryCameraFileFactory
 import org.racehorse.GooglePlayReferrerPlugin
 import org.racehorse.GoogleSignInPlugin
@@ -85,7 +86,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(
             FileChooserPlugin(
                 this,
-                GalleryCameraFileFactory(this, externalCacheDir ?: cacheDir, "${BuildConfig.APPLICATION_ID}.provider")
+                GalleryCameraFileFactory(this, cacheDir, "${BuildConfig.APPLICATION_ID}.provider")
             )
         )
         eventBus.register(DownloadPlugin(this))
@@ -104,6 +105,13 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(BiometricPlugin(this))
         eventBus.register(BiometricEncryptedStoragePlugin(this, File(filesDir, "biometric_storage")))
         eventBus.register(ContactsPlugin(this))
+        eventBus.register(
+            FsPlugin(
+                activity = this,
+                providerAuthority = "${BuildConfig.APPLICATION_ID}.provider",
+                baseLocalUrl = "https://example.com/fs"
+            )
+        )
 
         // From the example app
         eventBus.register(ToastPlugin(this))
