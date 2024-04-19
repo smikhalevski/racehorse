@@ -20,10 +20,12 @@ import { BiometricEncryptedStorageExample } from './examples/BiometricEncryptedS
 import { AssetLoaderExample } from './examples/AssetLoaderExample';
 import { ContactsExample } from './examples/ContactsExample';
 import { FsExample } from './examples/FsExample';
+import { EvergreenExample } from './examples/EvergreenExample';
 
 export function App() {
   return (
     <>
+      <EvergreenExample />
       <FsExample />
       <ContactsExample />
       <FileInputExample />

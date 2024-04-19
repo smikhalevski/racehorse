@@ -1,5 +1,7 @@
 package org.racehorse.evergreen
 
+import android.net.Uri
+import androidx.core.net.toUri
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -8,6 +10,7 @@ import org.racehorse.RequestEvent
 import org.racehorse.ResponseEvent
 import java.io.File
 import java.io.Serializable
+import java.net.URLConnection
 
 /**
  * The status of the update bundle.
@@ -16,6 +19,7 @@ import java.io.Serializable
  * @param isReady `true` if the update is fully downloaded and ready to be applied, or `false` if update is being
  * downloaded.
  */
+@Deprecated("Use GetBundleInfoEvent")
 class UpdateStatus(val version: String, val isReady: Boolean) : Serializable
 
 /**
@@ -51,6 +55,7 @@ class UpdateProgressEvent(val contentLength: Int, val readLength: Long) : Notice
 /**
  * Get the version of the available master bundle.
  */
+@Deprecated("Use GetBundleInfoEvent")
 class GetMasterVersionEvent : RequestEvent() {
 
     /**
@@ -62,6 +67,7 @@ class GetMasterVersionEvent : RequestEvent() {
 /**
  * Get the version of the update bundle that would be applied on the next app restart.
  */
+@Deprecated("Use GetBundleInfoEvent")
 class GetUpdateStatusEvent : RequestEvent() {
 
     /**
@@ -69,6 +75,29 @@ class GetUpdateStatusEvent : RequestEvent() {
      */
     class ResultEvent(val status: UpdateStatus?) : ResponseEvent()
 }
+
+/**
+ * Get the info about the current bundle status.
+ */
+class GetBundleInfoEvent : RequestEvent() {
+    class ResultEvent(
+        val masterVersion: String?,
+        val updateVersion: String?,
+        val isMasterReady: Boolean,
+        val isUpdateReady: Boolean,
+        val masterDir: Uri,
+        val updateDir: Uri
+    ) : ResponseEvent()
+}
+
+/**
+ * Starts/restarts the bundle provisioning process.
+ *
+ * @param version The expected version of the app bundle.
+ * @param updateMode The mode of how update is applied.
+ * @param openConnection Returns connection that downloads the bundle ZIP archive.
+ */
+class StartEvent(val version: String, val updateMode: UpdateMode, val openConnection: () -> URLConnection)
 
 /**
  * Applies the available update bundle to master, see [UpdateStatus.isReady].
@@ -113,13 +142,34 @@ open class EvergreenPlugin(
     }
 
     @Subscribe
+    @Deprecated("Use GetBundleInfoEvent")
     open fun onGetMasterVersion(event: GetMasterVersionEvent) {
         event.respond(GetMasterVersionEvent.ResultEvent(masterVersion))
     }
 
     @Subscribe
+    @Deprecated("Use GetBundleInfoEvent")
     open fun onGetUpdateStatus(event: GetUpdateStatusEvent) {
         event.respond(GetUpdateStatusEvent.ResultEvent(updateVersion?.let { UpdateStatus(it, isUpdateReady) }))
+    }
+
+    @Subscribe
+    open fun onGetBundleInfo(event: GetBundleInfoEvent) {
+        event.respond(
+            GetBundleInfoEvent.ResultEvent(
+                masterVersion = masterVersion,
+                updateVersion = updateVersion,
+                isMasterReady = isMasterReady,
+                isUpdateReady = isUpdateReady,
+                masterDir = masterDir.toUri(),
+                updateDir = updateDir.toUri(),
+            )
+        )
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    open fun onStartEvent(event: StartEvent) {
+        start(event.version, event.updateMode, event.openConnection)
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
