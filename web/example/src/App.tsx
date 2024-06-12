@@ -1,3 +1,4 @@
+import React from 'react';
 import { CookieExample } from './examples/CookieExample';
 import { FileInputExample } from './examples/FileInputExample';
 import { GeolocationExample } from './examples/GeolocationExample';

@@ -70,15 +70,22 @@ export interface FileAttributes {
  */
 export class File {
   /**
+   * @hidden
+   */
+  private readonly _eventBridge;
+
+  /**
    * Creates a new {@link File} instance.
    *
-   * @param _eventBridge The underlying event bridge.
+   * @param eventBridge The underlying event bridge.
    * @param uri The URI that denotes the file.
    */
   constructor(
-    private _eventBridge: EventBridge,
+    eventBridge: EventBridge,
     public readonly uri: string
-  ) {}
+  ) {
+    this._eventBridge = eventBridge;
+  }
 
   /**
    * The time of the last modification.
@@ -230,6 +237,8 @@ export class File {
 
   /**
    * Creates a directory denoted by this file.
+   *
+   * @returns `true` if the directory was created, or `false` otherwise.
    */
   mkdir(): Promise<boolean> {
     return this._eventBridge
@@ -275,7 +284,7 @@ export class File {
   }
 
   /**
-   * Reads the binary file contents as a [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob).
+   * Reads the binary file contents as a {@link !Blob}.
    */
   readBlob(): Promise<Blob> {
     return this.readBytes().then(data =>
@@ -372,6 +381,9 @@ export class File {
       .then(event => event.payload.isSuccessful);
   }
 
+  /**
+   * Returns the {@link uri} of the file.
+   */
   toString(): string {
     return this.uri;
   }

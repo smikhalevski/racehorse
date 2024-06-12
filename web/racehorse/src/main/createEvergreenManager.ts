@@ -3,6 +3,9 @@ import { createJoiner } from './createJoiner';
 import { Unsubscribe } from './types';
 
 export interface BundleInfo {
+  /**
+   * The version of the bundle that is currently running.
+   */
   masterVersion: string | null;
 
   /**
@@ -28,7 +31,7 @@ export interface BundleInfo {
 }
 
 /**
- * @deprecated
+ * @deprecated Use {@link BundleInfo} instead.
  */
 export interface UpdateStatus {
   /**
