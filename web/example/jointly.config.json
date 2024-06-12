@@ -1,0 +1,18 @@
+[
+  {
+    "label": "esbuild",
+    "command": "node",
+    "args": [
+      "esbuild.config.mjs",
+      "--watch"
+    ]
+  },
+  {
+    "command": "tsc",
+    "args": [
+      "--watch",
+      "--preserveWatchOutput",
+      "--pretty"
+    ]
+  }
+]

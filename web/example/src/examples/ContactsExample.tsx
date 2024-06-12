@@ -29,10 +29,8 @@ export function ContactsExample() {
         </p>
       )}
 
-      <p>
-        {'Contact: '}
-        <FormattedJSON value={contact} />
-      </p>
+      {'Contact: '}
+      <FormattedJSON value={contact} />
     </>
   );
 }

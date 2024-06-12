@@ -9,15 +9,15 @@ export function EvergreenExample() {
     }
   }, []);
 
-  if (bundleInfo === undefined) {
-    return null;
-  }
-
   return (
     <>
       <h2>{'Evergreen'}</h2>
 
-      <FormattedJSON value={bundleInfo} />
+      {bundleInfo === undefined ? (
+        <em>{'Select "release" build variant to see the bundle info.'}</em>
+      ) : (
+        <FormattedJSON value={bundleInfo} />
+      )}
     </>
   );
 }

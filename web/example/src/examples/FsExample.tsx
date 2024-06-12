@@ -40,7 +40,12 @@ export function FsExample() {
           }}
         >
           {Object.values(Directory).map(uri => (
-            <option value={uri}>{uri}</option>
+            <option
+              value={uri}
+              key={uri}
+            >
+              {uri}
+            </option>
           ))}
         </select>
       </p>
@@ -70,6 +75,7 @@ export function FsExample() {
 
         {files?.map(file => (
           <a
+            key={file.uri}
             href={'#'}
             onClick={event => {
               event.preventDefault();

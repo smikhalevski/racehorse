@@ -11,10 +11,8 @@ export function KeyboardExample() {
 
       <input placeholder={'Set focus here'} />
 
-      <p>
-        {'Status: '}
-        <FormattedJSON value={keyboardStatus} />
-      </p>
+      {'Status: '}
+      <FormattedJSON value={keyboardStatus} />
     </>
   );
 }
