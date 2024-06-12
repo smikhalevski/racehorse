@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
+    "noEmit": true,
     "moduleResolution": "Node",
-    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "strict": true,
     "target": "ES5",
     "module": "ESNext",
-    "rootDir": ".",
-    "jsx": "react-jsx"
+    "jsx": "react"
   },
   "include": [
     "./src/**/*"

@@ -17,10 +17,9 @@ export function FacebookLoginExample() {
           />
         </p>
       )}
-      <p>
-        {'Access token:'}
-        <FormattedJSON value={accessToken} />
-      </p>
+      {'Access token:'}
+      <FormattedJSON value={accessToken} />
+      <p />
       <button
         onClick={() => {
           facebookLoginManager.logIn().then(setAccessToken);

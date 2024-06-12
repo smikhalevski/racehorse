@@ -44,10 +44,8 @@ export function ActivityExample() {
         <i>{'Open WebView console to observe activity state changes'}</i>
       </p>
 
-      <p>
-        {'Activity info: '}
-        <FormattedJSON value={activityInfo} />
-      </p>
+      {'Activity info: '}
+      <FormattedJSON value={activityInfo} />
 
       <p>
         <button

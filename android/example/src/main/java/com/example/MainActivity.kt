@@ -40,12 +40,14 @@ import org.racehorse.ProxyPathHandler
 import org.racehorse.StaticPathHandler
 import org.racehorse.evergreen.BundleReadyEvent
 import org.racehorse.evergreen.EvergreenPlugin
+import org.racehorse.evergreen.StartEvent
 import org.racehorse.evergreen.UpdateMode
 import org.racehorse.webview.RacehorseDownloadListener
 import org.racehorse.webview.RacehorseWebChromeClient
 import org.racehorse.webview.RacehorseWebViewClient
 import java.io.File
 import java.net.URL
+import java.util.Date
 
 @SuppressLint("SetJavaScriptEnabled")
 class MainActivity : AppCompatActivity() {
@@ -100,7 +102,10 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(PermissionsPlugin(this))
         eventBus.register(NotificationsPlugin(this))
         eventBus.register(GoogleSignInPlugin(this))
-        eventBus.register(FacebookLoginPlugin(this))
+        eventBus.register(FacebookLoginPlugin(this).also {
+            @Suppress("DEPRECATION")
+            FacebookSdk.sdkInitialize(this)
+        })
         eventBus.register(FacebookSharePlugin(this))
         eventBus.register(BiometricPlugin(this))
         eventBus.register(BiometricEncryptedStoragePlugin(this, File(filesDir, "biometric_storage")))
@@ -112,12 +117,7 @@ class MainActivity : AppCompatActivity() {
                 baseLocalUrl = "https://example.com/fs"
             )
         )
-
-        // From the example app
         eventBus.register(ToastPlugin(this))
-
-        @Suppress("DEPRECATION")
-        FacebookSdk.sdkInitialize(this)
 
         // 🟡 Run `npm run watch` in `<racehorse>/web/example` to build the web app and start the server.
 
@@ -145,19 +145,14 @@ class MainActivity : AppCompatActivity() {
             // attribute to `AndroidManifest.xml/manifest/application`. `BundleReadyEvent` is emitted after bundle is
             // successfully downloaded, see `onBundleReady` below.
 
-            val evergreenPlugin = EvergreenPlugin(File(filesDir, "app"))
-
+            eventBus.register(EvergreenPlugin(File(filesDir, "app")))
             eventBus.register(this)
-            eventBus.register(evergreenPlugin)
 
-            // Download the bundle in the background thread.
-            Thread {
-                // The update bundle is downloaded if there's no bundle available, or if the provided version differs
-                // from the version of previously downloaded bundle.
-                evergreenPlugin.start("0.0.0", UpdateMode.MANDATORY) {
-                    URL("http://10.0.2.2:10001/bundle.zip").openConnection()
-                }
-            }.start()
+            // The update bundle is downloaded if there's no bundle available, or if the available version differs
+            // from the version of previously downloaded bundle.
+            eventBus.post(StartEvent(version = "0.0.0+" + Date().time.toString(), UpdateMode.MANDATORY) {
+                URL("http://10.0.2.2:10001/bundle.zip").openConnection()
+            })
         }
     }
 

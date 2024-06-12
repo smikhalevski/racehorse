@@ -58,7 +58,7 @@ export type { DeviceManager, DeviceInfo, Rect } from './createDeviceManager';
 export type { DownloadManager, DownloadOptions, Download } from './createDownloadManager';
 export type { EncryptedStorageManager } from './createEncryptedStorageManager';
 export type { EventBridge, Event, Connection } from './createEventBridge';
-export type { EvergreenManager, UpdateStatus, UpdateMode } from './createEvergreenManager';
+export type { EvergreenManager, UpdateStatus, BundleInfo, UpdateMode } from './createEvergreenManager';
 export type { FacebookLoginManager, FacebookAccessToken } from './createFacebookLoginManager';
 export type { FacebookShareManager, FacebookShareLinkContent } from './createFacebookShareManager';
 export type { FirebaseManager } from './createFirebaseManager';

@@ -2,6 +2,37 @@ import { EventBridge } from './createEventBridge';
 import { createJoiner } from './createJoiner';
 import { Unsubscribe } from './types';
 
+export interface BundleInfo {
+  /**
+   * The version of the bundle that is currently running.
+   */
+  masterVersion: string | null;
+
+  /**
+   * The version of the update.
+   */
+  updateVersion: string | null;
+  isMasterReady: string;
+
+  /**
+   * `true` if the update is fully downloaded and ready to be applied.
+   */
+  isUpdateReady: string;
+
+  /**
+   * The directory where the master bundle is stored.
+   */
+  masterDir: string;
+
+  /**
+   * The directory where the update bundle is stored.
+   */
+  updateDir: string;
+}
+
+/**
+ * @deprecated Use {@link BundleInfo} instead.
+ */
 export interface UpdateStatus {
   /**
    * The version of the update.
@@ -25,13 +56,22 @@ export type UpdateMode = (typeof UpdateMode)[keyof typeof UpdateMode];
 export interface EvergreenManager {
   /**
    * The current version of the app bundle.
+   *
+   * @deprecated Use {@link getBundleInfo} instead.
    */
   getMasterVersion(): string | null;
 
   /**
    * Get the version of the update that would be applied on the next app restart.
+   *
+   * @deprecated Use {@link getBundleInfo} instead.
    */
   getUpdateStatus(): UpdateStatus | null;
+
+  /**
+   * Get the info about the current bundle status.
+   */
+  getBundleInfo(): BundleInfo;
 
   /**
    * Applies the available update bundle and returns its version, or returns `null` if there's no update bundle.
@@ -94,6 +134,8 @@ export function createEvergreenManager(eventBridge: EventBridge): EvergreenManag
       eventBridge.request({ type: 'org.racehorse.evergreen.GetMasterVersionEvent' }).payload.version,
 
     getUpdateStatus: () => eventBridge.request({ type: 'org.racehorse.evergreen.GetUpdateStatusEvent' }).payload.status,
+
+    getBundleInfo: () => eventBridge.request({ type: 'org.racehorse.evergreen.GetBundleInfoEvent' }).payload,
 
     applyUpdate: () =>
       updateJoiner.join(() =>

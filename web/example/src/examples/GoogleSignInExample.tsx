@@ -17,10 +17,9 @@ export function GoogleSignInExample() {
           />
         </p>
       )}
-      <p>
-        {'Account:'}
-        <FormattedJSON value={account} />
-      </p>
+      {'Account:'}
+      <FormattedJSON value={account} />
+      <p />
       <button
         onClick={() => {
           googleSignInManager.silentSignIn().then(setAccount);

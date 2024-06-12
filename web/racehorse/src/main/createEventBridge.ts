@@ -99,7 +99,7 @@ export interface EventBridge {
    *
    * The connection is automatically established when this method is called.
    *
-   * @param eventType The type of event to subscribe to.
+   * @param eventType The type of the event to subscribe to.
    * @param listener The listener to subscribe.
    * @returns The callback that unsubscribes the listener.
    */
@@ -227,15 +227,15 @@ export function createEventBridge(connectionProvider = () => window.racehorseCon
     subscribe(eventTypeOrListener, listener?: Function) {
       void connect();
 
-      if (typeof eventTypeOrListener === 'function') {
-        return noticePubSub.subscribe(eventTypeOrListener);
-      }
-
-      return noticePubSub.subscribe(event => {
-        if (event.type === eventTypeOrListener) {
-          listener!(event.payload);
-        }
-      });
+      return noticePubSub.subscribe(
+        typeof eventTypeOrListener === 'function'
+          ? eventTypeOrListener
+          : event => {
+              if (event.type === eventTypeOrListener) {
+                listener!(event.payload);
+              }
+            }
+      );
     },
 
     isSupported: eventType =>
