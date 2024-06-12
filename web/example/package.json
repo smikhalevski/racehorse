@@ -16,9 +16,9 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@racehorse/react": "^1.2.0",
+    "@racehorse/react": "^1.2.1",
     "abortcontroller-polyfill": "^1.7.5",
-    "racehorse": "^1.6.3",
+    "racehorse": "^1.7.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   }
