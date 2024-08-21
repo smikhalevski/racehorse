@@ -80,16 +80,16 @@ dependencies {
     compileOnly("com.google.code.gson:gson:2.10.1")
 
     // ActivityPlugin
-    compileOnly("androidx.lifecycle:lifecycle-process:2.7.0")
+    compileOnly("androidx.lifecycle:lifecycle-process:2.8.4")
 
     // AssetLoaderPlugin
-    compileOnly("androidx.webkit:webkit:1.10.0")
+    compileOnly("androidx.webkit:webkit:1.11.0")
 
     // DevicePlugin
-    compileOnly("androidx.appcompat:appcompat:1.6.1")
+    compileOnly("androidx.appcompat:appcompat:1.7.0")
 
     // Google Sign-In
-    compileOnly("com.google.android.gms:play-services-auth:21.0.0")
+    compileOnly("com.google.android.gms:play-services-auth:21.2.0")
 
     // Facebook Login
     compileOnly("com.facebook.android:facebook-login:latest.release")
@@ -101,7 +101,7 @@ dependencies {
     compileOnly("com.google.android.gms:play-services-tapandpay:18.3.3")
 
     // Push notifications
-    compileOnly("com.google.firebase:firebase-messaging-ktx:23.4.1")
+    compileOnly("com.google.firebase:firebase-messaging-ktx:24.0.0")
 
     // Biometric
     compileOnly("androidx.biometric:biometric:1.2.0-alpha05")
@@ -110,6 +110,6 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("com.squareup.okhttp:mockwebserver:1.2.1")
 
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 }
