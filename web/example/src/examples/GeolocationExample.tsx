@@ -9,6 +9,7 @@ export function GeolocationExample() {
       <h2>{'Geolocation'}</h2>
 
       <button
+        className="btn btn-primary"
         onClick={() => {
           navigator.geolocation.getCurrentPosition(
             position => {

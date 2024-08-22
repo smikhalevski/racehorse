@@ -11,6 +11,7 @@ export function ContactsExample() {
 
       <p>
         <button
+          className="btn btn-primary"
           onClick={() => {
             contactsManager.pickContact().then(setContact);
           }}

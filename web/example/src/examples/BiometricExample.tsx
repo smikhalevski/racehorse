@@ -15,6 +15,7 @@ export function BiometricExample() {
       <p>
         {'Authenticators: '}
         <select
+          className="form-select"
           multiple={true}
           value={authenticators}
           onChange={event => {
@@ -44,6 +45,7 @@ export function BiometricExample() {
       {status === BiometricStatus.NONE_ENROLLED && (
         <p>
           <button
+            className="btn btn-primary"
             onClick={() => {
               biometricManager.enrollBiometric(authenticators).then(() => {
                 // Trigger status update

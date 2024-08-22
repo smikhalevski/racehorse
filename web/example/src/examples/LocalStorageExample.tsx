@@ -10,6 +10,7 @@ export function LocalStorageExample() {
 
       <p>
         <button
+          className="btn btn-primary"
           onClick={() => {
             localStorage.setItem('example', 'Hello, world!');
             rerender();
@@ -18,6 +19,7 @@ export function LocalStorageExample() {
           {'Set value'}
         </button>{' '}
         <button
+          className="btn btn-primary"
           onClick={() => {
             localStorage.removeItem('example');
             rerender();

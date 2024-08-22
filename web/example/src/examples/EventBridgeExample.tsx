@@ -9,17 +9,27 @@ export function EventBridgeExample() {
       <h2>{'Event bridge'}</h2>
 
       <p>
-        {'Is '}
+        <label className="form-label">{'Event name'}</label>
         <input
+          className="form-control font-monospace"
           value={eventType}
           onChange={event => {
             setEventType(event.target.value);
           }}
         />
-        {' supported? '}
       </p>
 
-      <p>{eventBridge.isSupported(eventType) ? '✅ Yes' : '❌ No'}</p>
+      {eventBridge.isSupported(eventType) ? (
+        <>
+          <i className="bi-check-circle-fill text-success me-2" />
+          {'Supported'}
+        </>
+      ) : (
+        <>
+          <i className="bi-x-circle-fill text-success me-2" />
+          {'Not supported'}
+        </>
+      )}
     </>
   );
 }

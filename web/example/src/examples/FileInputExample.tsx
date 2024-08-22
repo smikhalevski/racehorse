@@ -10,8 +10,9 @@ export function FileInputExample() {
       <h2>{'File input'}</h2>
 
       <p>
-        {'Accept: '}
+        <label className="form-label">{'Accept'}</label>
         <select
+          className="form-select"
           value={accept}
           onChange={event => {
             setAccept(event.target.value);
@@ -26,18 +27,22 @@ export function FileInputExample() {
       </p>
 
       <p>
-        {'Multiple: '}
-        <input
-          type="checkbox"
-          checked={multiple}
-          onChange={event => {
-            setMultiple(event.target.checked);
-          }}
-        />
+        <div className="form-check">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={multiple}
+            onChange={event => {
+              setMultiple(event.target.checked);
+            }}
+          />
+          <label className="form-check-label">{'Multiple'}</label>
+        </div>
       </p>
 
       <p>
         <input
+          className="form-control"
           type="file"
           accept={accept}
           multiple={multiple}
@@ -55,6 +60,7 @@ export function FileInputExample() {
 
       <p>
         <button
+          className="btn btn-secondary"
           onClick={() => {
             Promise.allSettled(files.map(readFileAsBase64)).then(results => {
               console.log(results.map(result => (result.status === 'fulfilled' ? result.value : null)));

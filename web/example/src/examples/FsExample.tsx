@@ -1,29 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { Directory, File, fsManager } from 'racehorse';
+import { activityManager, Directory, File, fsManager, Intent } from 'racehorse';
 
 export function FsExample() {
-  const [goToUri, setGoToUri] = useState<string>(Directory.CACHE);
-  const [dir, setDir] = useState<File>();
-  const [files, setFiles] = useState<File[]>();
-  const [url, setUrl] = useState<string>();
+  const [baseUri, setBaseUri] = useState<string>(Directory.CACHE);
+  const [content, setContent] = useState<{ dir: File; files: File[] }>();
 
   useEffect(() => {
-    handleOpenFile(fsManager.File(goToUri));
-  }, [goToUri]);
+    handleOpen(fsManager.File(baseUri));
+  }, [baseUri]);
 
-  const handleOpenFile = (file: File) => {
+  const handleOpen = (file: File) => {
     const attributes = file.getAttributes();
 
     if (attributes.isDirectory) {
       file.readDir().then(files => {
-        setDir(file);
-        setFiles(files);
-        setUrl(undefined);
+        files.sort((a, b) => -a.isDirectory - -b.isDirectory);
+
+        setContent({ dir: file, files });
       });
     }
 
     if (attributes.isFile) {
-      setUrl(file.localUrl);
+      activityManager.startActivity({
+        action: Intent.ACTION_VIEW,
+        flags: Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION,
+        data: file.contentUri,
+      });
     }
   };
 
@@ -32,17 +34,18 @@ export function FsExample() {
       <h2>{'File system'}</h2>
 
       <p>
-        {'Go to: '}
+        <label className="form-label">{'Go to'}</label>
         <select
-          value={goToUri}
+          className="form-select"
+          value={baseUri}
           onChange={event => {
-            setGoToUri(event.target.value);
+            setBaseUri(event.target.value);
           }}
         >
           {Object.values(Directory).map(uri => (
             <option
-              value={uri}
               key={uri}
+              value={uri}
             >
               {uri}
             </option>
@@ -50,51 +53,58 @@ export function FsExample() {
         </select>
       </p>
 
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.5em',
-          width: '100%',
-          alignItems: 'flex-start',
-          overflow: 'hidden',
-          wordBreak: 'break-word',
-        }}
-      >
-        {dir?.uri && decodeURIComponent(dir.uri)}
-
-        <a
-          onClick={() => {
-            if (dir !== undefined && dir.parentFile !== null) {
-              handleOpenFile(dir.parentFile);
-            }
-          }}
-        >
-          {'⤴️'}
-        </a>
-
-        {files?.map(file => (
-          <a
-            key={file.uri}
-            href={'#'}
-            onClick={event => {
-              event.preventDefault();
-              handleOpenFile(file);
-            }}
-          >
-            {decodeURIComponent(file.uri.split('/').filter(Boolean).pop()!)}
-          </a>
-        ))}
-
-        {'Total files: '}
-        {files?.length || 0}
-      </div>
-
-      {url !== undefined && (
-        <p>
-          <iframe src={url} />
-        </p>
+      {content !== undefined && (
+        <Content
+          dir={content.dir}
+          files={content.files}
+          onOpen={handleOpen}
+        />
       )}
     </>
+  );
+}
+
+interface ContentProps {
+  dir: File;
+  files: File[];
+
+  onOpen(file: File): void;
+}
+
+function Content(props: ContentProps) {
+  const { dir, files, onOpen } = props;
+
+  return (
+    <div className="list-group">
+      <div className="list-group-item list-group-item-primary overflow-hidden">{decodeURIComponent(dir.uri)}</div>
+
+      <div
+        className="list-group-item list-group-item-action"
+        onClick={() => {
+          if (dir.parentFile !== null) {
+            onOpen(dir.parentFile);
+          }
+        }}
+      >
+        <i className="bi-arrow-90deg-up me-2" />
+        {'..'}
+      </div>
+
+      {files.map(file => (
+        <div
+          key={file.uri}
+          className="list-group-item list-group-item-action overflow-hidden"
+          onClick={() => onOpen(file)}
+        >
+          <i className={file.isDirectory ? 'bi-folder me-2' : 'me-4'} />
+
+          {decodeURIComponent(file.uri.substring(file.uri.lastIndexOf('/') + 1))}
+        </div>
+      ))}
+
+      {files.length === 0 && (
+        <div className="list-group-item list-group-item-light text-secondary text-center">{'No files'}</div>
+      )}
+    </div>
   );
 }

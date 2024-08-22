@@ -14,7 +14,9 @@ export function EvergreenExample() {
       <h2>{'Evergreen'}</h2>
 
       {bundleInfo === undefined ? (
-        <em>{'Select "release" build variant to see the bundle info.'}</em>
+        <p>
+          <em>{'Select "release" build variant to see the bundle info.'}</em>
+        </p>
       ) : (
         <FormattedJSON value={bundleInfo} />
       )}

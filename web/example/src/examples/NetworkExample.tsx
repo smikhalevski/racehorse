@@ -10,8 +10,10 @@ export function NetworkExample() {
       <h2>{'Network'}</h2>
 
       <p>
-        {'Online: '}
-        {networkStatus.isConnected ? '🟢' : '🔴'}
+        {'Online '}
+        <i
+          className={networkStatus.isConnected ? 'bi-check-circle-fill text-success' : 'bi-x-circle-fill text-danger'}
+        />
       </p>
 
       <FormattedJSON value={networkStatus} />

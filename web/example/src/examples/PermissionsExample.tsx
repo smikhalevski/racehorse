@@ -11,8 +11,9 @@ export function PermissionsExample() {
       <h2>{'Permissions'}</h2>
 
       <p>
-        {'Permissions: '}
+        <label className="form-label">{'Permissions'}</label>
         <select
+          className="form-select"
           multiple={true}
           value={permissions}
           onChange={event => {
@@ -31,6 +32,7 @@ export function PermissionsExample() {
       </p>
 
       <button
+        className="btn btn-primary"
         onClick={() => {
           permissionsManager.askForPermission(permissions).then(setStatuses);
         }}

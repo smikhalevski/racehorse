@@ -9,9 +9,9 @@ export function ToastExample() {
       <h2>{'Toast'}</h2>
 
       <p>
-        {'Message:'}
-        <br />
+        <label className="form-label">{'Message'}</label>
         <input
+          className="form-control"
           value={message}
           onChange={event => {
             setMessage(event.target.value);
@@ -20,6 +20,7 @@ export function ToastExample() {
       </p>
 
       <button
+        className="btn btn-primary"
         onClick={() => {
           eventBridge.request({ type: 'com.example.ShowToastEvent', payload: { message } });
         }}

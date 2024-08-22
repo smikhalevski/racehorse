@@ -21,6 +21,7 @@ export function FacebookLoginExample() {
       <FormattedJSON value={accessToken} />
       <p />
       <button
+        className="btn btn-primary"
         onClick={() => {
           facebookLoginManager.logIn().then(setAccessToken);
         }}
@@ -28,6 +29,7 @@ export function FacebookLoginExample() {
         {'Log in'}
       </button>{' '}
       <button
+        className="btn btn-primary"
         onClick={() => {
           facebookLoginManager.logOut();
           setAccessToken(null);
