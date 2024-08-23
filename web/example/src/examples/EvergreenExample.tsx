@@ -11,7 +11,7 @@ export function EvergreenExample() {
 
   return (
     <>
-      <h2>{'Evergreen'}</h2>
+      <h1>{'Evergreen'}</h1>
 
       {bundleInfo === undefined ? (
         <p>

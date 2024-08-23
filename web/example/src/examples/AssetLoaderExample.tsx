@@ -3,7 +3,7 @@ import React from 'react';
 export function AssetLoaderExample() {
   return (
     <>
-      <h2>{'Asset loader'}</h2>
+      <h1>{'Asset loader'}</h1>
 
       <iframe src="https://guestcontent.local" />
     </>

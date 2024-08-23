@@ -3,6 +3,7 @@ package com.example
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.webkit.CookieManager
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
@@ -80,6 +81,9 @@ class MainActivity : AppCompatActivity() {
         webView.webChromeClient = RacehorseWebChromeClient()
         webView.webViewClient = RacehorseWebViewClient()
         webView.setDownloadListener(RacehorseDownloadListener())
+
+        // Disable the rubber-band over-scroll effect
+        webView.overScrollMode = View.OVER_SCROLL_NEVER
 
         cookieManager.setAcceptCookie(true)
         cookieManager.setAcceptThirdPartyCookies(webView, true)

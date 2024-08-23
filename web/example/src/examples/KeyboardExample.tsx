@@ -7,7 +7,7 @@ export function KeyboardExample() {
 
   return (
     <>
-      <h2>{'Keyboard'}</h2>
+      <h1>{'Keyboard'}</h1>
 
       <button onClick={keyboardManager.showKeyboard}>{'Show keyboard'}</button>
 

@@ -6,7 +6,7 @@ export function LocalStorageExample() {
 
   return (
     <>
-      <h2>{'Local storage'}</h2>
+      <h1>{'Local storage'}</h1>
 
       <p>
         <button

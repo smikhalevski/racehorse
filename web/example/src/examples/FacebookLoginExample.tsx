@@ -7,7 +7,7 @@ export function FacebookLoginExample() {
 
   return (
     <>
-      <h2>{'Facebook Login'}</h2>
+      <h1>{'Facebook Login'}</h1>
       {accessToken !== null && (
         <p>
           <img

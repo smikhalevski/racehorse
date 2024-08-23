@@ -8,7 +8,7 @@ export function PermissionsExample() {
 
   return (
     <>
-      <h2>{'Permissions'}</h2>
+      <h1>{'Permissions'}</h1>
 
       <p>
         <label className="form-label">{'Permissions'}</label>

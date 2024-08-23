@@ -10,7 +10,7 @@ export function BiometricExample() {
 
   return (
     <>
-      <h2>{'Biometric'}</h2>
+      <h1>{'Biometric'}</h1>
 
       <p>
         {'Authenticators: '}

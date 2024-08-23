@@ -6,7 +6,7 @@ export function EventBridgeExample() {
 
   return (
     <>
-      <h2>{'Event bridge'}</h2>
+      <h1>{'Event bridge'}</h1>
 
       <p>
         <label className="form-label">{'Event name'}</label>

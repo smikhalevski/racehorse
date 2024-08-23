@@ -14,7 +14,7 @@ export function EncryptedStorageExample() {
 
   return (
     <>
-      <h2>{'Encrypted storage'}</h2>
+      <h1>{'Encrypted storage'}</h1>
       <p>
         {'Key:'}
         <br />

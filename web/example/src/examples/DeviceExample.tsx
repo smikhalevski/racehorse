@@ -9,7 +9,7 @@ export function DeviceExample() {
 
   return (
     <>
-      <h2>{'Device'}</h2>
+      <h1>{'Device'}</h1>
 
       <p>
         {'Locales: '}

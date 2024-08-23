@@ -36,7 +36,7 @@ export function ActivityExample() {
 
   return (
     <>
-      <h2>{'Activity'}</h2>
+      <h1>{'Activity'}</h1>
 
       <p>{'Activity state: ' + activityStateLabel[activityState]}</p>
 

@@ -71,29 +71,97 @@ export function App() {
 
   return (
     <>
-      <EvergreenExample />
-      <FsExample />
-      <ContactsExample />
-      <FileInputExample />
-      <ToastExample />
-      <AssetLoaderExample />
-      <BiometricExample />
-      <BiometricEncryptedStorageExample />
-      <DownloadExample />
-      <KeyboardExample />
-      <FacebookShareExample />
-      <GoogleSignInExample />
-      <FacebookLoginExample />
-      <PermissionsExample />
-      <ActivityExample />
-      <NotificationsExample />
-      <NetworkExample />
-      <EncryptedStorageExample />
-      <CookieExample />
-      <GeolocationExample />
-      <LocalStorageExample />
-      <DeviceExample />
-      <EventBridgeExample />
+      <nav className="navbar sticky-top bg-body-tertiary shadow">
+        <div
+          className="container-fluid"
+          style={{ margin: windowInsets.top + 'px ' + windowInsets.right + 'px 0 ' + windowInsets.left + 'px' }}
+        >
+          <div className="navbar-brand">{'Download'}</div>
+          <button
+            className="navbar-toggler"
+            type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#offcanvasNavbar"
+            aria-controls="offcanvasNavbar"
+            aria-label="Toggle navigation"
+          >
+            <span className="navbar-toggler-icon" />
+          </button>
+          <div
+            className="offcanvas offcanvas-end"
+            tabIndex={-1}
+            id="offcanvasNavbar"
+            aria-labelledby="offcanvasNavbarLabel"
+            style={{ padding: windowInsets.top + 'px ' + windowInsets.right + 'px ' + windowInsets.bottom + 'px 0' }}
+          >
+            <div className="offcanvas-header">
+              <h4
+                className="offcanvas-title"
+                id="offcanvasNavbarLabel"
+              >
+                {'Racehorse'}
+              </h4>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"
+              />
+            </div>
+            <div className="offcanvas-body">
+              <ul className="navbar-nav">
+                <li className="nav-item">
+                  <a
+                    className="nav-link active"
+                    aria-current="page"
+                    href="#"
+                  >
+                    Home
+                  </a>
+                </li>
+                <li className="nav-item">
+                  <a
+                    className="nav-link"
+                    aria-current="page"
+                    href="#"
+                  >
+                    Home2
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <main
+        style={{ padding: '0 ' + windowInsets.right + 'px ' + windowInsets.bottom + 'px ' + windowInsets.left + 'px' }}
+      >
+        <div className="p-3">
+          <EvergreenExample />
+          <FsExample />
+          <ContactsExample />
+          <FileInputExample />
+          <ToastExample />
+          <AssetLoaderExample />
+          <BiometricExample />
+          <BiometricEncryptedStorageExample />
+          <DownloadExample />
+          <KeyboardExample />
+          <FacebookShareExample />
+          <GoogleSignInExample />
+          <FacebookLoginExample />
+          <PermissionsExample />
+          <ActivityExample />
+          <NotificationsExample />
+          <NetworkExample />
+          <EncryptedStorageExample />
+          <CookieExample />
+          <GeolocationExample />
+          <LocalStorageExample />
+          <DeviceExample />
+          <EventBridgeExample />
+        </div>
+      </main>
     </>
   );
 }

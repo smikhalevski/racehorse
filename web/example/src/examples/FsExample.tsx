@@ -31,7 +31,7 @@ export function FsExample() {
 
   return (
     <>
-      <h2>{'File system'}</h2>
+      <h1>{'File system'}</h1>
 
       <p>
         <label className="form-label">{'Go to'}</label>

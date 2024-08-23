@@ -7,7 +7,7 @@ export function ContactsExample() {
 
   return (
     <>
-      <h2>{'Contacts'}</h2>
+      <h1>{'Contacts'}</h1>
 
       <p>
         <button

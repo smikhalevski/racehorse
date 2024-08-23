@@ -28,9 +28,28 @@ export function DownloadExample() {
 
   return (
     <>
-      <h2>{'Download'}</h2>
+      {'Quick actions'}
+      <div className="d-flex gap-2 mb-3">
+        <button
+          className="btn btn-outline-primary"
+          onClick={() => {
+            addDownload(TEST_HTTP_URL);
+          }}
+        >
+          {'HTTP URL'}
+        </button>
+
+        <button
+          className="btn btn-outline-primary"
+          onClick={() => {
+            addDownload(TEST_DATA_URI);
+          }}
+        >
+          {'Data URI'}
+        </button>
+      </div>
       <form
-        className="input-group mb-2"
+        className="input-group mb-3"
         onSubmit={event => {
           event.preventDefault();
           addDownload(uri);
@@ -46,27 +65,6 @@ export function DownloadExample() {
         />
         <button className="btn btn-primary">{'Add download'}</button>
       </form>
-      <div className="d-flex gap-2 mb-2 ps-3">
-        <i className="bi-arrow-90deg-up text-secondary" />
-
-        <button
-          className="btn btn-sm btn-light"
-          onClick={() => {
-            setURI(TEST_HTTP_URL);
-          }}
-        >
-          {'HTTP URL'}
-        </button>
-
-        <button
-          className="btn btn-sm btn-light"
-          onClick={() => {
-            setURI(TEST_DATA_URI);
-          }}
-        >
-          {'Data URI'}
-        </button>
-      </div>
       <div className="list-group mb-3">
         {downloads.length === 0 && (
           <div className="list-group-item list-group-item-light text-secondary text-center">{'No downloads'}</div>

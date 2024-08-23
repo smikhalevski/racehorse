@@ -13,7 +13,7 @@ export function BiometricEncryptedStorageExample() {
 
   return (
     <>
-      <h2>{'Biometric encrypted storage'}</h2>
+      <h1>{'Biometric encrypted storage'}</h1>
 
       <p>
         {'Authenticators: '}

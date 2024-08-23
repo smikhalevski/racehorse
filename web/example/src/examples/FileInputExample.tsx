@@ -7,7 +7,7 @@ export function FileInputExample() {
 
   return (
     <>
-      <h2>{'File input'}</h2>
+      <h1>{'File input'}</h1>
 
       <p>
         <label className="form-label">{'Accept'}</label>

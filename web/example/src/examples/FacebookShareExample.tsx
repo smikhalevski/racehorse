@@ -4,7 +4,7 @@ import { facebookShareManager } from 'racehorse';
 export function FacebookShareExample() {
   return (
     <>
-      <h2>{'Facebook Share'}</h2>
+      <h1>{'Facebook Share'}</h1>
       <button
         className="btn btn-primary"
         onClick={() => {

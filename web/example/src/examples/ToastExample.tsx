@@ -6,7 +6,7 @@ export function ToastExample() {
 
   return (
     <>
-      <h2>{'Toast'}</h2>
+      <h1>{'Toast'}</h1>
 
       <p>
         <label className="form-label">{'Message'}</label>

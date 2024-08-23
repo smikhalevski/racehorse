@@ -7,7 +7,7 @@ export function GoogleSignInExample() {
 
   return (
     <>
-      <h2>{'Google Sign-In'}</h2>
+      <h1>{'Google Sign-In'}</h1>
       {account !== null && (
         <p>
           <img
