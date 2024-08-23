@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { Contact, contactsManager, fsManager } from 'racehorse';
-import { Heading } from '../components/Heading';
 
 export function ContactsExample() {
   const [contact, setContact] = useState<Contact | null>(contactsManager.getContact(1));
 
   return (
     <>
-      <Heading>{'Contacts'}</Heading>
+      <h1>{'Contacts'}</h1>
 
       <p>
         <button

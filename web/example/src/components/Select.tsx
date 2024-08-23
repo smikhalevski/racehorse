@@ -1,4 +1,4 @@
-import React, { createContext, ReactElement, ReactNode, useContext, useId } from 'react';
+import React, { createContext, InputHTMLAttributes, ReactElement, ReactNode, useContext, useId } from 'react';
 
 interface SelectState {
   values: any[];
@@ -12,7 +12,7 @@ const SelectStateContext = createContext<SelectState | null>(null);
 interface SelectProps<T> {
   values: T[];
   children: ReactNode;
-  isMultiple?: boolean;
+  multiple?: boolean;
 
   onChange(value: T[]): void;
 }
@@ -22,10 +22,10 @@ export function Select<T>(props: SelectProps<T>): ReactElement {
     <SelectStateContext.Provider
       value={{
         values: props.values,
-        isMultiple: props.isMultiple,
+        isMultiple: props.multiple,
 
         onChange(value, isChecked) {
-          if (!props.isMultiple) {
+          if (!props.multiple) {
             if (isChecked) {
               props.onChange([value]);
             }
@@ -49,17 +49,17 @@ export function Select<T>(props: SelectProps<T>): ReactElement {
         },
       }}
     >
-      {props.children}
+      <ul className="list-group">{props.children}</ul>
     </SelectStateContext.Provider>
   );
 }
 
-interface OptionProps {
+interface SelectOptionProps {
   value: unknown;
   children: ReactNode;
 }
 
-export function SelectOption(props: OptionProps): ReactElement {
+export function SelectOption(props: SelectOptionProps): ReactElement {
   const state = useContext(SelectStateContext);
   const id = useId();
 
@@ -68,7 +68,7 @@ export function SelectOption(props: OptionProps): ReactElement {
   }
 
   return (
-    <>
+    <li className="list-group-item d-flex">
       <input
         className="form-check-input me-2"
         type={state.isMultiple ? 'checkbox' : 'radio'}
@@ -79,10 +79,32 @@ export function SelectOption(props: OptionProps): ReactElement {
         id={id}
       />
       <label
-        className="form-check-label"
+        className="form-check-label flex-fill"
         htmlFor={id}
       >
         {props.children}
+      </label>
+    </li>
+  );
+}
+
+interface CheckboxProps extends InputHTMLAttributes<HTMLInputElement> {}
+
+export function Checkbox({ children, ...props }: CheckboxProps): ReactElement {
+  const id = useId();
+  return (
+    <>
+      <input
+        {...props}
+        className="form-check-input me-2"
+        type="checkbox"
+        id={id}
+      />
+      <label
+        className="form-check-label flex-fill"
+        htmlFor={id}
+      >
+        {children}
       </label>
     </>
   );

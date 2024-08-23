@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { permissionsManager } from 'racehorse';
 import { Select, SelectOption } from '../components/Select';
-import { Heading } from '../components/Heading';
+import { Section } from '../components/Section';
 
-const samplePermissions = [
+const examplePermissions = [
   'android.permission.ACCESS_WIFI_STATE',
   'android.permission.ACCESS_NETWORK_STATE',
   'android.permission.CHANGE_WIFI_STATE',
@@ -16,48 +16,54 @@ const samplePermissions = [
 
 export function PermissionsExample() {
   const [permissions, setPermissions] = useState<string[]>([]);
-  const [statuses, setStatuses] = useState<{ [permission: string]: boolean }>({});
+  const [grantedStatuses, setGrantedStatuses] = useState<{ [permission: string]: boolean }>({});
+
+  // https://developer.android.com/training/permissions/requesting#explain
+  const rationaleStatuses = useMemo(
+    () => permissionsManager.shouldShowRequestPermissionRationale(permissions),
+    [grantedStatuses]
+  );
 
   return (
-    <>
-      <Heading>{'Permissions'}</Heading>
-
+    <Section title={'Permissions'}>
       <Select
         values={permissions}
         onChange={setPermissions}
-        isMultiple={true}
+        multiple={true}
       >
-        <ul className="list-group mb-3">
-          {samplePermissions.map(permission => (
-            <li className="list-group-item d-flex">
-              <SelectOption value={permission}>{permission.split('.').pop()}</SelectOption>
+        {examplePermissions.map(permission => (
+          <SelectOption
+            key={permission}
+            value={permission}
+          >
+            <div className="d-flex justify-content-between">
+              {permission.split('.').pop()}
 
-              {permission in statuses && (
+              {permission in grantedStatuses && (
                 <i
                   className={
-                    statuses[permission]
-                      ? 'ms-auto bi-check-circle-fill text-success'
-                      : // https://developer.android.com/training/permissions/requesting#explain
-                        permissionsManager.shouldShowRequestPermissionRationale(permission)
-                        ? 'ms-auto bi-question-circle-fill text-warning'
-                        : 'ms-auto bi-x-circle-fill text-danger'
+                    grantedStatuses[permission]
+                      ? 'bi-check-circle-fill text-success'
+                      : rationaleStatuses[permission]
+                        ? 'bi-question-circle-fill text-warning'
+                        : 'bi-x-circle-fill text-danger'
                   }
                 />
               )}
-            </li>
-          ))}
-        </ul>
+            </div>
+          </SelectOption>
+        ))}
       </Select>
 
       <button
-        className="btn btn-primary d-block mx-auto"
+        className="btn btn-primary w-100 mt-3"
         disabled={permissions.length === 0}
         onClick={() => {
-          permissionsManager.askForPermission(permissions).then(setStatuses);
+          permissionsManager.askForPermission(permissions).then(setGrantedStatuses);
         }}
       >
         {'Request permissions'}
       </button>
-    </>
+    </Section>
   );
 }

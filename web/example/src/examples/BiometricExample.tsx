@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { BiometricAuthenticator, biometricManager, BiometricStatus } from 'racehorse';
-import { Heading } from '../components/Heading';
+import { Select, SelectOption } from '../components/Select';
 
 export function BiometricExample() {
   const [authenticators, setAuthenticators] = useState<BiometricAuthenticator[]>([
@@ -11,52 +11,52 @@ export function BiometricExample() {
 
   return (
     <>
-      <Heading>{'Biometric'}</Heading>
+      <h1>{'Biometric'}</h1>
 
-      <p>
-        {'Authenticators: '}
-        <select
-          className="form-select"
+      <ul className="list-group mb-3">
+        <Select
+          values={authenticators}
+          onChange={setAuthenticators}
           multiple={true}
-          value={authenticators}
-          onChange={event => {
-            setAuthenticators(
-              Array.from(event.target.selectedOptions).map(option => option.value as BiometricAuthenticator)
-            );
-          }}
         >
-          <option value={BiometricAuthenticator.BIOMETRIC_STRONG}>{'Biometric strong'}</option>
-          <option value={BiometricAuthenticator.BIOMETRIC_WEAK}>{'Biometric weak'}</option>
-          <option value={BiometricAuthenticator.DEVICE_CREDENTIAL}>{'Device credential'}</option>
-        </select>
-      </p>
+          <li className="list-group-item">
+            <SelectOption value={BiometricAuthenticator.BIOMETRIC_STRONG}>{'Biometric strong'}</SelectOption>
+          </li>
+          <li className="list-group-item">
+            <SelectOption value={BiometricAuthenticator.BIOMETRIC_WEAK}>{'Biometric weak'}</SelectOption>
+          </li>
+          <li className="list-group-item">
+            <SelectOption value={BiometricAuthenticator.DEVICE_CREDENTIAL}>{'Device credential'}</SelectOption>
+          </li>
+        </Select>
+      </ul>
 
-      {
+      <div className="mb-3">
         {
-          [BiometricStatus.SUPPORTED]: '✅ Supported',
-          [BiometricStatus.UNKNOWN]: '❌ Unknown',
-          [BiometricStatus.UNSUPPORTED]: '❌ Unsupported',
-          [BiometricStatus.NO_HARDWARE]: '❌ No hardware',
-          [BiometricStatus.HARDWARE_UNAVAILABLE]: '❌ Hardware unavailable',
-          [BiometricStatus.NONE_ENROLLED]: '❌ None enrolled',
-          [BiometricStatus.SECURITY_UPDATE_REQUIRED]: '❌ Security update required',
-        }[status]
-      }
+          {
+            [BiometricStatus.SUPPORTED]: '✅ Supported',
+            [BiometricStatus.UNKNOWN]: '❌ Unknown',
+            [BiometricStatus.UNSUPPORTED]: '❌ Unsupported',
+            [BiometricStatus.NO_HARDWARE]: '❌ No hardware',
+            [BiometricStatus.HARDWARE_UNAVAILABLE]: '❌ Hardware unavailable',
+            [BiometricStatus.NONE_ENROLLED]: '❌ None enrolled',
+            [BiometricStatus.SECURITY_UPDATE_REQUIRED]: '❌ Security update required',
+          }[status]
+        }
+      </div>
 
       {status === BiometricStatus.NONE_ENROLLED && (
-        <p>
-          <button
-            className="btn d-block w-100 btn-primary"
-            onClick={() => {
-              biometricManager.enrollBiometric(authenticators).then(() => {
-                // Trigger status update
-                setAuthenticators(authenticators => [...authenticators]);
-              });
-            }}
-          >
-            {'Enroll biometric'}
-          </button>
-        </p>
+        <button
+          className="btn d-block w-100 btn-primary"
+          onClick={() => {
+            biometricManager.enrollBiometric(authenticators).then(() => {
+              // Trigger status update
+              setAuthenticators(authenticators => [...authenticators]);
+            });
+          }}
+        >
+          {'Enroll biometric'}
+        </button>
       )}
     </>
   );

@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { activityManager, Directory, File, fsManager, Intent } from 'racehorse';
+import { Section } from '../components/Section';
 
 export function FsExample() {
-  const [baseUri, setBaseUri] = useState<string>(Directory.CACHE);
-  const [content, setContent] = useState<{ dir: File; files: File[] }>();
+  const [{ dir, files }, setContent] = useState<{ dir: File; files: File[] }>({
+    dir: fsManager.File(Directory.EXTERNAL_STORAGE),
+    files: [],
+  });
 
-  useEffect(() => {
-    handleOpen(fsManager.File(baseUri));
-  }, [baseUri]);
+  useEffect(() => handleOpenFile(dir), []);
 
-  const handleOpen = (file: File) => {
+  const handleOpenFile = (file: File) => {
     const attributes = file.getAttributes();
 
     if (attributes.isDirectory) {
       file.readDir().then(files => {
-        files.sort((a, b) => -a.isDirectory - -b.isDirectory);
-
+        files.sort((a, b) => -a.isDirectory - -b.isDirectory || a.uri.localeCompare(b.uri));
         setContent({ dir: file, files });
       });
     }
@@ -30,81 +30,58 @@ export function FsExample() {
   };
 
   return (
-    <>
-      <h1>{'File system'}</h1>
+    <Section title={'File system'}>
+      <div className="list-group">
+        <button
+          className="list-group-item list-group-item-primary d-flex justify-content-between align-items-center dropdown-toggle"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        >
+          <div className="overflow-hidden flex-shrink-1">{decodeURIComponent(dir.uri)}</div>
+        </button>
 
-      <p>
-        <label className="form-label">{'Go to'}</label>
-        <select
-          className="form-select"
-          value={baseUri}
-          onChange={event => {
-            setBaseUri(event.target.value);
+        <ul className="dropdown-menu dropdown-menu-end shadow">
+          <li className="dropdown-header">{'Jump to…'}</li>
+          {Object.values(Directory).map(uri => (
+            <li key={uri}>
+              <button
+                className="dropdown-item"
+                onClick={() => handleOpenFile(fsManager.File(uri))}
+              >
+                {uri}
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        <div
+          className="list-group-item list-group-item-action"
+          onClick={() => {
+            if (dir.parentFile !== null) {
+              handleOpenFile(dir.parentFile);
+            }
           }}
         >
-          {Object.values(Directory).map(uri => (
-            <option
-              key={uri}
-              value={uri}
-            >
-              {uri}
-            </option>
-          ))}
-        </select>
-      </p>
-
-      {content !== undefined && (
-        <Content
-          dir={content.dir}
-          files={content.files}
-          onOpen={handleOpen}
-        />
-      )}
-    </>
-  );
-}
-
-interface ContentProps {
-  dir: File;
-  files: File[];
-
-  onOpen(file: File): void;
-}
-
-function Content(props: ContentProps) {
-  const { dir, files, onOpen } = props;
-
-  return (
-    <div className="list-group">
-      <div className="list-group-item list-group-item-primary overflow-hidden">{decodeURIComponent(dir.uri)}</div>
-
-      <div
-        className="list-group-item list-group-item-action"
-        onClick={() => {
-          if (dir.parentFile !== null) {
-            onOpen(dir.parentFile);
-          }
-        }}
-      >
-        <i className="bi-arrow-90deg-up me-2" />
-        {'..'}
-      </div>
-
-      {files.map(file => (
-        <div
-          key={file.uri}
-          className="list-group-item list-group-item-action overflow-hidden"
-          onClick={() => onOpen(file)}
-        >
-          <i className={file.isDirectory ? 'bi-folder me-2' : 'me-4'} />
-
-          {decodeURIComponent(file.uri.substring(file.uri.lastIndexOf('/') + 1))}
+          <i className="bi-arrow-90deg-up me-2" />
+          {'..'}
         </div>
-      ))}
 
-      {files.length === 0 && (
-        <div className="list-group-item list-group-item-light text-secondary text-center">{'No files'}</div>
-      )}
-    </div>
+        {files.length === 0 && (
+          <div className="list-group-item list-group-item-light text-secondary text-center">{'No files'}</div>
+        )}
+
+        {files.map(file => (
+          <div
+            key={file.uri}
+            className="list-group-item list-group-item-action overflow-hidden"
+            onClick={() => handleOpenFile(file)}
+          >
+            <i className={file.isDirectory ? 'bi-folder me-2' : 'me-4'} />
+
+            {decodeURIComponent(file.uri).split('/').pop()}
+          </div>
+        ))}
+      </div>
+    </Section>
   );
 }

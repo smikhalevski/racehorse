@@ -1,19 +1,25 @@
 import React from 'react';
 import { useNetworkStatus } from '@racehorse/react';
 import { NetworkType } from 'racehorse';
+import { Section } from '../components/Section';
 
 export function NetworkExample() {
   const networkStatus = useNetworkStatus();
 
   return (
-    <>
-      <h1>{'Network'}</h1>
-
+    <Section title={'Network'}>
       <div className="mb-2">
         {networkStatus.isConnected ? (
           <>
             <i className="bi-check-circle-fill text-success me-2" />
-            {'Connected'}
+            {
+              {
+                [NetworkType.WIFI]: 'Connected via Wi-Fi',
+                [NetworkType.CELLULAR]: 'Connected via Cellular',
+                [NetworkType.NONE]: null,
+                [NetworkType.UNKNOWN]: 'Connected via unknown network type',
+              }[networkStatus.type]
+            }
           </>
         ) : (
           <>
@@ -22,30 +28,6 @@ export function NetworkExample() {
           </>
         )}
       </div>
-
-      {
-        {
-          [NetworkType.WIFI]: (
-            <>
-              <i className="bi-wifi me-2" />
-              {'Wifi'}
-            </>
-          ),
-          [NetworkType.CELLULAR]: (
-            <>
-              <i className="bi-telephone me-2" />
-              {'Cellular'}
-            </>
-          ),
-          [NetworkType.NONE]: null,
-          [NetworkType.UNKNOWN]: (
-            <>
-              <i className="bi-question-circle-fill text-secondary me-2" />
-              {'Unknown network type'}
-            </>
-          ),
-        }[networkStatus.type]
-      }
-    </>
+    </Section>
   );
 }

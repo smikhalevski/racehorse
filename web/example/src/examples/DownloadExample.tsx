@@ -1,70 +1,75 @@
 import React, { MouseEventHandler, useEffect, useState } from 'react';
 import { activityManager, downloadManager, DownloadStatus, Intent } from 'racehorse';
+import { Section } from '../components/Section';
 
-const TEST_HTTP_URL = 'https://upload.wikimedia.org/wikipedia/en/f/f9/Death_star1.png';
+const HTTP_URL = 'https://upload.wikimedia.org/wikipedia/en/f/f9/Death_star1.png';
 
-const TEST_DATA_URI =
+const DATA_URI =
   'data:image/gif;base64,R0lGODlhBwAGAJEAAAAAAP////RDNv///yH/C05FVFNDQVBFMi4wAwEAAAAh+QQFAAADACwAAAAABwAGAAACCpxkeMudOyKMkhYAOw==';
 
 export function DownloadExample() {
-  const [uri, setURI] = useState(TEST_HTTP_URL);
+  const [uri, setURI] = useState(HTTP_URL);
   const [downloads, setDownloads] = useState(downloadManager.getAllDownloads);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setDownloads(downloadManager.getAllDownloads());
-    }, 1000);
+    // Refresh downloads
+    const timer = setInterval(() => setDownloads(downloadManager.getAllDownloads()), 1000);
 
-    return () => {
-      clearInterval(timer);
-    };
-  });
+    return () => clearInterval(timer);
+  }, []);
 
-  const addDownload = (uri: string) => {
-    downloadManager.addDownload(uri, { headers: { 'Example-Header': 'example' } }).then(() => {
-      setDownloads(downloadManager.getAllDownloads());
-    });
+  const handleAddDownload = (uri: string) => {
+    downloadManager
+      .addDownload(uri, { headers: { 'Example-Header': 'example' } })
+      .then(() => setDownloads(downloadManager.getAllDownloads()));
   };
 
   return (
-    <>
-      {'Quick actions'}
-      <div className="d-flex gap-2 mb-3">
-        <button
-          className="btn btn-outline-primary"
-          onClick={() => {
-            addDownload(TEST_HTTP_URL);
-          }}
-        >
-          {'HTTP URL'}
-        </button>
-
-        <button
-          className="btn btn-outline-primary"
-          onClick={() => {
-            addDownload(TEST_DATA_URI);
-          }}
-        >
-          {'Data URI'}
-        </button>
-      </div>
-      <form
-        className="input-group mb-3"
-        onSubmit={event => {
-          event.preventDefault();
-          addDownload(uri);
-        }}
-      >
+    <Section title={'Download'}>
+      <div className="input-group mb-3">
         <input
           className="form-control"
           value={uri}
-          onChange={event => {
-            setURI(event.target.value);
-          }}
-          required={true}
+          onChange={event => setURI(event.target.value)}
         />
-        <button className="btn btn-primary">{'Add download'}</button>
-      </form>
+
+        <button
+          className="btn btn-primary"
+          onClick={event => {
+            event.preventDefault();
+            handleAddDownload(uri);
+          }}
+        >
+          {'Download'}
+        </button>
+
+        <button
+          className="btn btn-primary dropdown-toggle"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        />
+
+        <ul className="dropdown-menu dropdown-menu-end shadow">
+          <li className="dropdown-header">{'Download from…'}</li>
+          <li>
+            <button
+              className="dropdown-item"
+              onClick={() => handleAddDownload(HTTP_URL)}
+            >
+              {'HTTP URL'}
+            </button>
+          </li>
+          <li>
+            <button
+              className="dropdown-item"
+              onClick={() => handleAddDownload(DATA_URI)}
+            >
+              {'Data URI'}
+            </button>
+          </li>
+        </ul>
+      </div>
+
       <div className="list-group mb-3">
         {downloads.length === 0 && (
           <div className="list-group-item list-group-item-light text-secondary text-center">{'No downloads'}</div>
@@ -103,8 +108,9 @@ export function DownloadExample() {
                 }
                 {download.title}
               </div>
+
               <button
-                className="btn btn-sm btn-outline-primary"
+                className="btn btn-sm btn-outline-danger"
                 onClick={handleDeleteDownload}
               >
                 {'Delete'}
@@ -113,18 +119,6 @@ export function DownloadExample() {
           );
         })}
       </div>
-      <a
-        href={TEST_HTTP_URL}
-        download={true}
-      >
-        {'HTTP URL'}
-      </a>{' '}
-      <a
-        href={TEST_DATA_URI}
-        download={true}
-      >
-        {'Data URI'}
-      </a>
-    </>
+    </Section>
   );
 }

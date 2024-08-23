@@ -1,56 +1,46 @@
 import React, { useState } from 'react';
+import { Section } from '../components/Section';
+import { Checkbox, Select, SelectOption } from '../components/Select';
 
 export function FileInputExample() {
   const [files, setFiles] = useState<File[]>([]);
-  const [accept, setAccept] = useState('*/*');
+  const [accept, setAccept] = useState(['*/*']);
   const [multiple, setMultiple] = useState(false);
 
   return (
-    <>
-      <h1>{'File input'}</h1>
+    <Section title={'File input'}>
+      <label className="form-label">{'Accept'}</label>
+      <Select
+        values={accept}
+        onChange={values => {
+          setAccept(values);
+        }}
+        multiple={true}
+      >
+        <SelectOption value={'image/*'}>{'image/*'}</SelectOption>
+        <SelectOption value={'video/*'}>{'video/*'}</SelectOption>
+        <SelectOption value={'text/html'}>{'text/html'}</SelectOption>
+        <SelectOption value={'*/*'}>{'*/*'}</SelectOption>
+      </Select>
 
-      <p>
-        <label className="form-label">{'Accept'}</label>
-        <select
-          className="form-select"
-          value={accept}
-          onChange={event => {
-            setAccept(event.target.value);
-          }}
-        >
-          <option value={'image/*'}>{'image/*'}</option>
-          <option value={'video/*'}>{'video/*'}</option>
-          <option value={'image/*,video/*'}>{'image/*, video/*'}</option>
-          <option value={'text/html'}>{'text/html'}</option>
-          <option value={'*/*'}>{'*/*'}</option>
-        </select>
-      </p>
+      <Checkbox
+        checked={multiple}
+        onChange={event => {
+          setMultiple(event.target.checked);
+        }}
+      >
+        {'Multiple'}
+      </Checkbox>
 
-      <p>
-        <div className="form-check">
-          <input
-            className="form-check-input"
-            type="checkbox"
-            checked={multiple}
-            onChange={event => {
-              setMultiple(event.target.checked);
-            }}
-          />
-          <label className="form-check-label">{'Multiple'}</label>
-        </div>
-      </p>
-
-      <p>
-        <input
-          className="form-control"
-          type="file"
-          accept={accept}
-          multiple={multiple}
-          onChange={event => {
-            setFiles(event.target.files !== null ? Array.from(event.target.files) : []);
-          }}
-        />
-      </p>
+      <input
+        className="form-control mt-3"
+        type="file"
+        accept={accept.length === 0 ? undefined : accept.join(',')}
+        multiple={multiple}
+        onChange={event => {
+          setFiles(event.target.files === null ? [] : Array.from(event.target.files));
+        }}
+      />
 
       <ol>
         {files.map((file, index) => (
@@ -58,19 +48,17 @@ export function FileInputExample() {
         ))}
       </ol>
 
-      <p>
-        <button
-          className="btn btn-secondary"
-          onClick={() => {
-            Promise.allSettled(files.map(readFileAsBase64)).then(results => {
-              console.log(results.map(result => (result.status === 'fulfilled' ? result.value : null)));
-            });
-          }}
-        >
-          {'Print contents to console'}
-        </button>
-      </p>
-    </>
+      <button
+        className="btn btn-secondary mt-3"
+        onClick={() => {
+          Promise.allSettled(files.map(readFileAsBase64)).then(results => {
+            console.log(results.map(result => (result.status === 'fulfilled' ? result.value : null)));
+          });
+        }}
+      >
+        {'Print contents to console'}
+      </button>
+    </Section>
   );
 }
 
