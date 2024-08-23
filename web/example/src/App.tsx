@@ -28,6 +28,7 @@ import { runAnimation, scrollToElement } from 'racehorse';
 export function App() {
   const keyboardManager = useKeyboardManager();
   const windowInsets = useWindowInsets();
+  const [title, setTitle] = useState<ReactNode>();
 
   useLayoutEffect(() => {
     document.body.style.padding =
@@ -70,13 +71,13 @@ export function App() {
   });
 
   return (
-    <>
-      <nav className="navbar sticky-top bg-body-tertiary shadow">
+    <TitleContext.Provider value={setTitle}>
+      <nav className="navbar sticky-top bg-body-tertiary shadow-sm">
         <div
           className="container-fluid"
           style={{ margin: windowInsets.top + 'px ' + windowInsets.right + 'px 0 ' + windowInsets.left + 'px' }}
         >
-          <div className="navbar-brand">{'Download'}</div>
+          <div className="navbar-brand">{title}</div>
           <button
             className="navbar-toggler"
             type="button"
@@ -162,6 +163,6 @@ export function App() {
           <EventBridgeExample />
         </div>
       </main>
-    </>
+    </TitleContext.Provider>
   );
 }

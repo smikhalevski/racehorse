@@ -1,46 +1,63 @@
 import React, { useState } from 'react';
 import { permissionsManager } from 'racehorse';
-import { FormattedJSON } from '../components/FormattedJSON';
+import { Select, SelectOption } from '../components/Select';
+import { Heading } from '../components/Heading';
+
+const samplePermissions = [
+  'android.permission.ACCESS_WIFI_STATE',
+  'android.permission.ACCESS_NETWORK_STATE',
+  'android.permission.CHANGE_WIFI_STATE',
+  'android.permission.CALL_PHONE',
+  'android.permission.READ_EXTERNAL_STORAGE',
+  'android.permission.CAMERA',
+  'android.permission.ACCESS_FINE_LOCATION',
+  'android.permission.ACCESS_COARSE_LOCATION',
+];
 
 export function PermissionsExample() {
   const [permissions, setPermissions] = useState<string[]>([]);
-  const [statuses, setStatuses] = useState<any>();
+  const [statuses, setStatuses] = useState<{ [permission: string]: boolean }>({});
 
   return (
     <>
-      <h1>{'Permissions'}</h1>
+      <Heading>{'Permissions'}</Heading>
 
-      <p>
-        <label className="form-label">{'Permissions'}</label>
-        <select
-          className="form-select"
-          multiple={true}
-          value={permissions}
-          onChange={event => {
-            setPermissions(Array.from(event.target.selectedOptions).map(option => option.value));
-          }}
-        >
-          <option value={'android.permission.ACCESS_WIFI_STATE'}>{'ACCESS_WIFI_STATE'}</option>
-          <option value={'android.permission.ACCESS_NETWORK_STATE'}>{'ACCESS_NETWORK_STATE'}</option>
-          <option value={'android.permission.CHANGE_WIFI_STATE'}>{'CHANGE_WIFI_STATE'}</option>
-          <option value={'android.permission.CALL_PHONE'}>{'CALL_PHONE'}</option>
-          <option value={'android.permission.READ_EXTERNAL_STORAGE'}>{'READ_EXTERNAL_STORAGE'}</option>
-          <option value={'android.permission.CAMERA'}>{'CAMERA'}</option>
-          <option value={'android.permission.ACCESS_FINE_LOCATION'}>{'ACCESS_FINE_LOCATION'}</option>
-          <option value={'android.permission.ACCESS_COARSE_LOCATION'}>{'ACCESS_COARSE_LOCATION'}</option>
-        </select>
-      </p>
+      <Select
+        values={permissions}
+        onChange={setPermissions}
+        isMultiple={true}
+      >
+        <ul className="list-group mb-3">
+          {samplePermissions.map(permission => (
+            <li className="list-group-item d-flex">
+              <SelectOption value={permission}>{permission.split('.').pop()}</SelectOption>
+
+              {permission in statuses && (
+                <i
+                  className={
+                    statuses[permission]
+                      ? 'ms-auto bi-check-circle-fill text-success'
+                      : // https://developer.android.com/training/permissions/requesting#explain
+                        permissionsManager.shouldShowRequestPermissionRationale(permission)
+                        ? 'ms-auto bi-question-circle-fill text-warning'
+                        : 'ms-auto bi-x-circle-fill text-danger'
+                  }
+                />
+              )}
+            </li>
+          ))}
+        </ul>
+      </Select>
 
       <button
-        className="btn btn-primary"
+        className="btn btn-primary d-block mx-auto"
+        disabled={permissions.length === 0}
         onClick={() => {
           permissionsManager.askForPermission(permissions).then(setStatuses);
         }}
       >
         {'Request permissions'}
       </button>
-
-      <FormattedJSON value={statuses} />
     </>
   );
 }

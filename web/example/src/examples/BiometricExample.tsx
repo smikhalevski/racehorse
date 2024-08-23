@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { BiometricAuthenticator, biometricManager, BiometricStatus } from 'racehorse';
+import { Heading } from '../components/Heading';
 
 export function BiometricExample() {
   const [authenticators, setAuthenticators] = useState<BiometricAuthenticator[]>([
@@ -10,7 +11,7 @@ export function BiometricExample() {
 
   return (
     <>
-      <h1>{'Biometric'}</h1>
+      <Heading>{'Biometric'}</Heading>
 
       <p>
         {'Authenticators: '}
@@ -45,7 +46,7 @@ export function BiometricExample() {
       {status === BiometricStatus.NONE_ENROLLED && (
         <p>
           <button
-            className="btn btn-primary"
+            className="btn d-block w-100 btn-primary"
             onClick={() => {
               biometricManager.enrollBiometric(authenticators).then(() => {
                 // Trigger status update
