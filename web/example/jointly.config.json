@@ -1,11 +1,6 @@
 [
   {
-    "label": "esbuild",
-    "command": "node",
-    "args": [
-      "esbuild.config.mjs",
-      "--watch"
-    ]
+    "command": "vite"
   },
   {
     "command": "tsc",

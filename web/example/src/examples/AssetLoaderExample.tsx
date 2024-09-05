@@ -5,7 +5,7 @@ export function AssetLoaderExample() {
     <>
       <h2>{'Asset loader'}</h2>
 
-      <iframe src="https://iframe.example.com" />
+      <iframe src="https://guestcontent.local" />
     </>
   );
 }

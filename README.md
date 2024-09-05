@@ -172,7 +172,7 @@ npm run build
 
 ```shell
 cd web/example
-npm run watch
+npm start
 ```
 
 4. Open `<racehorse>/android` in Android Studio and run `example` app.

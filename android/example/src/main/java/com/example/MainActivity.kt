@@ -49,6 +49,10 @@ import java.io.File
 import java.net.URL
 import java.util.Date
 
+const val APP_URL = "https://example.local"
+
+const val DEV_SERVER_URL = "http://10.0.2.2:10001"
+
 @SuppressLint("SetJavaScriptEnabled")
 class MainActivity : AppCompatActivity() {
 
@@ -77,7 +81,7 @@ class MainActivity : AppCompatActivity() {
         cookieManager.setAcceptThirdPartyCookies(webView, true)
 
         // Renders "Hello" in the iframe
-        assetLoaderPlugin.registerAssetLoader("https://iframe.example.com") {
+        assetLoaderPlugin.registerAssetLoader("https://guestcontent.local") {
             WebResourceResponse("text/html", null, "Hello".byteInputStream())
         }
 
@@ -114,25 +118,24 @@ class MainActivity : AppCompatActivity() {
             FsPlugin(
                 activity = this,
                 providerAuthority = "${BuildConfig.APPLICATION_ID}.provider",
-                baseLocalUrl = "https://example.com/fs"
+                baseLocalUrl = "$APP_URL/fs"
             )
         )
         eventBus.register(ToastPlugin(this))
 
-        // 🟡 Run `npm run watch` in `<racehorse>/web/example` to build the web app and start the server.
+        // 🟡 Run `npm start` in `<racehorse>/web/example` to build the web app and start the server.
 
         if (BuildConfig.DEBUG) {
             // 1️⃣ Live reload
 
-            // Rollup starts server on localhost:10001
-            assetLoaderPlugin.registerAssetLoader("https://example.com", ProxyPathHandler("http://10.0.2.2:10001"))
-
-            // Example app uses livereload that is loaded from http://10.0.2.2:35729, since the app is rendered using
-            // https://example.com which uses HTTPS, live reload is rejected because of the mixed content policy.
+            // Example app uses livereload that connects to ws://10.0.2.2:10001, since the app is rendered using
+            // https://example.local which uses HTTPS, this connection is rejected because of the mixed content policy.
             // Don't use this setting in production!
             webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
 
-            webView.loadUrl("https://example.com")
+            assetLoaderPlugin.registerAssetLoader(APP_URL, ProxyPathHandler(DEV_SERVER_URL))
+
+            webView.loadUrl(APP_URL)
 
             setContentView(webView)
         } else {
@@ -151,7 +154,7 @@ class MainActivity : AppCompatActivity() {
             // The update bundle is downloaded if there's no bundle available, or if the available version differs
             // from the version of previously downloaded bundle.
             eventBus.post(StartEvent(version = "0.0.0+" + Date().time.toString(), UpdateMode.MANDATORY) {
-                URL("http://10.0.2.2:10001/bundle.zip").openConnection()
+                URL("$DEV_SERVER_URL/bundle.zip").openConnection()
             })
         }
     }
@@ -179,9 +182,9 @@ class MainActivity : AppCompatActivity() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onBundleReady(event: BundleReadyEvent) {
-        assetLoaderPlugin.registerAssetLoader("https://example.com", StaticPathHandler(event.appDir))
+        assetLoaderPlugin.registerAssetLoader(APP_URL, StaticPathHandler(event.appDir))
 
-        webView.loadUrl("https://example.com")
+        webView.loadUrl(APP_URL)
 
         setContentView(webView)
     }
