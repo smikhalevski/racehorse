@@ -33,40 +33,49 @@ open class AssetLoaderPlugin(private val activity: ComponentActivity) {
      */
     var isUnhandledRequestOpenedInExternalBrowser = true
 
-    private val assetLoaders = LinkedHashSet<WebViewAssetLoader>()
+    private val assetLoaders = LinkedHashMap<WebViewAssetLoader, Uri?>()
 
     /**
-     * Registers the new asset loader.
+     * Registers an asset loader.
      */
-    fun registerAssetLoader(assetLoader: WebViewAssetLoader) = assetLoaders.add(assetLoader)
+    fun registerAssetLoader(assetLoader: WebViewAssetLoader) = assetLoaders.set(assetLoader, null)
 
     /**
-     * Registers the new asset loader that uses the handler for a given URL.
+     * Registers a new asset loader that uses a handler for a given URL.
      */
     fun registerAssetLoader(uri: String, handler: PathHandler) = registerAssetLoader(Uri.parse(uri), handler)
 
     /**
-     * Registers the new asset loader that uses the handler for a given URL.
+     * Registers a new asset loader that uses a handler for a given URL.
      */
-    fun registerAssetLoader(uri: Uri, handler: PathHandler) {
-        registerAssetLoader(
-            WebViewAssetLoader.Builder()
-                .setHttpAllowed(uri.scheme == "http")
-                .setDomain(uri.authority ?: WebViewAssetLoader.DEFAULT_DOMAIN)
-                .addPathHandler(uri.path.ifNullOrBlank { "/" }, handler)
-                .build()
-        )
-    }
+    fun registerAssetLoader(uri: Uri, handler: PathHandler) = assetLoaders.set(
+        WebViewAssetLoader.Builder()
+            .setHttpAllowed(uri.scheme == "http")
+            .setDomain(uri.authority ?: WebViewAssetLoader.DEFAULT_DOMAIN)
+            .addPathHandler(uri.path.ifNullOrBlank { "/" }, handler)
+            .build(),
+        uri
+    )
 
     /**
-     * Unregisters previously registered handler.
+     * Unregisters an asset loader.
      */
     fun unregisterAssetLoader(assetLoader: WebViewAssetLoader) = assetLoaders.remove(assetLoader)
+
+    /**
+     * Unregisters all assets loaders that were registered for a given URI.
+     */
+    fun unregisterAssetLoaders(uri: String) = unregisterAssetLoaders(Uri.parse(uri))
+
+    /**
+     * Unregisters all assets loaders that were registered for a given URI.
+     */
+    fun unregisterAssetLoaders(uri: Uri) = assetLoaders.values.removeAll { it == uri }
 
     @Subscribe
     open fun onShouldInterceptRequest(event: ShouldInterceptRequestEvent) {
         if (event.response == null) {
-            event.response = assetLoaders.firstNotNullOfOrNull { it.shouldInterceptRequest(event.request.url) }
+            event.response = assetLoaders.firstNotNullOfOrNull { it.key.shouldInterceptRequest(event.request.url) }
         }
     }
 
@@ -76,7 +85,7 @@ open class AssetLoaderPlugin(private val activity: ComponentActivity) {
 
         if (
             isUnhandledRequestOpenedInExternalBrowser &&
-            assetLoaders.all { it.shouldInterceptRequest(url) == null } &&
+            assetLoaders.all { it.key.shouldInterceptRequest(url) == null } &&
             event.shouldHandle()
         ) {
             activity.launchActivity(Intent(url.guessIntentAction(), url).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
