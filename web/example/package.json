@@ -21,6 +21,7 @@
   "dependencies": {
     "@racehorse/react": "^1.2.1",
     "abortcontroller-polyfill": "^1.7.5",
+    "clsx": "^2.1.1",
     "racehorse": "^1.7.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

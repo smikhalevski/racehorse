@@ -2,17 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { activityManager, Directory, File, fsManager, Intent } from 'racehorse';
 import { Section } from '../components/Section';
 
+interface Content {
+  dir: File;
+  files: File[];
+}
+
 export function FsExample() {
-  const [{ dir, files }, setContent] = useState<{ dir: File; files: File[] }>({
-    dir: fsManager.File(Directory.EXTERNAL_STORAGE),
-    files: [],
-  });
+  const [content, setContent] = useState<Content>({ dir: fsManager.File(Directory.EXTERNAL_STORAGE), files: [] });
+
+  const { dir, files } = content;
 
   useEffect(() => handleOpenFile(dir), []);
 
   const handleOpenFile = (file: File) => {
     const attributes = file.getAttributes();
 
+    // Show directory content
     if (attributes.isDirectory) {
       file.readDir().then(files => {
         files.sort((a, b) => -a.isDirectory - -b.isDirectory || a.uri.localeCompare(b.uri));
@@ -20,6 +25,7 @@ export function FsExample() {
       });
     }
 
+    // Open preview
     if (attributes.isFile) {
       activityManager.startActivity({
         action: Intent.ACTION_VIEW,
@@ -42,6 +48,7 @@ export function FsExample() {
 
         <ul className="dropdown-menu dropdown-menu-end shadow">
           <li className="dropdown-header">{'Jump to…'}</li>
+
           {Object.values(Directory).map(uri => (
             <li key={uri}>
               <button

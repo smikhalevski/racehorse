@@ -6,4 +6,7 @@
     <external-path
         name="downloadDir"
         path="Download" />
+    <external-path
+        name="picturesDir"
+        path="Pictures" />
 </paths>

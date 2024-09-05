@@ -1,10 +1,9 @@
-import React, { createContext, InputHTMLAttributes, ReactElement, ReactNode, useContext, useId } from 'react';
+import React, { createContext, ReactElement, ReactNode, useContext, useId } from 'react';
 
 interface SelectState {
   values: any[];
   isMultiple: boolean | undefined;
-
-  onChange(value: any, isChecked: boolean): void;
+  onChange: (value: any, isChecked: boolean) => void;
 }
 
 const SelectStateContext = createContext<SelectState | null>(null);
@@ -12,29 +11,28 @@ const SelectStateContext = createContext<SelectState | null>(null);
 interface SelectProps<T> {
   values: T[];
   children: ReactNode;
-  multiple?: boolean;
-
-  onChange(value: T[]): void;
+  isMultiple?: boolean;
+  onChange: (value: T[]) => void;
 }
 
-export function Select<T>(props: SelectProps<T>): ReactElement {
+export function Select<T>({ values, children, isMultiple, onChange }: SelectProps<T>): ReactElement {
   return (
     <SelectStateContext.Provider
       value={{
-        values: props.values,
-        isMultiple: props.multiple,
+        values,
+        isMultiple,
 
         onChange(value, isChecked) {
-          if (!props.multiple) {
+          if (!isMultiple) {
             if (isChecked) {
-              props.onChange([value]);
+              onChange([value]);
             }
             return;
           }
 
-          if (props.values.indexOf(value) === -1) {
+          if (values.indexOf(value) === -1) {
             if (isChecked) {
-              props.onChange([...props.values, value]);
+              onChange([...values, value]);
             }
             return;
           }
@@ -43,13 +41,13 @@ export function Select<T>(props: SelectProps<T>): ReactElement {
             return;
           }
 
-          const values = props.values.slice(0);
-          values.splice(values.indexOf(value), 1);
-          props.onChange(values);
+          const nextValues = values.slice(0);
+          nextValues.splice(values.indexOf(value), 1);
+          onChange(nextValues);
         },
       }}
     >
-      <ul className="list-group">{props.children}</ul>
+      <ul className="list-group">{children}</ul>
     </SelectStateContext.Provider>
   );
 }
@@ -59,12 +57,12 @@ interface SelectOptionProps {
   children: ReactNode;
 }
 
-export function SelectOption(props: SelectOptionProps): ReactElement {
+export function SelectOption({ value, children }: SelectOptionProps): ReactElement {
   const state = useContext(SelectStateContext);
   const id = useId();
 
   if (state === null) {
-    throw new Error('Cannot be used outside of Select');
+    throw new Error('Cannot render outside of Select');
   }
 
   return (
@@ -72,32 +70,8 @@ export function SelectOption(props: SelectOptionProps): ReactElement {
       <input
         className="form-check-input me-2"
         type={state.isMultiple ? 'checkbox' : 'radio'}
-        checked={state.values.includes(props.value)}
-        onChange={event => {
-          state.onChange(props.value, event.target.checked);
-        }}
-        id={id}
-      />
-      <label
-        className="form-check-label flex-fill"
-        htmlFor={id}
-      >
-        {props.children}
-      </label>
-    </li>
-  );
-}
-
-interface CheckboxProps extends InputHTMLAttributes<HTMLInputElement> {}
-
-export function Checkbox({ children, ...props }: CheckboxProps): ReactElement {
-  const id = useId();
-  return (
-    <>
-      <input
-        {...props}
-        className="form-check-input me-2"
-        type="checkbox"
+        checked={state.values.includes(value)}
+        onChange={event => state.onChange(value, event.target.checked)}
         id={id}
       />
       <label
@@ -106,6 +80,6 @@ export function Checkbox({ children, ...props }: CheckboxProps): ReactElement {
       >
         {children}
       </label>
-    </>
+    </li>
   );
 }

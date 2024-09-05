@@ -11,9 +11,7 @@ export function ToastExample() {
         <input
           className="form-control"
           value={message}
-          onChange={event => {
-            setMessage(event.target.value);
-          }}
+          onChange={event => setMessage(event.target.value)}
         />
 
         <button

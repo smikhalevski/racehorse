@@ -29,7 +29,7 @@ export function PermissionsExample() {
       <Select
         values={permissions}
         onChange={setPermissions}
-        multiple={true}
+        isMultiple={true}
       >
         {examplePermissions.map(permission => (
           <SelectOption

@@ -12,7 +12,7 @@ export function DownloadExample() {
   const [downloads, setDownloads] = useState(downloadManager.getAllDownloads);
 
   useEffect(() => {
-    // Refresh downloads
+    // Poll downloads
     const timer = setInterval(() => setDownloads(downloadManager.getAllDownloads()), 1000);
 
     return () => clearInterval(timer);

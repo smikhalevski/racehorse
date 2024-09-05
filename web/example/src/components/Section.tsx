@@ -1,11 +1,15 @@
-import React, { ReactNode } from 'react';
+import React, { ReactElement, ReactNode } from 'react';
 
-export function Section(props: { title: ReactNode; children: ReactNode }) {
+interface SectionProps {
+  title: ReactNode;
+  children: ReactNode;
+}
+
+export function Section({ title, children }: SectionProps): ReactElement {
   return (
     <section className="mb-4">
-      <h3>{props.title}</h3>
-
-      {props.children}
+      <h1>{title}</h1>
+      {children}
     </section>
   );
 }
