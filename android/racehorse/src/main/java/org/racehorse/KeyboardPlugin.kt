@@ -14,8 +14,8 @@ import java.io.Serializable
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.max
 
-class KeyboardStatus(val height: Int) : Serializable {
-    val isVisible = height != 0
+class KeyboardStatus(val height: Float) : Serializable {
+    val isVisible = height > 0
 }
 
 /**
@@ -42,14 +42,20 @@ class HideKeyboardEvent : RequestEvent() {
 open class KeyboardPlugin(private val activity: Activity, private val eventBus: EventBus = EventBus.getDefault()) {
 
     private val keyboardObserver = KeyboardObserver(activity) { keyboardHeight ->
-        eventBus.post(KeyboardStatusChangedEvent(KeyboardStatus(keyboardHeight)))
+        eventBus.post(KeyboardStatusChangedEvent(KeyboardStatus(keyboardHeight / density)))
     }
+
+    private val density get() = activity.resources.displayMetrics.density
 
     private val inputMethodManager by lazy { activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager }
 
+    open fun enable() = keyboardObserver.register()
+
+    open fun disable() = keyboardObserver.unregister()
+
     @Subscribe
     open fun onGetKeyboardStatus(event: GetKeyboardStatusEvent) {
-        event.respond(GetKeyboardStatusEvent.ResultEvent(KeyboardStatus(keyboardObserver.keyboardHeight)))
+        event.respond(GetKeyboardStatusEvent.ResultEvent(KeyboardStatus(keyboardObserver.keyboardHeight / density)))
     }
 
     @Subscribe
@@ -71,7 +77,7 @@ open class KeyboardPlugin(private val activity: Activity, private val eventBus: 
 }
 
 /**
- * Observes the keyboard height.
+ * Observes the keyboard height. Listener is called with an actual keyboard height in pixels.
  *
  * @param activity The activity for which the keyboard is observed.
  * @param listener The listener that receives keyboard updates.
@@ -102,10 +108,6 @@ class KeyboardObserver(activity: Activity, private val listener: (keyboardHeight
         if (lastKeyboardHeight.getAndSet(height) != height) {
             listener(height)
         }
-    }
-
-    init {
-        register()
     }
 
     fun register() {
