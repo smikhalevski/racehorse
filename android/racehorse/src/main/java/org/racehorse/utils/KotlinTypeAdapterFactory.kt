@@ -23,15 +23,18 @@ class KotlinTypeAdapterFactory : TypeAdapterFactory {
     }
 }
 
-private class KotlinTypeAdapter<T>(val delegateAdapter: TypeAdapter<T>, val type: TypeToken<T>) : TypeAdapter<T>() {
+private class KotlinTypeAdapter<T>(val delegateAdapter: TypeAdapter<T>, type: TypeToken<T>) : TypeAdapter<T>() {
+
+    private val nonNullableProperties =
+        Reflection.createKotlinClass(type.rawType).memberProperties.filterNot { it.returnType.isMarkedNullable }
 
     override fun write(out: JsonWriter, value: T?) = delegateAdapter.write(out, value)
 
     override fun read(input: JsonReader): T? {
         val value = delegateAdapter.read(input) ?: return null
 
-        Reflection.createKotlinClass(type.rawType).memberProperties.forEach {
-            if (!it.returnType.isMarkedNullable && it.get(value) == null) {
+        nonNullableProperties.forEach {
+            if (it.get(value) == null) {
                 throw JsonParseException("${it.name} cannot be null")
             }
         }
