@@ -2,15 +2,12 @@ package org.racehorse
 
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
-import com.google.gson.JsonPrimitive
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.NoSubscriberEvent
 import org.greenrobot.eventbus.Subscribe
@@ -135,7 +132,6 @@ class IsSupportedEvent(val eventType: String) : RequestEvent() {
  * @param webView The [WebView] to which the event bridge will add the connection Javascript interface.
  * @param eventBus The event bus to which events are posted.
  * @param gson The [Gson] instance that is used for event serialization.
- * @param handler The [Handler] that is used to communicate with the [webView].
  * @param connectionKey The key of the `window` that exposes the connection Javascript interface.
  */
 open class EventBridge(
@@ -152,7 +148,6 @@ open class EventBridge(
         .registerTypeAdapter(Uri::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Any::class.java, NaturalJsonAdapter())
         .create(),
-    val handler: Handler = Handler(Looper.getMainLooper()),
     val connectionKey: String = "racehorseConnection",
 ) {
 
@@ -194,12 +189,12 @@ open class EventBridge(
         val event = try {
             parseEvent(eventJson)
         } catch (e: Throwable) {
-            return serializeEvent(ExceptionEvent(IllegalArgumentException("Illegal event: $eventJson", e)))
+            return stringifyEvent(ExceptionEvent(IllegalArgumentException("Illegal event: $eventJson", e)))
         }
 
         if (event !is ChainableEvent) {
             eventBus.post(event)
-            return serializeEvent(VoidEvent())
+            return stringifyEvent(VoidEvent())
         }
 
         return synchronized(this) {
@@ -211,9 +206,9 @@ open class EventBridge(
 
             try {
                 eventBus.post(event)
-                syncResponseEvent?.let(::serializeEvent) ?: event.requestId.toString()
+                syncResponseEvent?.let(::stringifyEvent) ?: event.requestId.toString()
             } catch (e: Throwable) {
-                serializeEvent(ExceptionEvent(e))
+                stringifyEvent(ExceptionEvent(e))
             } finally {
                 syncRequestId = ORPHAN_REQUEST_ID
                 syncResponseEvent = null
@@ -232,13 +227,13 @@ open class EventBridge(
             // Synchronously return the response event
             syncResponseEvent = event
         } else {
-            publishEvent(event.requestId, event)
+            publish(event.requestId, event)
         }
     }
 
     @Subscribe
     open fun onNotice(event: NoticeEvent) {
-        publishEvent(NOTICE_REQUEST_ID, event)
+        publish(NOTICE_REQUEST_ID, event)
     }
 
     @Subscribe
@@ -274,8 +269,7 @@ open class EventBridge(
     protected fun parseEvent(eventJson: String): Any {
         val jsonObject = gson.fromJson(eventJson, JsonObject::class.java)
 
-        val eventType = (jsonObject.get(TYPE_KEY) as? JsonPrimitive)?.asString
-            ?: throw IllegalArgumentException("Illegal event type")
+        val eventType = jsonObject.getAsJsonPrimitive(TYPE_KEY).asString
 
         val eventClass = eventClassCache.getOrPut(eventType) {
             try {
@@ -290,15 +284,13 @@ open class EventBridge(
         return gson.fromJson(jsonObject.get(PAYLOAD_KEY) ?: JsonObject(), eventClass)
     }
 
-    protected fun serializeEvent(event: Any) = gson.toJson(JsonObject().apply {
-        add(TYPE_KEY, JsonPrimitive(event::class.java.name))
-        add(PAYLOAD_KEY, gson.toJsonTree(event))
-    })
+    protected fun stringifyEvent(event: Any) =
+        "{\"$TYPE_KEY\":\"${event::class.java.name}\",\"$PAYLOAD_KEY\":${gson.toJson(event)}}"
 
-    protected fun publishEvent(requestId: Int, event: Any) = handler.post {
+    protected fun publish(requestId: Int, event: Any) = webView.post {
         webView.evaluateJavascript(
             "(function(conn){" +
-                "conn && conn.inbox && conn.inbox.publish([$requestId, ${serializeEvent(event)}])" +
+                "conn && conn.inbox && conn.inbox.publish([$requestId, ${stringifyEvent(event)}])" +
                 "})(window.$connectionKey)",
             null
         )
