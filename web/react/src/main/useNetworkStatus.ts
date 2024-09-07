@@ -1,22 +1,16 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { networkManager, NetworkStatus } from 'racehorse';
-
-/**
- * Provides the `NetworkManager` instance to underlying components.
- */
-export const NetworkManagerContext = createContext(networkManager);
-
-NetworkManagerContext.displayName = 'NetworkManagerContext';
+import { useEffect, useState } from 'react';
+import { NetworkStatus } from 'racehorse';
+import { useNetworkManager } from './managers';
 
 /**
  * Returns the current network status and re-renders the component if it changes.
  */
 export function useNetworkStatus(): NetworkStatus {
-  const manager = useContext(NetworkManagerContext);
+  const manager = useNetworkManager();
 
-  const [status, setStatus] = useState(manager.getNetworkStatus);
+  const [networkStatus, setNetworkStatus] = useState(manager.getNetworkStatus);
 
-  useEffect(() => manager.subscribe(setStatus), [manager]);
+  useEffect(() => manager.subscribe(setNetworkStatus), [manager]);
 
-  return status;
+  return networkStatus;
 }
