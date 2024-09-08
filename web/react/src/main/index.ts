@@ -43,6 +43,7 @@ export {
   PermissionsManagerProvider,
 } from './managers';
 export { useActivityState } from './useActivityState';
+export { useKeyboardAnimationCallback } from './useKeyboardAnimationCallback';
 export { useKeyboardStatus } from './useKeyboardStatus';
 export { useNetworkStatus } from './useNetworkStatus';
 export { useWindowInsets } from './useWindowInsets';

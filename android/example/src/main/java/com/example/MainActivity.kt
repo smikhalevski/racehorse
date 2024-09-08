@@ -7,6 +7,7 @@ import android.webkit.CookieManager
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.facebook.FacebookSdk
 import org.greenrobot.eventbus.EventBus
@@ -63,6 +64,9 @@ class MainActivity : AppCompatActivity() {
     private val cookieManager = CookieManager.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // https://developer.android.com/develop/ui/views/layout/edge-to-edge
+        enableEdgeToEdge()
+
         super.onCreate(savedInstanceState)
 
         webView.settings.javaScriptEnabled = true
@@ -172,12 +176,10 @@ class MainActivity : AppCompatActivity() {
         networkPlugin.disable()
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
 
-        if (intent != null) {
-            EventBus.getDefault().post(OpenDeepLinkEvent(intent))
-        }
+        EventBus.getDefault().post(OpenDeepLinkEvent(intent))
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { CookieExample } from './examples/CookieExample';
 import { FileInputExample } from './examples/FileInputExample';
 import { GeolocationExample } from './examples/GeolocationExample';
@@ -22,8 +22,15 @@ import { AssetLoaderExample } from './examples/AssetLoaderExample';
 import { ContactsExample } from './examples/ContactsExample';
 import { FsExample } from './examples/FsExample';
 import { EvergreenExample } from './examples/EvergreenExample';
+import { useKeyboardAnimationCallback } from '@racehorse/react';
 
 export function App() {
+  const spacerRef = useRef<HTMLDivElement>(null);
+
+  useKeyboardAnimationCallback(height => {
+    spacerRef.current!.style.height = height + 'px';
+  });
+
   return (
     <>
       <EvergreenExample />
@@ -49,6 +56,10 @@ export function App() {
       <LocalStorageExample />
       <DeviceExample />
       <EventBridgeExample />
+      <div
+        ref={spacerRef}
+        style={{ backgroundColor: 'red' }}
+      />
     </>
   );
 }

@@ -1337,7 +1337,7 @@ EventBus.getDefault().register(KeyboardPlugin(activity))
 ```ts
 import { keyboardManager } from 'racehorse';
 
-keyboardManager.getKeyboardStatus().isVisible;
+keyboardManager.getKeyboardStatus().isShown;
 // ⮕ true
 
 keyboardManager.subscribe(status => {
@@ -1354,7 +1354,7 @@ import { useKeyboardStatus } from '@racehorse/react';
 
 const status = useKeyboardStatus();
 
-status.isVisible;
+status.isShown;
 // ⮕ true
 
 status.height;

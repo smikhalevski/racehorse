@@ -2,26 +2,38 @@ package org.racehorse
 
 import android.app.Activity
 import android.content.Context
-import android.graphics.Rect
-import android.os.Build
-import android.view.ViewTreeObserver
-import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
-import android.widget.FrameLayout
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsAnimationCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsCompat.Type
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.racehorse.utils.contentView
 import java.io.Serializable
-import java.util.concurrent.atomic.AtomicInteger
+import java.lang.Long.min
 import kotlin.math.max
+import kotlin.math.roundToInt
 
-class KeyboardStatus(val height: Float) : Serializable {
-    val isVisible = height > 0
+class KeyboardStatus(val height: Float, val isShown: Boolean) : Serializable {
+    @Deprecated("Use isShown")
+    val isVisible = isShown
 }
+
+/**
+ * Notifies the web app that the keyboard status is about to be changed.
+ */
+class BeforeKeyboardStatusChangeEvent(
+    val status: KeyboardStatus,
+    val height: Float,
+    val animationDuration: Long,
+    val ordinates: FloatArray?
+) : NoticeEvent
 
 /**
  * Notifies the web app that the keyboard status has changed.
  */
-class KeyboardStatusChangedEvent(val status: KeyboardStatus) : NoticeEvent
+class AfterKeyboardStatusChangeEvent(val status: KeyboardStatus) : NoticeEvent
 
 class GetKeyboardStatusEvent : RequestEvent() {
     class ResultEvent(val status: KeyboardStatus) : ResponseEvent()
@@ -41,21 +53,15 @@ class HideKeyboardEvent : RequestEvent() {
  */
 open class KeyboardPlugin(private val activity: Activity, private val eventBus: EventBus = EventBus.getDefault()) {
 
-    private val keyboardObserver = KeyboardObserver(activity) { keyboardHeight ->
-        eventBus.post(KeyboardStatusChangedEvent(KeyboardStatus(keyboardHeight / density)))
-    }
-
-    private val density get() = activity.resources.displayMetrics.density
-
     private val inputMethodManager by lazy { activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager }
 
-    open fun enable() = keyboardObserver.register()
-
-    open fun disable() = keyboardObserver.unregister()
+    open fun enable() {
+        ViewCompat.setWindowInsetsAnimationCallback(activity.contentView, KeyboardAnimationCallback(activity, eventBus))
+    }
 
     @Subscribe
     open fun onGetKeyboardStatus(event: GetKeyboardStatusEvent) {
-        event.respond(GetKeyboardStatusEvent.ResultEvent(KeyboardStatus(keyboardObserver.keyboardHeight / density)))
+        event.respond(GetKeyboardStatusEvent.ResultEvent(getKeyboardStatus(activity)))
     }
 
     @Subscribe
@@ -76,48 +82,91 @@ open class KeyboardPlugin(private val activity: Activity, private val eventBus: 
     }
 }
 
-/**
- * Observes the keyboard height. Listener is called with an actual keyboard height in pixels.
- *
- * @param activity The activity for which the keyboard is observed.
- * @param listener The listener that receives keyboard updates.
- */
-class KeyboardObserver(activity: Activity, private val listener: (keyboardHeight: Int) -> Unit) {
+private class KeyboardAnimationCallback(private val activity: Activity, private val eventBus: EventBus) :
+    WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_CONTINUE_ON_SUBTREE) {
 
-    /**
-     * The height that the keyboard currently occupies on the screen.
-     */
-    val keyboardHeight get() = lastKeyboardHeight.get()
+    companion object {
+        private const val FRAMES_PER_SECOND = 60
+        private const val MAX_ORDINATE_COUNT = 200L
+    }
 
-    private var lastKeyboardHeight = AtomicInteger()
+    private var startKeyboardHeight = 0f
+    private var endKeyboardHeight = 0f
 
-    private val rootView = activity.window.decorView.findViewById<FrameLayout>(android.R.id.content).rootView
+    override fun onPrepare(animation: WindowInsetsAnimationCompat) {
+        if (animation.typeMask and Type.ime() == 0) {
+            // Not a keyboard
+            return
+        }
+        startKeyboardHeight = getKeyboardHeight(activity)
+    }
 
-    private val layoutListener = ViewTreeObserver.OnGlobalLayoutListener {
-        val frameBottom = Rect().apply { rootView.getWindowVisibleDisplayFrame(this) }.bottom
-
-        val insetBottom = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            rootView.rootWindowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars()).bottom
-        } else {
-            @Suppress("DEPRECATION")
-            rootView.rootWindowInsets.stableInsetBottom
+    override fun onStart(
+        animation: WindowInsetsAnimationCompat,
+        bounds: WindowInsetsAnimationCompat.BoundsCompat
+    ): WindowInsetsAnimationCompat.BoundsCompat {
+        if (animation.typeMask and Type.ime() == 0) {
+            // Not a keyboard
+            return bounds
         }
 
-        val height = max(rootView.rootView.height - frameBottom - insetBottom, 0)
+        endKeyboardHeight = getKeyboardHeight(activity)
 
-        if (lastKeyboardHeight.getAndSet(height) != height) {
-            listener(height)
+        // Serialize interpolator as a set of control points
+        val ordinateCount = min(FRAMES_PER_SECOND * animation.durationMillis / 1000, MAX_ORDINATE_COUNT)
+
+        val ordinates = animation.interpolator?.let { interpolator ->
+            val ordinates = FloatArray(ordinateCount.toInt())
+
+            ordinates.forEachIndexed { index, _ ->
+                ordinates[index] =
+                    (interpolator.getInterpolation(index.toFloat() / (ordinateCount - 1)) * 1000).roundToInt() / 1000f
+            }
+            ordinates
         }
+
+        eventBus.post(
+            BeforeKeyboardStatusChangeEvent(
+                getKeyboardStatus(activity),
+                max(startKeyboardHeight, endKeyboardHeight),
+                animation.durationMillis,
+                ordinates
+            )
+        )
+
+        return bounds
     }
 
-    fun register() {
-        rootView.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
+    override fun onEnd(animation: WindowInsetsAnimationCompat) {
+        if (animation.typeMask and Type.ime() == 0) {
+            // Not a keyboard
+            return
+        }
+
+        eventBus.post(AfterKeyboardStatusChangeEvent(getKeyboardStatus(activity)))
     }
 
-    /**
-     * Unregisters listener so it won't receive keyboard updates anymore.
-     */
-    fun unregister() {
-        rootView.viewTreeObserver.removeOnGlobalLayoutListener(layoutListener)
+    override fun onProgress(
+        windowInsets: WindowInsetsCompat,
+        runningAnimations: MutableList<WindowInsetsAnimationCompat>
+    ): WindowInsetsCompat {
+        return windowInsets
     }
+}
+
+private fun getKeyboardHeight(activity: Activity): Float {
+    val windowInsets = ViewCompat.getRootWindowInsets(activity.contentView)
+        ?: return 0f
+
+    return windowInsets.getInsets(Type.ime()).bottom / activity.resources.displayMetrics.density
+}
+
+private fun getKeyboardStatus(activity: Activity): KeyboardStatus {
+    val windowInsets = ViewCompat.getRootWindowInsets(activity.contentView)
+        ?: return KeyboardStatus(0f, false)
+
+    return KeyboardStatus(
+        windowInsets.getInsets(Type.ime()).bottom / activity.resources.displayMetrics.density,
+        windowInsets.isVisible(Type.ime())
+    )
 }

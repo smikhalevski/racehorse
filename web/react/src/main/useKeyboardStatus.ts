@@ -10,7 +10,24 @@ export function useKeyboardStatus(): KeyboardStatus {
 
   const [keyboardStatus, setKeyboardStatus] = useState(manager.getKeyboardStatus);
 
-  useEffect(() => manager.subscribe(setKeyboardStatus), [manager]);
+  useEffect(() => {
+    const unsubscribeBefore = manager.subscribe('beforeChange', status => {
+      if (!status.isShown) {
+        setKeyboardStatus(status);
+      }
+    });
+
+    const unsubscribeAfter = manager.subscribe('afterChange', status => {
+      if (status.isShown) {
+        setKeyboardStatus(status);
+      }
+    });
+
+    return () => {
+      unsubscribeBefore();
+      unsubscribeAfter();
+    };
+  }, [manager]);
 
   return keyboardStatus;
 }
