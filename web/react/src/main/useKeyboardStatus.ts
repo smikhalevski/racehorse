@@ -1,22 +1,16 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { keyboardManager, KeyboardStatus } from 'racehorse';
-
-/**
- * Provides the `KeyboardManager` instance to underlying components.
- */
-export const KeyboardManagerContext = createContext(keyboardManager);
-
-KeyboardManagerContext.displayName = 'KeyboardManagerContext';
+import { useEffect, useState } from 'react';
+import { KeyboardStatus } from 'racehorse';
+import { useKeyboardManager } from './managers';
 
 /**
  * Returns the current keyboard status and re-renders the component if it changes.
  */
 export function useKeyboardStatus(): KeyboardStatus {
-  const manager = useContext(KeyboardManagerContext);
+  const manager = useKeyboardManager();
 
-  const [status, setStatus] = useState(manager.getKeyboardStatus);
+  const [keyboardStatus, setKeyboardStatus] = useState(manager.getKeyboardStatus);
 
-  useEffect(() => manager.subscribe(setStatus), [manager]);
+  useEffect(() => manager.subscribe(setKeyboardStatus), [manager]);
 
-  return status;
+  return keyboardStatus;
 }

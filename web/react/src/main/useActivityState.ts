@@ -1,22 +1,16 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { activityManager, ActivityState } from 'racehorse';
-
-/**
- * Provides the `ActivityManager` instance to underlying components.
- */
-export const ActivityManagerContext = createContext(activityManager);
-
-ActivityManagerContext.displayName = 'ActivityManagerContext';
+import { useEffect, useState } from 'react';
+import { ActivityState } from 'racehorse';
+import { useActivityManager } from './managers';
 
 /**
  * Returns the current activity state and re-renders the component if it changes.
  */
 export function useActivityState(): ActivityState {
-  const manager = useContext(ActivityManagerContext);
+  const manager = useActivityManager();
 
-  const [state, setState] = useState(manager.getActivityState);
+  const [activityState, setActivityState] = useState(manager.getActivityState);
 
-  useEffect(() => manager.subscribe(setState), [manager]);
+  useEffect(() => manager.subscribe(setActivityState), [manager]);
 
-  return state;
+  return activityState;
 }
