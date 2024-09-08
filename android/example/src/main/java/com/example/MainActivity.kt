@@ -2,6 +2,7 @@ package com.example
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.webkit.CookieManager
 import android.webkit.WebResourceResponse
@@ -129,7 +130,7 @@ class MainActivity : AppCompatActivity() {
 
         // 🟡 Run `npm start` in `<racehorse>/web/example` to build the web app and start the server.
 
-        if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             // 1️⃣ Live reload
 
             // Example app uses livereload that connects to ws://10.0.2.2:10001, since the app is rendered using
