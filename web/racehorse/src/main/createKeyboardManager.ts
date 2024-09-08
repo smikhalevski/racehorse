@@ -84,8 +84,13 @@ export function createKeyboardManager(eventBridge: EventBridge): KeyboardManager
   };
 }
 
-export function createEasing(ordinates: number[]): (t: number) => number {
-  if (ordinates.length === 0) {
+/**
+ * Creates an easing function that converts `t` ∈ [0, 1] to `y` ∈ [0, 1].
+ *
+ * @param ordinates An array of equidistant ordinate values `y` to which `t` is mapped.
+ */
+export function createEasing(ordinates: number[] | null | undefined): (t: number) => number {
+  if (ordinates === null || ordinates === undefined || ordinates.length === 0) {
     return () => 1;
   }
 
@@ -97,12 +102,11 @@ export function createEasing(ordinates: number[]): (t: number) => number {
       return 1;
     }
 
-    // lerp
     const x = t * (ordinates.length - 1);
 
     const startX = x | 0;
     const startY = ordinates[startX];
 
-    return startY + (ordinates[startX + 1] - startY) /*deltaY*/ * (x - startX);
+    return startY + (ordinates[startX + 1] - startY) * (x - startX);
   };
 }
