@@ -1,11 +1,9 @@
 package org.racehorse.utils
 
-import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
@@ -15,11 +13,6 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import java.util.UUID
-
-/**
- * The content view of the activity.
- */
-val Activity.contentView get() = window.findViewById<FrameLayout>(android.R.id.content)
 
 /**
  * Starts activity.

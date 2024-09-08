@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.os.Build
 import android.provider.Settings
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsAnimationCompat
@@ -11,7 +12,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsCompat.Type
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.utils.contentView
 import java.io.Serializable
 import java.lang.Long.min
 import kotlin.math.max
@@ -58,12 +58,16 @@ private val KEYBOARD_TYPE_MASK =
  * @param activity The activity to which the keyboard observer is attached.
  * @param eventBus The event bus to which events are posted.
  */
-open class KeyboardPlugin(private val activity: Activity, private val eventBus: EventBus = EventBus.getDefault()) {
+open class KeyboardPlugin(
+    private val activity: Activity,
+    private val view: View,
+    private val eventBus: EventBus = EventBus.getDefault()
+) {
 
     private val inputMethodManager by lazy { activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager }
 
     open fun enable() {
-        ViewCompat.setWindowInsetsAnimationCallback(activity.contentView, KeyboardAnimationCallback(activity, eventBus))
+        ViewCompat.setWindowInsetsAnimationCallback(view, KeyboardAnimationCallback(activity, eventBus))
     }
 
     @Subscribe
@@ -127,10 +131,7 @@ private class KeyboardAnimationCallback(private val activity: Activity, private 
         val animationDuration = (animation.durationMillis * animationDurationScale).toLong()
 
         // Serialize interpolator as a set of equidistant ordinates
-        val ordinateCount = min(
-            FRAMES_PER_SECOND * animationDuration / 1000,
-            MAX_ORDINATE_COUNT
-        )
+        val ordinateCount = min(FRAMES_PER_SECOND * animationDuration / 1000, MAX_ORDINATE_COUNT)
 
         val ordinates = animation.interpolator?.let { interpolator ->
             val ordinates = FloatArray(ordinateCount.toInt())
@@ -161,7 +162,7 @@ private class KeyboardAnimationCallback(private val activity: Activity, private 
             return
         }
 
-        eventBus.post(AfterKeyboardStatusChangeEvent(getKeyboardStatus(activity)))
+        eventBus.post(AfterKeyboardStatusChangeEvent(KeyboardStatus(endKeyboardHeight, endKeyboardHeight > 0)))
     }
 
     override fun onProgress(
@@ -173,14 +174,14 @@ private class KeyboardAnimationCallback(private val activity: Activity, private 
 }
 
 private fun getKeyboardHeight(activity: Activity): Float {
-    val windowInsets = ViewCompat.getRootWindowInsets(activity.contentView)
+    val windowInsets = ViewCompat.getRootWindowInsets(activity.window.decorView)
         ?: return 0f
 
     return windowInsets.getInsets(KEYBOARD_TYPE_MASK).bottom / activity.resources.displayMetrics.density
 }
 
 private fun getKeyboardStatus(activity: Activity): KeyboardStatus {
-    val windowInsets = ViewCompat.getRootWindowInsets(activity.contentView)
+    val windowInsets = ViewCompat.getRootWindowInsets(activity.window.decorView)
         ?: return KeyboardStatus(0f, false)
 
     return KeyboardStatus(
