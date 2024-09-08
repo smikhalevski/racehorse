@@ -29,6 +29,7 @@ export function App() {
 
   useKeyboardAnimationCallback(height => {
     spacerRef.current!.style.height = height + 'px';
+    window.scrollTo(0, 1000000);
   });
 
   return (
@@ -58,7 +59,7 @@ export function App() {
       <EventBridgeExample />
       <div
         ref={spacerRef}
-        style={{ backgroundColor: 'red' }}
+        // style={{ backgroundColor: 'red' }}
       />
     </>
   );

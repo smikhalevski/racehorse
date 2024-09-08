@@ -30,7 +30,13 @@ export interface KeyboardManager {
    */
   subscribe(
     eventType: 'beforeChange',
-    listener: (status: KeyboardStatus, height: number, animationDuration: number, easing: (t: number) => number) => void
+    listener: (
+      status: KeyboardStatus,
+      height: number,
+      startTimestamp: number,
+      animationDuration: number,
+      easing: (t: number) => number
+    ) => void
   ): Unsubscribe;
 
   /**
@@ -57,7 +63,13 @@ export function createKeyboardManager(eventBridge: EventBridge): KeyboardManager
     subscribe: (eventType, listener) => {
       if (eventType === 'beforeChange') {
         return eventBridge.subscribe('org.racehorse.BeforeKeyboardStatusChangeEvent', payload => {
-          listener(payload.status, payload.height, payload.animationDuration, createEasing(payload.ordinates));
+          listener(
+            payload.status,
+            payload.height,
+            payload.startTimestamp,
+            payload.animationDuration,
+            createEasing(payload.ordinates)
+          );
         });
       }
 

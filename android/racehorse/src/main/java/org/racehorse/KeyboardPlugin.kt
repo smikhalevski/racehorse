@@ -2,6 +2,8 @@ package org.racehorse
 
 import android.app.Activity
 import android.content.Context
+import android.os.Build
+import android.provider.Settings
 import android.view.inputmethod.InputMethodManager
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsAnimationCompat
@@ -26,6 +28,7 @@ class KeyboardStatus(val height: Float, val isShown: Boolean) : Serializable {
 class BeforeKeyboardStatusChangeEvent(
     val status: KeyboardStatus,
     val height: Float,
+    val startTimestamp: Long,
     val animationDuration: Long,
     val ordinates: FloatArray?
 ) : NoticeEvent
@@ -44,6 +47,10 @@ class ShowKeyboardEvent : WebEvent
 class HideKeyboardEvent : RequestEvent() {
     class ResultEvent(val isHidden: Boolean) : ResponseEvent()
 }
+
+private val KEYBOARD_TYPE_MASK =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) Type.ime()
+    else Type.ime() or Type.systemBars()
 
 /**
  * Monitors keyboard visibility.
@@ -87,33 +94,43 @@ private class KeyboardAnimationCallback(private val activity: Activity, private 
 
     companion object {
         private const val FRAMES_PER_SECOND = 60
-        private const val MAX_ORDINATE_COUNT = 200L
+        private const val MAX_ORDINATE_COUNT = 400L
     }
+
+    private val minKeyboardHeight = getKeyboardHeight(activity)
 
     private var startKeyboardHeight = 0f
     private var endKeyboardHeight = 0f
 
     override fun onPrepare(animation: WindowInsetsAnimationCompat) {
-        if (animation.typeMask and Type.ime() == 0) {
+        if (animation.typeMask and KEYBOARD_TYPE_MASK == 0) {
             // Not a keyboard
             return
         }
-        startKeyboardHeight = getKeyboardHeight(activity)
+        startKeyboardHeight = getKeyboardHeight(activity) - minKeyboardHeight
     }
 
     override fun onStart(
         animation: WindowInsetsAnimationCompat,
         bounds: WindowInsetsAnimationCompat.BoundsCompat
     ): WindowInsetsAnimationCompat.BoundsCompat {
-        if (animation.typeMask and Type.ime() == 0) {
+        if (animation.typeMask and KEYBOARD_TYPE_MASK == 0) {
             // Not a keyboard
             return bounds
         }
 
-        endKeyboardHeight = getKeyboardHeight(activity)
+        endKeyboardHeight = getKeyboardHeight(activity) - minKeyboardHeight
 
-        // Serialize interpolator as a set of control points
-        val ordinateCount = min(FRAMES_PER_SECOND * animation.durationMillis / 1000, MAX_ORDINATE_COUNT)
+        val animationDurationScale =
+            Settings.Global.getFloat(activity.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1.0f)
+
+        val animationDuration = (animation.durationMillis * animationDurationScale).toLong()
+
+        // Serialize interpolator as a set of equidistant ordinates
+        val ordinateCount = min(
+            FRAMES_PER_SECOND * animationDuration / 1000,
+            MAX_ORDINATE_COUNT
+        )
 
         val ordinates = animation.interpolator?.let { interpolator ->
             val ordinates = FloatArray(ordinateCount.toInt())
@@ -127,10 +144,11 @@ private class KeyboardAnimationCallback(private val activity: Activity, private 
 
         eventBus.post(
             BeforeKeyboardStatusChangeEvent(
-                getKeyboardStatus(activity),
-                max(startKeyboardHeight, endKeyboardHeight),
-                animation.durationMillis,
-                ordinates
+                status = KeyboardStatus(endKeyboardHeight, endKeyboardHeight > 0),
+                height = max(startKeyboardHeight, endKeyboardHeight),
+                startTimestamp = System.currentTimeMillis(),
+                animationDuration = animationDuration,
+                ordinates = ordinates
             )
         )
 
@@ -138,7 +156,7 @@ private class KeyboardAnimationCallback(private val activity: Activity, private 
     }
 
     override fun onEnd(animation: WindowInsetsAnimationCompat) {
-        if (animation.typeMask and Type.ime() == 0) {
+        if (animation.typeMask and KEYBOARD_TYPE_MASK == 0) {
             // Not a keyboard
             return
         }
@@ -158,7 +176,7 @@ private fun getKeyboardHeight(activity: Activity): Float {
     val windowInsets = ViewCompat.getRootWindowInsets(activity.contentView)
         ?: return 0f
 
-    return windowInsets.getInsets(Type.ime()).bottom / activity.resources.displayMetrics.density
+    return windowInsets.getInsets(KEYBOARD_TYPE_MASK).bottom / activity.resources.displayMetrics.density
 }
 
 private fun getKeyboardStatus(activity: Activity): KeyboardStatus {
@@ -166,7 +184,7 @@ private fun getKeyboardStatus(activity: Activity): KeyboardStatus {
         ?: return KeyboardStatus(0f, false)
 
     return KeyboardStatus(
-        windowInsets.getInsets(Type.ime()).bottom / activity.resources.displayMetrics.density,
-        windowInsets.isVisible(Type.ime())
+        windowInsets.getInsets(KEYBOARD_TYPE_MASK).bottom / activity.resources.displayMetrics.density,
+        windowInsets.isVisible(KEYBOARD_TYPE_MASK)
     )
 }
