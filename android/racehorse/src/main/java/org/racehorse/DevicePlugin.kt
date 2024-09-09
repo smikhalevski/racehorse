@@ -67,10 +67,10 @@ open class DevicePlugin(private val activity: ComponentActivity) {
     fun onGetWindowInsets(event: GetWindowInsetsEvent) {
         val density = activity.resources.displayMetrics.density
 
-        val insets = ViewCompat.getRootWindowInsets(activity.window.decorView)?.getInsets(event.typeMask)
+        val windowInsets = ViewCompat.getRootWindowInsets(activity.window.decorView)
             ?: return event.respond(GetWindowInsetsEvent.ResultEvent(Rect()))
 
-        val rect = with(insets) {
+        val rect = with(windowInsets.getInsets(event.typeMask)) {
             Rect(top / density, right / density, bottom / density, left / density)
         }
 

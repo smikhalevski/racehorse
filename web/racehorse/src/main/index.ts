@@ -74,7 +74,7 @@ export type {
 export type { GooglePlayReferrerManager } from './createGooglePlayReferrerManager';
 export type { GoogleSignInManager, GoogleSignInAccount } from './createGoogleSignInManager';
 export type { Joiner } from './createJoiner';
-export type { Animation, KeyboardManager, KeyboardStatus } from './createKeyboardManager';
+export type { Animation, KeyboardManager } from './createKeyboardManager';
 export type { NetworkManager, NetworkType, NetworkStatus } from './createNetworkManager';
 export type { NotificationsManager } from './createNotificationsManager';
 export type { PermissionsManager } from './createPermissionsManager';

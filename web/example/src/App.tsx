@@ -22,7 +22,7 @@ import { AssetLoaderExample } from './examples/AssetLoaderExample';
 import { ContactsExample } from './examples/ContactsExample';
 import { FsExample } from './examples/FsExample';
 import { EvergreenExample } from './examples/EvergreenExample';
-import { useKeyboardAnimationCallback, useWindowInsets } from '@racehorse/react';
+import { useKeyboardAnimationHandler, useWindowInsets } from '@racehorse/react';
 
 export function App() {
   const windowInsets = useWindowInsets();
@@ -32,7 +32,7 @@ export function App() {
       windowInsets.top + 'px ' + windowInsets.right + 'px ' + windowInsets.bottom + 'px ' + windowInsets.left + 'px';
   }, [windowInsets]);
 
-  useKeyboardAnimationCallback(height => {
+  useKeyboardAnimationHandler((_animation, height, _percent) => {
     document.body.style.paddingBottom = Math.max(height, windowInsets.bottom) + 'px';
 
     if (document.activeElement !== null && document.activeElement !== document.body) {

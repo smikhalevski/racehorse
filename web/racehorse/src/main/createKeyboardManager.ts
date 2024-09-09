@@ -2,18 +2,6 @@ import { EventBridge } from './createEventBridge';
 import { Unsubscribe } from './types';
 import { noop } from './utils';
 
-export interface KeyboardStatus {
-  /**
-   * The visible height of the software keyboard.
-   */
-  height: number;
-
-  /**
-   * `true` if the software keyboard is visible.
-   */
-  isVisible: boolean;
-}
-
 /**
  * An animation that takes place on the native side.
  */
@@ -39,22 +27,16 @@ export interface Animation {
   easing: (t: number) => number;
 
   /**
-   * An easing curve described as an array of at least two ordinate values (y ∈ [0, 1]) that correspond to
-   * an equidistant abscissa values (y).
-   */
-  easingValues: number[];
-
-  /**
    * A timestamp when an animation has started.
    */
-  startTimestamp: number;
+  startTime: number;
 }
 
 export interface KeyboardManager {
   /**
-   * Returns the status of the software keyboard.
+   * Returns the current height of the software keyboard.
    */
-  getKeyboardStatus(): KeyboardStatus;
+  getKeyboardHeight(): number;
 
   /**
    * Shows the software keyboard.
@@ -67,14 +49,14 @@ export interface KeyboardManager {
   hideKeyboard(): void;
 
   /**
-   * Subscribes a listener to the start of the software keyboard animation.
+   * Subscribes a listener to the start of the software keyboard toggle animation.
    */
-  subscribe(eventType: 'beforeChanged', listener: (status: KeyboardStatus, animation: Animation) => void): Unsubscribe;
+  subscribe(eventType: 'beforeToggled', listener: (animation: Animation) => void): Unsubscribe;
 
   /**
-   * Subscribes a listener to the software keyboard status changes. Changes are published after an animation has finished.
+   * Subscribes a listener to the software keyboard toggle. Changes are published after an animation has finished.
    */
-  subscribe(eventType: 'changed', listener: (status: KeyboardStatus) => void): Unsubscribe;
+  subscribe(eventType: 'toggled', listener: (keyboardHeight: number) => void): Unsubscribe;
 }
 
 /**
@@ -84,7 +66,7 @@ export interface KeyboardManager {
  */
 export function createKeyboardManager(eventBridge: EventBridge): KeyboardManager {
   return {
-    getKeyboardStatus: () => eventBridge.request({ type: 'org.racehorse.GetKeyboardStatusEvent' }).payload.status,
+    getKeyboardHeight: () => eventBridge.request({ type: 'org.racehorse.GetKeyboardHeightEvent' }).payload.height,
 
     showKeyboard() {
       eventBridge.request({ type: 'org.racehorse.ShowKeyboardEvent' });
@@ -95,17 +77,19 @@ export function createKeyboardManager(eventBridge: EventBridge): KeyboardManager
     },
 
     subscribe: (eventType, listener) => {
-      if (eventType === 'beforeChanged') {
-        return eventBridge.subscribe('org.racehorse.BeforeKeyboardStatusChangedEvent', payload => {
-          payload.animation.easing = createEasingFunction(payload.animation.easingValues);
+      if (eventType === 'beforeToggled') {
+        return eventBridge.subscribe('org.racehorse.BeforeKeyboardToggledEvent', payload => {
+          const animation = Object.assign({}, payload.animation);
 
-          listener(payload.status, payload.animation);
+          animation.easing = createEasingFunction(animation.easing);
+
+          listener(animation);
         });
       }
 
-      if (eventType === 'changed') {
-        return eventBridge.subscribe('org.racehorse.KeyboardStatusChangedEvent', payload => {
-          (listener as Function)(payload.status);
+      if (eventType === 'toggled') {
+        return eventBridge.subscribe('org.racehorse.KeyboardToggledEvent', payload => {
+          listener(payload.height);
         });
       }
 
@@ -117,9 +101,11 @@ export function createKeyboardManager(eventBridge: EventBridge): KeyboardManager
 /**
  * Creates an easing function that converts `t` ∈ [0, 1] to `y` ∈ [0, 1].
  *
+ * @param ordinates An easing curve described as an array of at least two ordinate values (y ∈ [0, 1]) that correspond
+ * to an equidistant abscissa values (x).
  * @see [<easing-function>](https://developer.mozilla.org/en-US/docs/Web/CSS/easing-function)
  */
-export function createEasingFunction(easingValues: number[]): (t: number) => number {
+export function createEasingFunction(ordinates: number[]): (t: number) => number {
   return t => {
     if (t <= 0) {
       return 0;
@@ -128,11 +114,11 @@ export function createEasingFunction(easingValues: number[]): (t: number) => num
       return 1;
     }
 
-    const x = t * (easingValues.length - 1);
+    const x = t * (ordinates.length - 1);
 
     const startX = x | 0;
-    const startY = easingValues[startX];
+    const startY = ordinates[startX];
 
-    return startY + (easingValues[startX + 1] - startY) * (x - startX);
+    return startY + (ordinates[startX + 1] - startY) * (x - startX);
   };
 }
