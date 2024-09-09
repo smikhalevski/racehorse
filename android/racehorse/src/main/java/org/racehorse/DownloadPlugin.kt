@@ -83,9 +83,9 @@ class Download(
     val downloadedSize: Long,
 
     /**
-     * Timestamp when the download was last modified (wall clock time in UTC).
+     * A timestamp when the download was last modified (wall clock time in UTC).
      */
-    val lastModifiedTimestamp: Int,
+    val lastModifiedTime: Int,
 
     /**
      * The client-supplied title for this download.
@@ -109,7 +109,7 @@ class Download(
         mimeType = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_MEDIA_TYPE)),
         totalSize = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)),
         downloadedSize = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)),
-        lastModifiedTimestamp = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_LAST_MODIFIED_TIMESTAMP)),
+        lastModifiedTime = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_LAST_MODIFIED_TIMESTAMP)),
         title = cursor.getString(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TITLE)),
     )
 }
@@ -262,7 +262,9 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
             ?: DEFAULT_MIME_TYPE
 
         val fileName = event.fileName
-            ?: "$DEFAULT_FILE_NAME.${MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: DEFAULT_EXTENSION}"
+            ?: "$DEFAULT_FILE_NAME.${
+                MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: DEFAULT_EXTENSION
+            }"
 
         // Use MediaStore to write a file
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -273,7 +275,8 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
             values.put(MediaStore.MediaColumns.IS_DOWNLOAD, true)
             values.put(MediaStore.MediaColumns.IS_PENDING, true)
 
-            val contentUri = checkNotNull(activity.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values))
+            val contentUri =
+                checkNotNull(activity.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values))
             try {
                 checkNotNull(activity.contentResolver.openOutputStream(contentUri)).use { it.write(dataUri.data) }
 
