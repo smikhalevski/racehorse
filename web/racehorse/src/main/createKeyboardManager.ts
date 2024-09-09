@@ -3,8 +3,51 @@ import { Unsubscribe } from './types';
 import { noop } from './utils';
 
 export interface KeyboardStatus {
+  /**
+   * The visible height of the software keyboard.
+   */
   height: number;
-  isShown: boolean;
+
+  /**
+   * `true` if the software keyboard is visible.
+   */
+  isVisible: boolean;
+}
+
+/**
+ * An animation that takes place on the native side.
+ */
+export interface Animation {
+  /**
+   * A value from which an animation starts.
+   */
+  startValue: number;
+
+  /**
+   * A value at which an animation ends.
+   */
+  endValue: number;
+
+  /**
+   * An animation duration in milliseconds.
+   */
+  duration: number;
+
+  /**
+   * An easing function that converts `t` ∈ [0, 1] to `y` ∈ [0, 1].
+   */
+  easing: (t: number) => number;
+
+  /**
+   * An easing curve described as an array of at least two ordinate values (y ∈ [0, 1]) that correspond to
+   * an equidistant abscissa values (y).
+   */
+  easingValues: number[];
+
+  /**
+   * A timestamp when an animation has started.
+   */
+  startTimestamp: number;
 }
 
 export interface KeyboardManager {
@@ -14,35 +57,24 @@ export interface KeyboardManager {
   getKeyboardStatus(): KeyboardStatus;
 
   /**
-   * Shows the keyboard.
+   * Shows the software keyboard.
    */
   showKeyboard(): void;
 
   /**
-   * Hides the keyboard.
-   *
-   * @returns `true` if the keyboard was actually hidden, or `false` otherwise.
+   * Hides the software keyboard.
    */
-  hideKeyboard(): boolean;
+  hideKeyboard(): void;
 
   /**
-   * Subscribes a listener to software keyboard status changes.
+   * Subscribes a listener to the start of the software keyboard animation.
    */
-  subscribe(
-    eventType: 'beforeChange',
-    listener: (
-      status: KeyboardStatus,
-      height: number,
-      startTimestamp: number,
-      animationDuration: number,
-      easing: (t: number) => number
-    ) => void
-  ): Unsubscribe;
+  subscribe(eventType: 'beforeChanged', listener: (status: KeyboardStatus, animation: Animation) => void): Unsubscribe;
 
   /**
-   * Subscribes a listener to software keyboard status changes.
+   * Subscribes a listener to the software keyboard status changes. Changes are published after an animation has finished.
    */
-  subscribe(eventType: 'afterChange', listener: (status: KeyboardStatus) => void): Unsubscribe;
+  subscribe(eventType: 'changed', listener: (status: KeyboardStatus) => void): Unsubscribe;
 }
 
 /**
@@ -58,23 +90,21 @@ export function createKeyboardManager(eventBridge: EventBridge): KeyboardManager
       eventBridge.request({ type: 'org.racehorse.ShowKeyboardEvent' });
     },
 
-    hideKeyboard: () => eventBridge.request({ type: 'org.racehorse.HideKeyboardEvent' }).payload.isHidden,
+    hideKeyboard() {
+      eventBridge.request({ type: 'org.racehorse.HideKeyboardEvent' });
+    },
 
     subscribe: (eventType, listener) => {
-      if (eventType === 'beforeChange') {
-        return eventBridge.subscribe('org.racehorse.BeforeKeyboardStatusChangeEvent', payload => {
-          listener(
-            payload.status,
-            payload.height,
-            payload.startTimestamp,
-            payload.animationDuration,
-            createEasing(payload.ordinates)
-          );
+      if (eventType === 'beforeChanged') {
+        return eventBridge.subscribe('org.racehorse.BeforeKeyboardStatusChangedEvent', payload => {
+          payload.animation.easing = createEasingFunction(payload.animation.easingValues);
+
+          listener(payload.status, payload.animation);
         });
       }
 
-      if (eventType === 'afterChange') {
-        return eventBridge.subscribe('org.racehorse.AfterKeyboardStatusChangeEvent', payload => {
+      if (eventType === 'changed') {
+        return eventBridge.subscribe('org.racehorse.KeyboardStatusChangedEvent', payload => {
           (listener as Function)(payload.status);
         });
       }
@@ -87,13 +117,9 @@ export function createKeyboardManager(eventBridge: EventBridge): KeyboardManager
 /**
  * Creates an easing function that converts `t` ∈ [0, 1] to `y` ∈ [0, 1].
  *
- * @param ordinates An array of equidistant ordinate values `y` to which `t` is mapped.
+ * @see [<easing-function>](https://developer.mozilla.org/en-US/docs/Web/CSS/easing-function)
  */
-export function createEasing(ordinates: number[] | null | undefined): (t: number) => number {
-  if (ordinates === null || ordinates === undefined || ordinates.length === 0) {
-    return () => 1;
-  }
-
+export function createEasingFunction(easingValues: number[]): (t: number) => number {
   return t => {
     if (t <= 0) {
       return 0;
@@ -102,11 +128,11 @@ export function createEasing(ordinates: number[] | null | undefined): (t: number
       return 1;
     }
 
-    const x = t * (ordinates.length - 1);
+    const x = t * (easingValues.length - 1);
 
     const startX = x | 0;
-    const startY = ordinates[startX];
+    const startY = easingValues[startX];
 
-    return startY + (ordinates[startX + 1] - startY) * (x - startX);
+    return startY + (easingValues[startX + 1] - startY) * (x - startX);
   };
 }

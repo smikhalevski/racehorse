@@ -1,34 +1,42 @@
 import { useEffect } from 'react';
 import { useKeyboardManager } from './managers';
+import { KeyboardStatus } from 'racehorse';
 
-export function useKeyboardAnimationCallback(callback: (height: number) => void): void {
+/**
+ * Invokes a callback with the current keyboard height when keyboard animation takes place.
+ */
+export function useKeyboardAnimationCallback(
+  callback: (keyboardHeight: number, keyboardStatus: KeyboardStatus) => void
+): void {
   const manager = useKeyboardManager();
 
   useEffect(() => {
     let handle = 0;
 
-    const unsubscribe = manager.subscribe(
-      'beforeChange',
-      (status, height, animationStartTimestamp, animationDuration, easing) => {
-        const startTime = Date.now();
+    const unsubscribe = manager.subscribe('beforeChanged', (status, animation) => {
+      const startTimestamp = Date.now();
 
-        cancelAnimationFrame(handle);
+      cancelAnimationFrame(handle);
 
-        const frameRequestCallback = () => {
-          const time = Date.now() + startTime - animationStartTimestamp;
+      const frameRequestCallback = () => {
+        const timestamp = Date.now() + startTimestamp - animation.startTimestamp;
 
-          const t = (time - startTime) / animationDuration;
+        const t = (timestamp - animation.startTimestamp) / animation.duration;
 
-          callback((status.isShown ? easing(t) : 1 - easing(t)) * height);
+        callback(
+          animation.endValue > animation.startValue
+            ? animation.endValue * animation.easing(t)
+            : animation.startValue * (1 - animation.easing(t)),
+          status
+        );
 
-          if (t < 1) {
-            handle = requestAnimationFrame(frameRequestCallback);
-          }
-        };
+        if (t < 1) {
+          handle = requestAnimationFrame(frameRequestCallback);
+        }
+      };
 
-        frameRequestCallback();
-      }
-    );
+      frameRequestCallback();
+    });
 
     return () => {
       cancelAnimationFrame(handle);
