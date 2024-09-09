@@ -2,12 +2,14 @@ package org.racehorse
 
 import android.app.Activity
 import android.content.Context
+import android.os.Build
 import android.provider.Settings
-import android.view.View
+import android.view.ViewTreeObserver
 import android.view.inputmethod.InputMethodManager
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsCompat.Type
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.io.Serializable
@@ -76,8 +78,19 @@ open class KeyboardPlugin(private val activity: Activity, private val eventBus: 
 
     private val inputMethodManager by lazy { activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager }
 
-    fun enable(view: View) {
-        ViewCompat.setWindowInsetsAnimationCallback(view, KeyboardAnimationCallback(activity, eventBus))
+    fun enable() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            // Support older Android versions
+            activity.window.decorView.viewTreeObserver.addOnGlobalLayoutListener(
+                KeyboardGlobalLayoutListener(activity, eventBus)
+            )
+            return
+        }
+
+        ViewCompat.setWindowInsetsAnimationCallback(
+            activity.window.decorView,
+            KeyboardInsetsAnimationCallback(activity, eventBus)
+        )
     }
 
     @Subscribe
@@ -99,7 +112,7 @@ open class KeyboardPlugin(private val activity: Activity, private val eventBus: 
     }
 }
 
-private class KeyboardAnimationCallback(private val activity: Activity, private val eventBus: EventBus) :
+private class KeyboardInsetsAnimationCallback(private val activity: Activity, private val eventBus: EventBus) :
     WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_CONTINUE_ON_SUBTREE) {
 
     companion object {
@@ -111,13 +124,11 @@ private class KeyboardAnimationCallback(private val activity: Activity, private 
         private const val MAX_FRAME_COUNT = 200
     }
 
-    private val insetType = WindowInsetsCompat.Type.ime()
-
     private var startHeight = 0f
     private var endHeight = 0f
 
     override fun onPrepare(animation: WindowInsetsAnimationCompat) {
-        if (animation.typeMask and insetType != 0) {
+        if (animation.typeMask and Type.ime() != 0) {
             startHeight = getKeyboardHeight()
         }
     }
@@ -126,7 +137,7 @@ private class KeyboardAnimationCallback(private val activity: Activity, private 
         animation: WindowInsetsAnimationCompat,
         bounds: WindowInsetsAnimationCompat.BoundsCompat
     ): WindowInsetsAnimationCompat.BoundsCompat {
-        if (animation.typeMask and insetType != 0) {
+        if (animation.typeMask and Type.ime() != 0) {
             endHeight = getKeyboardHeight()
             eventBus.post(BeforeKeyboardStatusChangedEvent(KeyboardStatus(endHeight), getKeyboardAnimation(animation)))
         }
@@ -134,7 +145,7 @@ private class KeyboardAnimationCallback(private val activity: Activity, private 
     }
 
     override fun onEnd(animation: WindowInsetsAnimationCompat) {
-        if (animation.typeMask and insetType != 0) {
+        if (animation.typeMask and Type.ime() != 0) {
             eventBus.post(KeyboardStatusChangedEvent(KeyboardStatus(endHeight)))
         }
     }
@@ -149,7 +160,7 @@ private class KeyboardAnimationCallback(private val activity: Activity, private 
     private fun getKeyboardHeight(): Float {
         val windowInsets = ViewCompat.getRootWindowInsets(activity.window.decorView) ?: return 0f
 
-        return windowInsets.getInsets(insetType).bottom / activity.resources.displayMetrics.density
+        return windowInsets.getInsets(Type.ime()).bottom / activity.resources.displayMetrics.density
     }
 
     private fun getKeyboardAnimation(animation: WindowInsetsAnimationCompat): Animation {
@@ -174,37 +185,34 @@ private class KeyboardAnimationCallback(private val activity: Activity, private 
     }
 }
 
-//
-//private class KeyboardLayoutObserver(private val activity: Activity, private val eventBus: EventBus) :
-//    ViewTreeObserver.OnGlobalLayoutListener {
-//
-//    override fun onGlobalLayout() {
-//        val view = activity.window.decorView
-//
-//        val frameBottom = Rect().apply { view.getWindowVisibleDisplayFrame(this) }.bottom
-//
-//        val insetBottom = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-//            view.rootWindowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars()).bottom
-//        } else {
-//            @Suppress("DEPRECATION")
-//            view.rootWindowInsets.stableInsetBottom
-//        }
-//
-//        val height = max(view.height - frameBottom - insetBottom, 0)
-//
-//        if (lastKeyboardHeight.getAndSet(height) != height) {
-//            listener(height)
-//        }
-//    }
-//}
-//
-//private fun getKeyboardStatus(activity: Activity): KeyboardStatus {
-//    val windowInsets = ViewCompat.getRootWindowInsets(activity.window.decorView)
-//        ?: return KeyboardStatus(0f, false)
-//
-//    return KeyboardStatus(
-//        windowInsets.getInsets(KEYBOARD_TYPE_MASK).bottom / activity.resources.displayMetrics.density,
-//        windowInsets.isVisible(KEYBOARD_TYPE_MASK)
-//    )
-//}
-//
+private class KeyboardGlobalLayoutListener(private val activity: Activity, private val eventBus: EventBus) :
+    ViewTreeObserver.OnGlobalLayoutListener {
+
+    private var prevHeight = 0f
+
+    override fun onGlobalLayout() {
+        val height = getKeyboardHeight()
+
+        // Safe to compare because of stable arithmetic
+        if (prevHeight == height) {
+            return
+        }
+
+        eventBus.post(
+            BeforeKeyboardStatusChangedEvent(
+                KeyboardStatus(height),
+                Animation(prevHeight, height, 0, floatArrayOf(0f, 1f))
+            )
+        )
+
+        eventBus.post(KeyboardStatusChangedEvent(KeyboardStatus(height)))
+
+        prevHeight = height
+    }
+
+    private fun getKeyboardHeight(): Float {
+        val windowInsets = ViewCompat.getRootWindowInsets(activity.window.decorView) ?: return 0f
+
+        return windowInsets.getInsets(Type.ime()).bottom / activity.resources.displayMetrics.density
+    }
+}

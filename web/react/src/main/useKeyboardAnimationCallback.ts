@@ -1,13 +1,24 @@
 import { useEffect } from 'react';
 import { useKeyboardManager } from './managers';
-import { KeyboardStatus } from 'racehorse';
+import { Animation, KeyboardStatus } from 'racehorse';
+
+/**
+ * @param height The current height of the keyboard.
+ * @param percent The passed percentage of the animation duration.
+ * @param status The status to which keyboard is animated to.
+ * @param animation The animation that takes place.
+ */
+export type KeyboardAnimationCallback = (
+  height: number,
+  percent: number,
+  status: KeyboardStatus,
+  animation: Animation
+) => void;
 
 /**
  * Invokes a callback with the current keyboard height when keyboard animation takes place.
  */
-export function useKeyboardAnimationCallback(
-  callback: (keyboardHeight: number, keyboardStatus: KeyboardStatus) => void
-): void {
+export function useKeyboardAnimationCallback(callback: KeyboardAnimationCallback): void {
   const manager = useKeyboardManager();
 
   useEffect(() => {
@@ -23,11 +34,15 @@ export function useKeyboardAnimationCallback(
 
         const t = (timestamp - animation.startTimestamp) / animation.duration;
 
+        const percent = animation.easing(t);
+
         callback(
           animation.endValue > animation.startValue
-            ? animation.endValue * animation.easing(t)
-            : animation.startValue * (1 - animation.easing(t)),
-          status
+            ? animation.endValue * percent
+            : animation.startValue * (1 - percent),
+          percent,
+          status,
+          animation
         );
 
         if (t < 1) {

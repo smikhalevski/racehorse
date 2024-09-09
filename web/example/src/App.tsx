@@ -29,7 +29,10 @@ export function App() {
 
   useKeyboardAnimationCallback(height => {
     spacerRef.current!.style.height = height + 'px';
-    window.scrollTo(0, 1000000);
+
+    if (document.activeElement !== null && document.activeElement !== document.body) {
+      document.activeElement.scrollIntoView({ block: 'center' });
+    }
   });
 
   return (

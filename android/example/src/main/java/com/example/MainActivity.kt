@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(GooglePlayReferrerPlugin(this))
         eventBus.register(HttpsPlugin())
         eventBus.register(networkPlugin)
-        eventBus.register(KeyboardPlugin(this).apply { enable(webView) })
+        eventBus.register(KeyboardPlugin(this).apply { enable() })
         eventBus.register(ActivityPlugin(this).apply { enable() })
         eventBus.register(DeepLinkPlugin())
         eventBus.register(PermissionsPlugin(this))
