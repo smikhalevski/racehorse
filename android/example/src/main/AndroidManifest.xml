@@ -33,7 +33,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
         android:requestLegacyExternalStorage="@bool/request_legacy_external_storage"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:windowSoftInputMode="adjustResize">
         <activity
             android:name=".MainActivity"
             android:exported="true">

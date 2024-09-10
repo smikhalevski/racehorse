@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { eventBridge } from 'racehorse';
 
 export function EventBridgeExample() {
-  const [eventType, setEventType] = useState('org.racehorse.GetKeyboardStatusEvent');
+  const [eventType, setEventType] = useState('org.racehorse.IsSupportedEvent');
 
   return (
     <>

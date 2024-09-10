@@ -682,6 +682,25 @@ deviceManager.getPreferredLocales();
 // ⮕ ['en-US']
 ```
 
+If you are using React, then refer to
+[`useWindowInsets`](https://smikhalevski.github.io/racehorse/functions/_racehorse_react.useWindowInsets.html) hook
+to synchronize document paddings and window insets:
+
+```ts
+import { useLayoutEffect } from 'react';
+import { useWindowInsets } from '@racehorse/react';
+
+const windowInsets = useWindowInsets();
+
+useLayoutEffect(() => {
+  document.body.style.padding =
+    windowInsets.top + 'px ' +
+    windowInsets.right + 'px ' +
+    windowInsets.bottom + 'px ' +
+    windowInsets.left + 'px';
+}, [windowInsets]);
+```
+
 # Download plugin
 
 [`DownloadManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.DownloadManager.html)
@@ -1329,36 +1348,40 @@ software keyboard status monitoring.
 ```kotlin
 import org.racehorse.KeyboardPlugin
 
-EventBus.getDefault().register(KeyboardPlugin(activity))
+EventBus.getDefault().register(KeyboardPlugin(activity).apply { enable() })
 ```
 
-2. Synchronously read the keyboard status or subscribe to changes:
+2. Synchronously read the keyboard height or subscribe to its changes when keyboard is toggled:
 
 ```ts
 import { keyboardManager } from 'racehorse';
 
-keyboardManager.getKeyboardStatus().isVisible;
-// ⮕ true
+keyboardManager.getKeyboardHeight();
+// ⮕ 630
 
-keyboardManager.subscribe(status => {
-  // React to keyboard status changes
+keyboardManager.subscribe('toggled', keyboardHeight => {
+  // React to keyboard height changes
+});
+```
+
+Subscribe to the software keyboard animation start:
+
+```ts
+keyboardManager.subscribe('beforeToggled', animation => {
+  // Start the animation
 });
 ```
 
 If you are using React, then refer to
-[`useKeyboardStatus`](https://smikhalevski.github.io/racehorse/functions/_racehorse_react.useKeyboardStatus.html) hook
-that re-renders a component when keyboard status changes.
+[`useKeyboardAnimationHandler`](https://smikhalevski.github.io/racehorse/functions/_racehorse_react.useKeyboardAnimationHandler.html)
+hook that allows to seamlessly replicate keyboard animation inside the WebView:
 
 ```tsx
-import { useKeyboardStatus } from '@racehorse/react';
+import { useKeyboardAnimationHandler } from '@racehorse/react';
 
-const status = useKeyboardStatus();
-
-status.isVisible;
-// ⮕ true
-
-status.height;
-// ⮕ 630
+useKeyboardAnimationHandler((animation, keyboardHeight) => {
+  document.body.style.paddingBottom = keyboardHeight + 'px';
+});
 ```
 
 # Network plugin

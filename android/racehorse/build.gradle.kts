@@ -75,12 +75,15 @@ publishing {
 dependencies {
     implementation(kotlin("reflect"))
 
+    // Edge-to-edge
+    implementation("androidx.activity:activity:1.9.2")
+
     // EventBridge
     compileOnly("org.greenrobot:eventbus:3.3.1")
     compileOnly("com.google.code.gson:gson:2.10.1")
 
     // ActivityPlugin
-    compileOnly("androidx.lifecycle:lifecycle-process:2.8.4")
+    compileOnly("androidx.lifecycle:lifecycle-process:2.8.5")
 
     // AssetLoaderPlugin
     compileOnly("androidx.webkit:webkit:1.11.0")
@@ -101,7 +104,7 @@ dependencies {
     compileOnly("com.google.android.gms:play-services-tapandpay:18.3.3")
 
     // Push notifications
-    compileOnly("com.google.firebase:firebase-messaging-ktx:24.0.0")
+    compileOnly("com.google.firebase:firebase-messaging-ktx:24.0.1")
 
     // Biometric
     compileOnly("androidx.biometric:biometric:1.2.0-alpha05")

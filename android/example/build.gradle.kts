@@ -55,6 +55,9 @@ android {
 }
 
 dependencies {
+    // Edge-to-edge
+    implementation("androidx.activity:activity:1.9.2")
+
     // EventBridge
     implementation("org.greenrobot:eventbus:3.3.1")
     implementation("com.google.code.gson:gson:2.10.1")

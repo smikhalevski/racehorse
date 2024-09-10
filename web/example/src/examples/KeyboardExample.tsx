@@ -1,9 +1,10 @@
-import React from 'react';
-import { FormattedJSON } from '../components/FormattedJSON';
-import { useKeyboardStatus } from '@racehorse/react';
+import React, { useEffect, useState } from 'react';
+import { keyboardManager } from 'racehorse';
 
 export function KeyboardExample() {
-  const keyboardStatus = useKeyboardStatus();
+  const [keyboardHeight, setKeyboardHeight] = useState(keyboardManager.getKeyboardHeight);
+
+  useEffect(() => keyboardManager.subscribe('toggled', setKeyboardHeight), []);
 
   return (
     <>
@@ -11,10 +12,7 @@ export function KeyboardExample() {
 
       <input placeholder={'Set focus here'} />
 
-      <p>
-        {'Status: '}
-        <FormattedJSON value={keyboardStatus} />
-      </p>
+      <p>{'Keyboard height: ' + keyboardHeight}</p>
     </>
   );
 }

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Directory, File, fsManager } from 'racehorse';
 
 export function FsExample() {
-  const [goToUri, setGoToUri] = useState<string>(Directory.EXTERNAL_STORAGE);
+  const [goToUri, setGoToUri] = useState<string>(Directory.CACHE);
   const [dir, setDir] = useState<File>();
   const [files, setFiles] = useState<File[]>();
   const [url, setUrl] = useState<string>();

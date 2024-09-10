@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 import { CookieExample } from './examples/CookieExample';
 import { FileInputExample } from './examples/FileInputExample';
 import { GeolocationExample } from './examples/GeolocationExample';
@@ -22,8 +22,24 @@ import { AssetLoaderExample } from './examples/AssetLoaderExample';
 import { ContactsExample } from './examples/ContactsExample';
 import { FsExample } from './examples/FsExample';
 import { EvergreenExample } from './examples/EvergreenExample';
+import { useKeyboardAnimationHandler, useWindowInsets } from '@racehorse/react';
 
 export function App() {
+  const windowInsets = useWindowInsets();
+
+  useLayoutEffect(() => {
+    document.body.style.padding =
+      windowInsets.top + 'px ' + windowInsets.right + 'px ' + windowInsets.bottom + 'px ' + windowInsets.left + 'px';
+  }, [windowInsets]);
+
+  useKeyboardAnimationHandler((_animation, height, _percent) => {
+    document.body.style.paddingBottom = Math.max(height, windowInsets.bottom) + 'px';
+
+    if (document.activeElement !== null && document.activeElement !== document.body) {
+      document.activeElement.scrollIntoView({ block: 'center' });
+    }
+  });
+
   return (
     <>
       <EvergreenExample />
