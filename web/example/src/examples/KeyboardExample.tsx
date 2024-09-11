@@ -4,7 +4,7 @@ import { keyboardManager } from 'racehorse';
 export function KeyboardExample() {
   const [keyboardHeight, setKeyboardHeight] = useState(keyboardManager.getKeyboardHeight);
 
-  useEffect(() => keyboardManager.subscribe('toggled', setKeyboardHeight), []);
+  useEffect(() => keyboardManager.subscribe(animation => setKeyboardHeight(animation.endValue)), []);
 
   return (
     <>

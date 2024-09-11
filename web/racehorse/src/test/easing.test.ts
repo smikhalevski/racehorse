@@ -1,8 +1,8 @@
-import { createEasingFunction } from '../main/createKeyboardManager';
+import { createEasing } from '../main/easing';
 
-describe('createEasingFunction', () => {
+describe('createEasing', () => {
   test('interpolates values', () => {
-    const easing = createEasingFunction([0, 1]);
+    const easing = createEasing([0, 1]);
 
     expect(easing(-1)).toBe(0);
     expect(easing(0)).toBe(0);

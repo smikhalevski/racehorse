@@ -43,8 +43,6 @@ export {
   PermissionsManagerProvider,
 } from './managers';
 export { useActivityState } from './useActivityState';
-export { useKeyboardAnimationHandler } from './useKeyboardAnimationHandler';
+export { useKeyboardAnimation } from './useKeyboardAnimation';
 export { useNetworkStatus } from './useNetworkStatus';
 export { useWindowInsets } from './useWindowInsets';
-
-export type { KeyboardAnimationHandler } from './useKeyboardAnimationHandler';

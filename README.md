@@ -1373,13 +1373,13 @@ keyboardManager.subscribe('beforeToggled', animation => {
 ```
 
 If you are using React, then refer to
-[`useKeyboardAnimationHandler`](https://smikhalevski.github.io/racehorse/functions/_racehorse_react.useKeyboardAnimationHandler.html)
+[`useKeyboardAnimation`](https://smikhalevski.github.io/racehorse/functions/_racehorse_react.useKeyboardAnimation.html)
 hook that allows to seamlessly replicate keyboard animation inside the WebView:
 
 ```tsx
-import { useKeyboardAnimationHandler } from '@racehorse/react';
+import { useKeyboardAnimation } from '@racehorse/react';
 
-useKeyboardAnimationHandler((animation, keyboardHeight) => {
+useKeyboardAnimation((animation, keyboardHeight) => {
   document.body.style.paddingBottom = keyboardHeight + 'px';
 });
 ```

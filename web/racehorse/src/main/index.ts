@@ -48,6 +48,8 @@ export { createNetworkManager } from './createNetworkManager';
 export { createNotificationsManager } from './createNotificationsManager';
 export { createPermissionsManager } from './createPermissionsManager';
 export { createScheduler } from './createScheduler';
+export { runAnimation } from './runAnimation';
+export { scrollToElement } from './scrollToElement';
 
 export type { ActivityManager, ActivityResult, ActivityInfo } from './createActivityManager';
 export type { BiometricEncryptedStorageManager, BiometricConfig } from './createBiometricEncryptedStorageManager';
@@ -74,13 +76,13 @@ export type {
 export type { GooglePlayReferrerManager } from './createGooglePlayReferrerManager';
 export type { GoogleSignInManager, GoogleSignInAccount } from './createGoogleSignInManager';
 export type { Joiner } from './createJoiner';
-export type { Animation, KeyboardManager } from './createKeyboardManager';
+export type { KeyboardManager } from './createKeyboardManager';
 export type { NetworkManager, NetworkType, NetworkStatus } from './createNetworkManager';
 export type { NotificationsManager } from './createNotificationsManager';
 export type { PermissionsManager } from './createPermissionsManager';
 export type { Scheduler } from './createScheduler';
-
-export type * from './types';
+export type { ScrollToElementOptions } from './scrollToElement';
+export type { Animation, AnimationHandler, TweenAnimation, Easing, Unsubscribe } from './types';
 
 /**
  * Event bridge delivers events from and to native Android.
