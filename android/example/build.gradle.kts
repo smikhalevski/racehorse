@@ -32,6 +32,14 @@ android {
         }
     }
 
+    sourceSets {
+        getByName("debug") {
+            assets {
+                srcDir("$projectDir/../../web/example/dist")
+            }
+        }
+    }
+
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("example")

@@ -2,11 +2,9 @@ package com.example
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.webkit.CookieManager
 import android.webkit.WebResourceResponse
-import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +14,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.ActivityPlugin
 import org.racehorse.AssetLoaderPlugin
+import org.racehorse.AppAssetsHandler
 import org.racehorse.BiometricEncryptedStoragePlugin
 import org.racehorse.BiometricPlugin
 import org.racehorse.ContactsPlugin
@@ -38,18 +37,12 @@ import org.racehorse.NetworkPlugin
 import org.racehorse.NotificationsPlugin
 import org.racehorse.OpenDeepLinkEvent
 import org.racehorse.PermissionsPlugin
-import org.racehorse.ProxyPathHandler
 import org.racehorse.StaticPathHandler
 import org.racehorse.evergreen.BundleReadyEvent
-import org.racehorse.evergreen.EvergreenPlugin
-import org.racehorse.evergreen.StartEvent
-import org.racehorse.evergreen.UpdateMode
 import org.racehorse.webview.RacehorseDownloadListener
 import org.racehorse.webview.RacehorseWebChromeClient
 import org.racehorse.webview.RacehorseWebViewClient
 import java.io.File
-import java.net.URL
-import java.util.Date
 
 const val APP_URL = "https://example.local"
 
@@ -130,38 +123,44 @@ class MainActivity : AppCompatActivity() {
 
         // 🟡 Run `npm start` in `<racehorse>/web/example` to build the web app and start the server.
 
-        if (BuildConfig.DEBUG) {
-            // 1️⃣ Live reload
+        assetLoaderPlugin.registerAssetLoader(APP_URL, AppAssetsHandler(this))
 
-            // Example app uses livereload that connects to ws://10.0.2.2:10001, since the app is rendered using
-            // https://example.local which uses HTTPS, this connection is rejected because of the mixed content policy.
-            // Don't use this setting in production!
-            webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+        webView.loadUrl(APP_URL)
 
-            assetLoaderPlugin.registerAssetLoader(APP_URL, ProxyPathHandler(DEV_SERVER_URL))
+        setContentView(webView)
 
-            webView.loadUrl(APP_URL)
-
-            setContentView(webView)
-        } else {
-            // 2️⃣ Evergreen
-
-            // An update bundle `<racehorse>/web/example/dist/bundle.zip` is downloaded using the `EvergreenPlugin` and
-            // served from the internal app cache.
-            //
-            // If the bundle is downloaded via a non-secure request, then add `android:usesCleartextTraffic="true"`
-            // attribute to `AndroidManifest.xml/manifest/application`. `BundleReadyEvent` is emitted after bundle is
-            // successfully downloaded, see `onBundleReady` below.
-
-            eventBus.register(EvergreenPlugin(File(filesDir, "app")))
-            eventBus.register(this)
-
-            // The update bundle is downloaded if there's no bundle available, or if the available version differs
-            // from the version of previously downloaded bundle.
-            eventBus.post(StartEvent(version = "0.0.0+" + Date().time.toString(), UpdateMode.MANDATORY) {
-                URL("$DEV_SERVER_URL/bundle.zip").openConnection()
-            })
-        }
+//        if (BuildConfig.DEBUG) {
+//            // 1️⃣ Live reload
+//
+//            // Example app uses livereload that connects to ws://10.0.2.2:10001, since the app is rendered using
+//            // https://example.local which uses HTTPS, this connection is rejected because of the mixed content policy.
+//            // Don't use this setting in production!
+//            webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+//
+//            assetLoaderPlugin.registerAssetLoader(APP_URL, ProxyPathHandler(DEV_SERVER_URL))
+//
+//            webView.loadUrl(APP_URL)
+//
+//            setContentView(webView)
+//        } else {
+//            // 2️⃣ Evergreen
+//
+//            // An update bundle `<racehorse>/web/example/dist/bundle.zip` is downloaded using the `EvergreenPlugin` and
+//            // served from the internal app cache.
+//            //
+//            // If the bundle is downloaded via a non-secure request, then add `android:usesCleartextTraffic="true"`
+//            // attribute to `AndroidManifest.xml/manifest/application`. `BundleReadyEvent` is emitted after bundle is
+//            // successfully downloaded, see `onBundleReady` below.
+//
+//            eventBus.register(EvergreenPlugin(File(filesDir, "app")))
+//            eventBus.register(this)
+//
+//            // The update bundle is downloaded if there's no bundle available, or if the available version differs
+//            // from the version of previously downloaded bundle.
+//            eventBus.post(StartEvent(version = "0.0.0+" + Date().time.toString(), UpdateMode.MANDATORY) {
+//                URL("$DEV_SERVER_URL/bundle.zip").openConnection()
+//            })
+//        }
     }
 
     override fun onResume() {

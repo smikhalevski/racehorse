@@ -1,5 +1,6 @@
 package org.racehorse
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.webkit.WebResourceResponse
@@ -89,6 +90,22 @@ open class AssetLoaderPlugin(private val activity: ComponentActivity) {
             event.shouldHandle()
         ) {
             activity.launchActivity(Intent(url.guessIntentAction(), url).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        }
+    }
+}
+
+open class AppAssetsHandler(
+    private val activity: Activity,
+    private val indexFileName: String = "index.html"
+) : PathHandler {
+    @WorkerThread
+    override fun handle(path: String): WebResourceResponse {
+        val mimeType = URLConnection.guessContentTypeFromName(path)
+
+        return try {
+            WebResourceResponse(mimeType, null, activity.assets.open(if (path == "") indexFileName else path))
+        } catch (_: IOException) {
+            WebResourceResponse(null, null, null)
         }
     }
 }
