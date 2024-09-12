@@ -15,17 +15,16 @@ export function runAnimation<T extends Partial<Animation>>(
 ): void {
   handler = typeof handler === 'function' ? { onProgress: handler } : handler;
 
-  const runTime = Date.now();
-
-  const { duration = 0, startTime = runTime, easing } = animation;
-
+  let runTime = Date.now();
   let frameHandle = 0;
   let timer: NodeJS.Timeout;
 
-  const frameRequestCallback = () => {
-    const time = Date.now() + runTime - startTime;
+  const { duration = 0, startTime = runTime, easing } = animation;
 
-    const percent = Math.min((time - startTime) / duration, 1);
+  const frameRequestCallback = () => {
+    const time = runTime - startTime + Date.now();
+
+    const percent = duration > 0 ? Math.min((time - startTime) / duration, 1) : 1;
 
     handler.onProgress?.(animation, easing === undefined ? percent : easing(percent), percent);
 
@@ -38,16 +37,19 @@ export function runAnimation<T extends Partial<Animation>>(
     frameHandle = requestAnimationFrame(frameRequestCallback);
   };
 
-  const startAnimation = () => {
+  if (runTime < startTime) {
+    timer = setTimeout(() => {
+      // Defer the animation run
+      runTime = Date.now();
+
+      handler.onStart?.(animation);
+
+      frameRequestCallback();
+    }, startTime - runTime);
+  } else {
     handler.onStart?.(animation);
 
     frameRequestCallback();
-  };
-
-  if (runTime < startTime) {
-    timer = setTimeout(startAnimation, startTime - runTime);
-  } else {
-    startAnimation();
   }
 
   signal?.addEventListener('abort', () => {
@@ -56,8 +58,8 @@ export function runAnimation<T extends Partial<Animation>>(
     if (frameHandle === 0) {
       return;
     }
-    frameHandle = 0;
     cancelAnimationFrame(frameHandle);
+    frameHandle = 0;
     handler.onAbort?.(animation);
   });
 }
