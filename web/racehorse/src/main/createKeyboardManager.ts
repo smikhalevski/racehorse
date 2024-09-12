@@ -31,7 +31,7 @@ export interface KeyboardManager {
 }
 
 /**
- * Manages keyboard visibility and provides its status updates.
+ * Toggles the software keyboard and notifies about keyboard animation.
  *
  * @param eventBridge The underlying event bridge.
  */

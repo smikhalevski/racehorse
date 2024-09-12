@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./racehorse.png" alt="Racehorse" width="500"/>
+  <img src="./assets/racehorse.png" alt="Racehorse" width="500"/>
 </p>
 
 The bootstrapper for WebView-based Android apps.
@@ -1340,8 +1340,8 @@ EventBus.getDefault().register(HttpsPlugin())
 
 # Keyboard plugin
 
-[`KeyboardManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.KeyboardManager.html) enables
-software keyboard status monitoring.
+[`KeyboardManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.KeyboardManager.html) toggles
+the software keyboard and notifies about keyboard animation.
 
 1. Initialize the plugin in your Android app:
 
@@ -1351,38 +1351,91 @@ import org.racehorse.KeyboardPlugin
 EventBus.getDefault().register(KeyboardPlugin(activity).apply { enable() })
 ```
 
-2. Synchronously read the keyboard height or subscribe to its changes when keyboard is toggled:
+2. Synchronously read the keyboard height, show or hide the keyboard:
 
 ```ts
 import { keyboardManager } from 'racehorse';
 
+keyboardManager.showKeyboard();
+// ⮕ true
+
 keyboardManager.getKeyboardHeight();
 // ⮕ 630
-
-keyboardManager.subscribe('toggled', keyboardHeight => {
-  // React to keyboard height changes
-});
 ```
 
-Subscribe to the software keyboard animation start:
+Subscribe to the keyboard manager to receive notifications when the keyboard animation starts:
 
 ```ts
-keyboardManager.subscribe('beforeToggled', animation => {
-  // Start the animation
+keyboardManager.subscribe(animation => {
+  // Handle the started animation here.
 });
 ```
 
-If you are using React, then refer to
+If you are using React, use
 [`useKeyboardAnimation`](https://smikhalevski.github.io/racehorse/functions/_racehorse_react.useKeyboardAnimation.html)
-hook that allows to seamlessly replicate keyboard animation inside the WebView:
+hook to subscribe to the keyboard animation from a component:
 
 ```tsx
 import { useKeyboardAnimation } from '@racehorse/react';
 
-useKeyboardAnimation((animation, keyboardHeight) => {
-  document.body.style.paddingBottom = keyboardHeight + 'px';
+useKeyboardAnimation((animation, signal) => {
+  // Signal is aborted if animation is cancelled.
 });
 ```
+
+Use [`runAnimation`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.runAnimation.html) to run
+the animation. For example, if your
+[app is rendered edge-to-edge](https://developer.android.com/develop/ui/views/layout/edge-to-edge), you can animate
+the bottom padding to compensate the height of the keyboard.
+
+```ts
+import { useKeyboardAnimation, runAnimation } from '@racehorse/react';
+
+useKeyboardAnimation((animation, signal) => {
+  // Run the animation in sync with the native keyboard animation.
+  runAnimation(
+    animation,
+    {
+      onProgress(animation, fraction, percent) {
+        const keyboardHeight = animation.startValue + (animation.endValue - animation.startValue) * fraction;
+
+        document.body.style.paddingBottom = keyboardHeight + 'px';
+      }
+    },
+    signal
+  );
+});
+```
+
+You may also want to scroll the window to prevent the focused element from bing obscured by the keyboard.
+Use [`scrollToElement`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.scrollToElement.html) to animate
+scrolling in sync with keyboard animation:
+
+```ts
+import { useKeyboardAnimation, scrollToElement } from '@racehorse/react';
+
+useKeyboardAnimation((animation, signal) => {
+
+  // Ensure there's an active element to scroll to.
+  if (document.activeElement === null) {
+    return;
+  }
+
+  scrollToElement(document.activeElement, {
+    // Scroll animation would have the same duration and easing as the keyboard animation.
+    animation,
+    paddingBottom: animation.endValue,
+    signal,
+  });
+});
+```
+
+Check out [the example app](./web/example/src/App.tsx#L44) that has the real-world keyboard animation handling.
+
+<br/>
+<p align="center">
+  <img src="./assets/keyboard-animation.gif" alt="Keyboard animation" width="300"/>
+</p>
 
 # Network plugin
 
