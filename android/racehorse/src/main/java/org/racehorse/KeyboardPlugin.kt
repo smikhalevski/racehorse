@@ -37,7 +37,7 @@ class GetKeyboardStatusEvent : RequestEvent() {
  * an equidistant abscissa values (x).
  * @param startTime A timestamp when an animation has started.
  */
-class Animation(
+class TweenAnimation(
     val startValue: Float,
     val endValue: Float,
     val duration: Int,
@@ -55,22 +55,21 @@ class GetKeyboardHeightEvent : RequestEvent() {
 /**
  * Shows the software keyboard.
  */
-class ShowKeyboardEvent : WebEvent
+class ShowKeyboardEvent : RequestEvent() {
+    class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
+}
 
 /**
  * Hides the software keyboard.
  */
-class HideKeyboardEvent : WebEvent
+class HideKeyboardEvent : RequestEvent() {
+    class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
+}
 
 /**
  * Notifies the web app that the keyboard animation has started.
  */
-class BeforeKeyboardToggledEvent(val animation: Animation) : NoticeEvent
-
-/**
- * Notifies the web app that the keyboard is fully shown or hidden. Event is published after an animation has finished.
- */
-class KeyboardToggledEvent(val height: Float) : NoticeEvent
+class KeyboardAnimationStartedEvent(val animation: TweenAnimation) : NoticeEvent
 
 /**
  * Monitors keyboard visibility.
@@ -89,7 +88,7 @@ open class KeyboardPlugin(private val activity: Activity, private val eventBus: 
                 KeyboardInsetsAnimationCallback(activity, eventBus)
             )
         } else {
-            // Support legacy Android versions
+            // Legacy Android support
             activity.window.decorView.viewTreeObserver.addOnGlobalLayoutListener(
                 KeyboardGlobalLayoutListener(activity, eventBus)
             )
@@ -109,14 +108,20 @@ open class KeyboardPlugin(private val activity: Activity, private val eventBus: 
 
     @Subscribe
     open fun onShowKeyboard(event: ShowKeyboardEvent) {
-        inputMethodManager.showSoftInput(activity.currentFocus, 0)
+        event.respond(
+            ShowKeyboardEvent.ResultEvent(inputMethodManager.showSoftInput(activity.currentFocus, 0))
+        )
     }
 
     @Subscribe
     open fun onHideKeyboard(event: HideKeyboardEvent) {
-        inputMethodManager.hideSoftInputFromWindow(
-            activity.currentFocus?.windowToken,
-            InputMethodManager.HIDE_NOT_ALWAYS
+        event.respond(
+            HideKeyboardEvent.ResultEvent(
+                inputMethodManager.hideSoftInputFromWindow(
+                    activity.currentFocus?.windowToken,
+                    InputMethodManager.HIDE_NOT_ALWAYS
+                )
+            )
         )
     }
 }
@@ -148,16 +153,10 @@ private class KeyboardInsetsAnimationCallback(private val activity: Activity, pr
     ): WindowInsetsAnimationCompat.BoundsCompat {
         if (animation.typeMask and Type.ime() != 0) {
             endHeight = getKeyboardHeight(activity)
-            eventBus.post(BeforeKeyboardToggledEvent(getKeyboardAnimation(animation)))
+            eventBus.post(KeyboardAnimationStartedEvent(getKeyboardAnimation(animation)))
+            eventBus.post(KeyboardStatusChangedEvent(KeyboardStatus(endHeight)))
         }
         return bounds
-    }
-
-    override fun onEnd(animation: WindowInsetsAnimationCompat) {
-        if (animation.typeMask and Type.ime() != 0) {
-            eventBus.post(KeyboardToggledEvent(getKeyboardHeight(activity)))
-            eventBus.post(KeyboardStatusChangedEvent(KeyboardStatus(getKeyboardHeight(activity))))
-        }
     }
 
     override fun onProgress(
@@ -167,7 +166,7 @@ private class KeyboardInsetsAnimationCallback(private val activity: Activity, pr
         return windowInsets
     }
 
-    private fun getKeyboardAnimation(animation: WindowInsetsAnimationCompat): Animation {
+    private fun getKeyboardAnimation(animation: WindowInsetsAnimationCompat): TweenAnimation {
         val durationScale =
             Settings.Global.getFloat(activity.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1.0f)
 
@@ -185,7 +184,7 @@ private class KeyboardInsetsAnimationCallback(private val activity: Activity, pr
             }
             ?: floatArrayOf(0f, 1f)
 
-        return Animation(startHeight, endHeight, duration, easing)
+        return TweenAnimation(startHeight, endHeight, duration, easing)
     }
 }
 
@@ -202,8 +201,7 @@ private class KeyboardGlobalLayoutListener(private val activity: Activity, priva
             return
         }
 
-        eventBus.post(BeforeKeyboardToggledEvent(Animation(prevHeight, height, 0, floatArrayOf(0f, 1f))))
-        eventBus.post(KeyboardToggledEvent(height))
+        eventBus.post(KeyboardAnimationStartedEvent(TweenAnimation(prevHeight, height, 0, floatArrayOf(0f, 1f))))
         eventBus.post(KeyboardStatusChangedEvent(KeyboardStatus(getKeyboardHeight(activity))))
 
         prevHeight = height

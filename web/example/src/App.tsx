@@ -22,22 +22,46 @@ import { AssetLoaderExample } from './examples/AssetLoaderExample';
 import { ContactsExample } from './examples/ContactsExample';
 import { FsExample } from './examples/FsExample';
 import { EvergreenExample } from './examples/EvergreenExample';
-import { useKeyboardAnimationHandler, useWindowInsets } from '@racehorse/react';
+import { useKeyboardAnimation, useKeyboardManager, useWindowInsets } from '@racehorse/react';
+import { runAnimation, scrollToElement } from 'racehorse';
 
 export function App() {
+  const keyboardManager = useKeyboardManager();
   const windowInsets = useWindowInsets();
 
   useLayoutEffect(() => {
     document.body.style.padding =
-      windowInsets.top + 'px ' + windowInsets.right + 'px ' + windowInsets.bottom + 'px ' + windowInsets.left + 'px';
+      windowInsets.top +
+      'px ' +
+      windowInsets.right +
+      'px ' +
+      Math.max(keyboardManager.getKeyboardHeight(), windowInsets.bottom) +
+      'px ' +
+      windowInsets.left +
+      'px';
   }, [windowInsets]);
 
-  useKeyboardAnimationHandler((_animation, height, _percent) => {
-    document.body.style.paddingBottom = Math.max(height, windowInsets.bottom) + 'px';
-
-    if (document.activeElement !== null && document.activeElement !== document.body) {
-      document.activeElement.scrollIntoView({ block: 'center' });
+  useKeyboardAnimation((animation, signal) => {
+    // Scroll to the active element when keyboard is shown
+    if (animation.endValue !== 0 && document.activeElement !== null && document.activeElement !== document.body) {
+      scrollToElement(document.activeElement, {
+        // Scroll animation has the same duration and easing as the keyboard animation
+        animation,
+        paddingBottom: animation.endValue,
+        signal,
+      });
     }
+
+    runAnimation(
+      animation,
+      (animation, fraction) => {
+        const keyboardHeight = animation.startValue + (animation.endValue - animation.startValue) * fraction;
+
+        // Additional padding to compensate the keyboard height
+        document.body.style.paddingBottom = Math.max(windowInsets.bottom, keyboardHeight) + 'px';
+      },
+      signal
+    );
   });
 
   return (
