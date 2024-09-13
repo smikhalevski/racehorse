@@ -1,5 +1,5 @@
 import { Rect } from 'racehorse';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDeviceManager } from './managers';
 
 /**
@@ -10,16 +10,15 @@ import { useDeviceManager } from './managers';
  */
 export function useWindowInsets(typeMask?: number): Rect {
   const manager = useDeviceManager();
-
-  const [windowInsets, setWindowInsets] = useState(() => manager.getWindowInsets(typeMask));
+  const [orientation, setOrientation] = useState(window.orientation);
 
   useEffect(() => {
-    const listener = () => setWindowInsets(manager.getWindowInsets(typeMask));
+    const orientationListener = () => setOrientation(window.orientation);
 
-    window.addEventListener('orientationchange', listener);
+    window.addEventListener('orientationchange', orientationListener);
 
-    return () => window.removeEventListener('orientationchange', listener);
-  }, [manager]);
+    return () => window.removeEventListener('orientationchange', orientationListener);
+  }, []);
 
-  return windowInsets;
+  return useMemo(() => manager.getWindowInsets(typeMask), [manager, typeMask, orientation]);
 }

@@ -12,17 +12,13 @@ export interface KeyboardManager {
 
   /**
    * Shows the software keyboard.
-   *
-   * @returns `true` if the keyboard was shown.
    */
-  showKeyboard(): boolean;
+  showKeyboard(): void;
 
   /**
    * Hides the software keyboard.
-   *
-   * @returns `true` if the keyboard was hidden.
    */
-  hideKeyboard(): boolean;
+  hideKeyboard(): void;
 
   /**
    * Subscribes a listener to the keyboard show and hide animation start.
@@ -39,9 +35,13 @@ export function createKeyboardManager(eventBridge: EventBridge): KeyboardManager
   return {
     getKeyboardHeight: () => eventBridge.request({ type: 'org.racehorse.GetKeyboardHeightEvent' }).payload.height,
 
-    showKeyboard: () => eventBridge.request({ type: 'org.racehorse.ShowKeyboardEvent' }).payload.isSuccessful,
+    showKeyboard() {
+      eventBridge.request({ type: 'org.racehorse.ShowKeyboardEvent' });
+    },
 
-    hideKeyboard: () => eventBridge.request({ type: 'org.racehorse.HideKeyboardEvent' }).payload.isSuccessful,
+    hideKeyboard() {
+      eventBridge.request({ type: 'org.racehorse.HideKeyboardEvent' });
+    },
 
     subscribe: listener =>
       eventBridge.subscribe('org.racehorse.KeyboardAnimationStartedEvent', payload => {

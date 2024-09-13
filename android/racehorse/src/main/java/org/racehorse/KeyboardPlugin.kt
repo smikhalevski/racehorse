@@ -55,16 +55,12 @@ class GetKeyboardHeightEvent : RequestEvent() {
 /**
  * Shows the software keyboard.
  */
-class ShowKeyboardEvent : RequestEvent() {
-    class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
-}
+class ShowKeyboardEvent : WebEvent
 
 /**
  * Hides the software keyboard.
  */
-class HideKeyboardEvent : RequestEvent() {
-    class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
-}
+class HideKeyboardEvent : WebEvent
 
 /**
  * Notifies the web app that the keyboard animation has started.
@@ -108,21 +104,12 @@ open class KeyboardPlugin(private val activity: Activity, private val eventBus: 
 
     @Subscribe
     open fun onShowKeyboard(event: ShowKeyboardEvent) {
-        event.respond(
-            ShowKeyboardEvent.ResultEvent(inputMethodManager.showSoftInput(activity.currentFocus, 0))
-        )
+        inputMethodManager.showSoftInput(activity.currentFocus, 0)
     }
 
     @Subscribe
     open fun onHideKeyboard(event: HideKeyboardEvent) {
-        event.respond(
-            HideKeyboardEvent.ResultEvent(
-                inputMethodManager.hideSoftInputFromWindow(
-                    activity.currentFocus?.windowToken,
-                    InputMethodManager.HIDE_NOT_ALWAYS
-                )
-            )
-        )
+        inputMethodManager.hideSoftInputFromWindow(activity.currentFocus?.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
     }
 }
 

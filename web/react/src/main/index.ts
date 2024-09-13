@@ -44,5 +44,6 @@ export {
 } from './managers';
 export { useActivityState } from './useActivityState';
 export { useKeyboardAnimation } from './useKeyboardAnimation';
+export { useKeyboardHeight } from './useKeyboardHeight';
 export { useNetworkStatus } from './useNetworkStatus';
 export { useWindowInsets } from './useWindowInsets';

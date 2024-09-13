@@ -13,7 +13,7 @@ export function useKeyboardAnimation(callback: (animation: TweenAnimation, signa
   const manager = useKeyboardManager();
 
   useEffect(() => {
-    let abortController: AbortController;
+    let abortController: AbortController | undefined;
 
     const unsubscribe = manager.subscribe(animation => {
       abortController?.abort();
@@ -23,7 +23,7 @@ export function useKeyboardAnimation(callback: (animation: TweenAnimation, signa
     });
 
     return () => {
-      abortController.abort();
+      abortController?.abort();
       unsubscribe();
     };
   }, [manager]);
