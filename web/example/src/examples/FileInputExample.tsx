@@ -1,83 +1,57 @@
 import React, { useState } from 'react';
+import { Section } from '../components/Section';
+import { Select, SelectOption } from '../components/Select';
+import { Checkbox } from '../components/Checkbox';
 
 export function FileInputExample() {
   const [files, setFiles] = useState<File[]>([]);
-  const [accept, setAccept] = useState('*/*');
-  const [multiple, setMultiple] = useState(false);
+  const [accept, setAccept] = useState(['*/*']);
+  const [isMultiple, setMultiple] = useState(false);
 
   return (
-    <>
-      <h2>{'File input'}</h2>
+    <Section title={'File input'}>
+      <label className="form-label">{'Accept'}</label>
+      <Select
+        values={accept}
+        onChange={setAccept}
+      >
+        <SelectOption value={'image/*'}>{'image/*'}</SelectOption>
+        <SelectOption value={'video/*'}>{'video/*'}</SelectOption>
+        <SelectOption value={'text/html'}>{'text/html'}</SelectOption>
+        <SelectOption value={'*/*'}>{'*/*'}</SelectOption>
+      </Select>
 
-      <p>
-        {'Accept: '}
-        <select
-          value={accept}
-          onChange={event => {
-            setAccept(event.target.value);
-          }}
-        >
-          <option value={'image/*'}>{'image/*'}</option>
-          <option value={'video/*'}>{'video/*'}</option>
-          <option value={'image/*,video/*'}>{'image/*, video/*'}</option>
-          <option value={'text/html'}>{'text/html'}</option>
-          <option value={'*/*'}>{'*/*'}</option>
-        </select>
-      </p>
+      <Checkbox
+        className="mt-3"
+        checked={isMultiple}
+        onChange={event => setMultiple(event.target.checked)}
+      >
+        {'Multiple'}
+      </Checkbox>
 
-      <p>
-        {'Multiple: '}
-        <input
-          type="checkbox"
-          checked={multiple}
-          onChange={event => {
-            setMultiple(event.target.checked);
-          }}
-        />
-      </p>
+      <input
+        className="form-control mt-3"
+        type="file"
+        accept={accept.length === 0 ? undefined : accept.join(',')}
+        multiple={isMultiple}
+        onChange={event => setFiles(event.target.files === null ? [] : Array.from(event.target.files))}
+      />
 
-      <p>
-        <input
-          type="file"
-          accept={accept}
-          multiple={multiple}
-          onChange={event => {
-            setFiles(event.target.files !== null ? Array.from(event.target.files) : []);
-          }}
-        />
-      </p>
+      <ul className="list-group mt-3">
+        {files.length === 0 && (
+          <li className="list-group-item list-group-item-light text-secondary text-center">{'No files'}</li>
+        )}
 
-      <ol>
         {files.map((file, index) => (
-          <li key={index}>{file.name + ' (' + file.type + ')'}</li>
+          <li
+            key={index}
+            className="list-group-item"
+          >
+            {file.name}
+            <small className="d-block text-body-secondary">{file.type}</small>
+          </li>
         ))}
-      </ol>
-
-      <p>
-        <button
-          onClick={() => {
-            Promise.allSettled(files.map(readFileAsBase64)).then(results => {
-              console.log(results.map(result => (result.status === 'fulfilled' ? result.value : null)));
-            });
-          }}
-        >
-          {'Print contents to console'}
-        </button>
-      </p>
-    </>
+      </ul>
+    </Section>
   );
-}
-
-function readFileAsBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const fileReader = new FileReader();
-
-    fileReader.addEventListener('loadend', () => {
-      resolve(fileReader.result as string);
-    });
-    fileReader.addEventListener('error', () => {
-      reject(new Error('Failed to read file'));
-    });
-    fileReader.readAsDataURL(file);
-  });
 }

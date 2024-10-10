@@ -1,31 +1,28 @@
 import React, { useState } from 'react';
 import { eventBridge } from 'racehorse';
+import { Section } from '../components/Section';
 
 export function ToastExample() {
   const [message, setMessage] = useState('Hello');
 
   return (
-    <>
-      <h2>{'Toast'}</h2>
-
-      <p>
-        {'Message:'}
-        <br />
+    <Section title={'Toast'}>
+      <div className="input-group">
         <input
+          className="form-control"
           value={message}
-          onChange={event => {
-            setMessage(event.target.value);
-          }}
+          onChange={event => setMessage(event.target.value)}
         />
-      </p>
 
-      <button
-        onClick={() => {
-          eventBridge.request({ type: 'com.example.ShowToastEvent', payload: { message } });
-        }}
-      >
-        {'Show toast'}
-      </button>
-    </>
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            eventBridge.request({ type: 'com.example.ShowToastEvent', payload: { message } });
+          }}
+        >
+          {'Show toast'}
+        </button>
+      </div>
+    </Section>
   );
 }

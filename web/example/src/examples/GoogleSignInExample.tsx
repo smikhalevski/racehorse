@@ -7,7 +7,7 @@ export function GoogleSignInExample() {
 
   return (
     <>
-      <h2>{'Google Sign-In'}</h2>
+      <h1>{'Google Sign-In'}</h1>
       {account !== null && (
         <p>
           <img
@@ -21,6 +21,7 @@ export function GoogleSignInExample() {
       <FormattedJSON value={account} />
       <p />
       <button
+        className="btn btn-primary"
         onClick={() => {
           googleSignInManager.silentSignIn().then(setAccount);
         }}
@@ -28,6 +29,7 @@ export function GoogleSignInExample() {
         {'Silent sign in'}
       </button>{' '}
       <button
+        className="btn btn-primary"
         onClick={() => {
           googleSignInManager.signIn().then(setAccount);
         }}
@@ -35,6 +37,7 @@ export function GoogleSignInExample() {
         {'Sign in'}
       </button>{' '}
       <button
+        className="btn btn-primary"
         onClick={() => {
           googleSignInManager.signOut().then(() => {
             setAccount(null);

@@ -1,100 +1,94 @@
 import React, { useEffect, useState } from 'react';
-import { Directory, File, fsManager } from 'racehorse';
+import { activityManager, Directory, File, fsManager, Intent } from 'racehorse';
+import { Section } from '../components/Section';
+
+interface Content {
+  dir: File;
+  files: File[];
+}
 
 export function FsExample() {
-  const [goToUri, setGoToUri] = useState<string>(Directory.CACHE);
-  const [dir, setDir] = useState<File>();
-  const [files, setFiles] = useState<File[]>();
-  const [url, setUrl] = useState<string>();
+  const [content, setContent] = useState<Content>({ dir: fsManager.File(Directory.CACHE), files: [] });
 
-  useEffect(() => {
-    handleOpenFile(fsManager.File(goToUri));
-  }, [goToUri]);
+  const { dir, files } = content;
+
+  useEffect(() => handleOpenFile(dir), []);
 
   const handleOpenFile = (file: File) => {
     const attributes = file.getAttributes();
 
+    // Show directory content
     if (attributes.isDirectory) {
       file.readDir().then(files => {
-        setDir(file);
-        setFiles(files);
-        setUrl(undefined);
+        files.sort((a, b) => -a.isDirectory - -b.isDirectory || a.uri.localeCompare(b.uri));
+        setContent({ dir: file, files });
       });
     }
 
+    // Open preview
     if (attributes.isFile) {
-      setUrl(file.localUrl);
+      activityManager.startActivity({
+        action: Intent.ACTION_VIEW,
+        flags: Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION,
+        data: file.contentUri,
+      });
     }
   };
 
   return (
-    <>
-      <h2>{'File system'}</h2>
-
-      <p>
-        {'Go to: '}
-        <select
-          value={goToUri}
-          onChange={event => {
-            setGoToUri(event.target.value);
-          }}
+    <Section title={'File system'}>
+      <div className="list-group">
+        <button
+          className="list-group-item list-group-item-primary d-flex justify-content-between align-items-center dropdown-toggle"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
         >
+          <div className="overflow-hidden flex-shrink-1">{decodeURIComponent(dir.uri)}</div>
+        </button>
+
+        <ul className="dropdown-menu dropdown-menu-end shadow">
+          <li className="dropdown-header">{'Jump to…'}</li>
+
           {Object.values(Directory).map(uri => (
-            <option
-              value={uri}
-              key={uri}
-            >
-              {uri}
-            </option>
+            <li key={uri}>
+              <button
+                className="dropdown-item"
+                onClick={() => handleOpenFile(fsManager.File(uri))}
+              >
+                {uri}
+              </button>
+            </li>
           ))}
-        </select>
-      </p>
+        </ul>
 
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.5em',
-          width: '100%',
-          alignItems: 'flex-start',
-          overflow: 'hidden',
-          wordBreak: 'break-word',
-        }}
-      >
-        {dir?.uri && decodeURIComponent(dir.uri)}
-
-        <a
+        <div
+          className="list-group-item list-group-item-action"
           onClick={() => {
-            if (dir !== undefined && dir.parentFile !== null) {
+            if (dir.parentFile !== null) {
               handleOpenFile(dir.parentFile);
             }
           }}
         >
-          {'⤴️'}
-        </a>
+          <i className="bi-arrow-90deg-up me-2" />
+          {'..'}
+        </div>
 
-        {files?.map(file => (
-          <a
+        {files.length === 0 && (
+          <div className="list-group-item list-group-item-light text-secondary text-center">{'No files'}</div>
+        )}
+
+        {files.map(file => (
+          <div
             key={file.uri}
-            href={'#'}
-            onClick={event => {
-              event.preventDefault();
-              handleOpenFile(file);
-            }}
+            className="list-group-item list-group-item-action overflow-hidden"
+            onClick={() => handleOpenFile(file)}
           >
-            {decodeURIComponent(file.uri.split('/').filter(Boolean).pop()!)}
-          </a>
+            <i className={file.isDirectory ? 'bi-folder me-2' : 'me-4'} />
+
+            {decodeURIComponent(file.uri).split('/').pop()}
+          </div>
         ))}
-
-        {'Total files: '}
-        {files?.length || 0}
       </div>
-
-      {url !== undefined && (
-        <p>
-          <iframe src={url} />
-        </p>
-      )}
-    </>
+    </Section>
   );
 }

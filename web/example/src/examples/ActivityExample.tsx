@@ -36,7 +36,7 @@ export function ActivityExample() {
 
   return (
     <>
-      <h2>{'Activity'}</h2>
+      <h1>{'Activity'}</h1>
 
       <p>{'Activity state: ' + activityStateLabel[activityState]}</p>
 
@@ -49,6 +49,7 @@ export function ActivityExample() {
 
       <p>
         <button
+          className="btn btn-primary"
           onClick={() => {
             activityManager.startActivity({
               // https://developer.android.com/reference/android/provider/Settings#ACTION_APP_NOTIFICATION_SETTINGS
@@ -66,6 +67,7 @@ export function ActivityExample() {
       </p>
 
       <button
+        className="btn btn-primary"
         onClick={() => {
           permissionsManager.askForPermission('android.permission.READ_CONTACTS').then(isGranted => {
             if (isGranted) {

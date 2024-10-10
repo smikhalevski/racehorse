@@ -1,29 +1,29 @@
 import React, { useLayoutEffect } from 'react';
-import { CookieExample } from './examples/CookieExample';
-import { FileInputExample } from './examples/FileInputExample';
-import { GeolocationExample } from './examples/GeolocationExample';
-import { KeyboardExample } from './examples/KeyboardExample';
-import { GoogleSignInExample } from './examples/GoogleSignInExample';
+import { useKeyboardAnimation, useKeyboardManager, useWindowInsets } from '@racehorse/react';
+import { runAnimation, scrollToElement } from 'racehorse';
 import { LocalStorageExample } from './examples/LocalStorageExample';
-import { DeviceExample } from './examples/DeviceExample';
+import { KeyboardExample } from './examples/KeyboardExample';
 import { ActivityExample } from './examples/ActivityExample';
+import { AssetLoaderExample } from './examples/AssetLoaderExample';
+import { BiometricEncryptedStorageExample } from './examples/BiometricEncryptedStorageExample';
+import { BiometricExample } from './examples/BiometricExample';
+import { ContactsExample } from './examples/ContactsExample';
+import { CookieExample } from './examples/CookieExample';
+import { DeviceExample } from './examples/DeviceExample';
+import { DownloadExample } from './examples/DownloadExample';
+import { EncryptedStorageExample } from './examples/EncryptedStorageExample';
+import { EventBridgeExample } from './examples/EventBridgeExample';
+import { EvergreenExample } from './examples/EvergreenExample';
+import { FacebookLoginExample } from './examples/FacebookLoginExample';
+import { FacebookShareExample } from './examples/FacebookShareExample';
+import { FileInputExample } from './examples/FileInputExample';
+import { FsExample } from './examples/FsExample';
+import { GeolocationExample } from './examples/GeolocationExample';
+import { GoogleSignInExample } from './examples/GoogleSignInExample';
 import { NetworkExample } from './examples/NetworkExample';
 import { NotificationsExample } from './examples/NotificationsExample';
 import { PermissionsExample } from './examples/PermissionsExample';
-import { EncryptedStorageExample } from './examples/EncryptedStorageExample';
 import { ToastExample } from './examples/ToastExample';
-import { EventBridgeExample } from './examples/EventBridgeExample';
-import { FacebookLoginExample } from './examples/FacebookLoginExample';
-import { FacebookShareExample } from './examples/FacebookShareExample';
-import { DownloadExample } from './examples/DownloadExample';
-import { BiometricExample } from './examples/BiometricExample';
-import { BiometricEncryptedStorageExample } from './examples/BiometricEncryptedStorageExample';
-import { AssetLoaderExample } from './examples/AssetLoaderExample';
-import { ContactsExample } from './examples/ContactsExample';
-import { FsExample } from './examples/FsExample';
-import { EvergreenExample } from './examples/EvergreenExample';
-import { useKeyboardAnimation, useKeyboardManager, useWindowInsets } from '@racehorse/react';
-import { runAnimation, scrollToElement } from 'racehorse';
 
 export function App() {
   const keyboardManager = useKeyboardManager();
@@ -70,30 +70,30 @@ export function App() {
   });
 
   return (
-    <>
-      <EvergreenExample />
-      <FsExample />
-      <ContactsExample />
-      <FileInputExample />
-      <ToastExample />
-      <AssetLoaderExample />
-      <BiometricExample />
-      <BiometricEncryptedStorageExample />
-      <DownloadExample />
-      <KeyboardExample />
-      <FacebookShareExample />
-      <GoogleSignInExample />
-      <FacebookLoginExample />
-      <PermissionsExample />
+    <main className="py-3 px-4">
       <ActivityExample />
-      <NotificationsExample />
-      <NetworkExample />
-      <EncryptedStorageExample />
+      <AssetLoaderExample />
+      <BiometricEncryptedStorageExample />
+      <BiometricExample />
+      <ContactsExample />
       <CookieExample />
-      <GeolocationExample />
-      <LocalStorageExample />
       <DeviceExample />
+      <DownloadExample />
+      <EncryptedStorageExample />
       <EventBridgeExample />
-    </>
+      <EvergreenExample />
+      <FacebookLoginExample />
+      <FacebookShareExample />
+      <FileInputExample />
+      <FsExample />
+      <GeolocationExample />
+      <GoogleSignInExample />
+      <KeyboardExample />
+      <LocalStorageExample />
+      <NetworkExample />
+      <NotificationsExample />
+      <PermissionsExample />
+      <ToastExample />
+    </main>
   );
 }

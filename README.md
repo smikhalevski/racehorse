@@ -442,13 +442,13 @@ import org.racehorse.StaticPathHandler
 EventBus.getDefault().register(
     AssetLoaderPlugin(activity).apply {
         registerAssetLoader(
-            "https://example.com",
+            "https://example.local",
             StaticPathHandler(File(activity.filesDir, "www"))
         )
     }
 )
 
-webView.loadUrl("https://example.com")
+webView.loadUrl("https://example.local")
 ```
 
 During development, if you're running a server on localhost, use `ProxyPathHandler` to serve contents to the webview:
@@ -456,14 +456,14 @@ During development, if you're running a server on localhost, use `ProxyPathHandl
 ```kotlin
 AssetLoaderPlugin(activity).apply {
     registerAssetLoader(
-        "https://example.com",
+        "https://example.local",
         ProxyPathHandler("http://10.0.2.2:10001")
     )
 }
 ```
 
 `AssetLoaderPlugin` would open URL in an external browser app it isn't handled by any of registered asset loaders. Since
-in the example above only https://example.com is handled by the asset loader, all other URLs are opened externally:
+in the example above only https://example.local is handled by the asset loader, all other URLs are opened externally:
 
 ```js
 // This would open a browser app and load google.com
@@ -895,7 +895,7 @@ fun onBundleReady(event: BundleReadyEvent) {
         AssetLoaderPlugin(
             activity,
             WebViewAssetLoader.Builder()
-                .setDomain("example.com")
+                .setDomain("example.local")
                 .addPathHandler(
                     "/",
                     // 🟡 Use assets provided by the evergreen plugin
@@ -905,7 +905,7 @@ fun onBundleReady(event: BundleReadyEvent) {
         )
     )
 
-    webView.loadUrl("https://example.com")
+    webView.loadUrl("https://example.local")
 }
 ```
 

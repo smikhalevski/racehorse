@@ -13,11 +13,12 @@ export function BiometricEncryptedStorageExample() {
 
   return (
     <>
-      <h2>{'Biometric encrypted storage'}</h2>
+      <h1>{'Biometric encrypted storage'}</h1>
 
       <p>
         {'Authenticators: '}
         <select
+          className="form-select"
           multiple={true}
           value={authenticators}
           onChange={event => {
@@ -37,6 +38,7 @@ export function BiometricEncryptedStorageExample() {
           (authenticationValidityDuration === -1 ? 'Disabled' : authenticationValidityDuration + ' seconds')}
         <br />
         <input
+          className="form-control"
           type="range"
           value={authenticationValidityDuration}
           min={-1}
@@ -53,6 +55,7 @@ export function BiometricEncryptedStorageExample() {
         {'Key:'}
         <br />
         <input
+          className="form-control"
           type="text"
           value={key}
           size={10}
@@ -61,6 +64,7 @@ export function BiometricEncryptedStorageExample() {
           }}
         />{' '}
         <button
+          className="btn btn-primary"
           onClick={() => {
             biometricEncryptedStorageManager
               .get(key, {
@@ -73,6 +77,7 @@ export function BiometricEncryptedStorageExample() {
           {'Get value'}
         </button>{' '}
         <button
+          className="btn btn-primary"
           onClick={() => {
             if (biometricEncryptedStorageManager.delete(key)) {
               setStoredValue(null);
@@ -87,6 +92,7 @@ export function BiometricEncryptedStorageExample() {
         {'Value:'}
         <br />
         <input
+          className="form-control"
           type="text"
           value={value}
           size={10}
@@ -95,6 +101,7 @@ export function BiometricEncryptedStorageExample() {
           }}
         />{' '}
         <button
+          className="btn btn-primary"
           onClick={() => {
             biometricEncryptedStorageManager
               .set(key, value, {

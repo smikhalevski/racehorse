@@ -14,11 +14,12 @@ export function EncryptedStorageExample() {
 
   return (
     <>
-      <h2>{'Encrypted storage'}</h2>
+      <h1>{'Encrypted storage'}</h1>
       <p>
         {'Key:'}
         <br />
         <input
+          className="form-control"
           type="text"
           value={key}
           size={10}
@@ -27,6 +28,7 @@ export function EncryptedStorageExample() {
           }}
         />{' '}
         <button
+          className="btn btn-primary"
           onClick={() => {
             if (encryptedStorageManager.delete(key)) {
               setStoredValue(null);
@@ -40,6 +42,7 @@ export function EncryptedStorageExample() {
         {'Value:'}
         <br />
         <input
+          className="form-control"
           type="text"
           value={value}
           size={10}
@@ -52,6 +55,7 @@ export function EncryptedStorageExample() {
         {'Password:'}
         <br />
         <input
+          className="form-control"
           type="text"
           value={password}
           size={10}
@@ -60,6 +64,7 @@ export function EncryptedStorageExample() {
           }}
         />{' '}
         <button
+          className="btn btn-primary"
           onClick={() => {
             encryptedStorageManager.set(key, value, password).then(isSuccessful => {
               if (isSuccessful) {

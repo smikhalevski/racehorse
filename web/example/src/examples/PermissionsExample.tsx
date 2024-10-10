@@ -1,44 +1,69 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { permissionsManager } from 'racehorse';
-import { FormattedJSON } from '../components/FormattedJSON';
+import { Select, SelectOption } from '../components/Select';
+import { Section } from '../components/Section';
+
+const examplePermissions = [
+  'android.permission.ACCESS_WIFI_STATE',
+  'android.permission.ACCESS_NETWORK_STATE',
+  'android.permission.CHANGE_WIFI_STATE',
+  'android.permission.CALL_PHONE',
+  'android.permission.READ_EXTERNAL_STORAGE',
+  'android.permission.CAMERA',
+  'android.permission.ACCESS_FINE_LOCATION',
+  'android.permission.ACCESS_COARSE_LOCATION',
+];
 
 export function PermissionsExample() {
   const [permissions, setPermissions] = useState<string[]>([]);
-  const [statuses, setStatuses] = useState<any>();
+  const [grantedStatuses, setGrantedStatuses] = useState<{ [permission: string]: boolean }>({});
+
+  // https://developer.android.com/training/permissions/requesting#explain
+  const rationaleStatuses = useMemo(
+    () => permissionsManager.shouldShowRequestPermissionRationale(permissions),
+    [grantedStatuses]
+  );
 
   return (
-    <>
-      <h2>{'Permissions'}</h2>
+    <Section title={'Permissions'}>
+      <Select
+        values={permissions}
+        onChange={setPermissions}
+        isMultiple={true}
+      >
+        {examplePermissions.map(permission => (
+          <SelectOption
+            key={permission}
+            value={permission}
+          >
+            <div className="d-flex justify-content-between">
+              {permission.split('.').pop()}
 
-      <p>
-        {'Permissions: '}
-        <select
-          multiple={true}
-          value={permissions}
-          onChange={event => {
-            setPermissions(Array.from(event.target.selectedOptions).map(option => option.value));
-          }}
-        >
-          <option value={'android.permission.ACCESS_WIFI_STATE'}>{'ACCESS_WIFI_STATE'}</option>
-          <option value={'android.permission.ACCESS_NETWORK_STATE'}>{'ACCESS_NETWORK_STATE'}</option>
-          <option value={'android.permission.CHANGE_WIFI_STATE'}>{'CHANGE_WIFI_STATE'}</option>
-          <option value={'android.permission.CALL_PHONE'}>{'CALL_PHONE'}</option>
-          <option value={'android.permission.READ_EXTERNAL_STORAGE'}>{'READ_EXTERNAL_STORAGE'}</option>
-          <option value={'android.permission.CAMERA'}>{'CAMERA'}</option>
-          <option value={'android.permission.ACCESS_FINE_LOCATION'}>{'ACCESS_FINE_LOCATION'}</option>
-          <option value={'android.permission.ACCESS_COARSE_LOCATION'}>{'ACCESS_COARSE_LOCATION'}</option>
-        </select>
-      </p>
+              {permission in grantedStatuses && (
+                <i
+                  className={
+                    grantedStatuses[permission]
+                      ? 'bi-check-circle-fill text-success'
+                      : rationaleStatuses[permission]
+                        ? 'bi-question-circle-fill text-warning'
+                        : 'bi-x-circle-fill text-danger'
+                  }
+                />
+              )}
+            </div>
+          </SelectOption>
+        ))}
+      </Select>
 
       <button
+        className="btn btn-primary w-100 mt-3"
+        disabled={permissions.length === 0}
         onClick={() => {
-          permissionsManager.askForPermission(permissions).then(setStatuses);
+          permissionsManager.askForPermission(permissions).then(setGrantedStatuses);
         }}
       >
         {'Request permissions'}
       </button>
-
-      <FormattedJSON value={statuses} />
-    </>
+    </Section>
   );
 }

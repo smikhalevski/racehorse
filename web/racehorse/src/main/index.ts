@@ -44,7 +44,7 @@ export { createGooglePlayReferrerManager } from './createGooglePlayReferrerManag
 export { createGoogleSignInManager } from './createGoogleSignInManager';
 export { createJoiner } from './createJoiner';
 export { createKeyboardManager } from './createKeyboardManager';
-export { createNetworkManager } from './createNetworkManager';
+export { createNetworkManager, NetworkType } from './createNetworkManager';
 export { createNotificationsManager } from './createNotificationsManager';
 export { createPermissionsManager } from './createPermissionsManager';
 export { createScheduler } from './createScheduler';
@@ -77,7 +77,7 @@ export type { GooglePlayReferrerManager } from './createGooglePlayReferrerManage
 export type { GoogleSignInManager, GoogleSignInAccount } from './createGoogleSignInManager';
 export type { Joiner } from './createJoiner';
 export type { KeyboardManager } from './createKeyboardManager';
-export type { NetworkManager, NetworkType, NetworkStatus } from './createNetworkManager';
+export type { NetworkManager, NetworkStatus } from './createNetworkManager';
 export type { NotificationsManager } from './createNotificationsManager';
 export type { PermissionsManager } from './createPermissionsManager';
 export type { Scheduler } from './createScheduler';

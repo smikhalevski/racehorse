@@ -3,13 +3,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc && vite build",
+    "build": "vite build",
     "start": "jointly",
     "clean": "rimraf dist"
   },
   "devDependencies": {
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",
+    "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.11.3",
     "jointly": "^0.0.2",
     "rollup-plugin-zip": "^1.0.3",
     "tslib": "^2.7.0",
@@ -19,6 +21,7 @@
   "dependencies": {
     "@racehorse/react": "^1.2.1",
     "abortcontroller-polyfill": "^1.7.5",
+    "clsx": "^2.1.1",
     "racehorse": "^1.7.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

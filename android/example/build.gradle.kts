@@ -56,6 +56,7 @@ android {
 
 dependencies {
     // Edge-to-edge
+    // https://developer.android.com/develop/ui/views/layout/edge-to-edge#enable-edge-to-edge-display
     implementation("androidx.activity:activity:1.9.2")
 
     // EventBridge

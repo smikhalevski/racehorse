@@ -1,24 +1,26 @@
 import React, { useState } from 'react';
-import { FormattedJSON } from '../components/FormattedJSON';
 
 export function GeolocationExample() {
-  const [geolocation, setGeolocation] = useState<any>();
+  const [geolocation, setGeolocation] = useState<{ data?: { latitude: number; longitude: number }; error?: string }>();
 
   return (
     <>
-      <h2>{'Geolocation'}</h2>
+      <h1>{'Geolocation'}</h1>
 
       <button
+        className="btn btn-primary"
         onClick={() => {
           navigator.geolocation.getCurrentPosition(
             position => {
               setGeolocation({
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
+                data: {
+                  latitude: position.coords.latitude,
+                  longitude: position.coords.longitude,
+                },
               });
             },
             positionError => {
-              setGeolocation(positionError.message);
+              setGeolocation({ error: positionError.message });
             }
           );
         }}
@@ -26,7 +28,13 @@ export function GeolocationExample() {
         {'Get geolocation'}
       </button>
 
-      <FormattedJSON value={geolocation} />
+      {geolocation?.data !== undefined && (
+        <div className="mt-3">
+          <i className="bi-geo-fill text-danger me-2" />
+          {'(' + geolocation.data.latitude + ', ' + geolocation.data.latitude + ')'}
+        </div>
+      )}
+      {geolocation?.error !== undefined && <div className="mt-3">{geolocation.error}</div>}
     </>
   );
 }

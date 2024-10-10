@@ -11,10 +11,12 @@ export function EvergreenExample() {
 
   return (
     <>
-      <h2>{'Evergreen'}</h2>
+      <h1>{'Evergreen'}</h1>
 
       {bundleInfo === undefined ? (
-        <em>{'Select "release" build variant to see the bundle info.'}</em>
+        <p>
+          <em>{'Select "release" build variant to see the bundle info.'}</em>
+        </p>
       ) : (
         <FormattedJSON value={bundleInfo} />
       )}

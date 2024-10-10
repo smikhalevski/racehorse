@@ -6,10 +6,11 @@ export function CookieExample() {
 
   return (
     <>
-      <h2>{'Cookie'}</h2>
+      <h1>{'Cookie'}</h1>
 
       <p>
         <button
+          className="btn btn-primary"
           onClick={() => {
             document.cookie =
               'example=Hello, world!; expires=' + new Date(Date.now() + 24 * 60 * 60 * 1000).toUTCString();
@@ -19,6 +20,7 @@ export function CookieExample() {
           {'Set value'}
         </button>{' '}
         <button
+          className="btn btn-primary"
           onClick={() => {
             document.cookie =
               'example=Hello, world!; expires=' + new Date(Date.now() - 24 * 60 * 60 * 1000).toUTCString();

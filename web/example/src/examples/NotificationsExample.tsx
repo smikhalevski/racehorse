@@ -18,7 +18,7 @@ export function NotificationsExample() {
 
   return (
     <>
-      <h2>{'Notifications'}</h2>
+      <h1>{'Notifications'}</h1>
 
       <p>
         {'Notifications enabled: '}

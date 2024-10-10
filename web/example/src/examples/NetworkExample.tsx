@@ -1,20 +1,31 @@
 import React from 'react';
 import { useNetworkStatus } from '@racehorse/react';
-import { FormattedJSON } from '../components/FormattedJSON';
+import { NetworkType } from 'racehorse';
+import { Section } from '../components/Section';
 
 export function NetworkExample() {
   const networkStatus = useNetworkStatus();
 
   return (
-    <>
-      <h2>{'Network'}</h2>
-
-      <p>
-        {'Online: '}
-        {networkStatus.isConnected ? '🟢' : '🔴'}
-      </p>
-
-      <FormattedJSON value={networkStatus} />
-    </>
+    <Section title={'Network'}>
+      {networkStatus.isConnected ? (
+        <>
+          <i className="bi-check-circle-fill text-success me-2" />
+          {
+            {
+              [NetworkType.WIFI]: 'Connected via Wi-Fi',
+              [NetworkType.CELLULAR]: 'Connected via Cellular',
+              [NetworkType.NONE]: null,
+              [NetworkType.UNKNOWN]: 'Connected via unknown network type',
+            }[networkStatus.type]
+          }
+        </>
+      ) : (
+        <>
+          <i className="bi-x-circle-fill text-danger me-2" />
+          {'Disconnected'}
+        </>
+      )}
+    </Section>
   );
 }
