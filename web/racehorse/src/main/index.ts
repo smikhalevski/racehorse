@@ -77,7 +77,7 @@ export type { GooglePlayReferrerManager } from './createGooglePlayReferrerManage
 export type { GoogleSignInManager, GoogleSignInAccount } from './createGoogleSignInManager';
 export type { Joiner } from './createJoiner';
 export type { KeyboardManager } from './createKeyboardManager';
-export type { NetworkManager, NetworkType, NetworkStatus } from './createNetworkManager';
+export type { NetworkManager, NetworkStatus } from './createNetworkManager';
 export type { NotificationsManager } from './createNotificationsManager';
 export type { PermissionsManager } from './createPermissionsManager';
 export type { Scheduler } from './createScheduler';

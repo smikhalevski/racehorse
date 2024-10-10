@@ -5,11 +5,12 @@ interface SectionProps {
   children: ReactNode;
 }
 
-export function Section({ title, children }: SectionProps): ReactElement {
+export function Section(props: SectionProps): ReactElement {
   return (
     <section className="mb-4">
-      <h1>{title}</h1>
-      {children}
+      <h1>{props.title}</h1>
+      
+      {props.children}
     </section>
   );
 }

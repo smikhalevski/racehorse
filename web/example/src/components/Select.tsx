@@ -15,7 +15,9 @@ interface SelectProps<T> {
   onChange: (value: T[]) => void;
 }
 
-export function Select<T>({ values, children, isMultiple, onChange }: SelectProps<T>): ReactElement {
+export function Select<T>(props: SelectProps<T>): ReactElement {
+  const { values, isMultiple, onChange } = props;
+
   return (
     <SelectStateContext.Provider
       value={{
@@ -47,7 +49,7 @@ export function Select<T>({ values, children, isMultiple, onChange }: SelectProp
         },
       }}
     >
-      <ul className="list-group">{children}</ul>
+      <ul className="list-group">{props.children}</ul>
     </SelectStateContext.Provider>
   );
 }

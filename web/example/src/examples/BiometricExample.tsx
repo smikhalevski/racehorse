@@ -19,6 +19,7 @@ export function BiometricExample() {
             : 'bi-x-circle-fill text-danger me-2'
         }
       />
+
       {
         {
           [BiometricStatus.SUPPORTED]: 'Supported',
@@ -31,32 +32,28 @@ export function BiometricExample() {
         }[status]
       }
 
-      {status === BiometricStatus.NONE_ENROLLED && (
-        <>
-          <label className="form-label d-block mt-3">{'Authenticator'}</label>
-          <Select
-            values={authenticators}
-            onChange={setAuthenticators}
-            isMultiple={true}
-          >
-            <SelectOption value={BiometricAuthenticator.BIOMETRIC_STRONG}>{'Biometric strong'}</SelectOption>
-            <SelectOption value={BiometricAuthenticator.BIOMETRIC_WEAK}>{'Biometric weak'}</SelectOption>
-            <SelectOption value={BiometricAuthenticator.DEVICE_CREDENTIAL}>{'Device credential'}</SelectOption>
-          </Select>
+      <label className="form-label d-block mt-3">{'Authenticator'}</label>
+      <Select
+        values={authenticators}
+        onChange={setAuthenticators}
+        isMultiple={true}
+      >
+        <SelectOption value={BiometricAuthenticator.BIOMETRIC_STRONG}>{'Biometric strong'}</SelectOption>
+        <SelectOption value={BiometricAuthenticator.BIOMETRIC_WEAK}>{'Biometric weak'}</SelectOption>
+        <SelectOption value={BiometricAuthenticator.DEVICE_CREDENTIAL}>{'Device credential'}</SelectOption>
+      </Select>
 
-          <button
-            className="btn d-block w-100 btn-primary mt-3"
-            onClick={() => {
-              biometricManager.enrollBiometric(authenticators).then(() => {
-                // Trigger status update
-                setAuthenticators(authenticators => [...authenticators]);
-              });
-            }}
-          >
-            {'Enroll biometric'}
-          </button>
-        </>
-      )}
+      <button
+        className="btn d-block w-100 btn-primary mt-3"
+        onClick={() => {
+          biometricManager.enrollBiometric(authenticators).then(() => {
+            // Trigger status update
+            setAuthenticators(authenticators => [...authenticators]);
+          });
+        }}
+      >
+        {'Enroll biometric'}
+      </button>
     </Section>
   );
 }

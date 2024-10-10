@@ -1,6 +1,7 @@
 import React from 'react';
 import { useKeyboardHeight } from '@racehorse/react';
 import { keyboardManager } from 'racehorse';
+import { Section } from '../components/Section';
 
 export function KeyboardExample() {
   const keyboardHeight = useKeyboardHeight();

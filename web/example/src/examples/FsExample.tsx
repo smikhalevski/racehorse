@@ -8,7 +8,7 @@ interface Content {
 }
 
 export function FsExample() {
-  const [content, setContent] = useState<Content>({ dir: fsManager.File(Directory.EXTERNAL_STORAGE), files: [] });
+  const [content, setContent] = useState<Content>({ dir: fsManager.File(Directory.CACHE), files: [] });
 
   const { dir, files } = content;
 

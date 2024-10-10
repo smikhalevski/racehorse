@@ -1,5 +1,9 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 
-export function FormattedJSON({ value }: { value: any }) {
-  return <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(value, null, 2)}</pre>;
+interface FormattedJSONProps {
+  value: any;
+}
+
+export function FormattedJSON(props: FormattedJSONProps): ReactElement {
+  return <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(props.value, null, 2)}</pre>;
 }
