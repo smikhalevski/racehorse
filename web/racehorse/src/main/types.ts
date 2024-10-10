@@ -41,7 +41,7 @@ export interface TweenAnimation extends Animation {
 }
 
 /**
- * Handles tween animation state changes.
+ * Handles animation state changes.
  *
  * @template T The handled animation.
  */

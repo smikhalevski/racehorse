@@ -33,7 +33,7 @@ class GetKeyboardStatusEvent : RequestEvent() {
  * @param startValue A value from which an animation starts.
  * @param endValue A value at which an animation ends.
  * @param duration An animation duration in milliseconds.
- * @param easing An easing curve described as an array of at least two ordinate values (y ∈ [0, 1]) that correspond to
+ * @param easing An easing curve described by an array of at least two ordinate values (y ∈ [0, 1]) that correspond to
  * an equidistant abscissa values (x).
  * @param startTime A timestamp when an animation has started.
  */
@@ -109,7 +109,10 @@ open class KeyboardPlugin(private val activity: Activity, private val eventBus: 
 
     @Subscribe
     open fun onHideKeyboard(event: HideKeyboardEvent) {
-        inputMethodManager.hideSoftInputFromWindow(activity.currentFocus?.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+        inputMethodManager.hideSoftInputFromWindow(
+            activity.currentFocus?.windowToken,
+            InputMethodManager.HIDE_NOT_ALWAYS
+        )
     }
 }
 

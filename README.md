@@ -49,17 +49,29 @@ Racehorse is the pluggable bridge that marshals events between the web app and t
 Racehorse works, let's create a plugin that would display
 [an Android-native toast](https://developer.android.com/guide/topics/ui/notifiers/toasts) when the web app requests it.
 
-Let's start by adding required Racehorse dependencies:
+Let's start by adding required Racehorse dependencies. In your Android project add:
 
 ```kotlin
 dependencies {
     implementation("org.greenrobot:eventbus:3.3.1")
     implementation("com.google.code.gson:gson:2.10.1")
-    implementation("org.racehorse:racehorse:1.4.2")
+    implementation("org.racehorse:racehorse:1.7.2")
 }
 ```
 
-Create the WebView:
+Install web dependencies:
+
+```shell
+npm install racehorce
+```
+
+If you're planning to use React, consider a Racehorse React integration package:
+
+```shell
+npm install @racehorse/react
+```
+
+In Android app, create a WebView:
 
 ```kotlin
 import android.webkit.WebView
@@ -154,28 +166,28 @@ webView.loadUrl("https://10.0.2.2:1234")
 The example app consists of two parts: [the web app](./web/example) and [the Android app](./android/example). To launch
 the app in the emulator follow the steps below.
 
-1. Clone this repo:
+Clone this repo:
 
 ```shell
 git clone git@github.com:smikhalevski/racehorse.git
 cd racehorse
 ```
 
-2. Install packages and build Racehorse:
+Install packages and build Racehorse packages and the example app:
 
 ```shell
-npm install
+npm ci
 npm run build
 ```
 
-3. Start the web server that would serve the app for the debug build:
+Start the web server that would serve the app for the debug build:
 
 ```shell
 cd web/example
 npm start
 ```
 
-4. Open `<racehorse>/android` in Android Studio and run `example` app.
+Open `<racehorse>/android` in Android Studio and run `example` app.
 
 # Request-response event chains
 
@@ -350,15 +362,15 @@ class ShowToastEvent(val message: String) : WebEvent
 [`ActivityManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.ActivityManager.html) starts
 activities and provides info about the activity that renders the WebView.
 
-1. Add Lifecycle dependency to your Android app:
+Add Lifecycle dependency to your Android app:
 
 ```kotlin
 dependencies {
-    implementation("androidx.lifecycle:lifecycle-process:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-process:2.8.5")
 }
 ```
 
-2. Initialize the plugin in your Android app:
+Initialize the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.ActivityPlugin
@@ -366,7 +378,7 @@ import org.racehorse.ActivityPlugin
 EventBus.getDefault().register(ActivityPlugin().apply { enable() })
 ```
 
-3. Start a new activity. For example, here's how to open Settings app and navigate user to the notification settings:
+Start a new activity. For example, here's how to open Settings app and navigate user to the notification settings:
 
 ```ts
 import { activityManager, Intent } from 'racehorse';
@@ -380,7 +392,7 @@ activityManager.startActivity({
 });
 ```
 
-4. Synchronously read the status of the current activity or subscribe to its changes:
+Synchronously read the status of the current activity or subscribe to its changes:
 
 ```ts
 import { activityManager, ActivityState } from 'racehorse';
@@ -412,15 +424,15 @@ const state = useActivityState();
 
 Asset loader plugin requires [WebView events](#webview-events) to be enabled.
 
-1. Add WebKit dependency:
+Add the WebKit dependency:
 
 ```kotlin
 dependencies {
-    implementation("androidx.webkit:webkit:1.9.0")
+    implementation("androidx.webkit:webkit:1.11.0")
 }
 ```
 
-2. Load the static assets from a directory on the device when a particular URL is requested in the WebView:
+Load the static assets from a directory on the device when a particular URL is requested in the WebView:
 
 ```kotlin
 import androidx.webkit.WebViewAssetLoader
@@ -471,8 +483,8 @@ AssetLoaderPlugin(activity).apply {
 [`BiometricManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.BiometricManager.html) provides the
 status of biometric support and allows to enroll for biometric auth.
 
-1. Add [Biometric](https://developer.android.com/jetpack/androidx/releases/biometric#declaring_dependencies) dependency
-   to your Android app:
+Add [Biometric](https://developer.android.com/jetpack/androidx/releases/biometric#declaring_dependencies) dependency
+to your Android app:
 
 ```kotlin
 dependencies {
@@ -480,7 +492,7 @@ dependencies {
 }
 ```
 
-2. Initialize the plugin in your Android app:
+Initialize the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.BiometricPlugin
@@ -488,7 +500,7 @@ import org.racehorse.BiometricPlugin
 EventBus.getDefault().register(BiometricPlugin(activity))
 ```
 
-3. Read the biometric status or enroll biometric:
+Read the biometric status or enroll biometric:
 
 ```ts
 import { biometricManager, BiometricAuthenticator } from 'racehorse';
@@ -505,8 +517,8 @@ biometricManager.enrollBiometric();
 [`BiometricEncryptedStorageManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.BiometricEncryptedStorageManager.html)
 enables a file-based persistence of a biometric-protected data.
 
-1. Add [Biometric](https://developer.android.com/jetpack/androidx/releases/biometric#declaring_dependencies) dependency
-   to your Android app:
+Add [Biometric](https://developer.android.com/jetpack/androidx/releases/biometric#declaring_dependencies) dependency
+to your Android app:
 
 ```kotlin
 dependencies {
@@ -514,7 +526,7 @@ dependencies {
 }
 ```
 
-2. Initialize the plugin in your Android app:
+Initialize the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.BiometricEncryptedStoragePlugin
@@ -529,7 +541,7 @@ EventBus.getDefault().register(
 )
 ```
 
-3. Read and write encrypted key-value pairs to the storage:
+Read and write encrypted key-value pairs to the storage:
 
 ```ts
 import { biometricEncryptedStorageManager, BiometricAuthenticator } from 'racehorse';
@@ -544,9 +556,9 @@ await biometricEncryptedStorageManager.get('foo');
 // ⮕ 'bar'
 ```
 
-4. To allow device credential authentication, provide
-   [`authenticationValidityDuration`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.BiometricConfig.html#authenticationValidityDuration)
-   that is greater or equal to 0:
+To allow device credential authentication, provide
+[`authenticationValidityDuration`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.BiometricConfig.html#authenticationValidityDuration)
+that is greater or equal to 0:
 
 ```ts
 await biometricEncryptedStorageManager.set('foo', 'bar', {
@@ -585,14 +597,14 @@ if (biometricEncryptedStorageManager.has(key)) {
 [`ContactsManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.ContactsManager.html) provides access
 to contacts stored on the device.
 
-1. Add permission to the app manifest:
+Add contacts permission to the app manifest:
 
 ```xml
 
 <uses-permission android:name="android.permission.READ_CONTACTS"/>
 ```
 
-2. Initialize the plugin in your Android app:
+Initialize the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.ContactsPlugin
@@ -600,7 +612,7 @@ import org.racehorse.ContactsPlugin
 EventBus.getDefault().register(ContactsPlugin(activity))
 ```
 
-3. Ask user to pick a contact or get contact by its ID:
+Ask a user to pick a contact or get contact by its ID:
 
 ```ts
 import { contactsManager } from 'racehorse';
@@ -617,7 +629,7 @@ contactsManager.getContact(42);
 [`DeepLinkManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.DeepLinkManager.html) provides access
 to deep links inside yor web app.
 
-1. Initialize the plugin in your Android app:
+Initialize the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.DeepLinkPlugin
@@ -625,21 +637,19 @@ import org.racehorse.DeepLinkPlugin
 EventBus.getDefault().register(DeepLinkPlugin())
 ```
 
-2. Override
-   [`onNewIntent`](https://developer.android.com/reference/android/app/Activity#onNewIntent(android.content.Intent)) in
-   the main activity of yor app and post the deep link event:
+Override
+[`onNewIntent`](https://developer.android.com/reference/android/app/Activity#onNewIntent(android.content.Intent)) in
+the main activity of yor app and post the deep link event:
 
 ```kotlin
-override fun onNewIntent(intent: Intent?) {
+override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
 
-    if (intent != null) {
-        eventBus.post(OpenDeepLinkEvent(intent))
-    }
+    eventBus.post(OpenDeepLinkEvent(intent))
 }
 ```
 
-3. Subscribe to new intents in the web app:
+Subscribe to new intents in the web app:
 
 ```ts
 import { deepLinkManager } from 'racehorse';
@@ -654,15 +664,15 @@ deepLinkManager.subscribe(intent => {
 [`DeviceManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.DeviceManager.html) provides access
 to various device settings.
 
-1. Add compat library dependency, it is used for window insets acquisition:
+Add compat library dependency, it is used for window insets acquisition:
 
 ```kotlin
 dependencies {
-    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("androidx.appcompat:appcompat:1.7.0")
 }
 ```
 
-2. Initialize the plugin in your Android app:
+Initialize the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.DevicePlugin
@@ -670,7 +680,7 @@ import org.racehorse.DevicePlugin
 EventBus.getDefault().register(DevicePlugin(activity))
 ```
 
-3. Synchronously get device info, locale, or other data:
+Synchronously get device info, locale, or other data:
 
 ```ts
 import { deviceManager } from 'racehorse';
@@ -706,7 +716,7 @@ useLayoutEffect(() => {
 [`DownloadManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.DownloadManager.html)
 allows staring and monitoring file downloads.
 
-1. Initialize the plugin in your Android app:
+Initialize the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.DownloadPlugin
@@ -714,7 +724,7 @@ import org.racehorse.DownloadPlugin
 EventBus.getDefault().register(DownloadPlugin(activity))
 ```
 
-2. Read previously started downloads or start a new one:
+Read previously started downloads or start a new one:
 
 ```ts
 import { downloadManager } from 'racehorse';
@@ -749,7 +759,7 @@ the list of previous downloads when a data URI is downloaded. To fix this except
 [the legacy external storage model](https://developer.android.com/training/data-storage/use-cases#opt-out-in-production-app)
 must be enabled in Android manifest for API level 29.
 
-1. Create a resource file used for default config values `src/main/res/values/config.xml`
+Create a resource file used for default config values `src/main/res/values/config.xml`
 
 ```xml
 
@@ -758,7 +768,7 @@ must be enabled in Android manifest for API level 29.
 </resources>
 ```
 
-2. Create a resource file that is specific for API level 29 `src/main/res/values-v29/config.xml`
+Create a resource file that is specific for API level 29 `src/main/res/values-v29/config.xml`
 
 ```xml
 
@@ -767,7 +777,7 @@ must be enabled in Android manifest for API level 29.
 </resources>
 ```
 
-3. Configure the legacy external storage setting in Android manifest file:
+Configure the legacy external storage setting in Android manifest file:
 
 ```xml
 
@@ -804,7 +814,7 @@ webView.setDownloadListener(RacehorseDownloadListener())
 [`EncryptedStorageManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.EncryptedStorageManager.html)
 enables a file-based persistence of a password-protected data.
 
-1. Initialize the plugin in your Android app:
+Initialize the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.EncryptedStoragePlugin
@@ -820,7 +830,7 @@ EventBus.getDefault().register(
 )
 ```
 
-2. Read and write encrypted key-value pairs to the storage:
+Read and write encrypted key-value pairs to the storage:
 
 ```ts
 import { encryptedStorageManager } from 'racehorse';
@@ -980,10 +990,10 @@ evergreenManager.subscribe('ready', () => {
 [`FacebookLoginManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.FacebookLoginManager.html)
 enables Facebook Login support.
 
-1. Go to [developers.facebook.com](https://developers.facebook.com/docs/facebook-login/android/), register your app and
-   add the required dependencies and configurations.
+Go to [developers.facebook.com](https://developers.facebook.com/docs/facebook-login/android/), register your app and
+add the required dependencies and configurations.
 
-2. Initialize the Facebook SDK and register the plugin in your Android app:
+Initialize the Facebook SDK and register the plugin in your Android app:
 
 ```kotlin
 import com.facebook.FacebookSdk
@@ -994,7 +1004,7 @@ FacebookSdk.sdkInitialize(activity)
 EventBus.getDefault().register(FacebookLoginPlugin(activity))
 ```
 
-3. Request sign in from the web app that is loaded into the WebView:
+Request sign in from the web app that is loaded into the WebView:
 
 ```ts
 import { facebookLoginManager } from 'racehorse';
@@ -1009,10 +1019,10 @@ facebookLoginManager.logIn().then(accessToken => {
 [`FacebookShareManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.FacebookShareManager.html)
 enables Facebook social sharing.
 
-1. Go to [developers.facebook.com](https://developers.facebook.com/docs/facebook-login/android/), register your app and
-   add the required dependencies and configurations.
+Go to [developers.facebook.com](https://developers.facebook.com/docs/facebook-login/android/), register your app and
+add the required dependencies and configurations.
 
-2. Initialize the Facebook SDK and register the plugin in your Android app:
+Initialize the Facebook SDK and register the plugin in your Android app:
 
 ```kotlin
 import com.facebook.FacebookSdk
@@ -1023,7 +1033,7 @@ FacebookSdk.sdkInitialize(activity)
 EventBus.getDefault().register(FacebookSharePlugin(activity))
 ```
 
-3. Trigger Facebook social sharing flow:
+Trigger Facebook social sharing flow:
 
 ```ts
 import { facebookShareManager } from 'racehorse';
@@ -1058,7 +1068,7 @@ If you don't need camera support for file inputs, then the plugin doesn't requir
 
 Camera capture requires a temporary file storage to write captured file to.
 
-1. Declare a provider in your app manifest:
+Declare a provider in your app manifest:
 
 ```xml
 
@@ -1077,7 +1087,7 @@ Camera capture requires a temporary file storage to write captured file to.
 </manifest>
 ```
 
-2. Add a provider paths descriptor to XML resources, for example to `src/main/res/xml/file_paths.xml`:
+Add a provider paths descriptor to XML resources, for example to `src/main/res/xml/file_paths.xml`:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -1086,8 +1096,8 @@ Camera capture requires a temporary file storage to write captured file to.
 </paths>
 ```
 
-3. Initialize the plugin in your Android app, and provide the authority of the provider you've just created and the
-   path that you've defined in the descriptor:
+Initialize the plugin in your Android app, and provide the authority of the provider you've just created and the
+path that you've defined in the descriptor:
 
 ```kotlin
 import org.racehorse.FileChooserPlugin
@@ -1114,7 +1124,7 @@ If you want to store images and videos in the gallery app after they were captur
 [`FsManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.FsManager.html) enables file system CRUD
 operations.
 
-1. Initialize the plugin in your Android app:
+Initialize the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.FsPlugin
@@ -1122,7 +1132,7 @@ import org.racehorse.FsPlugin
 EventBus.getDefault().register(FsPlugin(activity))
 ```
 
-2. Access files stored on the device:
+Access files stored on the device from a WebView:
 
 ```ts
 import { fsManager, Directory } from 'racehorse';
@@ -1162,10 +1172,10 @@ document.getElementsByTagName('img')[0].src = photoUrl;
 [`GooglePayManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.GooglePayManager.html) enables
 [Android Push Provisioning](https://developers.google.com/pay/issuers/apis/push-provisioning/android) support.
 
-1. [Set up the development environment](https://developers.google.com/pay/issuers/apis/push-provisioning/android/setup),
-   so TapAndPay SDK is available in your app.
+[Set up the development environment](https://developers.google.com/pay/issuers/apis/push-provisioning/android/setup),
+so TapAndPay SDK is available in your app.
 
-2. Initialize the plugin in your Android app:
+Initialize the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.GoogleSignInPlugin
@@ -1259,7 +1269,7 @@ async function revealCard(lastFour: string): Promise<boolean> {
 [`GooglePlayReferrerManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.GooglePlayReferrerManager.html)
 fetches the [Google Play referrer](https://developer.android.com/google/play/installreferrer/library) information.
 
-1. Add Google Play referrer SDK dependency to your Android app:
+Add Google Play referrer SDK dependency to your Android app:
 
 ```kotlin
 dependencies {
@@ -1267,7 +1277,7 @@ dependencies {
 }
 ```
 
-2. Initialize the plugin in your Android app:
+Initialize the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.GooglePlayReferrerPlugin
@@ -1275,7 +1285,7 @@ import org.racehorse.GooglePlayReferrerPlugin
 EventBus.getDefault().register(GooglePlayReferrerPlugin(activity))
 ```
 
-3. Read the Google Play referrer:
+Read the Google Play referrer:
 
 ```ts
 import { googlePlayReferrerManager } from 'racehorse';
@@ -1289,27 +1299,27 @@ googlePlayReferrerManager.getGooglePlayReferrer();
 [`GoogleSignInManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.GoogleSignInManager.html) enables
 Google Sign-In support.
 
-1. Go to [console.firebase.google.com](https://console.firebase.google.com), set up a new project, and configure an
-   Android app following all instructions. Use the `applicationId` of your app and SHA-1 that is used for app signing.
-   You can use gradle to retrieve SHA-1:
+Go to [console.firebase.google.com](https://console.firebase.google.com), set up a new project, and configure an
+Android app following all instructions. Use the `applicationId` of your app and SHA-1 that is used for app signing.
+You can use gradle to retrieve SHA-1:
 
 ```shell
 ./gradlew signingReport
 ```
 
-2. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials) for your project and add an OAuth
-   client ID for Android.
+Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials) for your project and add an OAuth
+client ID for Android.
 
-3. Add Google Sign-In SDK dependencies to your Android app:
+Add Google Sign-In SDK dependencies to your Android app:
 
 ```kotlin
 dependencies {
-    implementation("com.google.android.gms:play-services-auth:20.5.0")
-    implementation(platform("com.google.firebase:firebase-bom:32.1.0"))
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+    implementation(platform("com.google.firebase:firebase-bom:32.1.2"))
 }
 ```
 
-4. Register the plugin in your Android app:
+Register the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.GoogleSignInPlugin
@@ -1317,7 +1327,7 @@ import org.racehorse.GoogleSignInPlugin
 EventBus.getDefault().register(GoogleSignInPlugin(activity))
 ```
 
-5. Request sign in from the web app that is loaded into the WebView:
+Request sign in from the web app that is loaded into a WebView:
 
 ```ts
 import { googleSignInManager } from 'racehorse';
@@ -1343,7 +1353,7 @@ EventBus.getDefault().register(HttpsPlugin())
 [`KeyboardManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.KeyboardManager.html) toggles
 the software keyboard and notifies about keyboard animation.
 
-1. Initialize the plugin in your Android app:
+Initialize the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.KeyboardPlugin
@@ -1351,7 +1361,7 @@ import org.racehorse.KeyboardPlugin
 EventBus.getDefault().register(KeyboardPlugin(activity).apply { enable() })
 ```
 
-2. Synchronously read the keyboard height, show or hide the keyboard:
+Synchronously read the keyboard height, show or hide the keyboard:
 
 ```ts
 import { keyboardManager } from 'racehorse';
@@ -1417,7 +1427,7 @@ import { useKeyboardAnimation, scrollToElement } from '@racehorse/react';
 useKeyboardAnimation((animation, signal) => {
 
   // Ensure there's an active element to scroll to.
-  if (document.activeElement === null) {
+  if (document.activeElement === null && !document.hasFocus()) {
     return;
   }
 
@@ -1442,7 +1452,7 @@ Check out [the example app](./web/example/src/App.tsx#L44) that has the real-wor
 [`NetworkManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.NetworkManager.html) enables network
 connection monitoring support.
 
-1. Initialize the plugin in your Android app:
+Initialize the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.NetworkPlugin
@@ -1452,7 +1462,7 @@ val networkPlugin = NetworkPlugin(activity)
 EventBus.getDefault().register(networkPlugin)
 ```
 
-2. Enable the plugin when the app resumes and disable it when the app pauses:
+Enable the plugin when the app resumes and disable it when the app pauses:
 
 ```kotlin
 fun onResume() {
@@ -1466,7 +1476,7 @@ fun onPause() {
 }
 ```
 
-3. Synchronously read the network connection status or subscribe to changes:
+Synchronously read the network connection status or subscribe to changes:
 
 ```ts
 import { networkManager } from 'racehorse';
@@ -1500,7 +1510,7 @@ status.type;
 [`NotificationsManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.NotificationsManager.html)
 provides access to Android system notifications status.
 
-1. Initialize the plugin in your Android app:
+Initialize the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.NotificationsPlugin
@@ -1508,7 +1518,7 @@ import org.racehorse.NotificationsPlugin
 EventBus.getDefault().register(NotificationsPlugin(activity))
 ```
 
-2. Synchronously check that notifications are enabled:
+Synchronously check that notifications are enabled:
 
 ```ts
 import { notificationsManager } from 'racehorse';
@@ -1522,7 +1532,7 @@ notificationsManager.areNotificationsEnabled();
 [`PermissionsManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.PermissionsManager.html) allows
 checking and requesting application permissions.
 
-1. Initialize the plugin in your Android app:
+Initialize the plugin in your Android app:
 
 ```kotlin
 import org.racehorse.PermissionsPlugin
@@ -1530,7 +1540,7 @@ import org.racehorse.PermissionsPlugin
 EventBus.getDefault().register(PermissionsPlugin(activity))
 ```
 
-2. Check that a permission is granted, or ask for permissions:
+Check that a permission is granted, or ask for permissions:
 
 ```ts
 import { permissionsManager } from 'racehorse';
