@@ -3,7 +3,7 @@ import { Easing } from './types';
 /**
  * Creates an easing function for a given easing curve.
  *
- * @param ordinateValues An easing curve described as an array of at least two ordinate values (y ∈ [0, 1]) that
+ * @param ordinateValues An easing curve described by an array of at least two ordinate values (y ∈ [0, 1]) that
  * correspond to equidistant abscissa values (x). Between two points on the curve easing is linear.
  * @see [<easing-function>](https://developer.mozilla.org/en-US/docs/Web/CSS/easing-function)
  */

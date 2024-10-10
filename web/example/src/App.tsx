@@ -43,7 +43,12 @@ export function App() {
 
   useKeyboardAnimation((animation, signal) => {
     // Scroll to the active element when keyboard is shown
-    if (animation.endValue !== 0 && document.activeElement !== null && document.activeElement !== document.body) {
+    if (
+      animation.endValue !== 0 &&
+      document.activeElement !== null &&
+      document.activeElement !== document.body &&
+      document.hasFocus()
+    ) {
       scrollToElement(document.activeElement, {
         // Scroll animation has the same duration and easing as the keyboard animation
         animation,
