@@ -404,7 +404,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="-download/index.html">Download</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">downloadManager<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/app/DownloadManager.html">DownloadManager</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>id<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>status<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>reason<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>localUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>mimeType<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>totalSize<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>downloadedSize<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>lastModifiedTimestamp<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>title<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="-download/index.html">Download</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">downloadManager<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/app/DownloadManager.html">DownloadManager</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>id<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>status<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>reason<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>localUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>mimeType<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>totalSize<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>downloadedSize<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>lastModifiedTime<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>title<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -504,7 +504,7 @@
         .registerTypeAdapter(Date::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Uri::class.java, NaturalJsonAdapter())
         .registerTypeAdapter(Any::class.java, NaturalJsonAdapter())
-        .create()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>handler<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/os/Handler.html">Handler</a><span class="token operator"> = </span>Handler(Looper.getMainLooper())<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>connectionKey<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">&quot;racehorseConnection&quot;</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">The event bridge enables communication between the app in the WebView and Android-native code.</p></div></div></div>
+        .create()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>connectionKey<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">&quot;racehorseConnection&quot;</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">The event bridge enables communication between the app in the WebView and Android-native code.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -1019,6 +1019,21 @@
               </div>
             </div>
           </div>
+<a data-name="-1327258674%2FClasslikes%2F-88822016" anchor-label="GetKeyboardHeightEvent" id="-1327258674%2FClasslikes%2F-88822016" data-filterable-set=":racehorse:dokkaHtml/staging"></a>
+          <div class="table-row" data-filterable-current=":racehorse:dokkaHtml/staging" data-filterable-set=":racehorse:dokkaHtml/staging">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-get-keyboard-height-event/index.html"><span>Get</span><wbr></wbr><span>Keyboard</span><wbr></wbr><span>Height</span><wbr></wbr><span><span>Event</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1327258674%2FClasslikes%2F-88822016"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="-get-keyboard-height-event/index.html">GetKeyboardHeightEvent</a> : <a href="-request-event/index.html">RequestEvent</a></div><div class="brief "><p class="paragraph">Get the current keyboard height.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
 <a data-name="114240857%2FClasslikes%2F-88822016" anchor-label="GetKeyboardStatusEvent" id="114240857%2FClasslikes%2F-88822016" data-filterable-set=":racehorse:dokkaHtml/staging"></a>
           <div class="table-row" data-filterable-current=":racehorse:dokkaHtml/staging" data-filterable-set=":racehorse:dokkaHtml/staging">
             <div class="main-subrow keyValue ">
@@ -1029,7 +1044,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="-get-keyboard-status-event/index.html">GetKeyboardStatusEvent</a> : <a href="-request-event/index.html">RequestEvent</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="-get-keyboard-status-event/index.html"><strike>GetKeyboardStatusEvent</strike></a> : <a href="-request-event/index.html">RequestEvent</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -1479,7 +1494,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="-hide-keyboard-event/index.html">HideKeyboardEvent</a> : <a href="-request-event/index.html">RequestEvent</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="-hide-keyboard-event/index.html">HideKeyboardEvent</a> : <a href="-web-event/index.html">WebEvent</a></div><div class="brief "><p class="paragraph">Hides the software keyboard.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -1529,17 +1544,17 @@
               </div>
             </div>
           </div>
-<a data-name="-97436633%2FClasslikes%2F-88822016" anchor-label="KeyboardObserver" id="-97436633%2FClasslikes%2F-88822016" data-filterable-set=":racehorse:dokkaHtml/staging"></a>
+<a data-name="-1160026104%2FClasslikes%2F-88822016" anchor-label="KeyboardAnimationStartedEvent" id="-1160026104%2FClasslikes%2F-88822016" data-filterable-set=":racehorse:dokkaHtml/staging"></a>
           <div class="table-row" data-filterable-current=":racehorse:dokkaHtml/staging" data-filterable-set=":racehorse:dokkaHtml/staging">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-keyboard-observer/index.html"><span>Keyboard</span><wbr></wbr><span><span>Observer</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-97436633%2FClasslikes%2F-88822016"></span>
+                  <div><a href="-keyboard-animation-started-event/index.html"><span>Keyboard</span><wbr></wbr><span>Animation</span><wbr></wbr><span>Started</span><wbr></wbr><span><span>Event</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1160026104%2FClasslikes%2F-88822016"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="-keyboard-observer/index.html">KeyboardObserver</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">activity<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/app/Activity.html">Activity</a><span class="token punctuation">, </span></span><span class="parameter ">listener<span class="token operator">: </span><span class="token punctuation">(</span><span class="token keyword"></span>keyboardHeight<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Observes the keyboard height.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="-keyboard-animation-started-event/index.html">KeyboardAnimationStartedEvent</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>animation<span class="token operator">: </span><a href="-tween-animation/index.html">TweenAnimation</a></span></span><span class="token punctuation">)</span> : <a href="-notice-event/index.html">NoticeEvent</a></div><div class="brief "><p class="paragraph">Notifies the web app that the keyboard animation has started.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -1569,7 +1584,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="-keyboard-status/index.html">KeyboardStatus</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>height<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="-keyboard-status/index.html"><strike>KeyboardStatus</strike></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>height<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -1584,7 +1599,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="-keyboard-status-changed-event/index.html">KeyboardStatusChangedEvent</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>status<span class="token operator">: </span><a href="-keyboard-status/index.html">KeyboardStatus</a></span></span><span class="token punctuation">)</span> : <a href="-notice-event/index.html">NoticeEvent</a></div><div class="brief "><p class="paragraph">Notifies the web app that the keyboard status has changed.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="-keyboard-status-changed-event/index.html"><strike>KeyboardStatusChangedEvent</strike></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>status<span class="token operator">: </span><a href="-keyboard-status/index.html">KeyboardStatus</a></span></span><span class="token punctuation">)</span> : <a href="-notice-event/index.html">NoticeEvent</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -1914,7 +1929,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="-show-keyboard-event/index.html">ShowKeyboardEvent</a> : <a href="-web-event/index.html">WebEvent</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="-show-keyboard-event/index.html">ShowKeyboardEvent</a> : <a href="-web-event/index.html">WebEvent</a></div><div class="brief "><p class="paragraph">Shows the software keyboard.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -1975,6 +1990,21 @@
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="-temp-camera-file-factory/index.html">TempCameraFileFactory</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span></span><span class="parameter ">tempDir<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a><span class="token punctuation">, </span></span><span class="parameter ">tempDirAuthority<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="-camera-file-factory/index.html">CameraFileFactory</a></div><div class="brief "><p class="paragraph">Camera file factory that stores camera files in a temporary cache.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1217845525%2FClasslikes%2F-88822016" anchor-label="TweenAnimation" id="-1217845525%2FClasslikes%2F-88822016" data-filterable-set=":racehorse:dokkaHtml/staging"></a>
+          <div class="table-row" data-filterable-current=":racehorse:dokkaHtml/staging" data-filterable-set=":racehorse:dokkaHtml/staging">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-tween-animation/index.html"><span>Tween</span><wbr></wbr><span><span>Animation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1217845525%2FClasslikes%2F-88822016"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="-tween-animation/index.html">TweenAnimation</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>startValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>endValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>duration<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>easing<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float-array/index.html">FloatArray</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>startTime<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a><span class="token operator"> = </span>System.currentTimeMillis()</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div><div class="brief "><p class="paragraph">An animation that can be marshalled to a web view.</p></div></div></div>
                 </div>
               </div>
             </div>
