@@ -1393,7 +1393,7 @@ useKeyboardAnimation((animation, signal) => {
 });
 ```
 
-Use [`runAnimation`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.runAnimation.html) to run
+Use [`runAnimation`](https://smikhalevski.github.io/racehorse/functions/racehorse.runAnimation.html) to run
 the animation. For example, if your
 [app is rendered edge-to-edge](https://developer.android.com/develop/ui/views/layout/edge-to-edge), you can animate
 the bottom padding to compensate the height of the keyboard.
