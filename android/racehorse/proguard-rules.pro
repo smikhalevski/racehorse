@@ -5,3 +5,5 @@
 -keepclassmembers class org.racehorse.** {
     @android.webkit.JavascriptInterface <methods>;
 }
+
+-keep @kotlinx.serialization.Serializable class * {*;}

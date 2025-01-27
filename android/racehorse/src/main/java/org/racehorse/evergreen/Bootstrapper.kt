@@ -1,15 +1,17 @@
 package org.racehorse.evergreen
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.io.File
 import java.net.URLConnection
 
+@Serializable
 enum class UpdateMode {
     /**
      * If master bundle has a non-matching version, then update bundle is always downloaded and applied before
      * [Bootstrapper.onBundleReady] is called.
      */
-    @SerializedName("mandatory")
+    @SerialName("mandatory")
     MANDATORY,
 
     /**
@@ -23,7 +25,7 @@ enum class UpdateMode {
      * [Bootstrapper.onBundleReady] is called with master directory and update proceeds in the background. When update
      * is downloaded [Bootstrapper.onUpdateReady] is called.
      */
-    @SerializedName("optional")
+    @SerialName("optional")
     OPTIONAL,
 
     /**
@@ -33,7 +35,7 @@ enum class UpdateMode {
      * 2. If master bundle is available then [Bootstrapper.onBundleReady] is always called with master directory. Update
      * is downloaded in the background.
      */
-    @SerializedName("postponed")
+    @SerialName("postponed")
     POSTPONED
 }
 

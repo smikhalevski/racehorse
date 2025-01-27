@@ -6,11 +6,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes
 import com.google.android.gms.common.api.ApiException
+import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.apiResult
 import org.racehorse.utils.launchActivityForResult
-import java.io.Serializable
 
+@Serializable
 class SerializableGoogleSignInAccount(
     val id: String?,
     val idToken: String?,
@@ -22,7 +23,7 @@ class SerializableGoogleSignInAccount(
     val familyName: String?,
     val photoUrl: String?,
     val isExpired: Boolean,
-) : Serializable {
+) {
     constructor(account: GoogleSignInAccount) : this(
         id = account.id,
         idToken = account.idToken,
@@ -40,20 +41,31 @@ class SerializableGoogleSignInAccount(
 /**
  * Check for existing Google Sign-In account, if the user is already signed in the account will be non-null.
  */
+@Serializable
 class GetLastGoogleSignedInAccountEvent : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val account: SerializableGoogleSignInAccount?) : ResponseEvent()
 }
 
+@Serializable
 class GoogleSignInEvent : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val account: SerializableGoogleSignInAccount?) : ResponseEvent()
 }
 
+@Serializable
 class GoogleSilentSignInEvent : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val account: SerializableGoogleSignInAccount?) : ResponseEvent()
 }
 
+@Serializable
 class GoogleSignOutEvent : RequestEvent()
 
+@Serializable
 class GoogleRevokeAccessEvent : RequestEvent()
 
 /**

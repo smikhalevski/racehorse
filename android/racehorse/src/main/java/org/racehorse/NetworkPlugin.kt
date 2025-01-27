@@ -4,30 +4,36 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import java.io.Serializable
 
+@Serializable
 enum class NetworkType {
-    @SerializedName("wifi")
+    @SerialName("wifi")
     WIFI,
 
-    @SerializedName("cellular")
+    @SerialName("cellular")
     CELLULAR,
 
-    @SerializedName("none")
+    @SerialName("none")
     NONE,
 
-    @SerializedName("unknown")
+    @SerialName("unknown")
     UNKNOWN
 }
 
-data class NetworkStatus(val type: NetworkType, val isConnected: Boolean) : Serializable
+@Serializable
+class NetworkStatus(val type: NetworkType, val isConnected: Boolean)
 
+@Serializable
 class NetworkStatusChangedEvent(val status: NetworkStatus) : NoticeEvent
 
+@Serializable
 class GetNetworkStatusEvent : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val status: NetworkStatus) : ResponseEvent()
 }
 

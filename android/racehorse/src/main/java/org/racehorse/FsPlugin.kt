@@ -1,5 +1,8 @@
+@file:UseSerializers(UriSerializer::class)
+
 package org.racehorse
 
+import kotlinx.serialization.UseSerializers
 import android.net.Uri
 import android.os.Environment
 import android.webkit.WebResourceResponse
@@ -7,8 +10,10 @@ import androidx.activity.ComponentActivity
 import androidx.core.content.FileProvider
 import androidx.core.net.toFile
 import androidx.core.net.toUri
+import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import org.racehorse.utils.UriSerializer
 import org.racehorse.utils.guessMimeType
 import org.racehorse.webview.ShouldInterceptRequestEvent
 import java.io.ByteArrayInputStream
@@ -24,11 +29,17 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.util.Base64
 import kotlin.io.path.readAttributes
 
+@Serializable
 class FsIsExistingEvent(val uri: Uri) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val isExisting: Boolean) : ResponseEvent()
 }
 
+@Serializable
 class FsGetAttributesEvent(val uri: Uri) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(
         val lastModifiedTime: Long,
         val lastAccessTime: Long,
@@ -41,39 +52,65 @@ class FsGetAttributesEvent(val uri: Uri) : RequestEvent() {
     ) : ResponseEvent()
 }
 
+@Serializable
 class FsGetParentUriEvent(val uri: Uri) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val parentUri: Uri?) : ResponseEvent()
 }
 
+@Serializable
 class FsGetLocalUrlEvent(val uri: Uri) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val localUrl: Uri) : ResponseEvent()
 }
 
+@Serializable
 class FsGetContentUriEvent(val uri: Uri) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val contentUri: Uri) : ResponseEvent()
 }
 
+@Serializable
 class FsGetMimeTypeEvent(val uri: Uri) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val mimeType: String?) : ResponseEvent()
 }
 
+@Serializable
 class FsMkdirEvent(val uri: Uri) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
 }
 
+@Serializable
 class FsReadDirEvent(val uri: Uri) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val fileUris: List<Uri>) : ResponseEvent()
 }
 
+@Serializable
 class FsReadEvent(val uri: Uri, val encoding: String?) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val data: String) : ResponseEvent()
 }
 
+@Serializable
 class FsWriteEvent(val uri: Uri, val data: String, val encoding: String?, val append: Boolean) : RequestEvent()
 
+@Serializable
 class FsCopyEvent(val uri: Uri, val toUri: Uri) : RequestEvent()
 
+@Serializable
 class FsDeleteEvent(val uri: Uri) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
 }
 

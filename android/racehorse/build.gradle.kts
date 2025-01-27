@@ -1,8 +1,9 @@
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
     id("maven-publish")
     id("org.jetbrains.dokka")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 tasks.dokkaHtml.configure {
@@ -11,7 +12,7 @@ tasks.dokkaHtml.configure {
 
 android {
     namespace = "org.racehorse"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         // https://apilevels.com/
@@ -76,23 +77,25 @@ dependencies {
     implementation(kotlin("reflect"))
 
     // Edge-to-edge
-    implementation("androidx.activity:activity:1.9.2")
+    implementation("androidx.activity:activity:1.10.0")
+
+    // Serialization
+    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
 
     // EventBridge
     compileOnly("org.greenrobot:eventbus:3.3.1")
-    compileOnly("com.google.code.gson:gson:2.10.1")
 
     // ActivityPlugin
-    compileOnly("androidx.lifecycle:lifecycle-process:2.8.5")
+    compileOnly("androidx.lifecycle:lifecycle-process:2.8.7")
 
     // AssetLoaderPlugin
-    compileOnly("androidx.webkit:webkit:1.11.0")
+    compileOnly("androidx.webkit:webkit:1.12.1")
 
     // DevicePlugin
     compileOnly("androidx.appcompat:appcompat:1.7.0")
 
     // Google Sign-In
-    compileOnly("com.google.android.gms:play-services-auth:21.2.0")
+    compileOnly("com.google.android.gms:play-services-auth:21.3.0")
 
     // Facebook Login
     compileOnly("com.facebook.android:facebook-login:latest.release")
@@ -104,12 +107,12 @@ dependencies {
     compileOnly("com.google.android.gms:play-services-tapandpay:18.3.3")
 
     // Push notifications
-    compileOnly("com.google.firebase:firebase-messaging-ktx:24.0.1")
+    compileOnly("com.google.firebase:firebase-messaging-ktx:24.1.0")
 
     // Biometric
     compileOnly("androidx.biometric:biometric:1.2.0-alpha05")
 
-    testImplementation("com.google.code.gson:gson:2.10.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
     testImplementation("junit:junit:4.13.2")
     testImplementation("com.squareup.okhttp:mockwebserver:1.2.1")
 

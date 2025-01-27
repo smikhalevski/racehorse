@@ -1,15 +1,20 @@
+@file:UseSerializers(FileSerializer::class, ThrowableSerializer::class)
+
 package org.racehorse.evergreen
 
 import android.net.Uri
 import androidx.core.net.toUri
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.NoticeEvent
 import org.racehorse.RequestEvent
 import org.racehorse.ResponseEvent
+import org.racehorse.utils.FileSerializer
+import org.racehorse.utils.ThrowableSerializer
 import java.io.File
-import java.io.Serializable
 import java.net.URLConnection
 
 /**
@@ -19,29 +24,34 @@ import java.net.URLConnection
  * @param isReady `true` if the update is fully downloaded and ready to be applied, or `false` if update is being
  * downloaded.
  */
+@Serializable
 @Deprecated("Use GetBundleInfoEvent")
-class UpdateStatus(val version: String, val isReady: Boolean) : Serializable
+class UpdateStatus(val version: String, val isReady: Boolean)
 
 /**
  * App assets available in [appDir] and are ready to be used.
  */
-class BundleReadyEvent(@Transient val appDir: File) : NoticeEvent
+@Serializable
+class BundleReadyEvent(val appDir: File) : NoticeEvent
 
 /**
  * The new update download has started.
  */
+@Serializable
 class UpdateStartedEvent(val updateMode: UpdateMode) : NoticeEvent
 
 /**
  * Failed to download an update.
  */
-class UpdateFailedEvent(val updateMode: UpdateMode, @Transient val cause: Throwable) : NoticeEvent
+@Serializable
+class UpdateFailedEvent(val updateMode: UpdateMode, val cause: Throwable) : NoticeEvent
 
 /**
  * An update was successfully downloaded and ready to be applied.
  *
  * @param version The version of the update bundle that is ready to be applied.
  */
+@Serializable
 class UpdateReadyEvent(val version: String) : NoticeEvent
 
 /**
@@ -50,6 +60,7 @@ class UpdateReadyEvent(val version: String) : NoticeEvent
  * @param contentLength The length of downloaded content in bytes, or -1 if content length cannot be detected.
  * @param readLength The number of bytes that are already downloaded.
  */
+@Serializable
 class UpdateProgressEvent(val contentLength: Int, val readLength: Long) : NoticeEvent
 
 /**

@@ -5,25 +5,32 @@ import android.provider.ContactsContract
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.database.getStringOrNull
+import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.askForPermission
 import org.racehorse.utils.launchActivityForResult
 import org.racehorse.utils.queryAll
-import java.io.Serializable
 
+@Serializable
 class Contact(
     val id: Long,
     val name: String?,
     val photoUri: String?,
     val emails: List<String>,
     val phoneNumbers: List<String>
-) : Serializable
+)
 
+@Serializable
 class PickContactEvent : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val contact: Contact?) : ResponseEvent()
 }
 
+@Serializable
 class GetContactEvent(val contactId: Long) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val contact: Contact?) : ResponseEvent()
 }
 

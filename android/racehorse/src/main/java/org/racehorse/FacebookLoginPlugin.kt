@@ -7,9 +7,10 @@ import com.facebook.FacebookCallback
 import com.facebook.FacebookException
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
+import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
-import java.io.Serializable
 
+@Serializable
 class SerializableFacebookAccessToken(
     val expires: Long,
     val permissions: List<String>,
@@ -24,7 +25,7 @@ class SerializableFacebookAccessToken(
     val isExpired: Boolean,
     val isDataAccessExpired: Boolean,
     val isInstagramToken: Boolean,
-) : Serializable {
+) {
     constructor(accessToken: AccessToken) : this(
         expires = accessToken.expires.time,
         permissions = accessToken.permissions.filterNotNull(),
@@ -42,14 +43,21 @@ class SerializableFacebookAccessToken(
     )
 }
 
+@Serializable
 class GetCurrentFacebookAccessTokenEvent : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val accessToken: SerializableFacebookAccessToken?) : ResponseEvent()
 }
 
+@Serializable
 class FacebookLogInEvent(val permissions: List<String> = emptyList()) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val accessToken: SerializableFacebookAccessToken?) : ResponseEvent()
 }
 
+@Serializable
 class FacebookLogOutEvent : RequestEvent()
 
 open class FacebookLoginPlugin(private val activity: ComponentActivity) {

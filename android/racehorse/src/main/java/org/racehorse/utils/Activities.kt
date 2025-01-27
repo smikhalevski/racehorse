@@ -60,7 +60,10 @@ fun <I, O> ActivityResultRegistryOwner.launchActivityForResult(
  * @param callback The callback that receives the result intent from the started activity.
  * @return `true` if activity has started, or `false` if there's no matching activity.
  */
-fun ActivityResultRegistryOwner.launchActivityForResult(intent: Intent, callback: ActivityResultCallback<ActivityResult>) =
+fun ActivityResultRegistryOwner.launchActivityForResult(
+    intent: Intent,
+    callback: ActivityResultCallback<ActivityResult>
+) =
     launchActivityForResult(ActivityResultContracts.StartActivityForResult(), intent, callback)
 
 /**
@@ -69,7 +72,10 @@ fun ActivityResultRegistryOwner.launchActivityForResult(intent: Intent, callback
  * @param permissions The array of permissions that must be granted.
  * @param callback The callback the receives a map from a permission name to its granted status.
  */
-fun ComponentActivity.askForPermissions(permissions: Iterable<String>, callback: (statuses: Map<String, Boolean>) -> Unit) {
+fun ComponentActivity.askForPermissions(
+    permissions: Iterable<String>,
+    callback: (statuses: Map<String, Boolean>) -> Unit
+) {
     val statuses = permissions.associateWith { true }
     val missingPermissions = permissions.filterNot(::isPermissionGranted).toTypedArray()
 

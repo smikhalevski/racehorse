@@ -13,6 +13,8 @@ import android.webkit.MimeTypeMap
 import android.webkit.URLUtil
 import androidx.activity.ComponentActivity
 import androidx.core.database.getStringOrNull
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.utils.askForPermission
@@ -20,14 +22,15 @@ import org.racehorse.utils.createTempFile
 import org.racehorse.utils.queryAll
 import org.racehorse.webview.DownloadStartEvent
 import java.io.File
-import java.io.Serializable
 import java.util.Base64
 
+@Serializable
 class Download(
     /**
      * The download manager that handles the download.
      */
-    downloadManager: DownloadManager,
+    @Transient
+    private val downloadManager: DownloadManager? = null,
 
     /**
      * An identifier for a particular download, unique across the system. Clients use this ID to make subsequent calls
@@ -91,12 +94,12 @@ class Download(
      * The client-supplied title for this download.
      */
     val title: String
-) : Serializable {
+) {
 
     /**
      * The `content:` URI of the downloaded file.
      */
-    val contentUri = downloadManager.getUriForDownloadedFile(id)?.toString()
+    val contentUri = downloadManager?.getUriForDownloadedFile(id)?.toString()
 
     constructor(downloadManager: DownloadManager, cursor: Cursor) : this(
         downloadManager,
@@ -117,6 +120,7 @@ class Download(
 /**
  * Adds a new download.
  */
+@Serializable
 class AddDownloadEvent(
     /**
      * The full URI of the content that should be downloaded. Supports HTTP, HTTPS, and data URI.
@@ -138,20 +142,28 @@ class AddDownloadEvent(
      */
     val headers: List<Pair<String, String>>? = null,
 ) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val id: Long) : ResponseEvent()
 }
 
 /**
  * Returns a previously started file download by its ID.
  */
+@Serializable
 class GetDownloadEvent(var id: Long) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val download: Download?) : ResponseEvent()
 }
 
 /**
  * Returns all file downloads.
  */
+@Serializable
 class GetAllDownloadsEvent : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val downloads: List<Download>) : ResponseEvent()
 }
 
@@ -159,7 +171,10 @@ class GetAllDownloadsEvent : RequestEvent() {
  * Cancel a download and remove it from the download manager. Download will be stopped if it was running, and it will no
  * longer be accessible through the download manager. If there is a downloaded file, partial or complete, it is deleted.
  */
+@Serializable
 class RemoveDownloadEvent(var id: Long) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val isRemoved: Boolean) : ResponseEvent()
 }
 

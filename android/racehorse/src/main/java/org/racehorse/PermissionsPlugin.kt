@@ -4,6 +4,7 @@ import android.Manifest
 import android.webkit.PermissionRequest
 import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
+import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.askForPermissions
 import org.racehorse.utils.isPermissionGranted
@@ -13,21 +14,30 @@ import org.racehorse.webview.PermissionRequestEvent
 /**
  * Gets whether you should show UI with rationale before requesting a permission.
  */
-class ShouldShowRequestPermissionRationaleEvent(val permissions: Iterable<String>) : RequestEvent() {
+@Serializable
+class ShouldShowRequestPermissionRationaleEvent(val permissions: List<String>) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val statuses: Map<String, Boolean>) : ResponseEvent()
 }
 
 /**
  * Determine whether you have been granted a particular permission.
  */
-class IsPermissionGrantedEvent(val permissions: Iterable<String>) : RequestEvent() {
+@Serializable
+class IsPermissionGrantedEvent(val permissions: List<String>) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val statuses: Map<String, Boolean>) : ResponseEvent()
 }
 
 /**
  * Requests permissions to be granted to the app.
  */
-class AskForPermissionEvent(val permissions: Iterable<String>) : RequestEvent() {
+@Serializable
+class AskForPermissionEvent(val permissions: List<String>) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val statuses: Map<String, Boolean>) : ResponseEvent()
 }
 
