@@ -1,3 +1,5 @@
+@file:UseSerializers(UserAddressSerializer::class, TokenStatusSerializer::class, TokenInfoSerializer::class)
+
 package org.racehorse
 
 import android.content.Intent
@@ -11,64 +13,21 @@ import com.google.android.gms.tapandpay.issuer.TokenInfo
 import com.google.android.gms.tapandpay.issuer.TokenStatus
 import com.google.android.gms.tapandpay.issuer.UserAddress
 import com.google.android.gms.tapandpay.issuer.ViewTokenRequest
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.descriptors.element
+import kotlinx.serialization.encoding.CompositeDecoder.Companion.DECODE_DONE
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.decodeStructure
+import kotlinx.serialization.encoding.encodeStructure
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.apiResult
+import org.racehorse.utils.decodeNullableStringElement
 import java.util.concurrent.atomic.AtomicInteger
-
-@Serializable
-class GooglePayTokenInfo(
-    val network: Int,
-    val tokenServiceProvider: Int,
-    val tokenState: Int,
-    val dpanLastFour: String,
-    val fpanLastFour: String,
-    val issuerName: String,
-    val issuerTokenId: String,
-    val portfolioName: String,
-    val isDefaultToken: Boolean,
-) {
-    constructor(tokenInfo: TokenInfo) : this(
-        network = tokenInfo.network,
-        tokenServiceProvider = tokenInfo.tokenServiceProvider,
-        tokenState = tokenInfo.tokenState,
-        dpanLastFour = tokenInfo.dpanLastFour,
-        fpanLastFour = tokenInfo.fpanLastFour,
-        issuerName = tokenInfo.issuerName,
-        issuerTokenId = tokenInfo.issuerTokenId,
-        portfolioName = tokenInfo.portfolioName,
-        isDefaultToken = tokenInfo.isDefaultToken,
-    )
-}
-
-@Serializable
-class SerializableGooglePayUserAddress(
-    val name: String?,
-    val address1: String?,
-    val address2: String?,
-    val locality: String?,
-    val administrativeArea: String?,
-    val countryCode: String?,
-    val postalCode: String?,
-    val phoneNumber: String?,
-) {
-    fun toUserAddress() = UserAddress.newBuilder()
-        .setName(name.orEmpty())
-        .setAddress1(address1.orEmpty())
-        .setAddress2(address2.orEmpty())
-        .setLocality(locality.orEmpty())
-        .setAdministrativeArea(administrativeArea.orEmpty())
-        .setCountryCode(countryCode.orEmpty())
-        .setPostalCode(postalCode.orEmpty())
-        .setPhoneNumber(phoneNumber.orEmpty())
-        .build()
-}
-
-@Serializable
-class GooglePayTokenStatus(val tokenState: Int, val isSelected: Boolean) {
-    constructor(status: TokenStatus) : this(status.tokenState, status.isSelected)
-}
 
 /**
  * Get the ID of the active wallet.
@@ -90,7 +49,7 @@ class GooglePayGetTokenStatusEvent(val tokenServiceProvider: Int, val tokenId: S
      * @param status The token status or `null` if there's no such token.
      */
     @Serializable
-    class ResultEvent(val status: GooglePayTokenStatus?) : ResponseEvent()
+    class ResultEvent(val status: TokenStatus?) : ResponseEvent()
 }
 
 /**
@@ -123,7 +82,7 @@ class GooglePayGetStableHardwareIdEvent : RequestEvent() {
 class GooglePayListTokensEvent : RequestEvent() {
 
     @Serializable
-    class ResultEvent(val tokenInfos: List<GooglePayTokenInfo>) : ResponseEvent()
+    class ResultEvent(val tokenInfos: List<TokenInfo>) : ResponseEvent()
 }
 
 /**
@@ -166,7 +125,7 @@ class GooglePayPushTokenizeEvent(
     val lastFour: String,
     val network: Int,
     val tokenServiceProvider: Int,
-    val userAddress: SerializableGooglePayUserAddress?,
+    val userAddress: UserAddress?,
 ) : RequestEvent() {
 
     @Serializable
@@ -240,7 +199,7 @@ open class GooglePayPlugin(
             event.respond {
                 GooglePayGetTokenStatusEvent.ResultEvent(
                     try {
-                        GooglePayTokenStatus(it.apiResult)
+                        it.apiResult
                     } catch (e: ApiException) {
                         if (
                             e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_NO_ACTIVE_WALLET ||
@@ -272,7 +231,7 @@ open class GooglePayPlugin(
             event.respond {
                 GooglePayListTokensEvent.ResultEvent(
                     try {
-                        it.apiResult.map(::GooglePayTokenInfo)
+                        it.apiResult
                     } catch (e: ApiException) {
                         if (e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_NO_ACTIVE_WALLET) emptyList() else throw e
                     }
@@ -330,7 +289,7 @@ open class GooglePayPlugin(
                 .setLastDigits(event.lastFour)
                 .setNetwork(event.network)
                 .setTokenServiceProvider(event.tokenServiceProvider)
-                .setUserAddress(event.userAddress?.toUserAddress() ?: UserAddress.newBuilder().build())
+                .setUserAddress(event.userAddress ?: UserAddress.newBuilder().build())
 
             tapAndPayClient.pushTokenize(activity, builder.build(), requestCode)
         },
@@ -406,4 +365,93 @@ open class GooglePayPlugin(
             throw e
         }
     }
+}
+
+object UserAddressSerializer : KSerializer<UserAddress> {
+    override val descriptor = buildClassSerialDescriptor(UserAddress::class.java.simpleName) {
+        element<String?>("name", isOptional = true)
+        element<String?>("address1", isOptional = true)
+        element<String?>("address2", isOptional = true)
+        element<String?>("locality", isOptional = true)
+        element<String?>("administrativeArea", isOptional = true)
+        element<String?>("countryCode", isOptional = true)
+        element<String?>("postalCode", isOptional = true)
+        element<String?>("phoneNumber", isOptional = true)
+    }
+
+    override fun serialize(encoder: Encoder, value: UserAddress) = throw NotImplementedError()
+
+    override fun deserialize(decoder: Decoder) = decoder.decodeStructure(descriptor) {
+        val builder = UserAddress.newBuilder()
+            .setName("")
+            .setAddress1("")
+            .setAddress2("")
+            .setLocality("")
+            .setAdministrativeArea("")
+            .setCountryCode("")
+            .setPostalCode("")
+            .setPhoneNumber("")
+
+        while (true) {
+            when (val index = decodeElementIndex(descriptor)) {
+                0 -> builder.setName(decodeNullableStringElement(descriptor, index).orEmpty())
+                1 -> builder.setAddress1(decodeNullableStringElement(descriptor, index).orEmpty())
+                2 -> builder.setAddress2(decodeNullableStringElement(descriptor, index).orEmpty())
+                3 -> builder.setLocality(decodeNullableStringElement(descriptor, index).orEmpty())
+                4 -> builder.setAdministrativeArea(decodeNullableStringElement(descriptor, index).orEmpty())
+                5 -> builder.setCountryCode(decodeNullableStringElement(descriptor, index).orEmpty())
+                6 -> builder.setPostalCode(decodeNullableStringElement(descriptor, index).orEmpty())
+                7 -> builder.setPhoneNumber(decodeNullableStringElement(descriptor, index).orEmpty())
+                DECODE_DONE -> break
+            }
+        }
+
+        builder.build()
+    }
+}
+
+object TokenStatusSerializer : KSerializer<TokenStatus> {
+    override val descriptor = buildClassSerialDescriptor(TokenStatus::class.java.simpleName) {
+        element<Int>("tokenState")
+        element<Boolean>("isSelected")
+    }
+
+    override fun serialize(encoder: Encoder, value: TokenStatus) {
+        encoder.encodeStructure(descriptor) {
+            encodeIntElement(descriptor, 0, value.tokenState)
+            encodeBooleanElement(descriptor, 1, value.isSelected)
+        }
+    }
+
+    override fun deserialize(decoder: Decoder) = throw NotImplementedError()
+}
+
+object TokenInfoSerializer : KSerializer<TokenInfo> {
+    override val descriptor = buildClassSerialDescriptor(TokenInfo::class.java.simpleName) {
+        element<Int>("network")
+        element<Int>("tokenServiceProvider")
+        element<Int>("tokenState")
+        element<String>("dpanLastFour")
+        element<String>("fpanLastFour")
+        element<String>("issuerName")
+        element<String>("issuerTokenId")
+        element<String>("portfolioName")
+        element<Boolean>("isDefaultToken")
+    }
+
+    override fun serialize(encoder: Encoder, value: TokenInfo) {
+        encoder.encodeStructure(descriptor) {
+            encodeIntElement(descriptor, 0, value.network)
+            encodeIntElement(descriptor, 1, value.tokenServiceProvider)
+            encodeIntElement(descriptor, 2, value.tokenState)
+            encodeStringElement(descriptor, 3, value.dpanLastFour)
+            encodeStringElement(descriptor, 4, value.fpanLastFour)
+            encodeStringElement(descriptor, 5, value.issuerName)
+            encodeStringElement(descriptor, 6, value.issuerTokenId)
+            encodeStringElement(descriptor, 7, value.portfolioName)
+            encodeBooleanElement(descriptor, 8, value.isDefaultToken)
+        }
+    }
+
+    override fun deserialize(decoder: Decoder) = throw NotImplementedError()
 }
