@@ -1,17 +1,30 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package org.racehorse.utils
 
 import android.net.Uri
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.nullable
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
 import kotlinx.serialization.descriptors.serialDescriptor
+import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
 import kotlinx.serialization.serializer
 import java.io.File
+
+fun CompositeDecoder.decodeNullableStringElement(descriptor: SerialDescriptor, index: Int): String? =
+    decodeNullableSerializableElement(descriptor, index, String.serializer().nullable)
+
+fun CompositeDecoder.decodeNullableIntElement(descriptor: SerialDescriptor, index: Int): Int? =
+    decodeNullableSerializableElement(descriptor, index, Int.serializer().nullable)
+
 
 object AnySerializer : KSerializer<Any?> {
     private val classCache = HashMap<String, Class<*>>()

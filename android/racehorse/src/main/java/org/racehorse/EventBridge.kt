@@ -7,9 +7,7 @@ import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -18,7 +16,6 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.NoSubscriberEvent
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.SubscriberExceptionEvent
-import kotlin.reflect.jvm.internal.impl.resolve.calls.inference.CapturedType
 
 /**
  * An event posted from the WebView.
@@ -95,7 +92,7 @@ abstract class ResponseEvent : ChainableEvent()
  * guarantees that if an exception is thrown then pending promise is rejected.
  */
 @Serializable
-class VoidEvent : ResponseEvent()
+object VoidEvent : ResponseEvent()
 
 /**
  * Response that describes an occurred exception.
@@ -192,7 +189,7 @@ open class EventBridge(
 
         if (event !is ChainableEvent) {
             eventBus.post(event)
-            return stringifyEvent(VoidEvent())
+            return stringifyEvent(VoidEvent)
         }
 
         return synchronized(this) {

@@ -99,7 +99,7 @@ open class FacebookLoginPlugin(private val activity: ComponentActivity) {
     fun onFacebookLogOut(event: FacebookLogOutEvent) {
         event.respond {
             loginManager.logOut()
-            VoidEvent()
+            VoidEvent
         }
     }
 }

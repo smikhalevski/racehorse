@@ -40,7 +40,7 @@ class FacebookSharePlugin(val activity: ComponentActivity) {
                 .setShareHashtag(event.hashtag?.let { ShareHashtag.Builder().setHashtag(it).build() })
                 .build()
         ) {
-            event.respond(VoidEvent())
+            event.respond(VoidEvent)
         }
     }
 }

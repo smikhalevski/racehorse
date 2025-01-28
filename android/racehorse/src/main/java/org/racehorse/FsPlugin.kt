@@ -2,7 +2,6 @@
 
 package org.racehorse
 
-import kotlinx.serialization.UseSerializers
 import android.net.Uri
 import android.os.Environment
 import android.webkit.WebResourceResponse
@@ -11,6 +10,7 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.utils.UriSerializer
@@ -315,7 +315,7 @@ open class FsPlugin(
 
         event.uri.toSupportedUri().getOutputStream(event.append).use { it.write(bytes) }
 
-        event.respond(VoidEvent())
+        event.respond(VoidEvent)
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
@@ -323,7 +323,7 @@ open class FsPlugin(
         event.uri.toSupportedUri().getInputStream().use {
             event.toUri.toSupportedUri().getOutputStream().use(it::copyTo)
         }
-        event.respond(VoidEvent())
+        event.respond(VoidEvent)
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
