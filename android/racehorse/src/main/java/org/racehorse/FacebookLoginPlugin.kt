@@ -1,3 +1,5 @@
+@file:UseSerializers(AccessTokenSerializer::class)
+
 package org.racehorse
 
 import androidx.activity.ComponentActivity
@@ -7,54 +9,32 @@ import com.facebook.FacebookCallback
 import com.facebook.FacebookException
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.nullable
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.descriptors.element
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.encodeStructure
 import org.greenrobot.eventbus.Subscribe
-
-@Serializable
-class SerializableFacebookAccessToken(
-    val expires: Long,
-    val permissions: List<String>,
-    val declinedPermissions: List<String>,
-    val expiredPermissions: List<String>,
-    val token: String,
-    val lastRefresh: Long,
-    val applicationId: String,
-    val userId: String,
-    val dataAccessExpirationTime: Long,
-    val graphDomain: String?,
-    val isExpired: Boolean,
-    val isDataAccessExpired: Boolean,
-    val isInstagramToken: Boolean,
-) {
-    constructor(accessToken: AccessToken) : this(
-        expires = accessToken.expires.time,
-        permissions = accessToken.permissions.filterNotNull(),
-        declinedPermissions = accessToken.declinedPermissions.filterNotNull(),
-        expiredPermissions = accessToken.expiredPermissions.filterNotNull(),
-        token = accessToken.token,
-        lastRefresh = accessToken.lastRefresh.time,
-        applicationId = accessToken.applicationId,
-        userId = accessToken.userId,
-        dataAccessExpirationTime = accessToken.dataAccessExpirationTime.time,
-        graphDomain = accessToken.graphDomain,
-        isExpired = accessToken.isExpired,
-        isDataAccessExpired = accessToken.isDataAccessExpired,
-        isInstagramToken = accessToken.isInstagramToken,
-    )
-}
 
 @Serializable
 class GetCurrentFacebookAccessTokenEvent : RequestEvent() {
 
     @Serializable
-    class ResultEvent(val accessToken: SerializableFacebookAccessToken?) : ResponseEvent()
+    class ResultEvent(val accessToken: AccessToken?) : ResponseEvent()
 }
 
 @Serializable
 class FacebookLogInEvent(val permissions: List<String> = emptyList()) : RequestEvent() {
 
     @Serializable
-    class ResultEvent(val accessToken: SerializableFacebookAccessToken?) : ResponseEvent()
+    class ResultEvent(val accessToken: AccessToken?) : ResponseEvent()
 }
 
 @Serializable
@@ -67,9 +47,7 @@ open class FacebookLoginPlugin(private val activity: ComponentActivity) {
     @Subscribe
     fun onGetCurrentFacebookAccessToken(event: GetCurrentFacebookAccessTokenEvent) {
         event.respond(
-            GetCurrentFacebookAccessTokenEvent.ResultEvent(
-                AccessToken.getCurrentAccessToken()?.let(::SerializableFacebookAccessToken)
-            )
+            GetCurrentFacebookAccessTokenEvent.ResultEvent(AccessToken.getCurrentAccessToken())
         )
     }
 
@@ -88,7 +66,7 @@ open class FacebookLoginPlugin(private val activity: ComponentActivity) {
             fun handleLoginResult(result: LoginResult?) = event.respond {
                 loginManager.unregisterCallback(callbackManager)
 
-                FacebookLogInEvent.ResultEvent(result?.accessToken?.let(::SerializableFacebookAccessToken))
+                FacebookLogInEvent.ResultEvent(result?.accessToken)
             }
         })
 
@@ -102,4 +80,43 @@ open class FacebookLoginPlugin(private val activity: ComponentActivity) {
             VoidEvent
         }
     }
+}
+
+object AccessTokenSerializer : KSerializer<AccessToken> {
+    override val descriptor = buildClassSerialDescriptor(AccessToken::class.java.simpleName) {
+        element<Long>("expires")
+        element<List<String>>("permissions")
+        element<List<String>>("declinedPermissions")
+        element<List<String>>("expiredPermissions")
+        element<String>("token")
+        element<Long>("lastRefresh")
+        element<String>("applicationId")
+        element<String>("userId")
+        element<Long>("dataAccessExpirationTime")
+        element<String?>("graphDomain")
+        element<Boolean>("isExpired")
+        element<Boolean>("isDataAccessExpired")
+        element<Boolean>("isInstagramToken")
+    }
+
+    @ExperimentalSerializationApi
+    override fun serialize(encoder: Encoder, value: AccessToken) {
+        encoder.encodeStructure(descriptor) {
+            encodeLongElement(descriptor, 0, value.expires.time)
+            encodeSerializableElement(descriptor, 1, ListSerializer(String.serializer()), value.permissions.filterNotNull())
+            encodeSerializableElement(descriptor, 2, ListSerializer(String.serializer()), value.declinedPermissions.filterNotNull())
+            encodeSerializableElement(descriptor, 3, ListSerializer(String.serializer()), value.expiredPermissions.filterNotNull())
+            encodeStringElement(descriptor, 4, value.token)
+            encodeLongElement(descriptor, 5, value.lastRefresh.time)
+            encodeStringElement(descriptor, 6, value.applicationId)
+            encodeStringElement(descriptor, 7, value.userId)
+            encodeLongElement(descriptor, 8, value.dataAccessExpirationTime.time)
+            encodeNullableSerializableElement(descriptor, 9, String.serializer().nullable, value.graphDomain)
+            encodeBooleanElement(descriptor, 10, value.isExpired)
+            encodeBooleanElement(descriptor, 11, value.isDataAccessExpired)
+            encodeBooleanElement(descriptor, 12, value.isInstagramToken)
+        }
+    }
+
+    override fun deserialize(decoder: Decoder) = throw NotImplementedError()
 }
