@@ -34,7 +34,6 @@ fun Intent.filterPackageNames(packageManager: PackageManager, predicate: (packag
     val resolveInfos = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         packageManager.queryIntentActivities(this, PackageManager.ResolveInfoFlags.of(0L))
     } else {
-        @Suppress("DEPRECATION")
         packageManager.queryIntentActivities(this, 0)
     }
 

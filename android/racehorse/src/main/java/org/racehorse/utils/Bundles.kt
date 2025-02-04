@@ -10,8 +10,8 @@ fun Bundle.toMap(): Map<String, Any?> = buildMap {
     }
 }
 
-fun Map<String, Serializable>.toBundle(): Bundle = Bundle(size).apply {
+fun Map<String, *>.toBundle(): Bundle = Bundle(size).apply {
     forEach { (key, value) ->
-        putSerializable(key, value)
+        putSerializable(key, value as Serializable)
     }
 }

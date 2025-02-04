@@ -19,6 +19,8 @@ import kotlinx.serialization.builtins.PairSerializer
 import kotlinx.serialization.builtins.SetSerializer
 import kotlinx.serialization.builtins.ShortArraySerializer
 import kotlinx.serialization.builtins.TripleSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonArray
@@ -41,7 +43,7 @@ import kotlin.reflect.full.isSubclassOf
  *
  * Arrays are deserialized as [List].
  */
-open class AnySerializer(val classKey: String = "javaClass") : KSerializer<Any> {
+class AnySerializer(val classKey: String = "javaClass") : KSerializer<Any> {
 
     @ExperimentalSerializationApi
     override val descriptor = ContextualSerializer(Any::class, null, emptyArray()).descriptor
@@ -52,7 +54,7 @@ open class AnySerializer(val classKey: String = "javaClass") : KSerializer<Any> 
     private val arraySerializer = ArraySerializer(this)
     private val listSerializer = ListSerializer(this)
     private val setSerializer = SetSerializer(this)
-    private val mapSerializer = MapSerializer(MapKeySerializer, this)
+    private val mapSerializer = MapSerializer(AnyMapKeySerializer, this)
     private val pairSerializer = PairSerializer(this, this)
     private val mapEntrySerializer = MapEntrySerializer(this, this)
     private val tripleSerializer = TripleSerializer(this, this, this)
@@ -133,4 +135,13 @@ open class AnySerializer(val classKey: String = "javaClass") : KSerializer<Any> 
 
         else -> error("Class serializer not found: ${java.name}")
     }
+}
+
+private object AnyMapKeySerializer : KSerializer<Any> {
+    override val descriptor =
+        PrimitiveSerialDescriptor("org.racehorse.serializers.AnyMapKeySerializer", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: Any) = encoder.encodeString(value.toString())
+
+    override fun deserialize(decoder: Decoder): Any = decoder.decodeString()
 }

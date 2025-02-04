@@ -8,10 +8,19 @@ import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
 
 @Serializable
-class DeviceInfo(val apiLevel: Int, val brand: String, val model: String)
+class DeviceInfo(
+    val apiLevel: Int,
+    val brand: String,
+    val model: String
+)
 
 @Serializable
-class Rect(val top: Float = 0f, val right: Float = 0f, val bottom: Float = 0f, val left: Float = 0f)
+class Rect(
+    val top: Float = 0f,
+    val right: Float = 0f,
+    val bottom: Float = 0f,
+    val left: Float = 0f
+)
 
 /**
  * Get OS and device versions.

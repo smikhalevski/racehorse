@@ -12,7 +12,7 @@ import org.racehorse.utils.apiResult
 import org.racehorse.utils.launchActivityForResult
 
 @Serializable
-class SerializableGoogleSignInAccount(
+class GoogleSignInAccountSurrogate(
     val id: String?,
     val idToken: String?,
     val email: String?,
@@ -45,21 +45,21 @@ class SerializableGoogleSignInAccount(
 class GetLastGoogleSignedInAccountEvent : RequestEvent() {
 
     @Serializable
-    class ResultEvent(val account: SerializableGoogleSignInAccount?) : ResponseEvent()
+    class ResultEvent(val account: GoogleSignInAccountSurrogate?) : ResponseEvent()
 }
 
 @Serializable
 class GoogleSignInEvent : RequestEvent() {
 
     @Serializable
-    class ResultEvent(val account: SerializableGoogleSignInAccount?) : ResponseEvent()
+    class ResultEvent(val account: GoogleSignInAccountSurrogate?) : ResponseEvent()
 }
 
 @Serializable
 class GoogleSilentSignInEvent : RequestEvent() {
 
     @Serializable
-    class ResultEvent(val account: SerializableGoogleSignInAccount?) : ResponseEvent()
+    class ResultEvent(val account: GoogleSignInAccountSurrogate?) : ResponseEvent()
 }
 
 @Serializable
@@ -83,7 +83,7 @@ open class GoogleSignInPlugin(
 
     @Subscribe
     open fun onGetLastGoogleSignedInAccount(event: GetLastGoogleSignedInAccountEvent) {
-        val account = GoogleSignIn.getLastSignedInAccount(activity)?.let(::SerializableGoogleSignInAccount)
+        val account = GoogleSignIn.getLastSignedInAccount(activity)?.let(::GoogleSignInAccountSurrogate)
 
         event.respond(GetLastGoogleSignedInAccountEvent.ResultEvent(account))
     }
@@ -94,7 +94,7 @@ open class GoogleSignInPlugin(
             event.respond {
                 GoogleSignInEvent.ResultEvent(
                     try {
-                        SerializableGoogleSignInAccount(GoogleSignIn.getSignedInAccountFromIntent(it.data).apiResult)
+                        GoogleSignInAccountSurrogate(GoogleSignIn.getSignedInAccountFromIntent(it.data).apiResult)
                     } catch (e: ApiException) {
                         if (e.statusCode == GoogleSignInStatusCodes.SIGN_IN_CANCELLED) null else throw e
                     }
@@ -112,7 +112,7 @@ open class GoogleSignInPlugin(
         val task = googleSignInClient.silentSignIn()
 
         if (task.isSuccessful) {
-            event.respond(GoogleSilentSignInEvent.ResultEvent(SerializableGoogleSignInAccount(task.apiResult)))
+            event.respond(GoogleSilentSignInEvent.ResultEvent(GoogleSignInAccountSurrogate(task.apiResult)))
             return
         }
 
@@ -120,7 +120,7 @@ open class GoogleSignInPlugin(
             event.respond {
                 GoogleSilentSignInEvent.ResultEvent(
                     try {
-                        SerializableGoogleSignInAccount(task.apiResult)
+                        GoogleSignInAccountSurrogate(task.apiResult)
                     } catch (e: ApiException) {
                         if (e.statusCode == GoogleSignInStatusCodes.SIGN_IN_REQUIRED) null else throw e
                     }

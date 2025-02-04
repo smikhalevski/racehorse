@@ -1,6 +1,9 @@
+@file:UseSerializers(UriSerializer::class)
+
 package org.racehorse
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.DownloadManager
 import android.content.ContentValues
 import android.content.Context
@@ -14,9 +17,10 @@ import android.webkit.URLUtil
 import androidx.activity.ComponentActivity
 import androidx.core.database.getStringOrNull
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
+import kotlinx.serialization.UseSerializers
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import org.racehorse.serializers.UriSerializer
 import org.racehorse.utils.askForPermission
 import org.racehorse.utils.createTempFile
 import org.racehorse.utils.queryAll
@@ -26,12 +30,6 @@ import java.util.Base64
 
 @Serializable
 class Download(
-    /**
-     * The download manager that handles the download.
-     */
-    @Transient
-    private val downloadManager: DownloadManager? = null,
-
     /**
      * An identifier for a particular download, unique across the system. Clients use this ID to make subsequent calls
      * related to the download.
@@ -71,6 +69,11 @@ class Download(
     val localUri: String?,
 
     /**
+     * The `content:` URI of the downloaded file.
+     */
+    val contentUri: Uri?,
+
+    /**
      * The MIME type of the downloaded file.
      */
     val mimeType: String?,
@@ -95,20 +98,13 @@ class Download(
      */
     val title: String
 ) {
-
-    /**
-     * The `content:` URI of the downloaded file.
-     */
-    val contentUri = downloadManager?.getUriForDownloadedFile(id)?.toString()
-
     constructor(downloadManager: DownloadManager, cursor: Cursor) : this(
-        downloadManager,
-
         id = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_ID)),
         status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS)),
         reason = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON)),
         uri = cursor.getString(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_URI)),
         localUri = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_LOCAL_URI)),
+        contentUri = downloadManager.getUriForDownloadedFile(cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_ID))),
         mimeType = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_MEDIA_TYPE)),
         totalSize = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)),
         downloadedSize = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)),
@@ -341,6 +337,7 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
     )
 }
 
+@SuppressLint("NewApi")
 private class DataUri(uri: Uri) {
 
     val mimeType: String?

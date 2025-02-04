@@ -12,8 +12,8 @@ import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.NoticeEvent
 import org.racehorse.RequestEvent
 import org.racehorse.ResponseEvent
-import org.racehorse.utils.FileSerializer
-import org.racehorse.utils.ThrowableSerializer
+import org.racehorse.serializers.FileSerializer
+import org.racehorse.serializers.ThrowableSerializer
 import java.io.File
 import java.net.URLConnection
 
