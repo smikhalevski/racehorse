@@ -42,8 +42,15 @@ import kotlin.reflect.full.isSubclassOf
  * Serializer/deserializer for [Any] class.
  *
  * Arrays are deserialized as [List].
+ *
+ * @param className The name of the JSON object property that holds the name of the Java class that was used during
+ * serialization, or must be used during deserialization.
+ * @param isClassNameSerialized If `true` then [className] property isn't encoded during serialisation.
  */
-class AnySerializer(val classKey: String = "javaClass") : KSerializer<Any> {
+class AnySerializer(
+    val className: String = "__javaClass",
+    val isClassNameSerialized: Boolean = false
+) : KSerializer<Any> {
 
     @ExperimentalSerializationApi
     override val descriptor = ContextualSerializer(Any::class, null, emptyArray()).descriptor
@@ -54,19 +61,24 @@ class AnySerializer(val classKey: String = "javaClass") : KSerializer<Any> {
     private val arraySerializer = ArraySerializer(this)
     private val listSerializer = ListSerializer(this)
     private val setSerializer = SetSerializer(this)
-    private val mapSerializer = MapSerializer(AnyMapKeySerializer, this)
+    private val mapSerializer = MapSerializer(MapKeySerializer, this)
     private val pairSerializer = PairSerializer(this, this)
     private val mapEntrySerializer = MapEntrySerializer(this, this)
     private val tripleSerializer = TripleSerializer(this, this, this)
 
     @ExperimentalSerializationApi
     @InternalSerializationApi
+    @Suppress("UNCHECKED_CAST")
     override fun serialize(encoder: Encoder, value: Any) {
-        check(encoder is JsonEncoder) { "Unsupported encoder" }
-
         val serializer = value::class.getSerializer(encoder.serializersModule) ?: value::class.guessSerializer()
 
-        @Suppress("UNCHECKED_CAST")
+        if (!isClassNameSerialized) {
+            encoder.encodeSerializableValue(serializer as KSerializer<Any>, value)
+            return
+        }
+
+        check(encoder is JsonEncoder) { "Unsupported encoder" }
+
         val element = encoder.json.encodeToJsonElement(serializer as KSerializer<Any>, value)
 
         if (element !is JsonObject) {
@@ -74,11 +86,11 @@ class AnySerializer(val classKey: String = "javaClass") : KSerializer<Any> {
             return
         }
 
-        require(!element.containsKey(classKey)) { "Class redefines internal property \"$classKey\": ${value::class.java.name}" }
+        require(!element.containsKey(className)) { "Class ${value::class.java.name} redefines internal property \"$className\"" }
 
         val properties = element.toMutableMap()
 
-        properties[classKey] = JsonPrimitive(value::class.java.name)
+        properties[className] = JsonPrimitive(value::class.java.name)
 
         encoder.encodeJsonElement(JsonObject(properties))
     }
@@ -98,14 +110,15 @@ class AnySerializer(val classKey: String = "javaClass") : KSerializer<Any> {
             return decoder.json.decodeFromJsonElement(listSerializer, element)
         }
 
-        val className =
-            requireNotNull(element.jsonObject[classKey]?.jsonPrimitive?.contentOrNull) { "Property \"$classKey\" is required" }
+        val className = element.jsonObject[className]?.jsonPrimitive?.contentOrNull
+            ?: return decoder.json.decodeFromJsonElement(mapSerializer, element)
 
-        val eventClass = classCache.getOrPut(className) { Class.forName(className).kotlin }
+        val kClass = classCache.getOrPut(className) { Class.forName(className).kotlin }
 
-        val serializer = checkNotNull(eventClass.getSerializer(decoder.serializersModule)) { "Cannot deserialize" }
+        val serializer =
+            checkNotNull(kClass.getSerializer(decoder.serializersModule)) { "Cannot deserialize $className" }
 
-        val jsonObject = JsonObject(element.jsonObject - classKey)
+        val jsonObject = JsonObject(element.jsonObject - this.className)
 
         return checkNotNull(decoder.json.decodeFromJsonElement(serializer, jsonObject)) { "Unexpected null" }
     }
@@ -115,6 +128,9 @@ class AnySerializer(val classKey: String = "javaClass") : KSerializer<Any> {
     private fun KClass<*>.getSerializer(serializersModule: SerializersModule): KSerializer<*>? =
         serializersModule.getContextual(this) ?: serializerOrNull()
 
+    /**
+     * Returns a serializer that best fits the class.
+     */
     @ExperimentalSerializationApi
     private fun KClass<*>.guessSerializer(): KSerializer<*> = when {
         isSubclassOf(Pair::class) -> pairSerializer
@@ -133,13 +149,13 @@ class AnySerializer(val classKey: String = "javaClass") : KSerializer<Any> {
         isSubclassOf(Set::class) -> setSerializer
         isSubclassOf(Map::class) -> mapSerializer
 
-        else -> error("Class serializer not found: ${java.name}")
+        else -> error("Cannot serialize ${java.name}")
     }
 }
 
-private object AnyMapKeySerializer : KSerializer<Any> {
+private object MapKeySerializer : KSerializer<Any> {
     override val descriptor =
-        PrimitiveSerialDescriptor("org.racehorse.serializers.AnyMapKeySerializer", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("org.racehorse.serializers.MapKeySerializer", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: Any) = encoder.encodeString(value.toString())
 
