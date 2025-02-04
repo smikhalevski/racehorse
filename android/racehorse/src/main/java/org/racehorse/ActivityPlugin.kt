@@ -1,13 +1,17 @@
+@file:UseSerializers(IntentSerializer::class)
+
 package org.racehorse
 
 import android.app.Activity
+import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.utils.SerializableIntent
+import org.racehorse.serializers.IntentSerializer
 import org.racehorse.utils.launchActivity
 import org.racehorse.utils.launchActivityForResult
 
@@ -42,7 +46,7 @@ class GetActivityInfoEvent : RequestEvent() {
  * @param intent The intent that starts an activity.
  */
 @Serializable
-class StartActivityEvent(val intent: SerializableIntent) : RequestEvent() {
+class StartActivityEvent(val intent: Intent) : RequestEvent() {
 
     @Serializable
     class ResultEvent(val isStarted: Boolean) : ResponseEvent()
@@ -52,10 +56,10 @@ class StartActivityEvent(val intent: SerializableIntent) : RequestEvent() {
  * Start an activity for the [intent] and wait for the result.
  */
 @Serializable
-class StartActivityForResultEvent(val intent: SerializableIntent) : RequestEvent() {
+class StartActivityForResultEvent(val intent: Intent) : RequestEvent() {
 
     @Serializable
-    class ResultEvent(val resultCode: Int, val intent: SerializableIntent?) : ResponseEvent()
+    class ResultEvent(val resultCode: Int, val intent: Intent?) : ResponseEvent()
 }
 
 /**
@@ -120,13 +124,13 @@ open class ActivityPlugin(
 
     @Subscribe
     open fun onStartActivity(event: StartActivityEvent) {
-        event.respond(StartActivityEvent.ResultEvent(activity.launchActivity(event.intent.toIntent())))
+        event.respond(StartActivityEvent.ResultEvent(activity.launchActivity(event.intent)))
     }
 
     @Subscribe
     open fun onStartActivityForResult(event: StartActivityForResultEvent) {
-        val isLaunched = activity.launchActivityForResult(event.intent.toIntent()) {
-            event.respond(StartActivityForResultEvent.ResultEvent(it.resultCode, it.data?.let(::SerializableIntent)))
+        val isLaunched = activity.launchActivityForResult(event.intent) {
+            event.respond(StartActivityForResultEvent.ResultEvent(it.resultCode, it.data))
         }
 
         if (!isLaunched) {

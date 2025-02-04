@@ -13,7 +13,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.racehorse.utils.UriSerializer
+import org.racehorse.serializers.UriSerializer
 import org.racehorse.utils.guessMimeType
 import org.racehorse.webview.ShouldInterceptRequestEvent
 import java.io.ByteArrayInputStream

@@ -79,7 +79,7 @@ open class ContactsPlugin(private val activity: ComponentActivity) {
     private fun getContactEmails(contactId: Long) = activity.contentResolver.queryAll(
         ContactsContract.CommonDataKinds.Email.CONTENT_URI,
         arrayOf(ContactsContract.CommonDataKinds.Email.ADDRESS),
-        ContactsContract.CommonDataKinds.Email.CONTACT_ID + "=$contactId"
+        "${ContactsContract.CommonDataKinds.Email.CONTACT_ID}=$contactId"
     ) {
         buildList {
             while (moveToNext()) {
@@ -94,7 +94,7 @@ open class ContactsPlugin(private val activity: ComponentActivity) {
             ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER,
             ContactsContract.CommonDataKinds.Phone.NUMBER,
         ),
-        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=$contactId"
+        "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID}=$contactId"
     ) {
         buildList {
             while (moveToNext()) {

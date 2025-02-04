@@ -53,7 +53,7 @@ internal class BundleDownload(
      */
     fun start() {
         if (isPending || isStopped) {
-            throw IllegalStateException("Cannot be started")
+            error("Cannot be started")
         }
         isPending = true
 

@@ -154,7 +154,7 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
             }
         }
 
-        throw IllegalStateException("Cannot authenticate user")
+        error("Cannot authenticate user")
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
