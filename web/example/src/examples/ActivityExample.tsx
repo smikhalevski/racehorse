@@ -90,19 +90,19 @@ export function ActivityExample() {
           activityManager.startActivity({
             action: 'android.intent.action.CHOOSER',
             extras: {
-              'android.intent.extra.TITLE': 'Hello Goodbye',
+              'android.intent.extra.TITLE': 'Hello user!',
               'android.intent.extra.INTENT': {
                 action: 'android.intent.action.SEND',
                 type: 'text/plain',
                 extras: {
-                  'android.intent.extra.TEXT': 'https://google.com',
+                  'android.intent.extra.TEXT': 'This is a shared text',
                 },
               },
             },
           });
         }}
       >
-        {'Share text'}
+        {'Share text with chooser'}
       </button>
 
       <FormattedJSON value={contactActivityResult} />

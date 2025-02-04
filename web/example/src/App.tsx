@@ -23,6 +23,7 @@ import { FsExample } from './examples/FsExample';
 import { EvergreenExample } from './examples/EvergreenExample';
 import { useKeyboardAnimation, useKeyboardManager, useWindowInsets } from '@racehorse/react';
 import { runAnimation, scrollToElement } from 'racehorse';
+import { DownloadExample } from './examples/DownloadExample';
 
 export function App() {
   const keyboardManager = useKeyboardManager();
@@ -78,7 +79,7 @@ export function App() {
       <AssetLoaderExample />
       <BiometricExample />
       <BiometricEncryptedStorageExample />
-      {/*<DownloadExample />*/}
+      <DownloadExample />
       <KeyboardExample />
       <FacebookShareExample />
       <GoogleSignInExample />

@@ -35,6 +35,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.serializerOrNull
+import org.racehorse.utils.loadClass
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
 
@@ -54,8 +55,6 @@ class AnySerializer(
 
     @ExperimentalSerializationApi
     override val descriptor = ContextualSerializer(Any::class, null, emptyArray()).descriptor
-
-    private val classCache = HashMap<String, KClass<*>>()
 
     @ExperimentalSerializationApi
     private val arraySerializer = ArraySerializer(this)
@@ -113,10 +112,8 @@ class AnySerializer(
         val className = element.jsonObject[className]?.jsonPrimitive?.contentOrNull
             ?: return decoder.json.decodeFromJsonElement(mapSerializer, element)
 
-        val kClass = classCache.getOrPut(className) { Class.forName(className).kotlin }
-
         val serializer =
-            checkNotNull(kClass.getSerializer(decoder.serializersModule)) { "Cannot deserialize $className" }
+            checkNotNull(loadClass(className).getSerializer(decoder.serializersModule)) { "Cannot deserialize $className" }
 
         val jsonObject = JsonObject(element.jsonObject - this.className)
 

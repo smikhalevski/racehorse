@@ -8,6 +8,8 @@ import { Unsubscribe } from './types';
  * The intent that can be passed from and to web application.
  */
 export interface Intent {
+  __javaClass?: 'android.content.Intent';
+
   /**
    * The general action to be performed, such as {@link Intent.ACTION_VIEW}.
    */
