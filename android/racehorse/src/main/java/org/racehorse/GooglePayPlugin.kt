@@ -18,6 +18,31 @@ import org.racehorse.utils.apiResult
 import java.util.concurrent.atomic.AtomicInteger
 
 @Serializable
+class TokenInfoSurrogate(
+    val network: Int,
+    val tokenServiceProvider: Int,
+    val tokenState: Int,
+    val dpanLastFour: String,
+    val fpanLastFour: String,
+    val issuerName: String,
+    val issuerTokenId: String,
+    val portfolioName: String,
+    val isDefaultToken: Boolean,
+) {
+    constructor(tokenInfo: TokenInfo) : this(
+        network = tokenInfo.network,
+        tokenServiceProvider = tokenInfo.tokenServiceProvider,
+        tokenState = tokenInfo.tokenState,
+        dpanLastFour = tokenInfo.dpanLastFour,
+        fpanLastFour = tokenInfo.fpanLastFour,
+        issuerName = tokenInfo.issuerName,
+        issuerTokenId = tokenInfo.issuerTokenId,
+        portfolioName = tokenInfo.portfolioName,
+        isDefaultToken = tokenInfo.isDefaultToken,
+    )
+}
+
+@Serializable
 class UserAddressSurrogate(
     val name: String?,
     val address1: String?,
@@ -48,31 +73,6 @@ class TokenStatusSurrogate(
     constructor(tokenStatus: TokenStatus) : this(
         tokenState = tokenStatus.tokenState,
         isSelected = tokenStatus.isSelected
-    )
-}
-
-@Serializable
-class TokenInfoSurrogate(
-    val network: Int,
-    val tokenServiceProvider: Int,
-    val tokenState: Int,
-    val dpanLastFour: String,
-    val fpanLastFour: String,
-    val issuerName: String,
-    val issuerTokenId: String,
-    val portfolioName: String,
-    val isDefaultToken: Boolean,
-) {
-    constructor(tokenInfo: TokenInfo) : this(
-        network = tokenInfo.network,
-        tokenServiceProvider = tokenInfo.tokenServiceProvider,
-        tokenState = tokenInfo.tokenState,
-        dpanLastFour = tokenInfo.dpanLastFour,
-        fpanLastFour = tokenInfo.fpanLastFour,
-        issuerName = tokenInfo.issuerName,
-        issuerTokenId = tokenInfo.issuerTokenId,
-        portfolioName = tokenInfo.portfolioName,
-        isDefaultToken = tokenInfo.isDefaultToken,
     )
 }
 
