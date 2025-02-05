@@ -1,5 +1,6 @@
 package org.racehorse
 
+import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.io.File
@@ -17,36 +18,46 @@ import javax.crypto.spec.SecretKeySpec
  * @param value A value to write to the file.
  * @param password The password that is used to cipher the file contents.
  */
+@Serializable
 class SetEncryptedValueEvent(val key: String, val value: String, val password: String) : RequestEvent() {
 
     /**
      * @param isSuccessful `true` if the value was written to the storage, or `false` otherwise.
      */
+    @Serializable
     class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
 }
 
 /**
  * Retrieves an encrypted value associated with the key.
  */
+@Serializable
 class GetEncryptedValueEvent(val key: String, val password: String) : RequestEvent() {
 
     /**
      * @param value The deciphered value or `null` if key wasn't found or if password is incorrect.
      */
+    @Serializable
     class ResultEvent(val value: String?) : ResponseEvent()
 }
 
 /**
  * Checks that the key exists in the storage.
  */
+@Serializable
 class HasEncryptedValueEvent(val key: String) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val isExisting: Boolean) : ResponseEvent()
 }
 
 /**
  * Deletes an encrypted value associated with the key.
  */
+@Serializable
 class DeleteEncryptedValueEvent(val key: String) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val isDeleted: Boolean) : ResponseEvent()
 }
 

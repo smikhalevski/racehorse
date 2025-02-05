@@ -65,22 +65,45 @@ export function ActivityExample() {
         </button>
       </p>
 
+      <p>
+        <button
+          onClick={() => {
+            permissionsManager.askForPermission('android.permission.READ_CONTACTS').then(isGranted => {
+              if (isGranted) {
+                activityManager
+                  .startActivityForResult({
+                    // https://developer.android.com/guide/components/intents-common#Contacts
+                    action: 'android.intent.action.PICK',
+                    type: 'vnd.android.cursor.dir/contact',
+                  })
+                  .then(setContactActivityResult);
+              }
+            });
+          }}
+        >
+          {'Pick a contact'}
+        </button>
+      </p>
+
       <button
         onClick={() => {
-          permissionsManager.askForPermission('android.permission.READ_CONTACTS').then(isGranted => {
-            if (isGranted) {
-              activityManager
-                .startActivityForResult({
-                  // https://developer.android.com/guide/components/intents-common#Contacts
-                  action: 'android.intent.action.PICK',
-                  type: 'vnd.android.cursor.dir/contact',
-                })
-                .then(setContactActivityResult);
-            }
+          activityManager.startActivity({
+            action: 'android.intent.action.CHOOSER',
+            extras: {
+              'android.intent.extra.TITLE': 'Hello user!',
+              'android.intent.extra.INTENT': {
+                __javaClass: 'android.content.Intent',
+                action: 'android.intent.action.SEND',
+                type: 'text/plain',
+                extras: {
+                  'android.intent.extra.TEXT': 'This is a shared text',
+                },
+              },
+            },
           });
         }}
       >
-        {'Pick a contact'}
+        {'Share text with chooser'}
       </button>
 
       <FormattedJSON value={contactActivityResult} />

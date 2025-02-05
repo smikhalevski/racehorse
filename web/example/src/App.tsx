@@ -15,7 +15,6 @@ import { ToastExample } from './examples/ToastExample';
 import { EventBridgeExample } from './examples/EventBridgeExample';
 import { FacebookLoginExample } from './examples/FacebookLoginExample';
 import { FacebookShareExample } from './examples/FacebookShareExample';
-import { DownloadExample } from './examples/DownloadExample';
 import { BiometricExample } from './examples/BiometricExample';
 import { BiometricEncryptedStorageExample } from './examples/BiometricEncryptedStorageExample';
 import { AssetLoaderExample } from './examples/AssetLoaderExample';
@@ -24,6 +23,7 @@ import { FsExample } from './examples/FsExample';
 import { EvergreenExample } from './examples/EvergreenExample';
 import { useKeyboardAnimation, useKeyboardManager, useWindowInsets } from '@racehorse/react';
 import { runAnimation, scrollToElement } from 'racehorse';
+import { DownloadExample } from './examples/DownloadExample';
 
 export function App() {
   const keyboardManager = useKeyboardManager();

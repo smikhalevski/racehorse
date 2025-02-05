@@ -49,13 +49,25 @@ Racehorse is the pluggable bridge that marshals events between the web app and t
 Racehorse works, let's create a plugin that would display
 [an Android-native toast](https://developer.android.com/guide/topics/ui/notifiers/toasts) when the web app requests it.
 
-Let's start by adding required Racehorse dependencies. In your Android project add:
+Let's start by adding required Racehorse dependencies. In your `app/build.gradle.kts` add:
 
 ```kotlin
+plugins {
+    id("org.jetbrains.kotlin.plugin.serialization")
+}
+
 dependencies {
+    implementation("org.racehorse:racehorse:1.9.0")
     implementation("org.greenrobot:eventbus:3.3.1")
-    implementation("com.google.code.gson:gson:2.10.1")
-    implementation("org.racehorse:racehorse:1.7.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+}
+```
+
+In root-level `build.gradle.kts` add:
+
+```kotlin
+plugins {
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 ```
 
@@ -105,8 +117,10 @@ Here's an event that is posted from the web to Android through the bridge:
 ```kotlin
 package com.example
 
+import kotlinx.serialization.Serializable
 import org.racehorse.WebEvent
 
+@Serializable
 class ShowToastEvent(val message: String) : WebEvent
 ```
 

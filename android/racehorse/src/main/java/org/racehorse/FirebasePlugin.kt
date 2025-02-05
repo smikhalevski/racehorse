@@ -1,12 +1,16 @@
 package org.racehorse
 
 import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
 
 /**
  * Returns the Firebase token associated with the device.
  */
+@Serializable
 class GetFirebaseTokenEvent : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val token: String?) : ResponseEvent()
 }
 

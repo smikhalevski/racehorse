@@ -5,30 +5,32 @@ import android.os.Build
 import android.provider.Settings
 import androidx.biometric.BiometricManager
 import androidx.fragment.app.FragmentActivity
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.launchActivityForResult
 
+@Serializable
 enum class BiometricAuthenticator(val value: Int) {
     /**
      * Any biometric (e.g. fingerprint, iris, or face) on the device that meets or exceeds the requirements for
      * **Class 3**, as defined by the Android CDD.
      */
-    @SerializedName("biometric_strong")
+    @SerialName("biometric_strong")
     BIOMETRIC_STRONG(BiometricManager.Authenticators.BIOMETRIC_STRONG),
 
     /**
      * Any biometric (e.g. fingerprint, iris, or face) on the device that meets or exceeds the requirements for
      * **Class 2**, as defined by the Android CDD.
      */
-    @SerializedName("biometric_weak")
+    @SerialName("biometric_weak")
     BIOMETRIC_WEAK(BiometricManager.Authenticators.BIOMETRIC_WEAK),
 
     /**
      * The non-biometric credential used to secure the device (i.e. PIN, pattern, or password). This should typically
      * only be used in combination with a biometric auth type, such as [BIOMETRIC_WEAK].
      */
-    @SerializedName("device_credential")
+    @SerialName("device_credential")
     DEVICE_CREDENTIAL(BiometricManager.Authenticators.DEVICE_CREDENTIAL);
 
     companion object {
@@ -40,11 +42,12 @@ enum class BiometricAuthenticator(val value: Int) {
     }
 }
 
+@Serializable
 enum class BiometricStatus(val value: Int) {
     /**
      * App can authenticate using biometrics.
      */
-    @SerializedName("supported")
+    @SerialName("supported")
     SUPPORTED(BiometricManager.BIOMETRIC_SUCCESS),
 
     /**
@@ -52,38 +55,38 @@ enum class BiometricStatus(val value: Int) {
      *
      * This status code may be returned on older Android versions due to partial incompatibility with a newer API.
      */
-    @SerializedName("unknown")
+    @SerialName("unknown")
     UNKNOWN(BiometricManager.BIOMETRIC_STATUS_UNKNOWN),
 
     /**
      * The user can't authenticate because the specified options are incompatible with the current Android version.
      */
-    @SerializedName("unsupported")
+    @SerialName("unsupported")
     UNSUPPORTED(BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED),
 
     /**
      * No biometric features available on this device.
      */
-    @SerializedName("no_hardware")
+    @SerialName("no_hardware")
     NO_HARDWARE(BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE),
 
     /**
      * Biometric features are currently unavailable.
      */
-    @SerializedName("hardware_unavailable")
+    @SerialName("hardware_unavailable")
     HARDWARE_UNAVAILABLE(BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE),
 
     /**
      * The user can't authenticate because no biometric or device credential is enrolled.
      */
-    @SerializedName("none_enrolled")
+    @SerialName("none_enrolled")
     NONE_ENROLLED(BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED),
 
     /**
      * The user can't authenticate because a security vulnerability has been discovered with one or more hardware
      * sensors. The affected sensor(s) are unavailable until a security update has addressed the issue.
      */
-    @SerializedName("security_update_required")
+    @SerialName("security_update_required")
     SECURITY_UPDATE_REQUIRED(BiometricManager.BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED);
 
     companion object {
@@ -91,11 +94,17 @@ enum class BiometricStatus(val value: Int) {
     }
 }
 
+@Serializable
 class GetBiometricStatusEvent(val authenticators: Array<BiometricAuthenticator>?) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val status: BiometricStatus) : ResponseEvent()
 }
 
+@Serializable
 class EnrollBiometricEvent(val authenticators: Array<BiometricAuthenticator>?) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val isEnrolled: Boolean) : ResponseEvent()
 }
 
@@ -127,7 +136,9 @@ class BiometricPlugin(private val activity: FragmentActivity) {
                 .putExtra(Settings.EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED, authenticators)
 
             // Fingerprint
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.P -> Intent(Settings.ACTION_FINGERPRINT_ENROLL)
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ->
+                @Suppress("DEPRECATION")
+                Intent(Settings.ACTION_FINGERPRINT_ENROLL)
 
             // Open security settings, so user can navigate to Fingerprint section
             else -> Intent(Settings.ACTION_SECURITY_SETTINGS)

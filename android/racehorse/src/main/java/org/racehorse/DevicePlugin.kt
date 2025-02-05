@@ -4,24 +4,41 @@ import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
-import java.io.Serializable
 
-class DeviceInfo(val apiLevel: Int, val brand: String, val model: String) : Serializable
+@Serializable
+class DeviceInfo(
+    val apiLevel: Int,
+    val brand: String,
+    val model: String
+)
 
-class Rect(val top: Float = 0f, val right: Float = 0f, val bottom: Float = 0f, val left: Float = 0f) : Serializable
+@Serializable
+class Rect(
+    val top: Float = 0f,
+    val right: Float = 0f,
+    val bottom: Float = 0f,
+    val left: Float = 0f
+)
 
 /**
  * Get OS and device versions.
  */
+@Serializable
 class GetDeviceInfoEvent : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val info: DeviceInfo) : ResponseEvent()
 }
 
 /**
  * Get the list of locales that user picked in the device settings.
  */
+@Serializable
 class GetPreferredLocalesEvent : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val locales: Set<String>) : ResponseEvent()
 }
 
@@ -30,7 +47,10 @@ class GetPreferredLocalesEvent : RequestEvent() {
  *
  * @param typeMask Bit mask of [WindowInsetsCompat.Type]s to query the insets for.
  */
+@Serializable
 class GetWindowInsetsEvent(val typeMask: Int) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val rect: Rect) : ResponseEvent()
 }
 

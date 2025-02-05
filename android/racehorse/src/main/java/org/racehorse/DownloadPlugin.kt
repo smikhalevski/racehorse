@@ -1,6 +1,9 @@
+@file:UseSerializers(UriSerializer::class)
+
 package org.racehorse
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.DownloadManager
 import android.content.ContentValues
 import android.content.Context
@@ -13,22 +16,20 @@ import android.webkit.MimeTypeMap
 import android.webkit.URLUtil
 import androidx.activity.ComponentActivity
 import androidx.core.database.getStringOrNull
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import org.racehorse.serializers.UriSerializer
 import org.racehorse.utils.askForPermission
 import org.racehorse.utils.createTempFile
 import org.racehorse.utils.queryAll
 import org.racehorse.webview.DownloadStartEvent
 import java.io.File
-import java.io.Serializable
 import java.util.Base64
 
+@Serializable
 class Download(
-    /**
-     * The download manager that handles the download.
-     */
-    downloadManager: DownloadManager,
-
     /**
      * An identifier for a particular download, unique across the system. Clients use this ID to make subsequent calls
      * related to the download.
@@ -68,6 +69,11 @@ class Download(
     val localUri: String?,
 
     /**
+     * The `content:` URI of the downloaded file.
+     */
+    val contentUri: Uri?,
+
+    /**
      * The MIME type of the downloaded file.
      */
     val mimeType: String?,
@@ -91,21 +97,14 @@ class Download(
      * The client-supplied title for this download.
      */
     val title: String
-) : Serializable {
-
-    /**
-     * The `content:` URI of the downloaded file.
-     */
-    val contentUri = downloadManager.getUriForDownloadedFile(id)?.toString()
-
+) {
     constructor(downloadManager: DownloadManager, cursor: Cursor) : this(
-        downloadManager,
-
         id = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_ID)),
         status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS)),
         reason = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON)),
         uri = cursor.getString(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_URI)),
         localUri = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_LOCAL_URI)),
+        contentUri = downloadManager.getUriForDownloadedFile(cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_ID))),
         mimeType = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_MEDIA_TYPE)),
         totalSize = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)),
         downloadedSize = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)),
@@ -117,6 +116,7 @@ class Download(
 /**
  * Adds a new download.
  */
+@Serializable
 class AddDownloadEvent(
     /**
      * The full URI of the content that should be downloaded. Supports HTTP, HTTPS, and data URI.
@@ -138,20 +138,28 @@ class AddDownloadEvent(
      */
     val headers: List<Pair<String, String>>? = null,
 ) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val id: Long) : ResponseEvent()
 }
 
 /**
  * Returns a previously started file download by its ID.
  */
+@Serializable
 class GetDownloadEvent(var id: Long) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val download: Download?) : ResponseEvent()
 }
 
 /**
  * Returns all file downloads.
  */
+@Serializable
 class GetAllDownloadsEvent : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val downloads: List<Download>) : ResponseEvent()
 }
 
@@ -159,7 +167,10 @@ class GetAllDownloadsEvent : RequestEvent() {
  * Cancel a download and remove it from the download manager. Download will be stopped if it was running, and it will no
  * longer be accessible through the download manager. If there is a downloaded file, partial or complete, it is deleted.
  */
+@Serializable
 class RemoveDownloadEvent(var id: Long) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val isRemoved: Boolean) : ResponseEvent()
 }
 
@@ -326,6 +337,7 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
     )
 }
 
+@SuppressLint("NewApi")
 private class DataUri(uri: Uri) {
 
     val mimeType: String?

@@ -3,9 +3,13 @@ package org.racehorse
 import android.content.Context
 import com.android.installreferrer.api.InstallReferrerClient
 import com.android.installreferrer.api.InstallReferrerStateListener
+import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
 
+@Serializable
 class GetGooglePlayReferrerEvent : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val referrer: String?) : ResponseEvent()
 }
 

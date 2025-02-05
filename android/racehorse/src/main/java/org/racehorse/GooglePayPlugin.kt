@@ -11,13 +11,14 @@ import com.google.android.gms.tapandpay.issuer.TokenInfo
 import com.google.android.gms.tapandpay.issuer.TokenStatus
 import com.google.android.gms.tapandpay.issuer.UserAddress
 import com.google.android.gms.tapandpay.issuer.ViewTokenRequest
+import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.apiResult
-import java.io.Serializable
 import java.util.concurrent.atomic.AtomicInteger
 
-class GooglePayTokenInfo(
+@Serializable
+class TokenInfoSurrogate(
     val network: Int,
     val tokenServiceProvider: Int,
     val tokenState: Int,
@@ -27,7 +28,7 @@ class GooglePayTokenInfo(
     val issuerTokenId: String,
     val portfolioName: String,
     val isDefaultToken: Boolean,
-) : Serializable {
+) {
     constructor(tokenInfo: TokenInfo) : this(
         network = tokenInfo.network,
         tokenServiceProvider = tokenInfo.tokenServiceProvider,
@@ -41,7 +42,8 @@ class GooglePayTokenInfo(
     )
 }
 
-class SerializableGooglePayUserAddress(
+@Serializable
+class UserAddressSurrogate(
     val name: String?,
     val address1: String?,
     val address2: String?,
@@ -50,7 +52,7 @@ class SerializableGooglePayUserAddress(
     val countryCode: String?,
     val postalCode: String?,
     val phoneNumber: String?,
-) : Serializable {
+) {
     fun toUserAddress() = UserAddress.newBuilder()
         .setName(name.orEmpty())
         .setAddress1(address1.orEmpty())
@@ -63,104 +65,142 @@ class SerializableGooglePayUserAddress(
         .build()
 }
 
-class GooglePayTokenStatus(val tokenState: Int, val isSelected: Boolean) : Serializable {
-    constructor(status: TokenStatus) : this(status.tokenState, status.isSelected)
+@Serializable
+class TokenStatusSurrogate(
+    val tokenState: Int,
+    val isSelected: Boolean,
+) {
+    constructor(tokenStatus: TokenStatus) : this(
+        tokenState = tokenStatus.tokenState,
+        isSelected = tokenStatus.isSelected
+    )
 }
 
 /**
  * Get the ID of the active wallet.
  */
+@Serializable
 class GooglePayGetActiveWalletIdEvent : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val walletId: String?) : ResponseEvent()
 }
 
 /**
  * Get the status of a token with a given token ID.
  */
+@Serializable
 class GooglePayGetTokenStatusEvent(val tokenServiceProvider: Int, val tokenId: String) : RequestEvent() {
+
     /**
      * @param status The token status or `null` if there's no such token.
      */
-    class ResultEvent(val status: GooglePayTokenStatus?) : ResponseEvent()
+    @Serializable
+    class ResultEvent(val status: TokenStatusSurrogate?) : ResponseEvent()
 }
 
 /**
  * Get the environment (e.g. production or sandbox).
  */
+@Serializable
 class GooglePayGetEnvironmentEvent : RequestEvent() {
+
     /**
      * @param environment The name of the current Google Pay environment, for example: PROD, SANDBOX, or DEV.
      */
+    @Serializable
     class ResultEvent(val environment: String) : ResponseEvent()
 }
 
 /**
  * Get the stable hardware ID of the device.
  */
+@Serializable
 class GooglePayGetStableHardwareIdEvent : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val hardwareId: String) : ResponseEvent()
 }
 
 /**
  * Get all tokens available in the wallet.
  */
+@Serializable
 class GooglePayListTokensEvent : RequestEvent() {
-    class ResultEvent(val tokenInfos: List<GooglePayTokenInfo>) : ResponseEvent()
+
+    @Serializable
+    class ResultEvent(val tokenInfos: List<TokenInfoSurrogate>) : ResponseEvent()
 }
 
 /**
  * Searches the wallet for a token and returns `true` if found.
  */
+@Serializable
 class GooglePayIsTokenizedEvent(
     val fpanLastFour: String,
     val network: Int,
     val tokenServiceProvider: Int
 ) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val isTokenized: Boolean) : ResponseEvent()
 }
 
 /**
  * Open Google Pay app and reveal the card.
  */
+@Serializable
 class GooglePayViewTokenEvent(val tokenId: String, val tokenServiceProvider: Int) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val isOpened: Boolean) : ResponseEvent()
 }
 
 /**
  * Posted when a wallet data has changed.
  */
+@Serializable
 class GooglePayDataChangedEvent : NoticeEvent
 
 /**
  * Tokenize the card and push it to Google Pay.
  */
+@Serializable
 class GooglePayPushTokenizeEvent(
     val opaquePaymentCard: String,
     val displayName: String,
     val lastFour: String,
     val network: Int,
     val tokenServiceProvider: Int,
-    val userAddress: SerializableGooglePayUserAddress?,
+    val userAddress: UserAddressSurrogate?,
 ) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val tokenId: String?) : ResponseEvent()
 }
 
 /**
  * Tokenize the card manually or resume the tokenization process in Google Pay.
  */
+@Serializable
 class GooglePayTokenizeEvent(
     val displayName: String,
     val network: Int,
     val tokenServiceProvider: Int,
     val tokenId: String? = null,
 ) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val tokenId: String?) : ResponseEvent()
 }
 
+@Serializable
 class GooglePayRequestSelectTokenEvent(val tokenId: String, val tokenServiceProvider: Int) : RequestEvent()
 
+@Serializable
 class GooglePayRequestDeleteTokenEvent(val tokenId: String, val tokenServiceProvider: Int) : RequestEvent()
 
+@Serializable
 class GooglePayCreateWalletEvent : RequestEvent()
 
 /**
@@ -206,7 +246,7 @@ open class GooglePayPlugin(
             event.respond {
                 GooglePayGetTokenStatusEvent.ResultEvent(
                     try {
-                        GooglePayTokenStatus(it.apiResult)
+                        it.apiResult?.let(::TokenStatusSurrogate)
                     } catch (e: ApiException) {
                         if (
                             e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_NO_ACTIVE_WALLET ||
@@ -238,7 +278,7 @@ open class GooglePayPlugin(
             event.respond {
                 GooglePayListTokensEvent.ResultEvent(
                     try {
-                        it.apiResult.map(::GooglePayTokenInfo)
+                        it.apiResult.map(::TokenInfoSurrogate)
                     } catch (e: ApiException) {
                         if (e.statusCode == TapAndPayStatusCodes.TAP_AND_PAY_NO_ACTIVE_WALLET) emptyList() else throw e
                     }
@@ -328,7 +368,7 @@ open class GooglePayPlugin(
                 requestCode
             )
         },
-        callback = { event.respond(VoidEvent()) }
+        callback = { event.respond(VoidEvent) }
     )
 
     @Subscribe
@@ -341,13 +381,13 @@ open class GooglePayPlugin(
                 requestCode
             )
         },
-        callback = { event.respond(VoidEvent()) }
+        callback = { event.respond(VoidEvent) }
     )
 
     @Subscribe
     fun onGooglePayCreateWallet(event: GooglePayCreateWalletEvent) = runOperation(
         operation = { requestCode -> tapAndPayClient.createWallet(activity, requestCode) },
-        callback = { event.respond(VoidEvent()) }
+        callback = { event.respond(VoidEvent) }
     )
 
     /**

@@ -6,9 +6,11 @@ import com.facebook.CallbackManager
 import com.facebook.share.model.ShareHashtag
 import com.facebook.share.model.ShareLinkContent
 import com.facebook.share.widget.ShareDialog
+import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.launchActivityForResult
 
+@Serializable
 class FacebookShareLinkEvent(
     val quote: String?,
     val contentUrl: String?,
@@ -38,7 +40,7 @@ class FacebookSharePlugin(val activity: ComponentActivity) {
                 .setShareHashtag(event.hashtag?.let { ShareHashtag.Builder().setHashtag(it).build() })
                 .build()
         ) {
-            event.respond(VoidEvent())
+            event.respond(VoidEvent)
         }
     }
 }

@@ -6,12 +6,13 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes
 import com.google.android.gms.common.api.ApiException
+import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
 import org.racehorse.utils.apiResult
 import org.racehorse.utils.launchActivityForResult
-import java.io.Serializable
 
-class SerializableGoogleSignInAccount(
+@Serializable
+class GoogleSignInAccountSurrogate(
     val id: String?,
     val idToken: String?,
     val email: String?,
@@ -22,7 +23,7 @@ class SerializableGoogleSignInAccount(
     val familyName: String?,
     val photoUrl: String?,
     val isExpired: Boolean,
-) : Serializable {
+) {
     constructor(account: GoogleSignInAccount) : this(
         id = account.id,
         idToken = account.idToken,
@@ -40,20 +41,31 @@ class SerializableGoogleSignInAccount(
 /**
  * Check for existing Google Sign-In account, if the user is already signed in the account will be non-null.
  */
+@Serializable
 class GetLastGoogleSignedInAccountEvent : RequestEvent() {
-    class ResultEvent(val account: SerializableGoogleSignInAccount?) : ResponseEvent()
+
+    @Serializable
+    class ResultEvent(val account: GoogleSignInAccountSurrogate?) : ResponseEvent()
 }
 
+@Serializable
 class GoogleSignInEvent : RequestEvent() {
-    class ResultEvent(val account: SerializableGoogleSignInAccount?) : ResponseEvent()
+
+    @Serializable
+    class ResultEvent(val account: GoogleSignInAccountSurrogate?) : ResponseEvent()
 }
 
+@Serializable
 class GoogleSilentSignInEvent : RequestEvent() {
-    class ResultEvent(val account: SerializableGoogleSignInAccount?) : ResponseEvent()
+
+    @Serializable
+    class ResultEvent(val account: GoogleSignInAccountSurrogate?) : ResponseEvent()
 }
 
+@Serializable
 class GoogleSignOutEvent : RequestEvent()
 
+@Serializable
 class GoogleRevokeAccessEvent : RequestEvent()
 
 /**
@@ -71,7 +83,7 @@ open class GoogleSignInPlugin(
 
     @Subscribe
     open fun onGetLastGoogleSignedInAccount(event: GetLastGoogleSignedInAccountEvent) {
-        val account = GoogleSignIn.getLastSignedInAccount(activity)?.let(::SerializableGoogleSignInAccount)
+        val account = GoogleSignIn.getLastSignedInAccount(activity)?.let(::GoogleSignInAccountSurrogate)
 
         event.respond(GetLastGoogleSignedInAccountEvent.ResultEvent(account))
     }
@@ -82,7 +94,7 @@ open class GoogleSignInPlugin(
             event.respond {
                 GoogleSignInEvent.ResultEvent(
                     try {
-                        SerializableGoogleSignInAccount(GoogleSignIn.getSignedInAccountFromIntent(it.data).apiResult)
+                        GoogleSignInAccountSurrogate(GoogleSignIn.getSignedInAccountFromIntent(it.data).apiResult)
                     } catch (e: ApiException) {
                         if (e.statusCode == GoogleSignInStatusCodes.SIGN_IN_CANCELLED) null else throw e
                     }
@@ -100,7 +112,7 @@ open class GoogleSignInPlugin(
         val task = googleSignInClient.silentSignIn()
 
         if (task.isSuccessful) {
-            event.respond(GoogleSilentSignInEvent.ResultEvent(SerializableGoogleSignInAccount(task.apiResult)))
+            event.respond(GoogleSilentSignInEvent.ResultEvent(GoogleSignInAccountSurrogate(task.apiResult)))
             return
         }
 
@@ -108,7 +120,7 @@ open class GoogleSignInPlugin(
             event.respond {
                 GoogleSilentSignInEvent.ResultEvent(
                     try {
-                        SerializableGoogleSignInAccount(task.apiResult)
+                        GoogleSignInAccountSurrogate(task.apiResult)
                     } catch (e: ApiException) {
                         if (e.statusCode == GoogleSignInStatusCodes.SIGN_IN_REQUIRED) null else throw e
                     }
@@ -120,14 +132,14 @@ open class GoogleSignInPlugin(
     @Subscribe
     open fun onGoogleSignOutEvent(event: GoogleSignOutEvent) {
         googleSignInClient.signOut().addOnCompleteListener(activity) {
-            event.respond(VoidEvent())
+            event.respond(VoidEvent)
         }
     }
 
     @Subscribe
     open fun onGoogleRevokeAccess(event: GoogleRevokeAccessEvent) {
         googleSignInClient.revokeAccess().addOnCompleteListener(activity) {
-            event.respond(VoidEvent())
+            event.respond(VoidEvent)
         }
     }
 }

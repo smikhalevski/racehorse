@@ -1,38 +1,49 @@
+@file:UseSerializers(ThrowableSerializer::class)
+
 package org.racehorse
 
-import android.net.Uri
-import android.os.Bundle
 import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonObject
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
+import kotlinx.serialization.serializer
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.NoSubscriberEvent
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.SubscriberExceptionEvent
-import org.racehorse.utils.KotlinTypeAdapterFactory
-import org.racehorse.utils.NaturalJsonAdapter
-import java.io.Serializable
-import java.util.Date
+import org.racehorse.serializers.FileSerializer
+import org.racehorse.serializers.IntentSerializer
+import org.racehorse.serializers.ThrowableSerializer
+import org.racehorse.serializers.UriSerializer
+import org.racehorse.utils.loadClass
+import kotlin.reflect.full.isSubclassOf
 
 /**
  * An event posted from the WebView.
  *
  * Only events that implement this interface are "visible" to the web application.
  */
-interface WebEvent : Serializable
+interface WebEvent
 
 /**
  * An event published by Android for subscribers in the WebView.
  */
-interface NoticeEvent : Serializable
+interface NoticeEvent
 
 /**
  * An event that is the part of request-response chain of events.
  */
-open class ChainableEvent {
+abstract class ChainableEvent {
 
     /**
      * The event bus to which responses to this event are posted, or `null` if origin wasn't set for this event.
@@ -85,44 +96,49 @@ abstract class RequestEvent : ChainableEvent(), WebEvent
 /**
  * An event that is published to the web, denoting an end of a request.
  */
-abstract class ResponseEvent : ChainableEvent(), Serializable
+abstract class ResponseEvent : ChainableEvent()
 
 /**
  * Response with no payload. Use this event to commit the chain of events that doesn't imply a response. Chain of events
  * guarantees that if an exception is thrown then pending promise is rejected.
  */
-class VoidEvent : ResponseEvent()
+@Serializable
+object VoidEvent : ResponseEvent()
 
 /**
  * Response that describes an occurred exception.
  */
-class ExceptionEvent(@Transient val cause: Throwable) : ResponseEvent() {
-    /**
-     * The class name of the [Throwable] that caused the event.
-     */
-    val javaName = cause::class.java.name
+@Serializable
+class ExceptionEvent(
+    val exception: Throwable,
 
     /**
      * The name of the [Throwable] that is used as an error name on the JavaScript side.
      */
-    val name = cause::class.java.simpleName
+    @Deprecated("Use exception")
+    val name: String = exception::class.java.simpleName,
 
     /**
      * The detail message string.
      */
-    val message = cause.message.orEmpty()
+    @Deprecated("Use exception")
+    val message: String = exception.message.orEmpty(),
 
     /**
      * The serialized stack trace.
      */
-    val stack = cause.stackTraceToString()
-}
+    @Deprecated("Use exception")
+    val stack: String = exception.stackTraceToString()
+) : ResponseEvent()
 
 /**
  * Checks that there's a class that implements [WebEvent] or [NoticeEvent], and there's a registered subscriber that
  * handled the event of this class.
  */
+@Serializable
 class IsSupportedEvent(val eventType: String) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val isSupported: Boolean) : ResponseEvent()
 }
 
@@ -131,23 +147,22 @@ class IsSupportedEvent(val eventType: String) : RequestEvent() {
  *
  * @param webView The [WebView] to which the event bridge will add the connection Javascript interface.
  * @param eventBus The event bus to which events are posted.
- * @param gson The [Gson] instance that is used for event serialization.
+ * @param json The serializer instance.
  * @param connectionKey The key of the `window` that exposes the connection Javascript interface.
  */
 open class EventBridge(
     val webView: WebView,
     val eventBus: EventBus = EventBus.getDefault(),
-    val gson: Gson = GsonBuilder()
-        .serializeNulls()
-        .registerTypeAdapterFactory(KotlinTypeAdapterFactory())
-        .registerTypeAdapter(Serializable::class.java, NaturalJsonAdapter())
-        .registerTypeAdapter(Iterable::class.java, NaturalJsonAdapter())
-        .registerTypeAdapter(Bundle::class.java, NaturalJsonAdapter())
-        .registerTypeAdapter(Pair::class.java, NaturalJsonAdapter())
-        .registerTypeAdapter(Date::class.java, NaturalJsonAdapter())
-        .registerTypeAdapter(Uri::class.java, NaturalJsonAdapter())
-        .registerTypeAdapter(Any::class.java, NaturalJsonAdapter())
-        .create(),
+    val json: Json = Json {
+        encodeDefaults = true
+        ignoreUnknownKeys = true
+        serializersModule = SerializersModule {
+            contextual(FileSerializer)
+            contextual(IntentSerializer)
+            contextual(ThrowableSerializer)
+            contextual(UriSerializer)
+        }
+    },
     val connectionKey: String = "racehorseConnection",
 ) {
 
@@ -159,11 +174,6 @@ open class EventBridge(
 
         private const val TAG = "EventBridge"
     }
-
-    /**
-     * The cache of loaded event classes.
-     */
-    private val eventClassCache = HashMap<String, Class<*>>()
 
     /**
      * The ID that would be assigned to the next request.
@@ -185,16 +195,17 @@ open class EventBridge(
     open fun disable() = webView.removeJavascriptInterface(connectionKey)
 
     @JavascriptInterface
+    @InternalSerializationApi
     open fun post(eventJson: String): String {
         val event = try {
             parseEvent(eventJson)
         } catch (e: Throwable) {
-            return stringifyEvent(ExceptionEvent(IllegalArgumentException("Illegal event: $eventJson", e)))
+            return encodeEventToJson(ExceptionEvent(IllegalArgumentException("Illegal event: $eventJson", e)))
         }
 
         if (event !is ChainableEvent) {
             eventBus.post(event)
-            return stringifyEvent(VoidEvent())
+            return encodeEventToJson(VoidEvent)
         }
 
         return synchronized(this) {
@@ -206,9 +217,9 @@ open class EventBridge(
 
             try {
                 eventBus.post(event)
-                syncResponseEvent?.let(::stringifyEvent) ?: event.requestId.toString()
+                syncResponseEvent?.let(::encodeEventToJson) ?: event.requestId.toString()
             } catch (e: Throwable) {
-                stringifyEvent(ExceptionEvent(e))
+                encodeEventToJson(ExceptionEvent(e))
             } finally {
                 syncRequestId = ORPHAN_REQUEST_ID
                 syncResponseEvent = null
@@ -217,6 +228,7 @@ open class EventBridge(
     }
 
     @Subscribe
+    @InternalSerializationApi
     open fun onResponse(event: ResponseEvent) {
         if (event.requestId == ORPHAN_REQUEST_ID) {
             // The response event isn't related to any request event
@@ -232,6 +244,7 @@ open class EventBridge(
     }
 
     @Subscribe
+    @InternalSerializationApi
     open fun onNotice(event: NoticeEvent) {
         publish(NOTICE_REQUEST_ID, event)
     }
@@ -254,11 +267,12 @@ open class EventBridge(
         event.respond(
             IsSupportedEvent.ResultEvent(
                 try {
-                    val eventClass = Class.forName(event.eventType)
+                    val eventClass = loadClass(event.eventType)
 
-                    eventBus.hasSubscriberForEvent(eventClass) &&
-                        (WebEvent::class.java.isAssignableFrom(eventClass) ||
-                            NoticeEvent::class.java.isAssignableFrom(eventClass))
+                    // There are active subscribers
+                    eventBus.hasSubscriberForEvent(eventClass.java) &&
+                        // Class is an event
+                        (eventClass.isSubclassOf(WebEvent::class) || eventClass.isSubclassOf(NoticeEvent::class))
                 } catch (_: Throwable) {
                     false
                 }
@@ -266,33 +280,41 @@ open class EventBridge(
         )
     }
 
+    @InternalSerializationApi
     protected fun parseEvent(eventJson: String): Any {
-        val jsonObject = gson.fromJson(eventJson, JsonObject::class.java)
+        val eventObject = json.parseToJsonElement(eventJson).jsonObject
 
-        val eventType = jsonObject.getAsJsonPrimitive(TYPE_KEY).asString
+        val eventType = eventObject[TYPE_KEY]?.jsonPrimitive?.content
+            ?: throw IllegalArgumentException("Expected the event type")
 
-        val eventClass = eventClassCache.getOrPut(eventType) {
-            try {
-                Class.forName(eventType).also {
-                    require(WebEvent::class.java.isAssignableFrom(it)) { "Unrecognized event type" }
-                }
-            } catch (_: ClassNotFoundException) {
-                throw IllegalArgumentException("Unrecognized event type")
+        val eventClass = try {
+            loadClass(eventType).apply {
+                require(isSubclassOf(WebEvent::class)) { "Unrecognized event type" }
             }
+        } catch (_: ClassNotFoundException) {
+            throw IllegalArgumentException("Unrecognized event type")
         }
 
-        return gson.fromJson(jsonObject.get(PAYLOAD_KEY) ?: JsonObject(), eventClass)
+        val eventPayload = eventObject.jsonObject[PAYLOAD_KEY] ?: JsonObject(HashMap())
+
+        return json.decodeFromJsonElement(eventClass.serializer(), eventPayload)
     }
 
-    protected fun stringifyEvent(event: Any) =
-        "{\"$TYPE_KEY\":\"${event::class.java.name}\",\"$PAYLOAD_KEY\":${gson.toJson(event)}}"
+    @InternalSerializationApi
+    @Suppress("UNCHECKED_CAST")
+    protected fun encodeEventToJson(event: Any): String =
+        "{" +
+            "\"$TYPE_KEY\":\"${event::class.java.name}\"," +
+            "\"$PAYLOAD_KEY\":${
+                json.encodeToString(event::class.serializer() as KSerializer<Any>, event)
+            }}"
 
-    protected fun publish(requestId: Int, event: Any) = webView.post {
-        webView.evaluateJavascript(
-            "(function(conn){" +
-                "conn && conn.inbox && conn.inbox.publish([$requestId, ${stringifyEvent(event)}])" +
-                "})(window.$connectionKey)",
-            null
-        )
+    @InternalSerializationApi
+    protected fun publish(requestId: Int, event: Any): Boolean = webView.post {
+        val js = "(function(conn){" +
+            "conn && conn.inbox && conn.inbox.publish([$requestId, ${encodeEventToJson(event)}])" +
+            "})(window.$connectionKey)"
+
+        webView.evaluateJavascript(js, null)
     }
 }

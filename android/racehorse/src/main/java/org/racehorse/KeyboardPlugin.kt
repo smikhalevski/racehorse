@@ -10,20 +10,23 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsCompat.Type
+import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import java.io.Serializable
 
 @Deprecated("Use GetKeyboardHeightEvent")
-class KeyboardStatus(val height: Float) : Serializable {
-    val isVisible = height > 0
-}
+@Serializable
+class KeyboardStatus(val height: Float, val isVisible: Boolean = height > 0)
 
 @Deprecated("Use KeyboardToggledEvent")
+@Serializable
 class KeyboardStatusChangedEvent(val status: KeyboardStatus) : NoticeEvent
 
 @Deprecated("Use GetKeyboardHeightEvent")
+@Serializable
 class GetKeyboardStatusEvent : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val status: KeyboardStatus) : ResponseEvent()
 }
 
@@ -37,34 +40,41 @@ class GetKeyboardStatusEvent : RequestEvent() {
  * an equidistant abscissa values (x).
  * @param startTime A timestamp when an animation has started.
  */
+@Serializable
 class TweenAnimation(
     val startValue: Float,
     val endValue: Float,
     val duration: Int,
     val easing: FloatArray,
     val startTime: Long = System.currentTimeMillis()
-) : Serializable
+)
 
 /**
  * Get the current keyboard height.
  */
+@Serializable
 class GetKeyboardHeightEvent : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val height: Float) : ResponseEvent()
 }
 
 /**
  * Shows the software keyboard.
  */
+@Serializable
 class ShowKeyboardEvent : WebEvent
 
 /**
  * Hides the software keyboard.
  */
+@Serializable
 class HideKeyboardEvent : WebEvent
 
 /**
  * Notifies the web app that the keyboard animation has started.
  */
+@Serializable
 class KeyboardAnimationStartedEvent(val animation: TweenAnimation) : NoticeEvent
 
 /**

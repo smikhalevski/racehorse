@@ -1,12 +1,14 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.serialization")
+
 }
 
 android {
     namespace = "com.example"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example"
@@ -56,30 +58,32 @@ android {
 
 dependencies {
     // Edge-to-edge
-    implementation("androidx.activity:activity:1.9.2")
+    implementation("androidx.activity:activity:1.10.0")
+
+    // Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
 
     // EventBridge
     implementation("org.greenrobot:eventbus:3.3.1")
-    implementation("com.google.code.gson:gson:2.10.1")
 
     // ActivityPlugin
-    implementation("androidx.lifecycle:lifecycle-process:2.8.4")
+    implementation("androidx.lifecycle:lifecycle-process:2.8.7")
 
     // AssetLoaderPlugin
-    implementation("androidx.webkit:webkit:1.11.0")
+    implementation("androidx.webkit:webkit:1.12.1")
 
     // DevicePlugin
     implementation("androidx.appcompat:appcompat:1.7.0")
 
     // Google Sign-In
-    implementation("com.google.android.gms:play-services-auth:21.2.0")
-    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    implementation("com.google.android.gms:play-services-auth:21.3.0")
+    implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
 
     // Facebook Login
     implementation("com.facebook.android:facebook-login:latest.release")
 
     // Firebase
-    implementation("com.google.firebase:firebase-messaging-ktx:24.0.0")
+    implementation("com.google.firebase:firebase-messaging-ktx:24.1.0")
 
     // Biometric
     implementation("androidx.biometric:biometric:1.2.0-alpha05")

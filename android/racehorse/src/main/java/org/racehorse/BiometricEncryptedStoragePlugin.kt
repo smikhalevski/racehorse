@@ -9,11 +9,11 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
+import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.utils.ifNullOrBlank
 import java.io.File
-import java.io.Serializable
 import java.security.KeyStore
 import java.security.UnrecoverableKeyException
 import javax.crypto.Cipher
@@ -22,6 +22,7 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 
+@Serializable
 class BiometricConfig(
     val title: String?,
     val subtitle: String?,
@@ -29,7 +30,7 @@ class BiometricConfig(
     val negativeButtonText: String?,
     val authenticators: Array<BiometricAuthenticator>?,
     val authenticationValidityDuration: Int?
-) : Serializable
+)
 
 /**
  * Associates a value with a key in a biometric encrypted storage.
@@ -38,6 +39,7 @@ class BiometricConfig(
  * @param value A value to write to the file.
  * @param config Options of the prompt shown to the user.
  */
+@Serializable
 class SetBiometricEncryptedValueEvent(
     val key: String,
     val value: String,
@@ -47,31 +49,40 @@ class SetBiometricEncryptedValueEvent(
     /**
      * @param isSuccessful `true` if the value was written to the storage, or `false` otherwise.
      */
+    @Serializable
     class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
 }
 
 /**
  * Retrieves a biometric encrypted value associated with the key.
  */
+@Serializable
 class GetBiometricEncryptedValueEvent(val key: String, val config: BiometricConfig?) : RequestEvent() {
 
     /**
      * @param value The deciphered value or `null` if key wasn't found or auth has failed.
      */
+    @Serializable
     class ResultEvent(val value: String?) : ResponseEvent()
 }
 
 /**
  * Checks that the key exists in the storage.
  */
+@Serializable
 class HasBiometricEncryptedValueEvent(val key: String) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val isExisting: Boolean) : ResponseEvent()
 }
 
 /**
  * Deletes a value associated with the key.
  */
+@Serializable
 class DeleteBiometricEncryptedValueEvent(val key: String) : RequestEvent() {
+
+    @Serializable
     class ResultEvent(val isDeleted: Boolean) : ResponseEvent()
 }
 
@@ -143,7 +154,7 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
             }
         }
 
-        throw IllegalStateException("Cannot authenticate user")
+        error("Cannot authenticate user")
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

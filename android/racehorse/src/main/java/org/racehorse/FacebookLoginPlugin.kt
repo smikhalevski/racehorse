@@ -7,10 +7,11 @@ import com.facebook.FacebookCallback
 import com.facebook.FacebookException
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
+import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
-import java.io.Serializable
 
-class SerializableFacebookAccessToken(
+@Serializable
+class AccessTokenSurrogate(
     val expires: Long,
     val permissions: List<String>,
     val declinedPermissions: List<String>,
@@ -24,7 +25,7 @@ class SerializableFacebookAccessToken(
     val isExpired: Boolean,
     val isDataAccessExpired: Boolean,
     val isInstagramToken: Boolean,
-) : Serializable {
+) {
     constructor(accessToken: AccessToken) : this(
         expires = accessToken.expires.time,
         permissions = accessToken.permissions.filterNotNull(),
@@ -42,14 +43,21 @@ class SerializableFacebookAccessToken(
     )
 }
 
+@Serializable
 class GetCurrentFacebookAccessTokenEvent : RequestEvent() {
-    class ResultEvent(val accessToken: SerializableFacebookAccessToken?) : ResponseEvent()
+
+    @Serializable
+    class ResultEvent(val accessToken: AccessTokenSurrogate?) : ResponseEvent()
 }
 
+@Serializable
 class FacebookLogInEvent(val permissions: List<String> = emptyList()) : RequestEvent() {
-    class ResultEvent(val accessToken: SerializableFacebookAccessToken?) : ResponseEvent()
+
+    @Serializable
+    class ResultEvent(val accessToken: AccessTokenSurrogate?) : ResponseEvent()
 }
 
+@Serializable
 class FacebookLogOutEvent : RequestEvent()
 
 open class FacebookLoginPlugin(private val activity: ComponentActivity) {
@@ -60,7 +68,7 @@ open class FacebookLoginPlugin(private val activity: ComponentActivity) {
     fun onGetCurrentFacebookAccessToken(event: GetCurrentFacebookAccessTokenEvent) {
         event.respond(
             GetCurrentFacebookAccessTokenEvent.ResultEvent(
-                AccessToken.getCurrentAccessToken()?.let(::SerializableFacebookAccessToken)
+                AccessToken.getCurrentAccessToken()?.let(::AccessTokenSurrogate)
             )
         )
     }
@@ -80,7 +88,7 @@ open class FacebookLoginPlugin(private val activity: ComponentActivity) {
             fun handleLoginResult(result: LoginResult?) = event.respond {
                 loginManager.unregisterCallback(callbackManager)
 
-                FacebookLogInEvent.ResultEvent(result?.accessToken?.let(::SerializableFacebookAccessToken))
+                FacebookLogInEvent.ResultEvent(result?.accessToken?.let(::AccessTokenSurrogate))
             }
         })
 
@@ -91,7 +99,7 @@ open class FacebookLoginPlugin(private val activity: ComponentActivity) {
     fun onFacebookLogOut(event: FacebookLogOutEvent) {
         event.respond {
             loginManager.logOut()
-            VoidEvent()
+            VoidEvent
         }
     }
 }
