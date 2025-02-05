@@ -16,9 +16,7 @@ import org.greenrobot.eventbus.Subscribe
 
 @Deprecated("Use GetKeyboardHeightEvent")
 @Serializable
-class KeyboardStatus(val height: Float) {
-    val isVisible = height > 0
-}
+class KeyboardStatus(val height: Float, val isVisible: Boolean = height > 0)
 
 @Deprecated("Use KeyboardToggledEvent")
 @Serializable

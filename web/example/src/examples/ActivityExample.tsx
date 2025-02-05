@@ -92,6 +92,7 @@ export function ActivityExample() {
             extras: {
               'android.intent.extra.TITLE': 'Hello user!',
               'android.intent.extra.INTENT': {
+                __javaClass: 'android.content.Intent',
                 action: 'android.intent.action.SEND',
                 type: 'text/plain',
                 extras: {

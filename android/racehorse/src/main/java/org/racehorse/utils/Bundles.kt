@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.util.Size
 import java.io.Serializable
+import java.lang.IllegalArgumentException
 
 fun Bundle.toMap(): Map<String, Any?> = buildMap {
     for (key in keySet()) {
@@ -45,7 +46,7 @@ fun Map<String, *>.toBundle(): Bundle = Bundle(size).apply {
             is Serializable -> putSerializable(key, value)
             is Binder -> putBinder(key, value)
 
-            else -> error("Instance of ${value::class.java.name} cannot be bundled")
+            else -> throw IllegalArgumentException("Illegal bundle value: ${value::class.java.name}")
         }
     }
 }
