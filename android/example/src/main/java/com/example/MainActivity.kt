@@ -9,8 +9,10 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.facebook.FacebookSdk
-import org.greenrobot.eventbus.EventBus
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.ActivityPlugin
@@ -39,6 +41,9 @@ import org.racehorse.OpenDeepLinkEvent
 import org.racehorse.PermissionsPlugin
 import org.racehorse.ProxyPathHandler
 import org.racehorse.StaticPathHandler
+import org.racehorse.eventbus.EventBus
+import org.racehorse.eventbus.FooEvent
+import org.racehorse.eventbus.JavascriptEventBus
 import org.racehorse.evergreen.BundleReadyEvent
 import org.racehorse.evergreen.EvergreenPlugin
 import org.racehorse.evergreen.StartEvent
@@ -58,7 +63,7 @@ const val DEV_SERVER_URL = "http://10.0.2.2:10001"
 class MainActivity : AppCompatActivity() {
 
     private val webView by lazy { WebView(this) }
-    private val eventBus = EventBus.getDefault()
+    private val eventBus = org.greenrobot.eventbus.EventBus.getDefault()
     private val networkPlugin = NetworkPlugin(this)
     private val assetLoaderPlugin = AssetLoaderPlugin(this)
     private val cookieManager = CookieManager.getInstance()
@@ -161,6 +166,16 @@ class MainActivity : AppCompatActivity() {
                 URL("$DEV_SERVER_URL/bundle.zip").openConnection()
             })
         }
+
+        val eventBus = EventBus()
+
+        webView.addJavascriptInterface(JavascriptEventBus(eventBus), "xxx")
+
+        lifecycleScope.launch {
+            eventBus.on<FooEvent> {
+                println(it)
+            }
+        }
     }
 
     override fun onResume() {
@@ -179,7 +194,7 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
 
-        EventBus.getDefault().post(OpenDeepLinkEvent(intent))
+        org.greenrobot.eventbus.EventBus.getDefault().post(OpenDeepLinkEvent(intent))
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
