@@ -1,3 +1,5 @@
+@file:UseSerializers(ThrowableSerializer::class)
+
 package org.racehorse
 
 import android.util.Log
@@ -7,6 +9,7 @@ import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
@@ -106,27 +109,27 @@ object VoidEvent : ResponseEvent()
  * Response that describes an occurred exception.
  */
 @Serializable
-class ExceptionEvent(@Transient val cause: Throwable? = null) : ResponseEvent() {
-    /**
-     * The class name of the [Throwable] that caused the event.
-     */
-    val javaName = cause!!::class.java.name
+class ExceptionEvent(
+    val exception: Throwable,
 
     /**
      * The name of the [Throwable] that is used as an error name on the JavaScript side.
      */
-    val name = cause!!::class.java.simpleName
+    @Deprecated("Use exception")
+    val name: String = exception::class.java.simpleName,
 
     /**
      * The detail message string.
      */
-    val message = cause!!.message.orEmpty()
+    @Deprecated("Use exception")
+    val message: String = exception.message.orEmpty(),
 
     /**
      * The serialized stack trace.
      */
-    val stack = cause!!.stackTraceToString()
-}
+    @Deprecated("Use exception")
+    val stack: String = exception.stackTraceToString()
+) : ResponseEvent()
 
 /**
  * Checks that there's a class that implements [WebEvent] or [NoticeEvent], and there's a registered subscriber that
@@ -151,6 +154,7 @@ open class EventBridge(
     val webView: WebView,
     val eventBus: EventBus = EventBus.getDefault(),
     val json: Json = Json {
+        encodeDefaults = true
         ignoreUnknownKeys = true
         serializersModule = SerializersModule {
             contextual(FileSerializer)
