@@ -9,10 +9,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
 import com.facebook.FacebookSdk
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.ActivityPlugin
@@ -41,9 +38,7 @@ import org.racehorse.OpenDeepLinkEvent
 import org.racehorse.PermissionsPlugin
 import org.racehorse.ProxyPathHandler
 import org.racehorse.StaticPathHandler
-import org.racehorse.eventbus.EventBus
-import org.racehorse.eventbus.FooEvent
-import org.racehorse.eventbus.JavascriptEventBus
+import org.racehorse.eventbus.RacehorseConnection
 import org.racehorse.evergreen.BundleReadyEvent
 import org.racehorse.evergreen.EvergreenPlugin
 import org.racehorse.evergreen.StartEvent
@@ -68,6 +63,7 @@ class MainActivity : AppCompatActivity() {
     private val assetLoaderPlugin = AssetLoaderPlugin(this)
     private val cookieManager = CookieManager.getInstance()
 
+    @SuppressLint("JavascriptInterface")
     override fun onCreate(savedInstanceState: Bundle?) {
         // https://developer.android.com/develop/ui/views/layout/edge-to-edge
         enableEdgeToEdge()
@@ -167,14 +163,8 @@ class MainActivity : AppCompatActivity() {
             })
         }
 
-        val eventBus = EventBus()
+        val conn = RacehorseConnection(webView) {
 
-        webView.addJavascriptInterface(JavascriptEventBus(eventBus), "xxx")
-
-        lifecycleScope.launch {
-            eventBus.on<FooEvent> {
-                println(it)
-            }
         }
     }
 
