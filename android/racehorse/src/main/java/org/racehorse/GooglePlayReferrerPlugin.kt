@@ -10,7 +10,7 @@ import org.greenrobot.eventbus.Subscribe
 class GetGooglePlayReferrerEvent : RequestEvent() {
 
     @Serializable
-    class ResultEvent(val referrer: String?) : ResponseEvent()
+    class ResultEvent(val referrer: String?, val responseCode: Int) : ResponseEvent()
 }
 
 /**
@@ -29,11 +29,13 @@ open class GooglePlayReferrerPlugin(private val context: Context) {
                 handleResponse(InstallReferrerClient.InstallReferrerResponse.SERVICE_DISCONNECTED)
 
             private fun handleResponse(responseCode: Int) {
-                val referrer = if (responseCode == InstallReferrerClient.InstallReferrerResponse.OK) {
+                val referrer = try {
                     referrerClient.installReferrer.installReferrer
-                } else null
+                } catch (_: Throwable) {
+                    null
+                }
 
-                event.respond(GetGooglePlayReferrerEvent.ResultEvent(referrer))
+                event.respond(GetGooglePlayReferrerEvent.ResultEvent(referrer, responseCode))
             }
         })
     }
