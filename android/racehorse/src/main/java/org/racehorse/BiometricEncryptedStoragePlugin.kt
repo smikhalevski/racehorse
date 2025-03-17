@@ -24,12 +24,12 @@ import javax.crypto.spec.IvParameterSpec
 
 @Serializable
 class BiometricConfig(
-    val title: String?,
-    val subtitle: String?,
-    val description: String?,
-    val negativeButtonText: String?,
-    val authenticators: Array<BiometricAuthenticator>?,
-    val authenticationValidityDuration: Int?
+    val title: String? = null,
+    val subtitle: String? = null,
+    val description: String? = null,
+    val negativeButtonText: String? = null,
+    val authenticators: Array<BiometricAuthenticator>? = null,
+    val authenticationValidityDuration: Int? = null
 )
 
 /**
@@ -57,7 +57,7 @@ class SetBiometricEncryptedValueEvent(
  * Retrieves a biometric encrypted value associated with the key.
  */
 @Serializable
-class GetBiometricEncryptedValueEvent(val key: String, val config: BiometricConfig?) : RequestEvent() {
+class GetBiometricEncryptedValueEvent(val key: String, val config: BiometricConfig? = null) : RequestEvent() {
 
     /**
      * @param value The deciphered value or `null` if key wasn't found or auth has failed.

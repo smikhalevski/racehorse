@@ -95,14 +95,14 @@ enum class BiometricStatus(val value: Int) {
 }
 
 @Serializable
-class GetBiometricStatusEvent(val authenticators: Array<BiometricAuthenticator>?) : RequestEvent() {
+class GetBiometricStatusEvent(val authenticators: Array<BiometricAuthenticator>? = null) : RequestEvent() {
 
     @Serializable
     class ResultEvent(val status: BiometricStatus) : ResponseEvent()
 }
 
 @Serializable
-class EnrollBiometricEvent(val authenticators: Array<BiometricAuthenticator>?) : RequestEvent() {
+class EnrollBiometricEvent(val authenticators: Array<BiometricAuthenticator>? = null) : RequestEvent() {
 
     @Serializable
     class ResultEvent(val isEnrolled: Boolean) : ResponseEvent()

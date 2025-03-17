@@ -12,13 +12,13 @@ import org.racehorse.utils.launchActivityForResult
 
 @Serializable
 class FacebookShareLinkEvent(
-    val quote: String?,
-    val contentUrl: String?,
-    val peopleIds: List<String>?,
-    val placeId: String?,
-    val pageId: String?,
-    val ref: String?,
-    val hashtag: String?,
+    val quote: String? = null,
+    val contentUrl: String? = null,
+    val peopleIds: List<String>? = null,
+    val placeId: String? = null,
+    val pageId: String? = null,
+    val ref: String? = null,
+    val hashtag: String? = null,
 ) : RequestEvent()
 
 class FacebookSharePlugin(val activity: ComponentActivity) {

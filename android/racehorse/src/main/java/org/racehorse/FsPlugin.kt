@@ -95,14 +95,19 @@ class FsReadDirEvent(val uri: Uri) : RequestEvent() {
 }
 
 @Serializable
-class FsReadEvent(val uri: Uri, val encoding: String?) : RequestEvent() {
+class FsReadEvent(val uri: Uri, val encoding: String? = null) : RequestEvent() {
 
     @Serializable
     class ResultEvent(val data: String) : ResponseEvent()
 }
 
 @Serializable
-class FsWriteEvent(val uri: Uri, val data: String, val encoding: String?, val append: Boolean) : RequestEvent()
+class FsWriteEvent(
+    val uri: Uri,
+    val data: String,
+    val encoding: String? = null,
+    val append: Boolean = false
+) : RequestEvent()
 
 @Serializable
 class FsCopyEvent(val uri: Uri, val toUri: Uri) : RequestEvent()
@@ -422,7 +427,12 @@ open class FsPlugin(
 
         SCHEME_FILE -> FileOutputStream(toFile(), append)
 
-        SCHEME_CONTENT -> checkNotNull(activity.contentResolver.openOutputStream(this, if (append) "wa" else "w")) { "Content resolver crashed" }
+        SCHEME_CONTENT -> checkNotNull(
+            activity.contentResolver.openOutputStream(
+                this,
+                if (append) "wa" else "w"
+            )
+        ) { "Content resolver crashed" }
 
         else -> throw UnsupportedUriException()
     }

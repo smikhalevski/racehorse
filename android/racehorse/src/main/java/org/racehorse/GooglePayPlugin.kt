@@ -172,7 +172,7 @@ class GooglePayPushTokenizeEvent(
     val lastFour: String,
     val network: Int,
     val tokenServiceProvider: Int,
-    val userAddress: UserAddressSurrogate?,
+    val userAddress: UserAddressSurrogate? = null,
 ) : RequestEvent() {
 
     @Serializable
