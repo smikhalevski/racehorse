@@ -58,24 +58,24 @@
   <div class="breadcrumbs"><a href="../../../index.html">racehorse</a><span class="delimiter">/</span><a href="../index.html">org.racehorse</a><span class="delimiter">/</span><span class="current">ExceptionEvent</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Exception</span><wbr></wbr><span><span>Event</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">ExceptionEvent</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>cause<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html">Throwable</a></span></span><span class="token punctuation">)</span> : <a href="../-response-event/index.html">ResponseEvent</a></div><p class="paragraph">Response that describes an occurred exception.</p></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">ExceptionEvent</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>exception<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>name<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>exception::class.java.simpleName<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>exception.message.orEmpty()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>stack<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>exception.stackTraceToString()</span></span><span class="token punctuation">)</span> : <a href="../-response-event/index.html">ResponseEvent</a></div><p class="paragraph">Response that describes an occurred exception.</p></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,FUNCTION,PROPERTY">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
         <h2 class="">Constructors</h2>
-        <div class="table"><a data-name="-75971128%2FConstructors%2F-88822016" anchor-label="ExceptionEvent" id="-75971128%2FConstructors%2F-88822016" data-filterable-set=":racehorse:dokkaHtml/staging"></a>
+        <div class="table"><a data-name="1716953143%2FConstructors%2F-88822016" anchor-label="ExceptionEvent" id="1716953143%2FConstructors%2F-88822016" data-filterable-set=":racehorse:dokkaHtml/staging"></a>
           <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":racehorse:dokkaHtml/staging" data-filterable-set=":racehorse:dokkaHtml/staging">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-exception-event.html"><span>Exception</span><wbr></wbr><span><span>Event</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-75971128%2FConstructors%2F-88822016"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1716953143%2FConstructors%2F-88822016"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cause<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html">Throwable</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">exception<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token punctuation">, </span></span><span class="parameter ">name<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>exception::class.java.simpleName<span class="token punctuation">, </span></span><span class="parameter ">message<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>exception.message.orEmpty()<span class="token punctuation">, </span></span><span class="parameter ">stack<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>exception.stackTraceToString()</span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -103,22 +103,7 @@
       </div>
       <div data-togglable="PROPERTY">
         <h2 class="">Properties</h2>
-        <div class="table"><a data-name="-1139469269%2FProperties%2F-88822016" anchor-label="cause" id="-1139469269%2FProperties%2F-88822016" data-filterable-set=":racehorse:dokkaHtml/staging"></a>
-          <div class="table-row" data-filterable-current=":racehorse:dokkaHtml/staging" data-filterable-set=":racehorse:dokkaHtml/staging">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="cause.html"><span><span>cause</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1139469269%2FProperties%2F-88822016"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-transient/index.html"><span class="token annotation builtin">Transient</span></a></div></div><span class="token keyword"></span><span class="token keyword">val </span><a href="cause.html">cause</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html">Throwable</a></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-863755244%2FProperties%2F-88822016" anchor-label="eventBus" id="-863755244%2FProperties%2F-88822016" data-filterable-set=":racehorse:dokkaHtml/staging"></a>
+        <div class="table"><a data-name="-863755244%2FProperties%2F-88822016" anchor-label="eventBus" id="-863755244%2FProperties%2F-88822016" data-filterable-set=":racehorse:dokkaHtml/staging"></a>
           <div class="table-row" data-filterable-current=":racehorse:dokkaHtml/staging" data-filterable-set=":racehorse:dokkaHtml/staging">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
@@ -128,22 +113,22 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-transient/index.html"><span class="token annotation builtin">Transient</span></a></div></div><span class="token keyword"></span><span class="token keyword">var </span><a href="../-chainable-event/event-bus.html">eventBus</a><span class="token operator">: </span><span data-unresolved-link="org.greenrobot.eventbus/EventBus///PointingToDeclaration/">EventBus</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">The event bus to which responses to this event are posted, or <code class="lang-kotlin">null</code> if origin wasn't set for this event.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="../-chainable-event/event-bus.html">eventBus</a><span class="token operator">: </span><span data-unresolved-link="org.greenrobot.eventbus/EventBus///PointingToDeclaration/">EventBus</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">The event bus to which responses to this event are posted, or <code class="lang-kotlin">null</code> if origin wasn't set for this event.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-628539271%2FProperties%2F-88822016" anchor-label="javaName" id="-628539271%2FProperties%2F-88822016" data-filterable-set=":racehorse:dokkaHtml/staging"></a>
+<a data-name="-1051716731%2FProperties%2F-88822016" anchor-label="exception" id="-1051716731%2FProperties%2F-88822016" data-filterable-set=":racehorse:dokkaHtml/staging"></a>
           <div class="table-row" data-filterable-current=":racehorse:dokkaHtml/staging" data-filterable-set=":racehorse:dokkaHtml/staging">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="java-name.html"><span>java</span><wbr></wbr><span><span>Name</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-628539271%2FProperties%2F-88822016"></span>
+                  <div><a href="exception.html"><span><span>exception</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1051716731%2FProperties%2F-88822016"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="java-name.html">javaName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The class name of the <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html">Throwable</a> that caused the event.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="exception.html">exception</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -158,7 +143,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="message.html">message</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The detail message string.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="message.html"><strike>message</strike></a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The detail message string.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -173,7 +158,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="name.html">name</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The name of the <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html">Throwable</a> that is used as an error name on the JavaScript side.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="name.html"><strike>name</strike></a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The name of the <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a> that is used as an error name on the JavaScript side.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -188,7 +173,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-transient/index.html"><span class="token annotation builtin">Transient</span></a></div></div><span class="token keyword"></span><span class="token keyword">var </span><a href="../-chainable-event/request-id.html">requestId</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The request ID that links request that originated from the web view with the response.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="../-chainable-event/request-id.html">requestId</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The request ID that links request that originated from the web view with the response.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -203,7 +188,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="stack.html">stack</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The serialized stack trace.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse:dokkaHtml/staging"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="stack.html"><strike>stack</strike></a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The serialized stack trace.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -214,7 +199,7 @@
   </div>
 </div>
       <div class="footer">
-        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2025 Copyright</span><span
                 class="pull-right"><span>Generated by </span><a
                 href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
       </div>
