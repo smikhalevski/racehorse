@@ -249,15 +249,15 @@ function isException(event: Event): boolean {
 
 function toError(event: Event): Error {
   const error = new Error();
-  const { stack } = error;
 
-  Object.assign(error, event.payload);
+  const jsStack = error.stack;
+  const javaStack = Object.assign(error, event.payload.exception).stack;
 
-  if (stack !== undefined) {
-    const b = stack.indexOf('at');
-    const a = stack.lastIndexOf('\n', b);
+  if (jsStack !== undefined) {
+    const b = jsStack.indexOf('at');
+    const a = jsStack.lastIndexOf('\n', b);
 
-    error.stack = (b !== -1 ? error.stack!.replace(/\n\t/g, stack.substring(a, b)) + '' : '') + stack.substring(a + 1);
+    error.stack = (b !== -1 ? javaStack.replace(/\n\t/g, jsStack.substring(a, b)) + '' : '') + jsStack.substring(a + 1);
   }
 
   return error;

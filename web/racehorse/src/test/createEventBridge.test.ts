@@ -111,7 +111,7 @@ describe('createEventBridge', () => {
               111,
               {
                 type: 'org.racehorse.ExceptionEvent',
-                payload: { name: 'foo', message: 'bar', stack: 'baz' },
+                payload: { exception: { name: 'foo', message: 'bar', stack: 'baz' } },
               },
             ]),
           0
@@ -201,7 +201,7 @@ describe('createEventBridge', () => {
       connectionMock!.post = jest.fn().mockImplementationOnce(() =>
         JSON.stringify({
           type: 'org.racehorse.ExceptionEvent',
-          payload: { name: 'foo', message: 'bar', stack: 'baz' },
+          payload: { exception: { name: 'foo', message: 'bar', stack: 'baz' } },
         })
       );
 
