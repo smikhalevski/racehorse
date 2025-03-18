@@ -217,6 +217,13 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
         config: BiometricConfig?,
         callback: (isAuthenticated: Boolean) -> Unit
     ) {
+        // Biometric authentication cannot be started after onSaveInstanceState() invocation
+        // https://android.googlesource.com/platform/frameworks/support/+/f2e05c341382db64d127118a13451dcaa554b702/biometric/biometric/src/main/java/androidx/biometric/BiometricPrompt.java#962
+        if (activity.supportFragmentManager.isStateSaved) {
+            callback(false)
+            return
+        }
+
         val promptCallback = object : BiometricPrompt.AuthenticationCallback() {
             override fun onAuthenticationError(errorCode: Int, errorMessage: CharSequence) = callback(false)
 
@@ -245,8 +252,17 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
             prompt.authenticate(builder.build(), BiometricPrompt.CryptoObject(cipher))
         }
 
-        // Check that biometric authentication did actually start
-        checkNotNull(activity.supportFragmentManager.findFragmentByTag("androidx.biometric.BiometricFragment")) { "Expected biometric fragment to be added" }
+        // Make sure that biometric authentication was not prevented by user lockout
+        //
+        // @see https://issuetracker.google.com/issues/277499446
+        // @see BiometricPrompt.BIOMETRIC_FRAGMENT_TAG
+        // @see BiometricFragment.FINGERPRINT_DIALOG_FRAGMENT_TAG
+        if (
+            activity.supportFragmentManager.findFragmentByTag("androidx.biometric.BiometricFragment") == null &&
+            activity.supportFragmentManager.findFragmentByTag("androidx.biometric.FingerprintDialogFragment") == null
+        ) {
+            callback(false)
+        }
     }
 
     protected open fun createCipher(): Cipher {
