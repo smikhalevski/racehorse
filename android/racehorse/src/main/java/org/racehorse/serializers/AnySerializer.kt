@@ -46,7 +46,7 @@ import kotlin.reflect.full.isSubclassOf
  *
  * @param className The name of the JSON object property that holds the name of the Java class that was used during
  * serialization, or must be used during deserialization.
- * @param isClassNameSerialized If `true` then [className] property isn't encoded during serialisation.
+ * @param isClassNameSerialized If `true` then [className] property is encoded for object values during serialisation.
  */
 class AnySerializer(
     val className: String = "__javaClass",
