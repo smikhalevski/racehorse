@@ -2,7 +2,7 @@ package org.racehorse.webview
 
 import android.webkit.DownloadListener
 import android.webkit.WebView
-import org.greenrobot.eventbus.EventBus
+import org.racehorse.eventbus.RacehorseConnection
 
 /**
  * Notifies the host application that a file should be downloaded.
@@ -37,7 +37,7 @@ class DownloadStartEvent(
 /**
  * Posts [DownloadStartEvent] when the [WebView] requests to start a file download.
  */
-open class RacehorseDownloadListener(private val eventBus: EventBus = EventBus.getDefault()) : DownloadListener {
+open class RacehorseDownloadListener(private val c: RacehorseConnection) : DownloadListener {
 
     override fun onDownloadStart(
         url: String,
@@ -46,6 +46,6 @@ open class RacehorseDownloadListener(private val eventBus: EventBus = EventBus.g
         mimeType: String,
         contentLength: Long
     ) {
-        eventBus.post(DownloadStartEvent(url, userAgent, contentDisposition, mimeType, contentLength))
+        c.post(DownloadStartEvent(url, userAgent, contentDisposition, mimeType, contentLength))
     }
 }

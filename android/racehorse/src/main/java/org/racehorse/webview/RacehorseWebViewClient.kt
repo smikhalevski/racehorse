@@ -14,10 +14,8 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import org.greenrobot.eventbus.EventBus
+import org.racehorse.eventbus.RacehorseConnection
 import org.racehorse.utils.SyncHandlerEvent
-import org.racehorse.utils.postForSubscriber
-import org.racehorse.utils.postForSyncHandler
 
 /**
  * Notify the host application of a resource request and allow the
@@ -534,86 +532,114 @@ class SafeBrowsingHitEvent(
     val callback: SafeBrowsingResponse
 )
 
-open class RacehorseWebViewClient(private val eventBus: EventBus = EventBus.getDefault()) : WebViewClient() {
+open class RacehorseWebViewClient(private val c: RacehorseConnection) : WebViewClient() {
 
     override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
-        return eventBus.postForSubscriber { ShouldInterceptRequestEvent(view, request, null) }?.response
+        return ShouldInterceptRequestEvent(view, request, null).let {
+            c.post(it)
+            it.response
+        }
     }
 
     override fun shouldOverrideKeyEvent(view: WebView, event: KeyEvent): Boolean {
-        return eventBus.postForSyncHandler { ShouldOverrideKeyEventEvent(view, event) }
+        return ShouldOverrideKeyEventEvent(view, event).let {
+            c.post(it)
+            it.isHandled
+        }
     }
 
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-        return eventBus.postForSyncHandler { ShouldOverrideUrlLoadingEvent(view, request) }
+        return ShouldOverrideUrlLoadingEvent(view, request).let {
+            c.post(it)
+            it.isHandled
+        }
     }
 
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
-        eventBus.postForSubscriber { PageStartedEvent(view, url, favicon) }
+        c.post(PageStartedEvent(view, url, favicon))
     }
 
     override fun onPageFinished(view: WebView, url: String) {
-        eventBus.postForSubscriber { PageFinishedEvent(view, url) }
+        c.post(PageFinishedEvent(view, url))
     }
 
     override fun onLoadResource(view: WebView, url: String) {
-        eventBus.postForSubscriber { LoadResourceEvent(view, url) }
+        c.post(LoadResourceEvent(view, url))
     }
 
     override fun onPageCommitVisible(view: WebView, url: String) {
-        eventBus.postForSubscriber { PageCommitVisibleEvent(view, url) }
+        c.post(PageCommitVisibleEvent(view, url))
     }
 
     override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
-        eventBus.postForSubscriber { ReceivedErrorEvent(view, request, error) }
+        c.post(ReceivedErrorEvent(view, request, error))
     }
 
     override fun onReceivedHttpError(view: WebView, request: WebResourceRequest, errorResponse: WebResourceResponse) {
-        eventBus.postForSubscriber { ReceivedHttpErrorEvent(view, request, errorResponse) }
+        c.post(ReceivedHttpErrorEvent(view, request, errorResponse))
     }
 
     override fun onFormResubmission(view: WebView, dontResend: Message, resend: Message) {
-        if (!eventBus.postForSyncHandler { FormResubmissionEvent(view, dontResend, resend) }) {
-            super.onFormResubmission(view, dontResend, resend)
+        FormResubmissionEvent(view, dontResend, resend).let {
+            c.post(it)
+
+            if (!it.isHandled) {
+                super.onFormResubmission(view, dontResend, resend)
+            }
         }
     }
 
     override fun doUpdateVisitedHistory(view: WebView, url: String, isReload: Boolean) {
-        eventBus.postForSubscriber { UpdateVisitedHistoryEvent(view, url, isReload) }
+        c.post(UpdateVisitedHistoryEvent(view, url, isReload))
     }
 
     override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
-        if (!eventBus.postForSyncHandler { ReceivedSslErrorEvent(view, handler, error) }) {
-            super.onReceivedSslError(view, handler, error)
+        ReceivedSslErrorEvent(view, handler, error).let {
+            c.post(it)
+
+            if (!it.isHandled) {
+                super.onReceivedSslError(view, handler, error)
+            }
         }
     }
 
     override fun onReceivedClientCertRequest(view: WebView, request: ClientCertRequest) {
-        if (!eventBus.postForSyncHandler { ReceivedClientCertRequestEvent(view, request) }) {
-            super.onReceivedClientCertRequest(view, request)
+        ReceivedClientCertRequestEvent(view, request).let {
+            c.post(it)
+
+            if (!it.isHandled) {
+                super.onReceivedClientCertRequest(view, request)
+            }
         }
     }
 
     override fun onReceivedHttpAuthRequest(view: WebView, handler: HttpAuthHandler, host: String, realm: String) {
-        if (!eventBus.postForSyncHandler { ReceivedHttpAuthRequestEvent(view, handler, host, realm) }) {
-            super.onReceivedHttpAuthRequest(view, handler, host, realm)
+        ReceivedHttpAuthRequestEvent(view, handler, host, realm).let {
+            c.post(it)
+
+            if (!it.isHandled) {
+                super.onReceivedHttpAuthRequest(view, handler, host, realm)
+            }
         }
     }
 
     override fun onUnhandledKeyEvent(view: WebView, event: KeyEvent) {
-        eventBus.postForSubscriber { UnhandledKeyEventEvent(view, event) }
+        c.post(UnhandledKeyEventEvent(view, event))
     }
 
     override fun onScaleChanged(view: WebView, oldScale: Float, newScale: Float) {
-        eventBus.postForSubscriber { ScaleChangedEvent(view, oldScale, newScale) }
+        c.post(ScaleChangedEvent(view, oldScale, newScale))
     }
 
     override fun onReceivedLoginRequest(view: WebView, realm: String, account: String?, args: String) {
-        eventBus.postForSubscriber { ReceivedLoginRequestEvent(view, realm, account, args) }
+        c.post(ReceivedLoginRequestEvent(view, realm, account, args))
     }
 
     override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
-        return eventBus.postForSyncHandler { RenderProcessGoneEvent(view, detail) }
+        return RenderProcessGoneEvent(view, detail).let {
+            c.post(it)
+            it.isHandled
+        }
     }
 
     override fun onSafeBrowsingHit(
@@ -622,6 +648,6 @@ open class RacehorseWebViewClient(private val eventBus: EventBus = EventBus.getD
         threatType: Int,
         callback: SafeBrowsingResponse
     ) {
-        eventBus.postForSubscriber { SafeBrowsingHitEvent(view, request, threatType, callback) }
+        c.post(SafeBrowsingHitEvent(view, request, threatType, callback))
     }
 }

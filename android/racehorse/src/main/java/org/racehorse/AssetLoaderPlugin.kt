@@ -8,6 +8,7 @@ import androidx.annotation.WorkerThread
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewAssetLoader.PathHandler
 import org.greenrobot.eventbus.Subscribe
+import org.racehorse.eventbus.RacehorseConnection
 import org.racehorse.utils.guessIntentAction
 import org.racehorse.utils.ifNullOrBlank
 import org.racehorse.utils.launchActivity
@@ -20,6 +21,14 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLConnection
 import java.util.TreeMap
+
+fun RacehorseConnection.useAssetLoader(
+    isUnhandledRequestOpenedInExternalBrowser: Boolean = true,
+    activity: ComponentActivity = webView.context as ComponentActivity
+) {
+
+    val assetLoaders = LinkedHashMap<WebViewAssetLoader, Uri?>()
+}
 
 /**
  * Intercepts requests and serves the responses using an registered asset loaders.

@@ -15,6 +15,9 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.serializer
 import org.racehorse.EventBridge
+import org.racehorse.webview.RacehorseDownloadListener
+import org.racehorse.webview.RacehorseWebChromeClient
+import org.racehorse.webview.RacehorseWebViewClient
 import java.util.WeakHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.KClass
@@ -60,13 +63,16 @@ class RacehorseConnection(
 
         var isAsync = false
 
-        suspend fun respond(event: Any) {
+        fun respond(event: Any) {
             if (responseEvent == null && getOutboundEventType(event) != null) {
                 responseEvent = event
             }
 
             listenerContexts[event] = this
-            post(event)
+
+            runBlocking {
+                post(event)
+            }
         }
     }
 
@@ -103,6 +109,10 @@ class RacehorseConnection(
     }
 
     init {
+        webView.webChromeClient = RacehorseWebChromeClient(this)
+        webView.webViewClient = RacehorseWebViewClient(this)
+
+        webView.setDownloadListener(RacehorseDownloadListener(this))
         webView.addJavascriptInterface(jsInterface, JS_KEY)
 
         block?.invoke(this)
@@ -129,12 +139,14 @@ class RacehorseConnection(
         }
     }
 
-    suspend fun post(event: Any) {
+    fun post(event: Any) {
         val eventType = getOutboundEventType(event)
         val listenerContext = listenerContexts[event]
 
         if (eventType == null) {
-            eventFlow.emit(event)
+            runBlocking {
+                eventFlow.emit(event)
+            }
             return
         }
 

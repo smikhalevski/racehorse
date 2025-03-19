@@ -9,8 +9,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
+import org.racehorse.eventbus.RacehorseConnection
 import org.racehorse.serializers.IntentSerializer
 import org.racehorse.utils.launchActivity
 import org.racehorse.utils.launchActivityForResult
@@ -62,39 +61,30 @@ class StartActivityForResultEvent(val intent: Intent) : RequestEvent() {
     class ResultEvent(val resultCode: Int, val intent: Intent?) : ResponseEvent()
 }
 
+private const val BACKGROUND = 0
+private const val FOREGROUND = 1
+private const val ACTIVE = 2
+
 /**
  * Launches activities for various intents, and provides info about the current activity.
  *
  * @param activity The activity that launches the intent to open a URL.
- * @param eventBus The event bus to which events are posted.
  */
-open class ActivityPlugin(
-    private val activity: ComponentActivity,
-    private val eventBus: EventBus = EventBus.getDefault()
-) {
+fun RacehorseConnection.useActivity(activity: ComponentActivity = webView.context as ComponentActivity) {
 
-    private companion object {
-        const val BACKGROUND = 0
-        const val FOREGROUND = 1
-        const val ACTIVE = 2
-    }
-
-    private val lifecycleListener = LifecycleEventObserver { _, event ->
+    val lifecycleListener = LifecycleEventObserver { _, event ->
         when (event.targetState) {
-            Lifecycle.State.CREATED -> eventBus.post(ActivityStateChangedEvent(BACKGROUND))
-            Lifecycle.State.STARTED -> eventBus.post(ActivityStateChangedEvent(FOREGROUND))
-            Lifecycle.State.RESUMED -> eventBus.post(ActivityStateChangedEvent(ACTIVE))
+            Lifecycle.State.CREATED -> post(ActivityStateChangedEvent(BACKGROUND))
+            Lifecycle.State.STARTED -> post(ActivityStateChangedEvent(FOREGROUND))
+            Lifecycle.State.RESUMED -> post(ActivityStateChangedEvent(ACTIVE))
             else -> {}
         }
     }
 
-    open fun enable() = activity.lifecycle.addObserver(lifecycleListener)
+    activity.lifecycle.addObserver(lifecycleListener)
 
-    open fun disable() = activity.lifecycle.removeObserver(lifecycleListener)
-
-    @Subscribe
-    open fun onGetActivityState(event: GetActivityStateEvent) {
-        event.respond(
+    on<GetActivityStateEvent> {
+        respond(
             GetActivityStateEvent.ResultEvent(
                 when (activity.lifecycle.currentState) {
                     Lifecycle.State.STARTED -> FOREGROUND
@@ -105,12 +95,11 @@ open class ActivityPlugin(
         )
     }
 
-    @Subscribe
-    open fun onGetActivityInfo(event: GetActivityInfoEvent) {
+    on<GetActivityInfoEvent> {
         val packageInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
 
         @Suppress("DEPRECATION")
-        event.respond(
+        respond(
             GetActivityInfoEvent.ResultEvent(
                 ActivityInfo(
                     applicationLabel = activity.applicationInfo.loadLabel(activity.packageManager).toString(),
@@ -122,19 +111,17 @@ open class ActivityPlugin(
         )
     }
 
-    @Subscribe
-    open fun onStartActivity(event: StartActivityEvent) {
-        event.respond(StartActivityEvent.ResultEvent(activity.launchActivity(event.intent)))
+    on<StartActivityEvent> { event ->
+        respond(StartActivityEvent.ResultEvent(activity.launchActivity(event.intent)))
     }
 
-    @Subscribe
-    open fun onStartActivityForResult(event: StartActivityForResultEvent) {
+    on<StartActivityForResultEvent> { event ->
         val isLaunched = activity.launchActivityForResult(event.intent) {
-            event.respond(StartActivityForResultEvent.ResultEvent(it.resultCode, it.data))
+            respond(StartActivityForResultEvent.ResultEvent(it.resultCode, it.data))
         }
 
         if (!isLaunched) {
-            event.respond(StartActivityForResultEvent.ResultEvent(Activity.RESULT_CANCELED, null))
+            respond(StartActivityForResultEvent.ResultEvent(Activity.RESULT_CANCELED, null))
         }
     }
 }

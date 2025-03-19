@@ -13,10 +13,8 @@ import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebView
-import org.greenrobot.eventbus.EventBus
+import org.racehorse.eventbus.RacehorseConnection
 import org.racehorse.utils.SyncHandlerEvent
-import org.racehorse.utils.postForSubscriber
-import org.racehorse.utils.postForSyncHandler
 
 /**
  * Tell the host application the current progress of loading a page.
@@ -498,7 +496,7 @@ class ShowFileChooserEvent(
 /**
  * Posts various events triggered by the [WebView].
  */
-open class RacehorseWebChromeClient(private val eventBus: EventBus = EventBus.getDefault()) : WebChromeClient() {
+open class RacehorseWebChromeClient(private val c: RacehorseConnection) : WebChromeClient() {
 
     private val transparentPoster = Bitmap.createBitmap(1, 1, Bitmap.Config.ALPHA_8).apply {
         Canvas(this).drawARGB(255, 0, 0, 0)
@@ -508,27 +506,27 @@ open class RacehorseWebChromeClient(private val eventBus: EventBus = EventBus.ge
     override fun getDefaultVideoPoster(): Bitmap? = transparentPoster
 
     override fun onProgressChanged(view: WebView, progress: Int) {
-        eventBus.postForSubscriber { ProgressChangedEvent(view, progress) }
+        c.post(ProgressChangedEvent(view, progress))
     }
 
     override fun onReceivedTitle(view: WebView, title: String) {
-        eventBus.postForSubscriber { ReceivedTitleEvent(view, title) }
+        c.post(ReceivedTitleEvent(view, title))
     }
 
     override fun onReceivedIcon(view: WebView, icon: Bitmap) {
-        eventBus.postForSubscriber { ReceivedIconEvent(view, icon) }
+        c.post(ReceivedIconEvent(view, icon))
     }
 
     override fun onReceivedTouchIconUrl(view: WebView, url: String, isPrecomposed: Boolean) {
-        eventBus.postForSubscriber { ReceivedTouchIconUrlEvent(view, url, isPrecomposed) }
+        c.post(ReceivedTouchIconUrlEvent(view, url, isPrecomposed))
     }
 
     override fun onShowCustomView(view: View, callback: CustomViewCallback) {
-        eventBus.postForSubscriber { ShowCustomViewEvent(view, callback) }
+        c.post(ShowCustomViewEvent(view, callback))
     }
 
     override fun onHideCustomView() {
-        eventBus.postForSubscriber { HideCustomViewEvent() }
+        c.post(HideCustomViewEvent())
     }
 
     override fun onCreateWindow(
@@ -537,23 +535,32 @@ open class RacehorseWebChromeClient(private val eventBus: EventBus = EventBus.ge
         isUserGesture: Boolean,
         resultMessage: Message
     ): Boolean {
-        return eventBus.postForSyncHandler { CreateWindowEvent(view, isDialog, isUserGesture, resultMessage) }
+        return CreateWindowEvent(view, isDialog, isUserGesture, resultMessage).let {
+            c.post(it)
+            it.isHandled
+        }
     }
 
     override fun onRequestFocus(view: WebView) {
-        eventBus.postForSubscriber { RequestFocusEvent(view) }
+        c.post(RequestFocusEvent(view))
     }
 
     override fun onCloseWindow(window: WebView) {
-        eventBus.postForSubscriber { CloseWindowEvent(window) }
+        c.post(CloseWindowEvent(window))
     }
 
     override fun onJsAlert(view: WebView, url: String, message: String, result: JsResult): Boolean {
-        return eventBus.postForSyncHandler { JsAlertEvent(view, url, message, result) }
+        return JsAlertEvent(view, url, message, result).let {
+            c.post(it)
+            it.isHandled
+        }
     }
 
     override fun onJsConfirm(view: WebView, url: String, message: String, result: JsResult): Boolean {
-        return eventBus.postForSyncHandler { JsConfirmEvent(view, url, message, result) }
+        return JsConfirmEvent(view, url, message, result).let {
+            c.post(it)
+            it.isHandled
+        }
     }
 
     override fun onJsPrompt(
@@ -563,33 +570,46 @@ open class RacehorseWebChromeClient(private val eventBus: EventBus = EventBus.ge
         defaultValue: String,
         result: JsPromptResult
     ): Boolean {
-        return eventBus.postForSyncHandler { JsPromptEvent(view, url, message, defaultValue, result) }
+        return JsPromptEvent(view, url, message, defaultValue, result).let {
+            c.post(it)
+            it.isHandled
+        }
     }
 
     override fun onJsBeforeUnload(view: WebView, url: String, message: String, result: JsResult): Boolean {
-        return eventBus.postForSyncHandler { JsBeforeUnloadEvent(view, url, message, result) }
+        return JsBeforeUnloadEvent(view, url, message, result).let {
+            c.post(it)
+            it.isHandled
+        }
     }
 
     override fun onGeolocationPermissionsShowPrompt(origin: String, callback: GeolocationPermissions.Callback) {
-        eventBus.postForSubscriber { GeolocationPermissionsShowPromptEvent(origin, callback) }
+        c.post(GeolocationPermissionsShowPromptEvent(origin, callback))
     }
 
     override fun onGeolocationPermissionsHidePrompt() {
-        eventBus.postForSubscriber { GeolocationPermissionsHidePromptEvent() }
+        c.post(GeolocationPermissionsHidePromptEvent())
     }
 
     override fun onPermissionRequest(request: PermissionRequest) {
-        if (!eventBus.postForSyncHandler { PermissionRequestEvent(request) }) {
-            super.onPermissionRequest(request)
+        PermissionRequestEvent(request).let {
+            c.post(it)
+
+            if (!it.isHandled) {
+                super.onPermissionRequest(request)
+            }
         }
     }
 
     override fun onPermissionRequestCanceled(request: PermissionRequest) {
-        eventBus.postForSubscriber { PermissionRequestCanceledEvent(request) }
+        c.post(PermissionRequestCanceledEvent(request))
     }
 
     override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
-        return eventBus.postForSyncHandler { ConsoleMessageEvent(consoleMessage) }
+        return ConsoleMessageEvent(consoleMessage).let {
+            c.post(it)
+            it.isHandled
+        }
     }
 
     override fun onShowFileChooser(
@@ -597,6 +617,9 @@ open class RacehorseWebChromeClient(private val eventBus: EventBus = EventBus.ge
         filePathCallback: ValueCallback<Array<Uri>?>,
         fileChooserParams: FileChooserParams
     ): Boolean {
-        return eventBus.postForSyncHandler { ShowFileChooserEvent(view, filePathCallback, fileChooserParams) }
+        return ShowFileChooserEvent(view, filePathCallback, fileChooserParams).let {
+            c.post(it)
+            it.isHandled
+        }
     }
 }
