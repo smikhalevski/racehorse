@@ -1,4 +1,4 @@
-@file:UseSerializers(FileSerializer::class, ThrowableSerializer::class)
+@file:UseSerializers(FileSerializer::class, ThrowableSerializer::class, UriSerializer::class)
 
 package org.racehorse.evergreen
 
@@ -14,6 +14,7 @@ import org.racehorse.RequestEvent
 import org.racehorse.ResponseEvent
 import org.racehorse.serializers.FileSerializer
 import org.racehorse.serializers.ThrowableSerializer
+import org.racehorse.serializers.UriSerializer
 import java.io.File
 import java.net.URLConnection
 
@@ -67,11 +68,13 @@ class UpdateProgressEvent(val contentLength: Int, val readLength: Long) : Notice
  * Get the version of the available master bundle.
  */
 @Deprecated("Use GetBundleInfoEvent")
+@Serializable
 class GetMasterVersionEvent : RequestEvent() {
 
     /**
      * @param version The version of the master bundle or `null` if there's no master bundle.
      */
+    @Serializable
     class ResultEvent(val version: String?) : ResponseEvent()
 }
 
@@ -79,18 +82,23 @@ class GetMasterVersionEvent : RequestEvent() {
  * Get the version of the update bundle that would be applied on the next app restart.
  */
 @Deprecated("Use GetBundleInfoEvent")
+@Serializable
 class GetUpdateStatusEvent : RequestEvent() {
 
     /**
      * @param status The status of the update or `null` if there's no update bundle.
      */
+    @Serializable
     class ResultEvent(val status: UpdateStatus?) : ResponseEvent()
 }
 
 /**
  * Get the info about the current bundle status.
  */
+@Serializable
 class GetBundleInfoEvent : RequestEvent() {
+
+    @Serializable
     class ResultEvent(
         val masterVersion: String?,
         val updateVersion: String?,
@@ -113,11 +121,13 @@ class StartEvent(val version: String, val updateMode: UpdateMode, val openConnec
 /**
  * Applies the available update bundle to master, see [UpdateStatus.isReady].
  */
+@Serializable
 class ApplyUpdateEvent : RequestEvent() {
 
     /**
      * @param version The version of the applied update or `null` if there's no update to apply.
      */
+    @Serializable
     class ResultEvent(val version: String?) : ResponseEvent()
 }
 

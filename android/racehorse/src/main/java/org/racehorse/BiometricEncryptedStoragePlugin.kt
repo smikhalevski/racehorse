@@ -43,7 +43,7 @@ class BiometricConfig(
 class SetBiometricEncryptedValueEvent(
     val key: String,
     val value: String,
-    val config: BiometricConfig?
+    val config: BiometricConfig? = null
 ) : RequestEvent() {
 
     /**
