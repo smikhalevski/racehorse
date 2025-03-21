@@ -157,8 +157,6 @@ export const DownloadReason = {
 
   /**
    * Reason when the download has failed because of network policy manager controls on the requesting application.
-   *
-   * @hide
    */
   ERROR_BLOCKED: 1010,
 

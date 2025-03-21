@@ -57,7 +57,7 @@ plugins {
 }
 
 dependencies {
-    implementation("org.racehorse:racehorse:1.9.0")
+    implementation("org.racehorse:racehorse:1.9.1")
     implementation("org.greenrobot:eventbus:3.3.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
 }
