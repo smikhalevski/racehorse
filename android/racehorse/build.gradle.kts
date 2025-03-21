@@ -53,7 +53,7 @@ publishing {
         register<MavenPublication>("release") {
             groupId = "org.racehorse"
             artifactId = "racehorse"
-            version = "1.9.0"
+            version = "1.9.1"
 
             afterEvaluate {
                 from(components["release"])
