@@ -43,7 +43,7 @@ export function scrollToElement(element: Element, options: ScrollToElementOption
   let endY = -1;
 
   const cancel = () => {
-    window.addEventListener('touchstart', cancel, true);
+    window.removeEventListener('touchstart', cancel, true);
 
     startY = endY = -1;
   };
