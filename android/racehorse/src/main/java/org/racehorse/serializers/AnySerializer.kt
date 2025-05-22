@@ -37,21 +37,20 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.serializerOrNull
 import org.racehorse.utils.loadClass
 import kotlin.reflect.KClass
-import kotlin.reflect.full.isSubclassOf
 
 /**
  * Serializer/deserializer for [Any] class.
  *
  * Arrays are deserialized as [List].
  *
- * @param className The name of the JSON object property that holds the name of the Java class that was used during
+ * @param javaClassKey The name of the JSON object property that holds the name of the Java class that was used during
  * serialization, or must be used during deserialization.
- * @param isClassNameSerialized If `true` then [className] property is encoded for object values during serialisation.
+ * @param isClassNameSerialized If `true` then [javaClassKey] property is encoded for object values during serialisation.
  */
 class AnySerializer(
-    val className: String = "__javaClass",
+    val javaClassKey: String = "__javaClass",
     val isClassNameSerialized: Boolean = false
-) : KSerializer<Any> {
+) : KSerializer<Any?> {
 
     @ExperimentalSerializationApi
     override val descriptor = ContextualSerializer(Any::class, null, emptyArray()).descriptor
@@ -68,8 +67,18 @@ class AnySerializer(
     @ExperimentalSerializationApi
     @InternalSerializationApi
     @Suppress("UNCHECKED_CAST")
-    override fun serialize(encoder: Encoder, value: Any) {
-        val serializer = value::class.getSerializer(encoder.serializersModule) ?: value::class.guessSerializer()
+    override fun serialize(encoder: Encoder, value: Any?) {
+        if (value == null) {
+            encoder.encodeNull()
+            return
+        }
+
+        val serializer = getSerializer(encoder.serializersModule, value::class) ?: inferSerializer(value)
+
+        if (serializer == null) {
+            encoder.encodeNull()
+            return
+        }
 
         if (!isClassNameSerialized) {
             encoder.encodeSerializableValue(serializer as KSerializer<Any>, value)
@@ -85,68 +94,67 @@ class AnySerializer(
             return
         }
 
-        require(!element.containsKey(className)) { "Class ${value::class.java.name} redefines internal property \"$className\"" }
+        require(!element.containsKey(javaClassKey)) { "Class ${value::class.java.name} redefines internal property \"$javaClassKey\"" }
 
         val properties = element.toMutableMap()
 
-        properties[className] = JsonPrimitive(value::class.java.name)
+        properties[javaClassKey] = JsonPrimitive(value::class.java.name)
 
         encoder.encodeJsonElement(JsonObject(properties))
     }
 
     @ExperimentalSerializationApi
     @InternalSerializationApi
-    override fun deserialize(decoder: Decoder): Any {
+    override fun deserialize(decoder: Decoder): Any? {
         check(decoder is JsonDecoder) { "Unsupported decoder" }
 
         val element = decoder.decodeJsonElement()
 
         if (element is JsonPrimitive) {
-            return element.booleanOrNull ?: element.doubleOrNull ?: element.content
+            return element.booleanOrNull ?: element.doubleOrNull ?: element.contentOrNull
         }
 
         if (element is JsonArray) {
             return decoder.json.decodeFromJsonElement(listSerializer, element)
         }
 
-        val className = element.jsonObject[className]?.jsonPrimitive?.contentOrNull
+        val className = element.jsonObject[javaClassKey]?.jsonPrimitive?.contentOrNull
             ?: return decoder.json.decodeFromJsonElement(mapSerializer, element)
 
         val serializer =
-            checkNotNull(loadClass(className).getSerializer(decoder.serializersModule)) { "Cannot deserialize $className" }
+            checkNotNull(getSerializer(decoder.serializersModule, loadClass(className))) { "Cannot deserialize $className" }
 
-        val jsonObject = JsonObject(element.jsonObject - this.className)
+        val jsonObject = JsonObject(element.jsonObject - this.javaClassKey)
 
         return checkNotNull(decoder.json.decodeFromJsonElement(serializer, jsonObject)) { "Unexpected null" }
     }
 
     @ExperimentalSerializationApi
     @InternalSerializationApi
-    private fun KClass<*>.getSerializer(serializersModule: SerializersModule): KSerializer<*>? =
-        serializersModule.getContextual(this) ?: serializerOrNull()
+    private fun getSerializer(serializersModule: SerializersModule, kClass: KClass<*>): KSerializer<*>? =
+        serializersModule.getContextual(kClass) ?: kClass.serializerOrNull()
 
     /**
      * Returns a serializer that best fits the class.
      */
     @ExperimentalSerializationApi
-    private fun KClass<*>.guessSerializer(): KSerializer<*> = when {
-        isSubclassOf(Pair::class) -> pairSerializer
-        isSubclassOf(Map.Entry::class) -> mapEntrySerializer
-        isSubclassOf(Triple::class) -> tripleSerializer
-        isSubclassOf(CharArray::class) -> CharArraySerializer()
-        isSubclassOf(ByteArray::class) -> ByteArraySerializer()
-        isSubclassOf(ShortArray::class) -> ShortArraySerializer()
-        isSubclassOf(IntArray::class) -> IntArraySerializer()
-        isSubclassOf(LongArray::class) -> LongArraySerializer()
-        isSubclassOf(FloatArray::class) -> FloatArraySerializer()
-        isSubclassOf(DoubleArray::class) -> DoubleArraySerializer()
-        isSubclassOf(BooleanArray::class) -> BooleanArraySerializer()
-        isSubclassOf(Array::class) -> arraySerializer
-        isSubclassOf(List::class) -> listSerializer
-        isSubclassOf(Set::class) -> setSerializer
-        isSubclassOf(Map::class) -> mapSerializer
-
-        else -> error("Cannot serialize ${java.name}")
+    private fun inferSerializer(value: Any): KSerializer<*>? = when (value) {
+        is Pair<*, *> -> pairSerializer
+        is Map.Entry<*, *> -> mapEntrySerializer
+        is Triple<*, *, *> -> tripleSerializer
+        is CharArray -> CharArraySerializer()
+        is ByteArray -> ByteArraySerializer()
+        is ShortArray -> ShortArraySerializer()
+        is IntArray -> IntArraySerializer()
+        is LongArray -> LongArraySerializer()
+        is FloatArray -> FloatArraySerializer()
+        is DoubleArray -> DoubleArraySerializer()
+        is BooleanArray -> BooleanArraySerializer()
+        is Array<*> -> arraySerializer
+        is List<*> -> listSerializer
+        is Set<*> -> setSerializer
+        is Map<*, *> -> mapSerializer
+        else -> null
     }
 }
 
