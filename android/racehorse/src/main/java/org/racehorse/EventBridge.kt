@@ -103,7 +103,7 @@ abstract class ResponseEvent : ChainableEvent()
  * guarantees that if an exception is thrown then pending promise is rejected.
  */
 @Serializable
-object VoidEvent : ResponseEvent()
+class VoidEvent : ResponseEvent()
 
 /**
  * Response that describes an occurred exception.
@@ -205,7 +205,7 @@ open class EventBridge(
 
         if (event !is ChainableEvent) {
             eventBus.post(event)
-            return encodeEventToJson(VoidEvent)
+            return encodeEventToJson(VoidEvent())
         }
 
         return synchronized(this) {

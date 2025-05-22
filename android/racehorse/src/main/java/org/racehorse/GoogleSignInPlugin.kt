@@ -132,14 +132,14 @@ open class GoogleSignInPlugin(
     @Subscribe
     open fun onGoogleSignOutEvent(event: GoogleSignOutEvent) {
         googleSignInClient.signOut().addOnCompleteListener(activity) {
-            event.respond(VoidEvent)
+            event.respond(VoidEvent())
         }
     }
 
     @Subscribe
     open fun onGoogleRevokeAccess(event: GoogleRevokeAccessEvent) {
         googleSignInClient.revokeAccess().addOnCompleteListener(activity) {
-            event.respond(VoidEvent)
+            event.respond(VoidEvent())
         }
     }
 }

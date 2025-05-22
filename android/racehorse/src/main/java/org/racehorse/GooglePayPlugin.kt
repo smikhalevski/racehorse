@@ -368,7 +368,7 @@ open class GooglePayPlugin(
                 requestCode
             )
         },
-        callback = { event.respond(VoidEvent) }
+        callback = { event.respond(VoidEvent()) }
     )
 
     @Subscribe
@@ -381,13 +381,13 @@ open class GooglePayPlugin(
                 requestCode
             )
         },
-        callback = { event.respond(VoidEvent) }
+        callback = { event.respond(VoidEvent()) }
     )
 
     @Subscribe
     fun onGooglePayCreateWallet(event: GooglePayCreateWalletEvent) = runOperation(
         operation = { requestCode -> tapAndPayClient.createWallet(activity, requestCode) },
-        callback = { event.respond(VoidEvent) }
+        callback = { event.respond(VoidEvent()) }
     )
 
     /**

@@ -7,23 +7,31 @@ import android.net.Uri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.Json.Default.encodeToString
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.contextual
-import org.junit.Assert.assertEquals
+import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class IntentSerializerTest {
 
-    val json = Json {
-        serializersModule = SerializersModule {
-            contextual(IntentSerializer)
-        }
+    @Test
+    fun encodesIntent() {
+        val intentStr = encodeToString(IntentSerializer, Intent("aaa", Uri.parse("http://xxx.yyy")))
+
+        Assert.assertEquals("""{"action":"aaa","data":"http://xxx.yyy"}""", intentStr)
     }
 
     @Test
-    fun testSerializesIntent() {
+    fun encodesNestedIntent() {
+        val json = Json {
+            serializersModule = SerializersModule {
+                contextual(IntentSerializer)
+            }
+        }
+
         val intentStr = json.encodeToString(
             IntentSerializer,
 
@@ -39,14 +47,20 @@ class IntentSerializerTest {
             }
         )
 
-        assertEquals(
+        Assert.assertEquals(
             """{"action":"aaa","data":"http://xxx.yyy","selector":{"action":"xxx"},"extras":{"bbb":{"action":"ccc","extras":{"ddd":111}}}}""",
             intentStr
         )
     }
 
     @Test
-    fun testDeserializesIntent() {
+    fun decodesIntent() {
+        val json = Json {
+            serializersModule = SerializersModule {
+                contextual(IntentSerializer)
+            }
+        }
+
         val intentStr = """
           {
             "action": "aaa",
@@ -70,8 +84,8 @@ class IntentSerializerTest {
 
         val intent = json.decodeFromString(IntentSerializer, intentStr)
 
-        assertEquals("http://xxx.yyy", intent.data?.toString())
-        assertEquals("ccc", intent.extras?.getParcelableArrayList<Intent>("bbb")?.get(0)?.action)
-        assertEquals(111.0, intent.extras?.getParcelableArrayList<Intent>("bbb")?.get(0)?.extras?.getDouble("ddd"))
+        Assert.assertEquals("http://xxx.yyy", intent.data?.toString())
+        Assert.assertEquals("ccc", intent.extras?.getParcelableArrayList<Intent>("bbb")?.get(0)?.action)
+        Assert.assertEquals(111.0, intent.extras?.getParcelableArrayList<Intent>("bbb")?.get(0)?.extras?.getDouble("ddd"))
     }
 }

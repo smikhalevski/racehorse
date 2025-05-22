@@ -320,7 +320,7 @@ open class FsPlugin(
 
         event.uri.toSupportedUri().getOutputStream(event.append).use { it.write(bytes) }
 
-        event.respond(VoidEvent)
+        event.respond(VoidEvent())
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
@@ -328,7 +328,7 @@ open class FsPlugin(
         event.uri.toSupportedUri().getInputStream().use {
             event.toUri.toSupportedUri().getOutputStream().use(it::copyTo)
         }
-        event.respond(VoidEvent)
+        event.respond(VoidEvent())
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
