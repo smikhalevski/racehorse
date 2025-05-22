@@ -1,5 +1,4 @@
 import { EventBridge } from './createEventBridge';
-import { createJoiner } from './createJoiner';
 import { Unsubscribe } from './types';
 
 export interface BundleInfo {
@@ -127,7 +126,7 @@ export interface EvergreenManager {
  * @param eventBridge The underlying event bridge.
  */
 export function createEvergreenManager(eventBridge: EventBridge): EvergreenManager {
-  const updateJoiner = createJoiner<string | null>();
+  let promise: Promise<string | null> | undefined;
 
   return {
     getMasterVersion: () =>
@@ -138,11 +137,16 @@ export function createEvergreenManager(eventBridge: EventBridge): EvergreenManag
     getBundleInfo: () => eventBridge.request({ type: 'org.racehorse.evergreen.GetBundleInfoEvent' }).payload,
 
     applyUpdate: () =>
-      updateJoiner.join(() =>
-        eventBridge
-          .requestAsync({ type: 'org.racehorse.evergreen.ApplyUpdateEvent' })
-          .then(event => event.payload.version)
-      ),
+      (promise ||= eventBridge.requestAsync({ type: 'org.racehorse.evergreen.ApplyUpdateEvent' }).then(
+        event => {
+          promise = undefined;
+          return event.payload.version;
+        },
+        error => {
+          promise = undefined;
+          throw error;
+        }
+      )),
 
     subscribe: (eventType, listener) =>
       eventBridge.subscribe(

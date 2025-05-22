@@ -42,7 +42,6 @@ export {
 } from './createGooglePayManager';
 export { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager';
 export { createGoogleSignInManager } from './createGoogleSignInManager';
-export { createJoiner } from './createJoiner';
 export { createKeyboardManager } from './createKeyboardManager';
 export { createNetworkManager } from './createNetworkManager';
 export { createNotificationsManager } from './createNotificationsManager';
@@ -75,7 +74,6 @@ export type {
 } from './createGooglePayManager';
 export type { GooglePlayReferrerManager } from './createGooglePlayReferrerManager';
 export type { GoogleSignInManager, GoogleSignInAccount } from './createGoogleSignInManager';
-export type { Joiner } from './createJoiner';
 export type { KeyboardManager } from './createKeyboardManager';
 export type { NetworkManager, NetworkType, NetworkStatus } from './createNetworkManager';
 export type { NotificationsManager } from './createNotificationsManager';
