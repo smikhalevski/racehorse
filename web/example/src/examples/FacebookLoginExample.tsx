@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { facebookLoginManager } from 'racehorse';
-import { FormattedJSON } from '../components/FormattedJSON';
+import { FormattedJSON } from '../components/FormattedJSON.js';
 
 export function FacebookLoginExample() {
   const [accessToken, setAccessToken] = useState(facebookLoginManager.getCurrentAccessToken);

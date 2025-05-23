@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NetworkStatus } from 'racehorse';
-import { useNetworkManager } from './managers';
+import { useNetworkManager } from './managers.js';
 
 /**
  * Returns the current network status and re-renders the component if it changes.

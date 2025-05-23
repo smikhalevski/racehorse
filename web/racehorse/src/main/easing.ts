@@ -1,4 +1,4 @@
-import { Easing } from './types';
+import { Easing } from './types.js';
 
 /**
  * Creates an easing function for a given easing curve.

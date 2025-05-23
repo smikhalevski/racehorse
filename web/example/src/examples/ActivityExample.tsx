@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { activityManager, ActivityResult, ActivityState, Intent, permissionsManager } from 'racehorse';
-import { FormattedJSON } from '../components/FormattedJSON';
+import { FormattedJSON } from '../components/FormattedJSON.js';
 import { useActivityState } from '@racehorse/react';
 
 const activityStateLabel = {

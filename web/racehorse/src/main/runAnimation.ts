@@ -1,4 +1,4 @@
-import { Animation, AnimationHandler } from './types';
+import { Animation, AnimationHandler } from './types.js';
 
 /**
  * Runs the animation frames and triggers corresponding handler callbacks.
@@ -17,7 +17,7 @@ export function runAnimation<T extends Partial<Animation>>(
 
   let runTime = Date.now();
   let frameHandle = 0;
-  let timer: NodeJS.Timeout;
+  let timer: number;
 
   const { duration = 0, startTime = runTime, easing } = animation;
 

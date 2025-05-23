@@ -41,9 +41,9 @@ export {
   NetworkManagerProvider,
   NotificationsManagerProvider,
   PermissionsManagerProvider,
-} from './managers';
-export { useActivityState } from './useActivityState';
-export { useKeyboardAnimation } from './useKeyboardAnimation';
-export { useKeyboardHeight } from './useKeyboardHeight';
-export { useNetworkStatus } from './useNetworkStatus';
-export { useWindowInsets } from './useWindowInsets';
+} from './managers.js';
+export { useActivityState } from './useActivityState.js';
+export { useKeyboardAnimation } from './useKeyboardAnimation.js';
+export { useKeyboardHeight } from './useKeyboardHeight.js';
+export { useNetworkStatus } from './useNetworkStatus.js';
+export { useWindowInsets } from './useWindowInsets.js';

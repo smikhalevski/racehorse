@@ -1,4 +1,4 @@
-import { useKeyboardManager } from './managers';
+import { useKeyboardManager } from './managers.js';
 import { useEffect, useState } from 'react';
 
 /**
@@ -12,7 +12,7 @@ export function useKeyboardHeight(): number {
   const [keyboardHeight, setKeyboardHeight] = useState(manager.getKeyboardHeight);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: number;
 
     setKeyboardHeight(manager.getKeyboardHeight());
 

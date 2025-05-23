@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNetworkStatus } from '@racehorse/react';
-import { FormattedJSON } from '../components/FormattedJSON';
+import { FormattedJSON } from '../components/FormattedJSON.js';
 
 export function NetworkExample() {
   const networkStatus = useNetworkStatus();

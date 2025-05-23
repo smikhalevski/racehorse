@@ -1,69 +1,69 @@
-import { createActivityManager } from './createActivityManager';
-import { createBiometricEncryptedStorageManager } from './createBiometricEncryptedStorageManager';
-import { createBiometricManager } from './createBiometricManager';
-import { createContactsManager } from './createContactsManager';
-import { createDeepLinkManager } from './createDeepLinkManager';
-import { createDeviceManager } from './createDeviceManager';
-import { createDownloadManager } from './createDownloadManager';
-import { createEncryptedStorageManager } from './createEncryptedStorageManager';
-import { createEventBridge } from './createEventBridge';
-import { createEvergreenManager } from './createEvergreenManager';
-import { createFacebookLoginManager } from './createFacebookLoginManager';
-import { createFacebookShareManager } from './createFacebookShareManager';
-import { createFirebaseManager } from './createFirebaseManager';
-import { createFsManager } from './createFsManager';
-import { createGooglePayManager } from './createGooglePayManager';
-import { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager';
-import { createGoogleSignInManager } from './createGoogleSignInManager';
-import { createKeyboardManager } from './createKeyboardManager';
-import { createNetworkManager } from './createNetworkManager';
-import { createNotificationsManager } from './createNotificationsManager';
-import { createPermissionsManager } from './createPermissionsManager';
+import { createActivityManager } from './createActivityManager.js';
+import { createBiometricEncryptedStorageManager } from './createBiometricEncryptedStorageManager.js';
+import { createBiometricManager } from './createBiometricManager.js';
+import { createContactsManager } from './createContactsManager.js';
+import { createDeepLinkManager } from './createDeepLinkManager.js';
+import { createDeviceManager } from './createDeviceManager.js';
+import { createDownloadManager } from './createDownloadManager.js';
+import { createEncryptedStorageManager } from './createEncryptedStorageManager.js';
+import { createEventBridge } from './createEventBridge.js';
+import { createEvergreenManager } from './createEvergreenManager.js';
+import { createFacebookLoginManager } from './createFacebookLoginManager.js';
+import { createFacebookShareManager } from './createFacebookShareManager.js';
+import { createFirebaseManager } from './createFirebaseManager.js';
+import { createFsManager } from './createFsManager.js';
+import { createGooglePayManager } from './createGooglePayManager.js';
+import { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager.js';
+import { createGoogleSignInManager } from './createGoogleSignInManager.js';
+import { createKeyboardManager } from './createKeyboardManager.js';
+import { createNetworkManager } from './createNetworkManager.js';
+import { createNotificationsManager } from './createNotificationsManager.js';
+import { createPermissionsManager } from './createPermissionsManager.js';
 
-export { createActivityManager, Intent, Activity, ActivityState } from './createActivityManager';
-export { createBiometricEncryptedStorageManager } from './createBiometricEncryptedStorageManager';
-export { createBiometricManager, BiometricStatus, BiometricAuthenticator } from './createBiometricManager';
-export { createContactsManager } from './createContactsManager';
-export { createDeepLinkManager } from './createDeepLinkManager';
-export { createDeviceManager, InsetType } from './createDeviceManager';
-export { createDownloadManager, DownloadStatus, DownloadReason } from './createDownloadManager';
-export { createEncryptedStorageManager } from './createEncryptedStorageManager';
-export { createEventBridge } from './createEventBridge';
-export { createEvergreenManager } from './createEvergreenManager';
-export { createFacebookLoginManager } from './createFacebookLoginManager';
-export { createFacebookShareManager } from './createFacebookShareManager';
-export { createFirebaseManager } from './createFirebaseManager';
-export { createFsManager, File, Directory } from './createFsManager';
+export { createActivityManager, Intent, Activity, ActivityState } from './createActivityManager.js';
+export { createBiometricEncryptedStorageManager } from './createBiometricEncryptedStorageManager.js';
+export { createBiometricManager, BiometricStatus, BiometricAuthenticator } from './createBiometricManager.js';
+export { createContactsManager } from './createContactsManager.js';
+export { createDeepLinkManager } from './createDeepLinkManager.js';
+export { createDeviceManager, InsetType } from './createDeviceManager.js';
+export { createDownloadManager, DownloadStatus, DownloadReason } from './createDownloadManager.js';
+export { createEncryptedStorageManager } from './createEncryptedStorageManager.js';
+export { createEventBridge } from './createEventBridge.js';
+export { createEvergreenManager } from './createEvergreenManager.js';
+export { createFacebookLoginManager } from './createFacebookLoginManager.js';
+export { createFacebookShareManager } from './createFacebookShareManager.js';
+export { createFirebaseManager } from './createFirebaseManager.js';
+export { createFsManager, File, Directory } from './createFsManager.js';
 export {
   createGooglePayManager,
   GooglePayTokenState,
   GooglePayTokenServiceProvider,
   GooglePayCardNetwork,
-} from './createGooglePayManager';
-export { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager';
-export { createGoogleSignInManager } from './createGoogleSignInManager';
-export { createKeyboardManager } from './createKeyboardManager';
-export { createNetworkManager } from './createNetworkManager';
-export { createNotificationsManager } from './createNotificationsManager';
-export { createPermissionsManager } from './createPermissionsManager';
-export { createScheduler } from './createScheduler';
-export { runAnimation } from './runAnimation';
-export { scrollToElement } from './scrollToElement';
+} from './createGooglePayManager.js';
+export { createGooglePlayReferrerManager } from './createGooglePlayReferrerManager.js';
+export { createGoogleSignInManager } from './createGoogleSignInManager.js';
+export { createKeyboardManager } from './createKeyboardManager.js';
+export { createNetworkManager } from './createNetworkManager.js';
+export { createNotificationsManager } from './createNotificationsManager.js';
+export { createPermissionsManager } from './createPermissionsManager.js';
+export { createScheduler } from './createScheduler.js';
+export { runAnimation } from './runAnimation.js';
+export { scrollToElement } from './scrollToElement.js';
 
-export type { ActivityManager, ActivityResult, ActivityInfo } from './createActivityManager';
-export type { BiometricEncryptedStorageManager, BiometricConfig } from './createBiometricEncryptedStorageManager';
-export type { BiometricManager } from './createBiometricManager';
-export type { ContactsManager, Contact } from './createContactsManager';
-export type { DeepLinkManager } from './createDeepLinkManager';
-export type { DeviceManager, DeviceInfo, Rect } from './createDeviceManager';
-export type { DownloadManager, DownloadOptions, Download } from './createDownloadManager';
-export type { EncryptedStorageManager } from './createEncryptedStorageManager';
-export type { EventBridge, Event, Connection } from './createEventBridge';
-export type { EvergreenManager, UpdateStatus, BundleInfo, UpdateMode } from './createEvergreenManager';
-export type { FacebookLoginManager, FacebookAccessToken } from './createFacebookLoginManager';
-export type { FacebookShareManager, FacebookShareLinkContent } from './createFacebookShareManager';
-export type { FirebaseManager } from './createFirebaseManager';
-export type { FileAttributes, FsManager } from './createFsManager';
+export type { ActivityManager, ActivityResult, ActivityInfo } from './createActivityManager.js';
+export type { BiometricEncryptedStorageManager, BiometricConfig } from './createBiometricEncryptedStorageManager.js';
+export type { BiometricManager } from './createBiometricManager.js';
+export type { ContactsManager, Contact } from './createContactsManager.js';
+export type { DeepLinkManager } from './createDeepLinkManager.js';
+export type { DeviceManager, DeviceInfo, Rect } from './createDeviceManager.js';
+export type { DownloadManager, DownloadOptions, Download } from './createDownloadManager.js';
+export type { EncryptedStorageManager } from './createEncryptedStorageManager.js';
+export type { EventBridge, Event, Connection } from './createEventBridge.js';
+export type { EvergreenManager, UpdateStatus, BundleInfo, UpdateMode } from './createEvergreenManager.js';
+export type { FacebookLoginManager, FacebookAccessToken } from './createFacebookLoginManager.js';
+export type { FacebookShareManager, FacebookShareLinkContent } from './createFacebookShareManager.js';
+export type { FirebaseManager } from './createFirebaseManager.js';
+export type { FileAttributes, FsManager } from './createFsManager.js';
 export type {
   GooglePayUserAddress,
   GooglePayTokenStatus,
@@ -71,16 +71,16 @@ export type {
   GooglePayPushTokenizeRequest,
   GooglePayTokenInfo,
   GooglePayManager,
-} from './createGooglePayManager';
-export type { GooglePlayReferrerManager } from './createGooglePlayReferrerManager';
-export type { GoogleSignInManager, GoogleSignInAccount } from './createGoogleSignInManager';
-export type { KeyboardManager } from './createKeyboardManager';
-export type { NetworkManager, NetworkType, NetworkStatus } from './createNetworkManager';
-export type { NotificationsManager } from './createNotificationsManager';
-export type { PermissionsManager } from './createPermissionsManager';
-export type { Scheduler } from './createScheduler';
-export type { ScrollToElementOptions } from './scrollToElement';
-export type { Animation, AnimationHandler, TweenAnimation, Easing, Unsubscribe } from './types';
+} from './createGooglePayManager.js';
+export type { GooglePlayReferrerManager } from './createGooglePlayReferrerManager.js';
+export type { GoogleSignInManager, GoogleSignInAccount } from './createGoogleSignInManager.js';
+export type { KeyboardManager } from './createKeyboardManager.js';
+export type { NetworkManager, NetworkType, NetworkStatus } from './createNetworkManager.js';
+export type { NotificationsManager } from './createNotificationsManager.js';
+export type { PermissionsManager } from './createPermissionsManager.js';
+export type { Scheduler } from './createScheduler.js';
+export type { ScrollToElementOptions } from './scrollToElement.js';
+export type { Animation, AnimationHandler, TweenAnimation, Easing, Unsubscribe } from './types.js';
 
 /**
  * Event bridge delivers events from and to native Android.

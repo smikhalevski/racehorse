@@ -29,7 +29,8 @@ jobs:
 
       - run: npm test --workspace=$WORKSPACE
 
-      - run: npm publish --workspace=$WORKSPACE --access public
+      - run: npm publish --access public --dry-run
+        working-directory: ${{ env.WORKSPACE }}/lib
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

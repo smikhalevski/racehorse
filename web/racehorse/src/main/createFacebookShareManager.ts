@@ -1,5 +1,5 @@
-import { EventBridge } from './createEventBridge';
-import { noop } from './utils';
+import { EventBridge } from './createEventBridge.js';
+import { noop } from './utils.js';
 
 export interface FacebookShareLinkContent {
   /**

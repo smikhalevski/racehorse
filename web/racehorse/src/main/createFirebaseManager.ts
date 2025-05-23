@@ -1,4 +1,4 @@
-import { EventBridge } from './createEventBridge';
+import { EventBridge } from './createEventBridge.js';
 
 export interface FirebaseManager {
   /**

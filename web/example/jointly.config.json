@@ -1,13 +1,12 @@
-[
-  {
-    "command": "vite"
-  },
-  {
-    "command": "tsc",
-    "args": [
-      "--watch",
-      "--preserveWatchOutput",
-      "--pretty"
-    ]
-  }
-]
+{
+  "$schema": "https://raw.githubusercontent.com/smikhalevski/jointly/refs/tags/v0.0.3/schema.json",
+  "tasks": [
+    {
+      "command": "vite"
+    },
+    {
+      "command": "tsc",
+      "args": ["--watch", "--preserveWatchOutput", "--pretty"]
+    }
+  ]
+}

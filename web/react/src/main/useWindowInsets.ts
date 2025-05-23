@@ -1,12 +1,12 @@
 import { Rect } from 'racehorse';
 import { useEffect, useMemo, useState } from 'react';
-import { useDeviceManager } from './managers';
+import { useDeviceManager } from './managers.js';
 
 /**
  * Returns the current window insets and re-renders the component if device orientation changes.
  *
- * @param typeMask Bit mask of {@link InsetType}s to query the insets for. By default, display cutout, navigation and
- * status bars are included.
+ * @param typeMask Bit mask of {@link racehorse!InsetType}s to query the insets for. By default, display cutout,
+ * navigation and status bars are included.
  */
 export function useWindowInsets(typeMask?: number): Rect {
   const manager = useDeviceManager();

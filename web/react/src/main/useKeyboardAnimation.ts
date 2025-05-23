@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useKeyboardManager } from './managers';
+import { useKeyboardManager } from './managers.js';
 import { TweenAnimation } from 'racehorse';
 
 /**

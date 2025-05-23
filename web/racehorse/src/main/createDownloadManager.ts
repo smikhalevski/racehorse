@@ -1,4 +1,4 @@
-import { Event, EventBridge } from './createEventBridge';
+import { Event, EventBridge } from './createEventBridge.js';
 
 /**
  * The download description.

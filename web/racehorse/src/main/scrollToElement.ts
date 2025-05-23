@@ -1,5 +1,5 @@
-import { Animation } from './types';
-import { runAnimation } from './runAnimation';
+import { Animation } from './types.js';
+import { runAnimation } from './runAnimation.js';
 
 /**
  * Options of the {@link scrollToElement} function.

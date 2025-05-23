@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { eventBridge, evergreenManager } from 'racehorse';
-import { FormattedJSON } from '../components/FormattedJSON';
+import { FormattedJSON } from '../components/FormattedJSON.js';
 
 export function EvergreenExample() {
   const bundleInfo = useMemo(() => {

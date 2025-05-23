@@ -1,8 +1,6 @@
 {
   "name": "racehorse",
-  "entryPoints": [
-    "./src/main/index.ts"
-  ],
+  "entryPoints": ["./src/main/index.ts"],
   "disableSources": true,
   "readme": "none"
 }

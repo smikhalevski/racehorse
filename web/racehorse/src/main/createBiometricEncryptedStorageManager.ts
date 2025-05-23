@@ -1,5 +1,5 @@
-import { EventBridge } from './createEventBridge';
-import { BiometricAuthenticator } from './createBiometricManager';
+import { EventBridge } from './createEventBridge.js';
+import { BiometricAuthenticator } from './createBiometricManager.js';
 
 export interface BiometricConfig {
   /**

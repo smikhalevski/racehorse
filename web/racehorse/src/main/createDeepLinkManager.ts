@@ -1,6 +1,6 @@
-import { Intent } from './createActivityManager';
-import { EventBridge } from './createEventBridge';
-import { Unsubscribe } from './types';
+import { Intent } from './createActivityManager.js';
+import { EventBridge } from './createEventBridge.js';
+import { Unsubscribe } from './types.js';
 
 export interface DeepLinkManager {
   /**

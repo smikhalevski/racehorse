@@ -1,4 +1,4 @@
-import { EventBridge } from './createEventBridge';
+import { EventBridge } from './createEventBridge.js';
 
 /**
  * Types of authenticators, defined at a level of granularity supported by {@link BiometricManager}.

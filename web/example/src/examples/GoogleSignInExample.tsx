@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { googleSignInManager } from 'racehorse';
-import { FormattedJSON } from '../components/FormattedJSON';
+import { FormattedJSON } from '../components/FormattedJSON.js';
 
 export function GoogleSignInExample() {
   const [account, setAccount] = useState(googleSignInManager.getLastSignedInAccount);

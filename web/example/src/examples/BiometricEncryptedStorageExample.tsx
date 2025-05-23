@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FormattedJSON } from '../components/FormattedJSON';
+import { FormattedJSON } from '../components/FormattedJSON.js';
 import { BiometricAuthenticator, biometricEncryptedStorageManager } from 'racehorse';
 
 export function BiometricEncryptedStorageExample() {

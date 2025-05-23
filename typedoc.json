@@ -1,9 +1,6 @@
 {
   "name": "Racehorse",
-  "entryPoints": [
-    "./web/racehorse",
-    "./web/react"
-  ],
+  "entryPoints": ["./web/racehorse", "./web/react"],
   "excludePrivate": true,
   "excludeExternals": true,
   "excludeInternal": true,
@@ -12,16 +9,13 @@
   "hideGenerator": true,
   "readme": "none",
   "tsconfig": "./tsconfig.json",
-  "customCss": "./node_modules/typedoc-custom-css/custom.css",
   "navigation": {
     "includeFolders": false
   },
   "sidebarLinks": {
     "Racehorse Android API": "/racehorse/android/index.html"
   },
-  "plugin": [
-    "typedoc-plugin-mdn-links"
-  ],
+  "plugin": ["typedoc-plugin-mdn-links"],
   "externalSymbolLinkMappings": {
     "parallel-universe": {
       "AbortableCallback": "https://smikhalevski.github.io/parallel-universe/types/AbortableCallback.html",

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Contact, contactsManager, fsManager } from 'racehorse';
-import { FormattedJSON } from '../components/FormattedJSON';
+import { FormattedJSON } from '../components/FormattedJSON.js';
 
 export function ContactsExample() {
   const [contact, setContact] = useState<Contact | null>(null);

@@ -1,30 +1,20 @@
 {
   "compilerOptions": {
+    "noEmit": true,
     "declaration": true,
-    "moduleResolution": "Node",
-    "esModuleInterop": true,
     "isolatedModules": true,
     "strict": true,
-    "target": "ES5",
-    "module": "ESNext",
-    "lib": [
-      "DOM",
-      "ES7"
-    ],
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true,
+    "target": "ES2020",
+    "module": "NodeNext",
+    "lib": ["DOM", "DOM.Iterable", "ES2020"],
     "baseUrl": ".",
     "paths": {
-      "racehorse": [
-        "./web/racehorse/src/main"
-      ],
-      "@racehorse/*": [
-        "./web/*/src/main"
-      ]
+      "racehorse": ["./web/racehorse/src/main/index.ts"]
     }
   },
-  "include": [
-    "./web/*/src/**/*"
-  ],
-  "exclude": [
-    "./web/example/**/*"
-  ]
+  "include": ["./web/*/src/**/*"],
+  "exclude": ["./web/example/**/*"]
 }

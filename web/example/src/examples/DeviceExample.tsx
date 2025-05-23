@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { deviceManager } from 'racehorse';
-import { FormattedJSON } from '../components/FormattedJSON';
+import { FormattedJSON } from '../components/FormattedJSON.js';
 
 export function DeviceExample() {
   const deviceInfo = useMemo(deviceManager.getDeviceInfo, []);

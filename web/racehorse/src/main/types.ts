@@ -57,7 +57,7 @@ export interface AnimationHandler<T extends Partial<Animation>> {
    * Triggered when an animated value is changed.
    *
    * @param animation The pending animation.
-   * @param fraction The result of {@link Animation.easing} applied to {@link percent}.
+   * @param fraction The result of {@link Animation.easing} applied to `percent`.
    * @param percent The completed animation percentage [0, 1].
    */
   onProgress(animation: T, fraction: number, percent: number): void;

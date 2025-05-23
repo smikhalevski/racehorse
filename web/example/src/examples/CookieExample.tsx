@@ -1,5 +1,5 @@
 import React, { useReducer } from 'react';
-import { FormattedJSON } from '../components/FormattedJSON';
+import { FormattedJSON } from '../components/FormattedJSON.js';
 
 export function CookieExample() {
   const [, rerender] = useReducer(value => ++value, 0);

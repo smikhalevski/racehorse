@@ -1,86 +1,85 @@
-import { createScheduler } from '../main';
-import { noop } from '../main/utils';
+import { expect, test, vi } from 'vitest';
+import { createScheduler } from '../main/index.js';
+import { noop } from '../main/utils.js';
 
-describe('createScheduler', () => {
-  test('invokes the action', async () => {
-    const actionMock = jest.fn(() => Promise.resolve('aaa'));
-    const scheduler = createScheduler();
+test('invokes the action', async () => {
+  const actionMock = vi.fn(() => Promise.resolve('aaa'));
+  const scheduler = createScheduler();
 
-    expect(scheduler.isPending()).toBe(false);
+  expect(scheduler.isPending()).toBe(false);
 
-    const promise = scheduler.schedule(actionMock);
+  const promise = scheduler.schedule(actionMock);
 
-    expect(scheduler.isPending()).toBe(true);
-    expect(actionMock).toHaveBeenCalledTimes(0);
+  expect(scheduler.isPending()).toBe(true);
+  expect(actionMock).toHaveBeenCalledTimes(0);
 
-    await expect(promise).resolves.toBe('aaa');
+  await expect(promise).resolves.toBe('aaa');
 
-    expect(actionMock).toHaveBeenCalledTimes(1);
+  expect(actionMock).toHaveBeenCalledTimes(1);
+});
+
+test('invokes actions consequently', async () => {
+  let action1Completed = false;
+
+  const action1Mock = vi.fn(() =>
+    Promise.resolve().then(() => {
+      action1Completed = true;
+    })
+  );
+  const action2Mock = vi.fn(() => {
+    expect(action1Completed).toBe(true);
+    return Promise.resolve('aaa');
   });
 
-  test('invokes actions consequently', async () => {
-    let action1Completed = false;
+  const scheduler = createScheduler();
 
-    const action1Mock = jest.fn(() =>
-      Promise.resolve().then(() => {
-        action1Completed = true;
-      })
-    );
-    const action2Mock = jest.fn(() => {
-      expect(action1Completed).toBe(true);
-      return Promise.resolve('aaa');
-    });
+  scheduler.schedule(action1Mock);
 
-    const scheduler = createScheduler();
+  await expect(scheduler.schedule(action2Mock)).resolves.toBe('aaa');
 
-    scheduler.schedule(action1Mock);
+  expect(action2Mock).toHaveBeenCalledTimes(1);
+  expect(scheduler.isPending()).toBe(false);
+});
 
-    await expect(scheduler.schedule(action2Mock)).resolves.toBe('aaa');
+test('result from the previous action is not visible to the next action', async () => {
+  const actionMock = vi.fn();
 
-    expect(action2Mock).toHaveBeenCalledTimes(1);
-    expect(scheduler.isPending()).toBe(false);
-  });
+  const scheduler = createScheduler();
 
-  test('result from the previous action is not visible to the next action', async () => {
-    const actionMock = jest.fn();
+  scheduler.schedule(() => Promise.resolve('aaa'));
 
-    const scheduler = createScheduler();
+  await scheduler.schedule(actionMock);
 
-    scheduler.schedule(() => Promise.resolve('aaa'));
+  expect(actionMock).toHaveBeenCalledTimes(1);
+  expect(actionMock.mock.calls[0]).toStrictEqual([expect.any(AbortSignal)]);
+});
 
-    await scheduler.schedule(actionMock);
+test('ignores the rejection of the preceding action', async () => {
+  const actionMock = vi.fn();
 
-    expect(actionMock).toHaveBeenCalledTimes(1);
-    expect(actionMock.mock.calls[0]).toStrictEqual([expect.any(AbortSignal)]);
-  });
+  const scheduler = createScheduler();
 
-  test('ignores the rejection of the preceding action', async () => {
-    const actionMock = jest.fn();
+  scheduler.schedule(() => Promise.reject('aaa')).catch(noop);
 
-    const scheduler = createScheduler();
+  await scheduler.schedule(actionMock);
 
-    scheduler.schedule(() => Promise.reject('aaa')).catch(noop);
+  expect(actionMock).toHaveBeenCalledTimes(1);
+  expect(actionMock.mock.calls[0]).toStrictEqual([expect.any(AbortSignal)]);
+});
 
-    await scheduler.schedule(actionMock);
+test('pending status is preserved', async () => {
+  const scheduler = createScheduler();
 
-    expect(actionMock).toHaveBeenCalledTimes(1);
-    expect(actionMock.mock.calls[0]).toStrictEqual([expect.any(AbortSignal)]);
-  });
+  expect(scheduler.isPending()).toBe(false);
 
-  test('pending status is preserved', async () => {
-    const scheduler = createScheduler();
+  const promise1 = scheduler.schedule(() => Promise.resolve('aaa'));
+  const promise2 = scheduler.schedule(() => Promise.resolve('bbb'));
 
-    expect(scheduler.isPending()).toBe(false);
+  await promise1;
 
-    const promise1 = scheduler.schedule(() => Promise.resolve('aaa'));
-    const promise2 = scheduler.schedule(() => Promise.resolve('bbb'));
+  expect(scheduler.isPending()).toBe(true);
 
-    await promise1;
+  await promise2;
 
-    expect(scheduler.isPending()).toBe(true);
-
-    await promise2;
-
-    expect(scheduler.isPending()).toBe(false);
-  });
+  expect(scheduler.isPending()).toBe(false);
 });

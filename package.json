@@ -3,7 +3,7 @@
   "scripts": {
     "build": "npm run build --workspaces",
     "clean": "rimraf ./docs ./coverage && npm run clean --workspaces",
-    "test": "jest",
+    "test": "tsc && vitest run",
     "docs": "typedoc && cd ./android/racehorse && ../gradlew dokkaHtml"
   },
   "workspaces": [
@@ -12,21 +12,15 @@
     "./web/example"
   ],
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.3.0",
-    "@rollup/plugin-typescript": "^12.1.0",
-    "@types/jest": "^29.5.13",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0",
-    "prettier": "^3.3.3",
+    "jsdom": "^26.1.0",
+    "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
-    "rollup": "^4.24.0",
-    "ts-jest": "^29.2.5",
-    "tslib": "^2.7.0",
-    "typedoc": "^0.26.8",
-    "typedoc-custom-css": "github:smikhalevski/typedoc-custom-css#master",
-    "typedoc-plugin-mdn-links": "^3.3.2",
-    "typescript": "^5.6.3"
+    "tslib": "^2.8.1",
+    "typedoc": "^0.28.4",
+    "typedoc-plugin-mdn-links": "^5.0.2",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.4"
   }
 }

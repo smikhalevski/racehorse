@@ -1,6 +1,6 @@
-import { EventBridge } from './createEventBridge';
-import { noop } from './utils';
-import { Unsubscribe } from './types';
+import { EventBridge } from './createEventBridge.js';
+import { noop } from './utils.js';
+import { Unsubscribe } from './types.js';
 
 export const GooglePayTokenState = {
   UNTOKENIZED: 1,

@@ -1,6 +1,6 @@
-import { EventBridge } from './createEventBridge';
-import { TweenAnimation, Unsubscribe } from './types';
-import { createEasing } from './easing';
+import { EventBridge } from './createEventBridge.js';
+import { TweenAnimation, Unsubscribe } from './types.js';
+import { createEasing } from './easing.js';
 
 export interface KeyboardManager {
   /**

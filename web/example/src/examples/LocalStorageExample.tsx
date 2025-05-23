@@ -1,5 +1,5 @@
 import React, { useReducer } from 'react';
-import { FormattedJSON } from '../components/FormattedJSON';
+import { FormattedJSON } from '../components/FormattedJSON.js';
 
 export function LocalStorageExample() {
   const [, rerender] = useReducer(value => ++value, 0);

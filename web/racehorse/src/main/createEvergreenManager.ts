@@ -1,5 +1,5 @@
-import { EventBridge } from './createEventBridge';
-import { Unsubscribe } from './types';
+import { EventBridge } from './createEventBridge.js';
+import { Unsubscribe } from './types.js';
 
 export interface BundleInfo {
   /**

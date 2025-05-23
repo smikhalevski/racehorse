@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { permissionsManager } from 'racehorse';
-import { FormattedJSON } from '../components/FormattedJSON';
+import { FormattedJSON } from '../components/FormattedJSON.js';
 
 export function PermissionsExample() {
   const [permissions, setPermissions] = useState<string[]>([]);

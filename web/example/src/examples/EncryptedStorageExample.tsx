@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { encryptedStorageManager } from 'racehorse';
-import { FormattedJSON } from '../components/FormattedJSON';
+import { FormattedJSON } from '../components/FormattedJSON.js';
 
 export function EncryptedStorageExample() {
   const [key, setKey] = useState('my_key');

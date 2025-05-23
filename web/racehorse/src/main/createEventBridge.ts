@@ -1,5 +1,5 @@
 import { PubSub, waitFor } from 'parallel-universe';
-import { Unsubscribe } from './types';
+import { Unsubscribe } from './types.js';
 
 /**
  * The event transported through the {@link EventBridge}.

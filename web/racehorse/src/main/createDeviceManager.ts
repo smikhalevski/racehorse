@@ -1,6 +1,6 @@
 import { pickLocale } from 'locale-matcher';
 
-import { EventBridge } from './createEventBridge';
+import { EventBridge } from './createEventBridge.js';
 
 export interface DeviceInfo {
   /**

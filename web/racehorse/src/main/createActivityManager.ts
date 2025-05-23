@@ -1,8 +1,8 @@
 import { AbortableCallback, AbortablePromise } from 'parallel-universe';
-import { EventBridge } from './createEventBridge';
-import { createScheduler } from './createScheduler';
-import { noop } from './utils';
-import { Unsubscribe } from './types';
+import { EventBridge } from './createEventBridge.js';
+import { createScheduler } from './createScheduler.js';
+import { noop } from './utils.js';
+import { Unsubscribe } from './types.js';
 
 /**
  * The intent that can be passed from and to web application.

@@ -13,6 +13,7 @@ export default defineConfig(env => {
         cache: true,
       },
     },
+    // Support for Android 26
     esbuild: {
       target: 'ES2015',
     },
@@ -30,6 +31,7 @@ export default defineConfig(env => {
     },
     publicDir: '../dist',
     plugins: [
+      // Support for Android 26
       {
         transformIndexHtml: html => (env.command === 'serve' ? html : html.replaceAll('type="module"', 'defer')),
       },
