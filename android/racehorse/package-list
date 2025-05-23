@@ -78,11 +78,11 @@ $dokka.location:org.racehorse.evergreen/UpdateStatus/version/#/PointingToDeclara
 $dokka.location:org.racehorse.serializers////PointingToDeclaration/racehorse/org.racehorse.serializers/index.html
 $dokka.location:org.racehorse.serializers/AnySerializer///PointingToDeclaration/racehorse/org.racehorse.serializers/-any-serializer/index.html
 $dokka.location:org.racehorse.serializers/AnySerializer/AnySerializer/#kotlin.String#kotlin.Boolean/PointingToDeclaration/racehorse/org.racehorse.serializers/-any-serializer/-any-serializer.html
-$dokka.location:org.racehorse.serializers/AnySerializer/className/#/PointingToDeclaration/racehorse/org.racehorse.serializers/-any-serializer/class-name.html
 $dokka.location:org.racehorse.serializers/AnySerializer/descriptor/#/PointingToDeclaration/racehorse/org.racehorse.serializers/-any-serializer/descriptor.html
 $dokka.location:org.racehorse.serializers/AnySerializer/deserialize/#kotlinx.serialization.encoding.Decoder/PointingToDeclaration/racehorse/org.racehorse.serializers/-any-serializer/deserialize.html
 $dokka.location:org.racehorse.serializers/AnySerializer/isClassNameSerialized/#/PointingToDeclaration/racehorse/org.racehorse.serializers/-any-serializer/is-class-name-serialized.html
-$dokka.location:org.racehorse.serializers/AnySerializer/serialize/#kotlinx.serialization.encoding.Encoder#kotlin.Any/PointingToDeclaration/racehorse/org.racehorse.serializers/-any-serializer/serialize.html
+$dokka.location:org.racehorse.serializers/AnySerializer/javaClassKey/#/PointingToDeclaration/racehorse/org.racehorse.serializers/-any-serializer/java-class-key.html
+$dokka.location:org.racehorse.serializers/AnySerializer/serialize/#kotlinx.serialization.encoding.Encoder#kotlin.Any?/PointingToDeclaration/racehorse/org.racehorse.serializers/-any-serializer/serialize.html
 $dokka.location:org.racehorse.serializers/FileSerializer///PointingToDeclaration/racehorse/org.racehorse.serializers/-file-serializer/index.html
 $dokka.location:org.racehorse.serializers/FileSerializer/descriptor/#/PointingToDeclaration/racehorse/org.racehorse.serializers/-file-serializer/descriptor.html
 $dokka.location:org.racehorse.serializers/FileSerializer/deserialize/#kotlinx.serialization.encoding.Decoder/PointingToDeclaration/racehorse/org.racehorse.serializers/-file-serializer/deserialize.html
@@ -1123,6 +1123,7 @@ $dokka.location:org.racehorse/UserAddressSurrogate/phoneNumber/#/PointingToDecla
 $dokka.location:org.racehorse/UserAddressSurrogate/postalCode/#/PointingToDeclaration/racehorse/org.racehorse/-user-address-surrogate/postal-code.html
 $dokka.location:org.racehorse/UserAddressSurrogate/toUserAddress/#/PointingToDeclaration/racehorse/org.racehorse/-user-address-surrogate/to-user-address.html
 $dokka.location:org.racehorse/VoidEvent///PointingToDeclaration/racehorse/org.racehorse/-void-event/index.html
+$dokka.location:org.racehorse/VoidEvent/VoidEvent/#/PointingToDeclaration/racehorse/org.racehorse/-void-event/-void-event.html
 $dokka.location:org.racehorse/WebEvent///PointingToDeclaration/racehorse/org.racehorse/-web-event/index.html
 org.racehorse
 org.racehorse.evergreen
