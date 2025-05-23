@@ -77,19 +77,19 @@ dependencies {
     implementation(kotlin("reflect"))
 
     // Edge-to-edge
-    implementation("androidx.activity:activity:1.10.0")
+    implementation("androidx.activity:activity:1.10.1")
 
     // Serialization
-    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
     // EventBridge
     compileOnly("org.greenrobot:eventbus:3.3.1")
 
     // ActivityPlugin
-    compileOnly("androidx.lifecycle:lifecycle-process:2.8.7")
+    compileOnly("androidx.lifecycle:lifecycle-process:2.9.0")
 
     // AssetLoaderPlugin
-    compileOnly("androidx.webkit:webkit:1.12.1")
+    compileOnly("androidx.webkit:webkit:1.13.0")
 
     // DevicePlugin
     compileOnly("androidx.appcompat:appcompat:1.7.0")
@@ -107,16 +107,16 @@ dependencies {
     compileOnly("com.google.android.gms:play-services-tapandpay:18.3.3")
 
     // Push notifications
-    compileOnly("com.google.firebase:firebase-messaging-ktx:24.1.0")
+    compileOnly("com.google.firebase:firebase-messaging-ktx:24.1.1")
 
     // Biometric
     compileOnly("androidx.biometric:biometric:1.2.0-alpha05")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("com.squareup.okhttp:mockwebserver:1.2.1")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 }

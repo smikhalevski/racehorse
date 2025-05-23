@@ -13,7 +13,7 @@ android {
         applicationId = "com.example"
         // https://apilevels.com/
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -57,32 +57,32 @@ android {
 
 dependencies {
     // Edge-to-edge
-    implementation("androidx.activity:activity:1.10.0")
+    implementation("androidx.activity:activity:1.10.1")
 
     // Serialization
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
     // EventBridge
     implementation("org.greenrobot:eventbus:3.3.1")
 
     // ActivityPlugin
-    implementation("androidx.lifecycle:lifecycle-process:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-process:2.9.0")
 
     // AssetLoaderPlugin
-    implementation("androidx.webkit:webkit:1.12.1")
+    implementation("androidx.webkit:webkit:1.13.0")
 
     // DevicePlugin
     implementation("androidx.appcompat:appcompat:1.7.0")
 
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:21.3.0")
-    implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.14.0"))
 
     // Facebook Login
     implementation("com.facebook.android:facebook-login:latest.release")
 
     // Firebase
-    implementation("com.google.firebase:firebase-messaging-ktx:24.1.0")
+    implementation("com.google.firebase:firebase-messaging-ktx:24.1.1")
 
     // Biometric
     implementation("androidx.biometric:biometric:1.2.0-alpha05")
