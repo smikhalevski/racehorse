@@ -1,6 +1,6 @@
 {
   "name": "@racehorse/react",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "React hooks for Racehorse.",
   "main": "./index.js",
   "module": "./index.mjs",
@@ -18,7 +18,7 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json && node ../../rewrite.mjs lib && tsc --project tsconfig.build.json --module CommonJS && cp package.json README.md ../../LICENSE.txt lib/ && cd lib && npm pkg delete type scripts devDependencies",
     "clean": "rimraf lib docs coverage",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "postinstall": "ln -nsf ../../web/react/lib ../../node_modules/@racehorse/react"
   },
   "repository": {
@@ -36,7 +36,7 @@
   },
   "homepage": "https://github.com/smikhalevski/racehorse#readme",
   "peerDependencies": {
-    "racehorse": "^1.9.0",
+    "racehorse": "^1.10.0",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
   },
