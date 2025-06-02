@@ -59,6 +59,7 @@ $dokka.location:org.racehorse.evergreen/UpdateMode.MANDATORY///PointingToDeclara
 $dokka.location:org.racehorse.evergreen/UpdateMode.OPTIONAL///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}racehorse/org.racehorse.evergreen/-update-mode/-o-p-t-i-o-n-a-l/index.html
 $dokka.location:org.racehorse.evergreen/UpdateMode.POSTPONED///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}racehorse/org.racehorse.evergreen/-update-mode/-p-o-s-t-p-o-n-e-d/index.html
 $dokka.location:org.racehorse.evergreen/UpdateMode///PointingToDeclaration/racehorse/org.racehorse.evergreen/-update-mode/index.html
+$dokka.location:org.racehorse.evergreen/UpdateMode/entries/#/PointingToDeclaration/racehorse/org.racehorse.evergreen/-update-mode/entries.html
 $dokka.location:org.racehorse.evergreen/UpdateMode/valueOf/#kotlin.String/PointingToDeclaration/racehorse/org.racehorse.evergreen/-update-mode/value-of.html
 $dokka.location:org.racehorse.evergreen/UpdateMode/values/#/PointingToDeclaration/racehorse/org.racehorse.evergreen/-update-mode/values.html
 $dokka.location:org.racehorse.evergreen/UpdateProgressEvent///PointingToDeclaration/racehorse/org.racehorse.evergreen/-update-progress-event/index.html
@@ -82,7 +83,7 @@ $dokka.location:org.racehorse.serializers/AnySerializer/descriptor/#/PointingToD
 $dokka.location:org.racehorse.serializers/AnySerializer/deserialize/#kotlinx.serialization.encoding.Decoder/PointingToDeclaration/racehorse/org.racehorse.serializers/-any-serializer/deserialize.html
 $dokka.location:org.racehorse.serializers/AnySerializer/isClassNameSerialized/#/PointingToDeclaration/racehorse/org.racehorse.serializers/-any-serializer/is-class-name-serialized.html
 $dokka.location:org.racehorse.serializers/AnySerializer/javaClassKey/#/PointingToDeclaration/racehorse/org.racehorse.serializers/-any-serializer/java-class-key.html
-$dokka.location:org.racehorse.serializers/AnySerializer/serialize/#kotlinx.serialization.encoding.Encoder#kotlin.Any?/PointingToDeclaration/racehorse/org.racehorse.serializers/-any-serializer/serialize.html
+$dokka.location:org.racehorse.serializers/AnySerializer/serialize/#kotlinx.serialization.encoding.Encoder#kotlin.Any/PointingToDeclaration/racehorse/org.racehorse.serializers/-any-serializer/serialize.html
 $dokka.location:org.racehorse.serializers/FileSerializer///PointingToDeclaration/racehorse/org.racehorse.serializers/-file-serializer/index.html
 $dokka.location:org.racehorse.serializers/FileSerializer/descriptor/#/PointingToDeclaration/racehorse/org.racehorse.serializers/-file-serializer/descriptor.html
 $dokka.location:org.racehorse.serializers/FileSerializer/deserialize/#kotlinx.serialization.encoding.Decoder/PointingToDeclaration/racehorse/org.racehorse.serializers/-file-serializer/deserialize.html
@@ -389,7 +390,7 @@ $dokka.location:org.racehorse/AddDownloadEvent.ResultEvent///PointingToDeclarati
 $dokka.location:org.racehorse/AddDownloadEvent.ResultEvent/ResultEvent/#kotlin.Long/PointingToDeclaration/racehorse/org.racehorse/-add-download-event/-result-event/-result-event.html
 $dokka.location:org.racehorse/AddDownloadEvent.ResultEvent/id/#/PointingToDeclaration/racehorse/org.racehorse/-add-download-event/-result-event/id.html
 $dokka.location:org.racehorse/AddDownloadEvent///PointingToDeclaration/racehorse/org.racehorse/-add-download-event/index.html
-$dokka.location:org.racehorse/AddDownloadEvent/AddDownloadEvent/#kotlin.String#kotlin.String?#kotlin.String?#kotlin.collections.List[kotlin.Pair[kotlin.String,kotlin.String]]?/PointingToDeclaration/racehorse/org.racehorse/-add-download-event/-add-download-event.html
+$dokka.location:org.racehorse/AddDownloadEvent/AddDownloadEvent/#kotlin.String#kotlin.String?#kotlin.String?#kotlin.collections.List[kotlin.collections.List[kotlin.String]]?/PointingToDeclaration/racehorse/org.racehorse/-add-download-event/-add-download-event.html
 $dokka.location:org.racehorse/AddDownloadEvent/fileName/#/PointingToDeclaration/racehorse/org.racehorse/-add-download-event/file-name.html
 $dokka.location:org.racehorse/AddDownloadEvent/headers/#/PointingToDeclaration/racehorse/org.racehorse/-add-download-event/headers.html
 $dokka.location:org.racehorse/AddDownloadEvent/mimeType/#/PointingToDeclaration/racehorse/org.racehorse/-add-download-event/mime-type.html
@@ -422,6 +423,7 @@ $dokka.location:org.racehorse/BiometricAuthenticator.Companion///PointingToDecla
 $dokka.location:org.racehorse/BiometricAuthenticator.Companion/from/#kotlin.Array[org.racehorse.BiometricAuthenticator]?/PointingToDeclaration/racehorse/org.racehorse/-biometric-authenticator/-companion/from.html
 $dokka.location:org.racehorse/BiometricAuthenticator.DEVICE_CREDENTIAL///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}racehorse/org.racehorse/-biometric-authenticator/-d-e-v-i-c-e_-c-r-e-d-e-n-t-i-a-l/index.html
 $dokka.location:org.racehorse/BiometricAuthenticator///PointingToDeclaration/racehorse/org.racehorse/-biometric-authenticator/index.html
+$dokka.location:org.racehorse/BiometricAuthenticator/entries/#/PointingToDeclaration/racehorse/org.racehorse/-biometric-authenticator/entries.html
 $dokka.location:org.racehorse/BiometricAuthenticator/value/#/PointingToDeclaration/racehorse/org.racehorse/-biometric-authenticator/value.html
 $dokka.location:org.racehorse/BiometricAuthenticator/valueOf/#kotlin.String/PointingToDeclaration/racehorse/org.racehorse/-biometric-authenticator/value-of.html
 $dokka.location:org.racehorse/BiometricAuthenticator/values/#/PointingToDeclaration/racehorse/org.racehorse/-biometric-authenticator/values.html
@@ -453,6 +455,7 @@ $dokka.location:org.racehorse/BiometricStatus.SUPPORTED///PointingToDeclaration/
 $dokka.location:org.racehorse/BiometricStatus.UNKNOWN///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}racehorse/org.racehorse/-biometric-status/-u-n-k-n-o-w-n/index.html
 $dokka.location:org.racehorse/BiometricStatus.UNSUPPORTED///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}racehorse/org.racehorse/-biometric-status/-u-n-s-u-p-p-o-r-t-e-d/index.html
 $dokka.location:org.racehorse/BiometricStatus///PointingToDeclaration/racehorse/org.racehorse/-biometric-status/index.html
+$dokka.location:org.racehorse/BiometricStatus/entries/#/PointingToDeclaration/racehorse/org.racehorse/-biometric-status/entries.html
 $dokka.location:org.racehorse/BiometricStatus/value/#/PointingToDeclaration/racehorse/org.racehorse/-biometric-status/value.html
 $dokka.location:org.racehorse/BiometricStatus/valueOf/#kotlin.String/PointingToDeclaration/racehorse/org.racehorse/-biometric-status/value-of.html
 $dokka.location:org.racehorse/BiometricStatus/values/#/PointingToDeclaration/racehorse/org.racehorse/-biometric-status/values.html
@@ -1000,6 +1003,7 @@ $dokka.location:org.racehorse/NetworkType.NONE///PointingToDeclaration/{"org.jet
 $dokka.location:org.racehorse/NetworkType.UNKNOWN///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}racehorse/org.racehorse/-network-type/-u-n-k-n-o-w-n/index.html
 $dokka.location:org.racehorse/NetworkType.WIFI///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}racehorse/org.racehorse/-network-type/-w-i-f-i/index.html
 $dokka.location:org.racehorse/NetworkType///PointingToDeclaration/racehorse/org.racehorse/-network-type/index.html
+$dokka.location:org.racehorse/NetworkType/entries/#/PointingToDeclaration/racehorse/org.racehorse/-network-type/entries.html
 $dokka.location:org.racehorse/NetworkType/valueOf/#kotlin.String/PointingToDeclaration/racehorse/org.racehorse/-network-type/value-of.html
 $dokka.location:org.racehorse/NetworkType/values/#/PointingToDeclaration/racehorse/org.racehorse/-network-type/values.html
 $dokka.location:org.racehorse/NoticeEvent///PointingToDeclaration/racehorse/org.racehorse/-notice-event/index.html
@@ -1130,4 +1134,3 @@ org.racehorse.evergreen
 org.racehorse.serializers
 org.racehorse.utils
 org.racehorse.webview
-
