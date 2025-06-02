@@ -1,5 +1,3 @@
-@file:UseSerializers(UriSerializer::class)
-
 package org.racehorse
 
 import android.Manifest
@@ -16,11 +14,10 @@ import android.webkit.MimeTypeMap
 import android.webkit.URLUtil
 import androidx.activity.ComponentActivity
 import androidx.core.database.getStringOrNull
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.racehorse.serializers.UriSerializer
 import org.racehorse.utils.askForPermission
 import org.racehorse.utils.createTempFile
 import org.racehorse.utils.queryAll
@@ -71,7 +68,7 @@ class Download(
     /**
      * The `content:` URI of the downloaded file.
      */
-    val contentUri: Uri?,
+    val contentUri: @Contextual Uri?,
 
     /**
      * The MIME type of the downloaded file.
@@ -136,7 +133,7 @@ class AddDownloadEvent(
     /**
      * HTTP headers to be included with the download request.
      */
-    val headers: List<Pair<String, String>>? = null,
+    val headers: List<List<String>>? = null,
 ) : RequestEvent() {
 
     @Serializable
@@ -247,7 +244,7 @@ open class DownloadPlugin(private val activity: ComponentActivity) {
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
             .setMimeType(event.mimeType)
 
-        event.headers?.forEach { request.addRequestHeader(it.first, it.second) }
+        event.headers?.forEach { (key, value) -> request.addRequestHeader(key, value) }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             event.respond(AddDownloadEvent.ResultEvent(downloadManager.enqueue(request)))

@@ -1,12 +1,9 @@
-@file:UseSerializers(IntentSerializer::class)
-
 package org.racehorse
 
 import android.content.Intent
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.serializers.IntentSerializer
 
 /**
  * Get the latest deep link dispatched via [OpenDeepLinkEvent].
@@ -18,14 +15,14 @@ class GetLastDeepLinkEvent : RequestEvent() {
      * @param intent The most recent intent that was dispatched via [OpenDeepLinkEvent].
      */
     @Serializable
-    class ResultEvent(val intent: Intent?) : ResponseEvent()
+    class ResultEvent(val intent: @Contextual Intent?) : ResponseEvent()
 }
 
 /**
  * Post this event to notify web that the new deep link intent has arrived.
  */
 @Serializable
-class OpenDeepLinkEvent(val intent: Intent) : NoticeEvent
+class OpenDeepLinkEvent(val intent: @Contextual Intent) : NoticeEvent
 
 /**
  * Provides access to app deep links.

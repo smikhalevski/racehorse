@@ -1,15 +1,13 @@
-@file:UseSerializers(ThrowableSerializer::class)
-
 package org.racehorse
 
 import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
@@ -21,6 +19,7 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.NoSubscriberEvent
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.SubscriberExceptionEvent
+import org.racehorse.serializers.AnySerializer
 import org.racehorse.serializers.FileSerializer
 import org.racehorse.serializers.IntentSerializer
 import org.racehorse.serializers.ThrowableSerializer
@@ -110,7 +109,7 @@ class VoidEvent : ResponseEvent()
  */
 @Serializable
 class ExceptionEvent(
-    val exception: Throwable,
+    val exception: @Contextual Throwable,
 
     /**
      * The name of the [Throwable] that is used as an error name on the JavaScript side.
@@ -161,6 +160,7 @@ open class EventBridge(
             contextual(IntentSerializer)
             contextual(ThrowableSerializer)
             contextual(UriSerializer)
+            contextual(AnySerializer())
         }
     },
     val connectionKey: String = "racehorseConnection",

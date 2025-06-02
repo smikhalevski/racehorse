@@ -1,12 +1,11 @@
-@file:UseSerializers(ThrowableSerializer::class)
-
 package org.racehorse.serializers
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
-import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
@@ -15,11 +14,13 @@ private class ThrowableSurrogate(
     val name: String,
     val message: String,
     val stack: String,
-    val cause: Throwable?
+    val cause: @Contextual Throwable?
 )
 
 object ThrowableSerializer : KSerializer<Throwable> {
-    override val descriptor = buildClassSerialDescriptor("org.racehorse.serializers.ThrowableSerializer")
+    @ExperimentalSerializationApi
+    override val descriptor =
+        SerialDescriptor("org.racehorse.serializers.ThrowableSerializer", ThrowableSurrogate.serializer().descriptor)
 
     @InternalSerializationApi
     override fun serialize(encoder: Encoder, value: Throwable) {

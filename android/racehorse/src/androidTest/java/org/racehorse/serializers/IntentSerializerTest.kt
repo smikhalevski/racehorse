@@ -1,5 +1,3 @@
-@file:UseSerializers(AnySerializer::class)
-
 package org.racehorse.serializers
 
 import android.content.Intent
@@ -17,21 +15,23 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class IntentSerializerTest {
 
+    val json = Json {
+        serializersModule = SerializersModule {
+            contextual(IntentSerializer)
+            contextual(UriSerializer)
+            contextual(AnySerializer())
+        }
+    }
+
     @Test
     fun encodesIntent() {
-        val intentStr = encodeToString(IntentSerializer, Intent("aaa", Uri.parse("http://xxx.yyy")))
+        val intentStr = json.encodeToString(IntentSerializer, Intent("aaa", Uri.parse("http://xxx.yyy")))
 
         Assert.assertEquals("""{"action":"aaa","data":"http://xxx.yyy"}""", intentStr)
     }
 
     @Test
     fun encodesNestedIntent() {
-        val json = Json {
-            serializersModule = SerializersModule {
-                contextual(IntentSerializer)
-            }
-        }
-
         val intentStr = json.encodeToString(
             IntentSerializer,
 
@@ -55,12 +55,6 @@ class IntentSerializerTest {
 
     @Test
     fun decodesIntent() {
-        val json = Json {
-            serializersModule = SerializersModule {
-                contextual(IntentSerializer)
-            }
-        }
-
         val intentStr = """
           {
             "action": "aaa",

@@ -1,20 +1,15 @@
-@file:UseSerializers(FileSerializer::class, ThrowableSerializer::class, UriSerializer::class)
-
 package org.racehorse.evergreen
 
 import android.net.Uri
 import androidx.core.net.toUri
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.NoticeEvent
 import org.racehorse.RequestEvent
 import org.racehorse.ResponseEvent
-import org.racehorse.serializers.FileSerializer
-import org.racehorse.serializers.ThrowableSerializer
-import org.racehorse.serializers.UriSerializer
 import java.io.File
 import java.net.URLConnection
 
@@ -33,7 +28,7 @@ class UpdateStatus(val version: String, val isReady: Boolean)
  * App assets available in [appDir] and are ready to be used.
  */
 @Serializable
-class BundleReadyEvent(val appDir: File) : NoticeEvent
+class BundleReadyEvent(val appDir: @Contextual File) : NoticeEvent
 
 /**
  * The new update download has started.
@@ -45,7 +40,7 @@ class UpdateStartedEvent(val updateMode: UpdateMode) : NoticeEvent
  * Failed to download an update.
  */
 @Serializable
-class UpdateFailedEvent(val updateMode: UpdateMode, val cause: Throwable) : NoticeEvent
+class UpdateFailedEvent(val updateMode: UpdateMode, val cause: @Contextual Throwable) : NoticeEvent
 
 /**
  * An update was successfully downloaded and ready to be applied.
@@ -104,8 +99,8 @@ class GetBundleInfoEvent : RequestEvent() {
         val updateVersion: String?,
         val isMasterReady: Boolean,
         val isUpdateReady: Boolean,
-        val masterDir: Uri,
-        val updateDir: Uri
+        val masterDir: @Contextual Uri,
+        val updateDir: @Contextual Uri
     ) : ResponseEvent()
 }
 

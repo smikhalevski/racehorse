@@ -1,5 +1,3 @@
-@file:UseSerializers(IntentSerializer::class)
-
 package org.racehorse
 
 import android.app.Activity
@@ -7,11 +5,10 @@ import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.racehorse.serializers.IntentSerializer
 import org.racehorse.utils.launchActivity
 import org.racehorse.utils.launchActivityForResult
 
@@ -46,7 +43,7 @@ class GetActivityInfoEvent : RequestEvent() {
  * @param intent The intent that starts an activity.
  */
 @Serializable
-class StartActivityEvent(val intent: Intent) : RequestEvent() {
+class StartActivityEvent(val intent: @Contextual Intent) : RequestEvent() {
 
     @Serializable
     class ResultEvent(val isStarted: Boolean) : ResponseEvent()
@@ -56,10 +53,10 @@ class StartActivityEvent(val intent: Intent) : RequestEvent() {
  * Start an activity for the [intent] and wait for the result.
  */
 @Serializable
-class StartActivityForResultEvent(val intent: Intent) : RequestEvent() {
+class StartActivityForResultEvent(val intent: @Contextual Intent) : RequestEvent() {
 
     @Serializable
-    class ResultEvent(val resultCode: Int, val intent: Intent?) : ResponseEvent()
+    class ResultEvent(val resultCode: Int, val intent: @Contextual Intent?) : ResponseEvent()
 }
 
 /**

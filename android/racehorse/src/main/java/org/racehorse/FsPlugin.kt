@@ -1,5 +1,3 @@
-@file:UseSerializers(UriSerializer::class)
-
 package org.racehorse
 
 import android.net.Uri
@@ -9,11 +7,10 @@ import androidx.activity.ComponentActivity
 import androidx.core.content.FileProvider
 import androidx.core.net.toFile
 import androidx.core.net.toUri
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.racehorse.serializers.UriSerializer
 import org.racehorse.utils.guessMimeType
 import org.racehorse.webview.ShouldInterceptRequestEvent
 import java.io.ByteArrayInputStream
@@ -30,14 +27,14 @@ import java.util.Base64
 import kotlin.io.path.readAttributes
 
 @Serializable
-class FsIsExistingEvent(val uri: Uri) : RequestEvent() {
+class FsIsExistingEvent(val uri: @Contextual Uri) : RequestEvent() {
 
     @Serializable
     class ResultEvent(val isExisting: Boolean) : ResponseEvent()
 }
 
 @Serializable
-class FsGetAttributesEvent(val uri: Uri) : RequestEvent() {
+class FsGetAttributesEvent(val uri: @Contextual Uri) : RequestEvent() {
 
     @Serializable
     class ResultEvent(
@@ -53,49 +50,49 @@ class FsGetAttributesEvent(val uri: Uri) : RequestEvent() {
 }
 
 @Serializable
-class FsGetParentUriEvent(val uri: Uri) : RequestEvent() {
+class FsGetParentUriEvent(val uri: @Contextual Uri) : RequestEvent() {
 
     @Serializable
-    class ResultEvent(val parentUri: Uri?) : ResponseEvent()
+    class ResultEvent(val parentUri: @Contextual Uri?) : ResponseEvent()
 }
 
 @Serializable
-class FsGetLocalUrlEvent(val uri: Uri) : RequestEvent() {
+class FsGetLocalUrlEvent(val uri: @Contextual Uri) : RequestEvent() {
 
     @Serializable
-    class ResultEvent(val localUrl: Uri) : ResponseEvent()
+    class ResultEvent(val localUrl: @Contextual Uri) : ResponseEvent()
 }
 
 @Serializable
-class FsGetContentUriEvent(val uri: Uri) : RequestEvent() {
+class FsGetContentUriEvent(val uri: @Contextual Uri) : RequestEvent() {
 
     @Serializable
-    class ResultEvent(val contentUri: Uri) : ResponseEvent()
+    class ResultEvent(val contentUri: @Contextual Uri) : ResponseEvent()
 }
 
 @Serializable
-class FsGetMimeTypeEvent(val uri: Uri) : RequestEvent() {
+class FsGetMimeTypeEvent(val uri: @Contextual Uri) : RequestEvent() {
 
     @Serializable
     class ResultEvent(val mimeType: String?) : ResponseEvent()
 }
 
 @Serializable
-class FsMkdirEvent(val uri: Uri) : RequestEvent() {
+class FsMkdirEvent(val uri: @Contextual Uri) : RequestEvent() {
 
     @Serializable
     class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
 }
 
 @Serializable
-class FsReadDirEvent(val uri: Uri) : RequestEvent() {
+class FsReadDirEvent(val uri: @Contextual Uri) : RequestEvent() {
 
     @Serializable
-    class ResultEvent(val fileUris: List<Uri>) : ResponseEvent()
+    class ResultEvent(val fileUris: List<@Contextual Uri>) : ResponseEvent()
 }
 
 @Serializable
-class FsReadEvent(val uri: Uri, val encoding: String? = null) : RequestEvent() {
+class FsReadEvent(val uri: @Contextual Uri, val encoding: String? = null) : RequestEvent() {
 
     @Serializable
     class ResultEvent(val data: String) : ResponseEvent()
@@ -103,17 +100,17 @@ class FsReadEvent(val uri: Uri, val encoding: String? = null) : RequestEvent() {
 
 @Serializable
 class FsWriteEvent(
-    val uri: Uri,
+    val uri: @Contextual Uri,
     val data: String,
     val encoding: String? = null,
     val append: Boolean = false
 ) : RequestEvent()
 
 @Serializable
-class FsCopyEvent(val uri: Uri, val toUri: Uri) : RequestEvent()
+class FsCopyEvent(val uri: @Contextual Uri, val toUri: @Contextual Uri) : RequestEvent()
 
 @Serializable
-class FsDeleteEvent(val uri: Uri) : RequestEvent() {
+class FsDeleteEvent(val uri: @Contextual Uri) : RequestEvent() {
 
     @Serializable
     class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()

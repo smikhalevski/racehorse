@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.util.Size
 import java.io.Serializable
-import java.lang.IllegalArgumentException
 
 fun Bundle.toMap(): Map<String, Any?> = buildMap {
     for (key in keySet()) {

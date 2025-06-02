@@ -35,7 +35,6 @@ class AnySerializerTest {
         )
 
         Assert.assertEquals("true", encodeToString(AnySerializer(), true))
-        Assert.assertEquals("null", encodeToString(AnySerializer(), null))
     }
 
     @Test
@@ -72,8 +71,11 @@ class AnySerializerTest {
     @Test
     fun decodesPrimitives() {
         Assert.assertEquals(decodeFromString(AnySerializer(), """"xxx""""), "xxx")
-        Assert.assertEquals(decodeFromString(AnySerializer(), "null"), null)
         Assert.assertEquals(decodeFromString(AnySerializer(), "111"), 111.0)
+
+        Assert.assertThrows(IllegalArgumentException::class.java) {
+            decodeFromString(AnySerializer(), "null")
+        }
     }
 
     @Test

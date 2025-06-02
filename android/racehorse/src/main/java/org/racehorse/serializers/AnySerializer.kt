@@ -50,7 +50,7 @@ import kotlin.reflect.KClass
 class AnySerializer(
     val javaClassKey: String = "__javaClass",
     val isClassNameSerialized: Boolean = false
-) : KSerializer<Any?> {
+) : KSerializer<Any> {
 
     @ExperimentalSerializationApi
     override val descriptor = ContextualSerializer(Any::class, null, emptyArray()).descriptor
@@ -67,12 +67,7 @@ class AnySerializer(
     @ExperimentalSerializationApi
     @InternalSerializationApi
     @Suppress("UNCHECKED_CAST")
-    override fun serialize(encoder: Encoder, value: Any?) {
-        if (value == null) {
-            encoder.encodeNull()
-            return
-        }
-
+    override fun serialize(encoder: Encoder, value: Any) {
         val serializer = getSerializer(encoder.serializersModule, value::class) ?: inferSerializer(value)
 
         if (serializer == null) {
@@ -105,13 +100,16 @@ class AnySerializer(
 
     @ExperimentalSerializationApi
     @InternalSerializationApi
-    override fun deserialize(decoder: Decoder): Any? {
+    override fun deserialize(decoder: Decoder): Any {
         check(decoder is JsonDecoder) { "Unsupported decoder" }
 
         val element = decoder.decodeJsonElement()
 
         if (element is JsonPrimitive) {
-            return element.booleanOrNull ?: element.doubleOrNull ?: element.contentOrNull
+            return element.booleanOrNull
+                ?: element.doubleOrNull
+                ?: element.contentOrNull
+                ?: throw IllegalArgumentException("AnySerializer cannot deserialize null values")
         }
 
         if (element is JsonArray) {
@@ -122,7 +120,12 @@ class AnySerializer(
             ?: return decoder.json.decodeFromJsonElement(mapSerializer, element)
 
         val serializer =
-            checkNotNull(getSerializer(decoder.serializersModule, loadClass(className))) { "Cannot deserialize $className" }
+            checkNotNull(
+                getSerializer(
+                    decoder.serializersModule,
+                    loadClass(className)
+                )
+            ) { "Cannot deserialize $className" }
 
         val jsonObject = JsonObject(element.jsonObject - this.javaClassKey)
 
