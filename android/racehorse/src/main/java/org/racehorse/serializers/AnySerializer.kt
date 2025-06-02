@@ -52,10 +52,10 @@ class AnySerializer(
     val isClassNameSerialized: Boolean = false
 ) : KSerializer<Any> {
 
-    @ExperimentalSerializationApi
+    @OptIn(ExperimentalSerializationApi::class)
     override val descriptor = ContextualSerializer(Any::class, null, emptyArray()).descriptor
 
-    @ExperimentalSerializationApi
+    @OptIn(ExperimentalSerializationApi::class)
     private val arraySerializer = ArraySerializer(this)
     private val listSerializer = ListSerializer(this)
     private val setSerializer = SetSerializer(this)
@@ -64,8 +64,7 @@ class AnySerializer(
     private val mapEntrySerializer = MapEntrySerializer(this, this)
     private val tripleSerializer = TripleSerializer(this, this, this)
 
-    @ExperimentalSerializationApi
-    @InternalSerializationApi
+    @OptIn(ExperimentalSerializationApi::class)
     @Suppress("UNCHECKED_CAST")
     override fun serialize(encoder: Encoder, value: Any) {
         val serializer = getSerializer(encoder.serializersModule, value::class) ?: inferSerializer(value)
@@ -98,8 +97,6 @@ class AnySerializer(
         encoder.encodeJsonElement(JsonObject(properties))
     }
 
-    @ExperimentalSerializationApi
-    @InternalSerializationApi
     override fun deserialize(decoder: Decoder): Any {
         check(decoder is JsonDecoder) { "Unsupported decoder" }
 
@@ -132,15 +129,13 @@ class AnySerializer(
         return checkNotNull(decoder.json.decodeFromJsonElement(serializer, jsonObject)) { "Unexpected null" }
     }
 
-    @ExperimentalSerializationApi
-    @InternalSerializationApi
+    @OptIn(ExperimentalSerializationApi::class, InternalSerializationApi::class)
     private fun getSerializer(serializersModule: SerializersModule, kClass: KClass<*>): KSerializer<*>? =
         serializersModule.getContextual(kClass) ?: kClass.serializerOrNull()
 
     /**
      * Returns a serializer that best fits the class.
      */
-    @ExperimentalSerializationApi
     private fun inferSerializer(value: Any): KSerializer<*>? = when (value) {
         is Pair<*, *> -> pairSerializer
         is Map.Entry<*, *> -> mapEntrySerializer

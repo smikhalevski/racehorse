@@ -195,7 +195,6 @@ open class EventBridge(
     open fun disable() = webView.removeJavascriptInterface(connectionKey)
 
     @JavascriptInterface
-    @InternalSerializationApi
     open fun post(eventJson: String): String {
         val event = try {
             parseEvent(eventJson)
@@ -228,7 +227,6 @@ open class EventBridge(
     }
 
     @Subscribe
-    @InternalSerializationApi
     open fun onResponse(event: ResponseEvent) {
         if (event.requestId == ORPHAN_REQUEST_ID) {
             // The response event isn't related to any request event
@@ -244,7 +242,6 @@ open class EventBridge(
     }
 
     @Subscribe
-    @InternalSerializationApi
     open fun onNotice(event: NoticeEvent) {
         publish(NOTICE_REQUEST_ID, event)
     }
@@ -280,7 +277,7 @@ open class EventBridge(
         )
     }
 
-    @InternalSerializationApi
+    @OptIn(InternalSerializationApi::class)
     protected fun parseEvent(eventJson: String): Any {
         val eventObject = json.parseToJsonElement(eventJson).jsonObject
 
@@ -300,7 +297,7 @@ open class EventBridge(
         return json.decodeFromJsonElement(eventClass.serializer(), eventPayload)
     }
 
-    @InternalSerializationApi
+    @OptIn(InternalSerializationApi::class)
     @Suppress("UNCHECKED_CAST")
     protected fun encodeEventToJson(event: Any): String =
         "{" +
@@ -309,7 +306,6 @@ open class EventBridge(
                 json.encodeToString(event::class.serializer() as KSerializer<Any>, event)
             }}"
 
-    @InternalSerializationApi
     protected fun publish(requestId: Int, event: Any): Boolean = webView.post {
         val js = "(function(conn){" +
             "conn && conn.inbox && conn.inbox.publish([$requestId, ${encodeEventToJson(event)}])" +

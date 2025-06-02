@@ -25,7 +25,7 @@ private class IntentSurrogate(
 
 object IntentSerializer : KSerializer<Intent> {
 
-    @ExperimentalSerializationApi
+    @OptIn(ExperimentalSerializationApi::class)
     override val descriptor =
         SerialDescriptor("org.racehorse.serializers.IntentSerializer", IntentSurrogate.serializer().descriptor)
 

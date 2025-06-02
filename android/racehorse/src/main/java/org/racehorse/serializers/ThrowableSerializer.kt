@@ -18,11 +18,10 @@ private class ThrowableSurrogate(
 )
 
 object ThrowableSerializer : KSerializer<Throwable> {
-    @ExperimentalSerializationApi
+    @OptIn(ExperimentalSerializationApi::class)
     override val descriptor =
         SerialDescriptor("org.racehorse.serializers.ThrowableSerializer", ThrowableSurrogate.serializer().descriptor)
 
-    @InternalSerializationApi
     override fun serialize(encoder: Encoder, value: Throwable) {
         encoder.encodeSerializableValue(
             ThrowableSurrogate.serializer(),
