@@ -345,11 +345,11 @@ private class DataUri(uri: Uri) {
 
     init {
         val parts = uri.schemeSpecificPart.split(';', ',').toMutableList()
-        val encodedData = parts.removeLast()
+        val encodedData = parts.removeAt(parts.lastIndex)
         val isBase64 = parts.lastOrNull()?.trim().equals("base64", ignoreCase = true)
 
         data = if (isBase64) {
-            parts.removeLast()
+            parts.removeAt(parts.lastIndex)
             Base64.getDecoder().decode(encodedData)
         } else {
             encodedData.toByteArray()
