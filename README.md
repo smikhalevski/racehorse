@@ -235,7 +235,7 @@ Request and response events are instances of
 Events in the chain share the same `requestId`. When a
 [`ResponseEvent`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-response-event/index.html)
 is posted to the event bus it is marshalled to the web app and resolves a promise returned from the
-[`eventBridge.requestAsync`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.EventBridge.html#requestAsync):
+[`eventBridge.requestAsync`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.EventBridge.html#requestasync):
 
 ```ts
 import { eventBridge } from 'racehorse';
@@ -571,7 +571,7 @@ await biometricEncryptedStorageManager.get('foo');
 ```
 
 To allow device credential authentication, provide
-[`authenticationValidityDuration`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.BiometricConfig.html#authenticationValidityDuration)
+[`authenticationValidityDuration`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.BiometricConfig.html#authenticationvalidityduration)
 that is greater or equal to 0:
 
 ```ts
@@ -1164,7 +1164,7 @@ await file.readDataUri();
 ## Serving local files
 
 To load an arbitrary file from the web view,
-use [`localUrl`](https://smikhalevski.github.io/racehorse/classes/racehorse.File.html#localUrl):
+use [`localUrl`](https://smikhalevski.github.io/racehorse/classes/racehorse.File.html#localurl):
 
 ```ts
 import { contactsManager, fsManager } from 'racehorse';
