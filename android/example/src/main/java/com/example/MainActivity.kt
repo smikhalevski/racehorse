@@ -61,7 +61,6 @@ class MainActivity : AppCompatActivity() {
     private val webView by lazy { WebView(this) }
     private val eventBus = EventBus.getDefault()
     private val networkPlugin = NetworkPlugin(this)
-    private val processPlugin = ProcessPlugin()
     private val assetLoaderPlugin = AssetLoaderPlugin(this)
     private val cookieManager = CookieManager.getInstance()
 
@@ -91,8 +90,6 @@ class MainActivity : AppCompatActivity() {
             WebResourceResponse("text/html", null, "Hello".byteInputStream())
         }
 
-        processPlugin.enable()
-
         eventBus.register(EventBridge(webView).apply { enable() })
         eventBus.register(assetLoaderPlugin)
         eventBus.register(DevicePlugin(this))
@@ -110,6 +107,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(networkPlugin)
         eventBus.register(KeyboardPlugin(this).apply { enable() })
         eventBus.register(ActivityPlugin(this).apply { enable() })
+        eventBus.register(ProcessPlugin().apply { enable() })
         eventBus.register(DeepLinkPlugin())
         eventBus.register(PermissionsPlugin(this))
         eventBus.register(NotificationsPlugin(this))
@@ -129,7 +127,6 @@ class MainActivity : AppCompatActivity() {
                 baseLocalUrl = "$APP_URL/fs"
             )
         )
-        eventBus.register(processPlugin)
         eventBus.register(ToastPlugin(this))
 
         // 🟡 Run `npm start` in `<racehorse>/web/example` to build the web app and start the server.
