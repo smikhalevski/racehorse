@@ -1,6 +1,12 @@
 <p align="center">
-  <img src="./assets/racehorse.png" alt="Racehorse" width="500"/>
+  <a href="#readme"><picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./images/logo-dark.png" />
+    <source media="(prefers-color-scheme: light)" srcset="./images/logo-light.png" />
+    <img alt="Racehorse" src="./images/logo-light.png" width="500" />
+  </picture></a>
 </p>
+
+<br/>
 
 The bootstrapper for WebView-based Android apps.
 
@@ -1458,7 +1464,7 @@ Check out [the example app](./web/example/src/App.tsx#L44) that has the real-wor
 
 <br/>
 <p align="center">
-  <img src="./assets/keyboard-animation.gif" alt="Keyboard animation" width="300"/>
+  <img src="./images/keyboard-animation.gif" alt="Keyboard animation" width="300"/>
 </p>
 
 # Network plugin
