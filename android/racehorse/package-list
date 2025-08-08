@@ -807,6 +807,11 @@ $dokka.location:org.racehorse/GetPreferredLocalesEvent.ResultEvent/ResultEvent/#
 $dokka.location:org.racehorse/GetPreferredLocalesEvent.ResultEvent/locales/#/PointingToDeclaration/racehorse/org.racehorse/-get-preferred-locales-event/-result-event/locales.html
 $dokka.location:org.racehorse/GetPreferredLocalesEvent///PointingToDeclaration/racehorse/org.racehorse/-get-preferred-locales-event/index.html
 $dokka.location:org.racehorse/GetPreferredLocalesEvent/GetPreferredLocalesEvent/#/PointingToDeclaration/racehorse/org.racehorse/-get-preferred-locales-event/-get-preferred-locales-event.html
+$dokka.location:org.racehorse/GetProcessStateEvent.ResultEvent///PointingToDeclaration/racehorse/org.racehorse/-get-process-state-event/-result-event/index.html
+$dokka.location:org.racehorse/GetProcessStateEvent.ResultEvent/ResultEvent/#kotlin.Int/PointingToDeclaration/racehorse/org.racehorse/-get-process-state-event/-result-event/-result-event.html
+$dokka.location:org.racehorse/GetProcessStateEvent.ResultEvent/state/#/PointingToDeclaration/racehorse/org.racehorse/-get-process-state-event/-result-event/state.html
+$dokka.location:org.racehorse/GetProcessStateEvent///PointingToDeclaration/racehorse/org.racehorse/-get-process-state-event/index.html
+$dokka.location:org.racehorse/GetProcessStateEvent/GetProcessStateEvent/#/PointingToDeclaration/racehorse/org.racehorse/-get-process-state-event/-get-process-state-event.html
 $dokka.location:org.racehorse/GetWindowInsetsEvent.ResultEvent///PointingToDeclaration/racehorse/org.racehorse/-get-window-insets-event/-result-event/index.html
 $dokka.location:org.racehorse/GetWindowInsetsEvent.ResultEvent/ResultEvent/#org.racehorse.Rect/PointingToDeclaration/racehorse/org.racehorse/-get-window-insets-event/-result-event/-result-event.html
 $dokka.location:org.racehorse/GetWindowInsetsEvent.ResultEvent/rect/#/PointingToDeclaration/racehorse/org.racehorse/-get-window-insets-event/-result-event/rect.html
@@ -1027,6 +1032,14 @@ $dokka.location:org.racehorse/PickContactEvent.ResultEvent/ResultEvent/#org.race
 $dokka.location:org.racehorse/PickContactEvent.ResultEvent/contact/#/PointingToDeclaration/racehorse/org.racehorse/-pick-contact-event/-result-event/contact.html
 $dokka.location:org.racehorse/PickContactEvent///PointingToDeclaration/racehorse/org.racehorse/-pick-contact-event/index.html
 $dokka.location:org.racehorse/PickContactEvent/PickContactEvent/#/PointingToDeclaration/racehorse/org.racehorse/-pick-contact-event/-pick-contact-event.html
+$dokka.location:org.racehorse/ProcessPlugin///PointingToDeclaration/racehorse/org.racehorse/-process-plugin/index.html
+$dokka.location:org.racehorse/ProcessPlugin/ProcessPlugin/#org.greenrobot.eventbus.EventBus/PointingToDeclaration/racehorse/org.racehorse/-process-plugin/-process-plugin.html
+$dokka.location:org.racehorse/ProcessPlugin/disable/#/PointingToDeclaration/racehorse/org.racehorse/-process-plugin/disable.html
+$dokka.location:org.racehorse/ProcessPlugin/enable/#/PointingToDeclaration/racehorse/org.racehorse/-process-plugin/enable.html
+$dokka.location:org.racehorse/ProcessPlugin/onGetProcessState/#org.racehorse.GetProcessStateEvent/PointingToDeclaration/racehorse/org.racehorse/-process-plugin/on-get-process-state.html
+$dokka.location:org.racehorse/ProcessStateChangedEvent///PointingToDeclaration/racehorse/org.racehorse/-process-state-changed-event/index.html
+$dokka.location:org.racehorse/ProcessStateChangedEvent/ProcessStateChangedEvent/#kotlin.Int/PointingToDeclaration/racehorse/org.racehorse/-process-state-changed-event/-process-state-changed-event.html
+$dokka.location:org.racehorse/ProcessStateChangedEvent/state/#/PointingToDeclaration/racehorse/org.racehorse/-process-state-changed-event/state.html
 $dokka.location:org.racehorse/ProxyPathHandler///PointingToDeclaration/racehorse/org.racehorse/-proxy-path-handler/index.html
 $dokka.location:org.racehorse/ProxyPathHandler/ProxyPathHandler/#java.net.URL/PointingToDeclaration/racehorse/org.racehorse/-proxy-path-handler/-proxy-path-handler.html
 $dokka.location:org.racehorse/ProxyPathHandler/ProxyPathHandler/#kotlin.String/PointingToDeclaration/racehorse/org.racehorse/-proxy-path-handler/-proxy-path-handler.html
