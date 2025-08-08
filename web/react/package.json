@@ -1,6 +1,6 @@
 {
   "name": "@racehorse/react",
-  "version": "1.10.0",
+  "version": "1.10.1",
   "description": "React hooks for Racehorse.",
   "main": "./index.js",
   "module": "./index.mjs",
@@ -36,7 +36,7 @@
   },
   "homepage": "https://github.com/smikhalevski/racehorse#readme",
   "peerDependencies": {
-    "racehorse": "^1.10.0",
+    "racehorse": "^1.10.1",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
   },
