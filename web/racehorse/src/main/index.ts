@@ -19,6 +19,7 @@ import { createKeyboardManager } from './createKeyboardManager.js';
 import { createNetworkManager } from './createNetworkManager.js';
 import { createNotificationsManager } from './createNotificationsManager.js';
 import { createPermissionsManager } from './createPermissionsManager.js';
+import { createProcessManager } from './createProcessManager.js';
 
 export { createActivityManager, Intent, Activity, ActivityState } from './createActivityManager.js';
 export { createBiometricEncryptedStorageManager } from './createBiometricEncryptedStorageManager.js';
@@ -46,6 +47,7 @@ export { createKeyboardManager } from './createKeyboardManager.js';
 export { createNetworkManager } from './createNetworkManager.js';
 export { createNotificationsManager } from './createNotificationsManager.js';
 export { createPermissionsManager } from './createPermissionsManager.js';
+export { createProcessManager, ProcessState } from './createProcessManager.js';
 export { createScheduler } from './createScheduler.js';
 export { runAnimation } from './runAnimation.js';
 export { scrollToElement } from './scrollToElement.js';
@@ -78,6 +80,7 @@ export type { KeyboardManager } from './createKeyboardManager.js';
 export type { NetworkManager, NetworkType, NetworkStatus } from './createNetworkManager.js';
 export type { NotificationsManager } from './createNotificationsManager.js';
 export type { PermissionsManager } from './createPermissionsManager.js';
+export type { ProcessManager } from './createProcessManager.js';
 export type { Scheduler } from './createScheduler.js';
 export type { ScrollToElementOptions } from './scrollToElement.js';
 export type { Animation, AnimationHandler, TweenAnimation, Easing, Unsubscribe } from './types.js';
@@ -186,3 +189,8 @@ export const notificationsManager = createNotificationsManager(eventBridge);
  * Checks permission statuses and ask for permissions.
  */
 export const permissionsManager = createPermissionsManager(eventBridge);
+
+/**
+ * Monitors the application process.
+ */
+export const processManager = createProcessManager(eventBridge);

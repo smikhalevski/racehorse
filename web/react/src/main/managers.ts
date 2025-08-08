@@ -41,6 +41,8 @@ import {
   notificationsManager,
   PermissionsManager,
   permissionsManager,
+  processManager,
+  ProcessManager,
 } from 'racehorse';
 import { createContext, useContext } from 'react';
 
@@ -252,4 +254,14 @@ export const PermissionsManagerProvider = PermissionsManagerContext.Provider;
 
 export function usePermissionsManager(): PermissionsManager {
   return useContext(PermissionsManagerContext);
+}
+
+const ProcessManagerContext = createContext(processManager);
+
+ProcessManagerContext.displayName = 'ProcessManagerContext';
+
+export const ProcessManagerProvider = ProcessManagerContext.Provider;
+
+export function useProcessManager(): ProcessManager {
+  return useContext(ProcessManagerContext);
 }

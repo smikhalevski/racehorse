@@ -24,6 +24,7 @@ import { EvergreenExample } from './examples/EvergreenExample.js';
 import { useKeyboardAnimation, useKeyboardManager, useWindowInsets } from '@racehorse/react';
 import { runAnimation, scrollToElement } from 'racehorse';
 import { DownloadExample } from './examples/DownloadExample.js';
+import { ProcessExample } from './examples/ProcessExample.js';
 
 export function App() {
   const keyboardManager = useKeyboardManager();
@@ -71,6 +72,7 @@ export function App() {
 
   return (
     <>
+      <ProcessExample />
       <EvergreenExample />
       <FsExample />
       <ContactsExample />

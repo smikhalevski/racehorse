@@ -20,6 +20,7 @@ export {
   useNetworkManager,
   useNotificationsManager,
   usePermissionsManager,
+  useProcessManager,
   EventBridgeProvider,
   ActivityManagerProvider,
   BiometricEncryptedStorageManagerProvider,
@@ -41,6 +42,7 @@ export {
   NetworkManagerProvider,
   NotificationsManagerProvider,
   PermissionsManagerProvider,
+  ProcessManagerProvider,
 } from './managers.js';
 export { useActivityState } from './useActivityState.js';
 export { useKeyboardAnimation } from './useKeyboardAnimation.js';

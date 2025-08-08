@@ -37,6 +37,7 @@ import org.racehorse.NetworkPlugin
 import org.racehorse.NotificationsPlugin
 import org.racehorse.OpenDeepLinkEvent
 import org.racehorse.PermissionsPlugin
+import org.racehorse.ProcessPlugin
 import org.racehorse.ProxyPathHandler
 import org.racehorse.StaticPathHandler
 import org.racehorse.evergreen.BundleReadyEvent
@@ -60,6 +61,7 @@ class MainActivity : AppCompatActivity() {
     private val webView by lazy { WebView(this) }
     private val eventBus = EventBus.getDefault()
     private val networkPlugin = NetworkPlugin(this)
+    private val processPlugin = ProcessPlugin()
     private val assetLoaderPlugin = AssetLoaderPlugin(this)
     private val cookieManager = CookieManager.getInstance()
 
@@ -88,6 +90,8 @@ class MainActivity : AppCompatActivity() {
         assetLoaderPlugin.registerAssetLoader("https://guestcontent.local") {
             WebResourceResponse("text/html", null, "Hello".byteInputStream())
         }
+
+        processPlugin.enable()
 
         eventBus.register(EventBridge(webView).apply { enable() })
         eventBus.register(assetLoaderPlugin)
@@ -125,6 +129,7 @@ class MainActivity : AppCompatActivity() {
                 baseLocalUrl = "$APP_URL/fs"
             )
         )
+        eventBus.register(processPlugin)
         eventBus.register(ToastPlugin(this))
 
         // 🟡 Run `npm start` in `<racehorse>/web/example` to build the web app and start the server.
