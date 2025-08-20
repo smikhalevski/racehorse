@@ -17,7 +17,7 @@ export function runAnimation<T extends Partial<Animation>>(
 
   let runTime = Date.now();
   let frameHandle = 0;
-  let timer: number;
+  let timer: ReturnType<typeof setTimeout>;
 
   const { duration = 0, startTime = runTime, easing } = animation;
 
