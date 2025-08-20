@@ -8,9 +8,36 @@
 
 <br/>
 
+<!--ARTICLE-->
+
+<!--OVERVIEW-->
+
 The bootstrapper for WebView-based Android apps.
 
-🚀&ensp;**Features**
+- Kotlin and TypeScript first.
+- Plugin-based architecture.
+- Can be integrated into any Android 28+ app.
+- Enables [app auto updates](#evergreen-plugin) without Google Play releases.
+- First-class React support.
+- Check out the [example app](#example-app) and the [Cookbook](#cookbook)!
+
+<!--/OVERVIEW-->
+
+<br>
+
+```sh
+npm install --save-prod racehorse
+```
+
+<br>
+
+<!--/ARTICLE-->
+
+<!--TOC-->
+
+- [API docs&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/)
+
+<span class="toc-icon">🚀&ensp;</span>**Features**
 
 - [Overview](#overview)
 - [Example app](#example-app)
@@ -20,7 +47,7 @@ The bootstrapper for WebView-based Android apps.
 - [Check supported events](#check-supported-events)
 - [Proguard](#proguard)
 
-🔌&ensp;**Plugins**
+<span class="toc-icon">🔌&ensp;</span>**Plugins**
 
 - [Activity](#activity-plugin)
 - [Asset loader](#asset-loader-plugin)
@@ -45,15 +72,20 @@ The bootstrapper for WebView-based Android apps.
 - [Notifications](#notifications-plugin)
 - [Permissions](#permissions-plugin)
 
-🍪&ensp;**Cookbook**
+<span class="toc-icon">🍪&ensp;</span>**Cookbook**
 
 - [Blur preview on recent apps screen](#blur-preview-on-recent-apps-screen)
+
+<!--/TOC-->
+
+<!--ARTICLE-->
 
 # Overview
 
 Racehorse is the pluggable bridge that marshals events between the web app and the native Android app. To showcase how
 Racehorse works, let's create a plugin that would display
-[an Android-native toast](https://developer.android.com/guide/topics/ui/notifiers/toasts) when the web app requests it.
+[an Android-native toast&#8239;<sup>↗</sup>](https://developer.android.com/guide/topics/ui/notifiers/toasts) when the
+web app requests it.
 
 Let's start by adding required Racehorse dependencies. In your `app/build.gradle.kts` add:
 
@@ -100,7 +132,7 @@ val webView = WebView(activity)
 ```
 
 Create an
-[`EventBridge`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-event-bridge/index.html)
+[`EventBridge`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-event-bridge/index.html)
 instance that would be responsible for event marshalling:
 
 ```kotlin
@@ -109,7 +141,8 @@ import org.racehorse.EventBridge
 val eventBridge = EventBridge(webView).apply { enable() }
 ```
 
-Racehorse uses a [Greenrobot EventBus](https://greenrobot.org/eventbus) to deliver events to subscribers, so bridge must
+Racehorse uses a [Greenrobot EventBus&#8239;<sup>↗</sup>](https://greenrobot.org/eventbus) to deliver events to
+subscribers, so bridge must
 be registered in the event bus:
 
 ```kotlin
@@ -131,9 +164,9 @@ class ShowToastEvent(val message: String) : WebEvent
 ```
 
 Note that `ShowToastEvent` implements
-[`WebEvent`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-web-event/index.html) marker
-interface. This is the baseline requirement to which events must conform to support marshalling from the web app to
-Android.
+[`WebEvent`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-web-event/index.html)
+marker interface. This is the baseline requirement to which events must conform to support marshalling from the web app
+to Android.
 
 Now let's add an event subscriber that would receive incoming `ShowToastEvent` and display a toast:
 
@@ -168,8 +201,8 @@ eventBridge.requestAsync({
   // 🟡 The event class name
   type: 'com.example.ShowToastEvent',
   payload: {
-    message: 'Hello, world!'
-  }
+    message: 'Hello, world!',
+  },
 });
 ```
 
@@ -183,8 +216,9 @@ webView.loadUrl("https://10.0.2.2:1234")
 
 # Example app
 
-The example app consists of two parts: [the web app](./web/example) and [the Android app](./android/example). To launch
-the app in the emulator follow the steps below.
+The example app consists of two parts: [the web app](https://github.com/smikhalevski/racehorse/tree/master/web/example)
+and [the Android app](https://github.com/smikhalevski/racehorse/tree/master/android/example). To launch the app in the
+emulator follow the steps below.
 
 Clone this repo:
 
@@ -212,8 +246,8 @@ Open `<racehorse>/android` in Android Studio and run `example` app.
 # Request-response event chains
 
 In the [Overview](#overview) section we used an event that extends a
-[`WebEvent`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-web-event/index.html) interface.
-Such events don't imply the response. To create a request-response chain at least two events are required:
+[`WebEvent`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-web-event/index.html)
+interface. Such events don't imply the response. To create a request-response chain at least two events are required:
 
 ```kotlin
 package com.example
@@ -237,38 +271,37 @@ class DeviceModelPlugin {
 ```
 
 Request and response events are instances of
-[`ChainableEvent`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-chainable-event/index.html).
+[`ChainableEvent`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-chainable-event/index.html).
 Events in the chain share the same `requestId`. When a
-[`ResponseEvent`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-response-event/index.html)
+[`ResponseEvent`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-response-event/index.html)
 is posted to the event bus it is marshalled to the web app and resolves a promise returned from the
-[`eventBridge.requestAsync`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.EventBridge.html#requestasync):
+[`eventBridge.requestAsync`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.EventBridge.html#requestasync):
 
 ```ts
 import { eventBridge } from 'racehorse';
 
 const deviceModel = await eventBridge
   .requestAsync({ type: 'com.example.GetDeviceModelRequestEvent' })
-  .then(event => event.payload.deviceModel)
+  .then(event => event.payload.deviceModel);
 ```
 
 If an exception is thrown in `DeviceModelPlugin.onGetDeviceModel`, then promise is _rejected_ with an
-[`Error`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) instance.
+[`Error`&#8239;<sup>↗</sup>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)
+instance.
 
 ## Synchronous requests
 
 If all events in the event chain are handled on
-[the posting thread](https://greenrobot.org/eventbus/documentation/delivery-threads-threadmode/) on the Android side,
-then a request can be handled synchronously on the web side. In the `DeviceModelPlugin` example `onGetDeviceModel` is
-called on the posting thread, since we didn't specify a thread mode for
-[`@Subscribe`](https://github.com/greenrobot/EventBus#eventbus-in-3-steps) annotation. So this allows web to perform a
-synchronous request:
+[the posting thread&#8239;<sup>↗</sup>](https://greenrobot.org/eventbus/documentation/delivery-threads-threadmode/) on
+the Android side, then a request can be handled synchronously on the web side. In the `DeviceModelPlugin` example
+`onGetDeviceModel` is called on the posting thread, since we didn't specify a thread mode for
+[`@Subscribe`&#8239;<sup>↗</sup>](https://github.com/greenrobot/EventBus#eventbus-in-3-steps) annotation. So this allows
+web to perform a synchronous request:
 
 ```ts
 import { eventBridge } from 'racehorse';
 
-const { deviceModel } = eventBridge
-  .request({ type: 'com.example.GetDeviceModelRequestEvent' })
-  .payload;
+const { deviceModel } = eventBridge.request({ type: 'com.example.GetDeviceModelRequestEvent' }).payload;
 ```
 
 If your app initializes an event bridge after the WebView was created, you may need to establish the connection
@@ -336,7 +369,7 @@ webView.webViewClient = RacehorseWebViewClient()
 ```
 
 Now you can subscribe to
-[all events that a WebView instance posts](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse.webview/index.html):
+[all events that a WebView instance posts&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse.webview/index.html):
 
 ```kotlin
 import org.greenrobot.eventbus.Subscribe
@@ -368,8 +401,9 @@ eventBridge.isSupported('org.racehorse.GooglePayTokenizeEvent');
 # Proguard
 
 `org.racehorse:racehorse` is an Android library (AAR) that provides its own
-[proguard rules](./android/racehorse/proguard-rules.pro), so no additional action is needed. Proguard rules prevent
-obfuscation of events and related classes which are available in Racehorse.
+[proguard rules](https://github.com/smikhalevski/racehorse/tree/master/android/racehorse/proguard-rules.pro), so no
+additional action is needed. Proguard rules prevent obfuscation of events and related classes which are available in
+Racehorse.
 
 For example, this class and its members won't be minified:
 
@@ -379,8 +413,8 @@ class ShowToastEvent(val message: String) : WebEvent
 
 # Activity plugin
 
-[`ActivityManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.ActivityManager.html) starts
-activities and provides info about the activity that renders the WebView.
+[`ActivityManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.ActivityManager.html)
+starts activities and provides info about the activity that renders the WebView.
 
 Add Lifecycle dependency to your Android app:
 
@@ -430,8 +464,8 @@ activityManager.subscribe('foreground', () => {
 ```
 
 If you are using React, then refer to
-[`useActivityState`](https://smikhalevski.github.io/racehorse/functions/_racehorse_react.useActivityState.html) hook
-that re-renders a component when activity state changes.
+[`useActivityState`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/functions/_racehorse_react.useActivityState.html)
+hook that re-renders a component when activity state changes.
 
 ```tsx
 import { useActivityState } from '@racehorse/react';
@@ -487,7 +521,7 @@ in the example above only https://example.com is handled by the asset loader, al
 
 ```js
 // This would open a browser app and load google.com
-window.location.href = 'https://google.com'
+window.location.href = 'https://google.com';
 ```
 
 To disable this behaviour:
@@ -500,11 +534,11 @@ AssetLoaderPlugin(activity).apply {
 
 # Biometric plugin
 
-[`BiometricManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.BiometricManager.html) provides the
-status of biometric support and allows to enroll for biometric auth.
+[`BiometricManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.BiometricManager.html)
+provides the status of biometric support and allows to enroll for biometric auth.
 
-Add [Biometric](https://developer.android.com/jetpack/androidx/releases/biometric#declaring_dependencies) dependency
-to your Android app:
+Add [Biometric&#8239;<sup>↗</sup>](https://developer.android.com/jetpack/androidx/releases/biometric#declaring_dependencies)
+dependency to your Android app:
 
 ```kotlin
 dependencies {
@@ -534,11 +568,11 @@ biometricManager.enrollBiometric();
 
 # Biometric encrypted storage plugin
 
-[`BiometricEncryptedStorageManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.BiometricEncryptedStorageManager.html)
+[`BiometricEncryptedStorageManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.BiometricEncryptedStorageManager.html)
 enables a file-based persistence of a biometric-protected data.
 
-Add [Biometric](https://developer.android.com/jetpack/androidx/releases/biometric#declaring_dependencies) dependency
-to your Android app:
+Add [Biometric&#8239;<sup>↗</sup>](https://developer.android.com/jetpack/androidx/releases/biometric#declaring_dependencies)
+dependency to your Android app:
 
 ```kotlin
 dependencies {
@@ -577,13 +611,13 @@ await biometricEncryptedStorageManager.get('foo');
 ```
 
 To allow device credential authentication, provide
-[`authenticationValidityDuration`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.BiometricConfig.html#authenticationvalidityduration)
+[`authenticationValidityDuration`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.BiometricConfig.html#authenticationvalidityduration)
 that is greater or equal to 0:
 
 ```ts
 await biometricEncryptedStorageManager.set('foo', 'bar', {
   authenticators: [BiometricAuthenticator.DEVICE_CREDENTIAL],
-  authenticationValidityDuration: 0
+  authenticationValidityDuration: 0,
 });
 ```
 
@@ -605,17 +639,17 @@ if (biometricEncryptedStorageManager.has(key)) {
     error => {
       if (error.name === 'KeyPermanentlyInvalidatedException') {
         // Key was invaildated and cannot be decrypted anymore
-        biometricEncryptedStorageManager.delete(key)
+        biometricEncryptedStorageManager.delete(key);
       }
     }
-  )
+  );
 }
 ```
 
 # Contacts plugin
 
-[`ContactsManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.ContactsManager.html) provides access
-to contacts stored on the device.
+[`ContactsManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.ContactsManager.html)
+provides access to contacts stored on the device.
 
 Add contacts permission to the app manifest:
 
@@ -646,8 +680,8 @@ contactsManager.getContact(42);
 
 # Deep link plugin
 
-[`DeepLinkManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.DeepLinkManager.html) provides access
-to deep links inside yor web app.
+[`DeepLinkManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.DeepLinkManager.html)
+provides access to deep links inside yor web app.
 
 Initialize the plugin in your Android app:
 
@@ -658,8 +692,8 @@ EventBus.getDefault().register(DeepLinkPlugin())
 ```
 
 Override
-[`onNewIntent`](https://developer.android.com/reference/android/app/Activity#onNewIntent(android.content.Intent)) in
-the main activity of yor app and post the deep link event:
+[`onNewIntent`&#8239;<sup>↗</sup>](<https://developer.android.com/reference/android/app/Activity#onNewIntent(android.content.Intent)>)
+in the main activity of yor app and post the deep link event:
 
 ```kotlin
 override fun onNewIntent(intent: Intent) {
@@ -681,8 +715,8 @@ deepLinkManager.subscribe(intent => {
 
 # Device plugin
 
-[`DeviceManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.DeviceManager.html) provides access
-to various device settings.
+[`DeviceManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.DeviceManager.html)
+provides access to various device settings.
 
 Add compat library dependency, it is used for window insets acquisition:
 
@@ -713,8 +747,8 @@ deviceManager.getPreferredLocales();
 ```
 
 If you are using React, then refer to
-[`useWindowInsets`](https://smikhalevski.github.io/racehorse/functions/_racehorse_react.useWindowInsets.html) hook
-to synchronize document paddings and window insets:
+[`useWindowInsets`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/functions/_racehorse_react.useWindowInsets.html)
+hook to synchronize document paddings and window insets:
 
 ```ts
 import { useLayoutEffect } from 'react';
@@ -724,16 +758,13 @@ const windowInsets = useWindowInsets();
 
 useLayoutEffect(() => {
   document.body.style.padding =
-    windowInsets.top + 'px ' +
-    windowInsets.right + 'px ' +
-    windowInsets.bottom + 'px ' +
-    windowInsets.left + 'px';
+    windowInsets.top + 'px ' + windowInsets.right + 'px ' + windowInsets.bottom + 'px ' + windowInsets.left + 'px';
 }, [windowInsets]);
 ```
 
 # Download plugin
 
-[`DownloadManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.DownloadManager.html)
+[`DownloadManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.DownloadManager.html)
 allows staring and monitoring file downloads.
 
 Initialize the plugin in your Android app:
@@ -750,7 +781,6 @@ Read previously started downloads or start a new one:
 import { downloadManager } from 'racehorse';
 
 downloadManager.addDownload('http://example.com/my.zip').then(id => {
-
   downloadManager.getDownload(id);
   // ⮕ Dowload { id: 1, status: 4, uri: 'http://example.com/my.zip' }
 });
@@ -758,8 +788,8 @@ downloadManager.addDownload('http://example.com/my.zip').then(id => {
 downloadManager.getAllDownloads();
 ```
 
-[`Download`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.Download.html) instance carries the download
-status, progress, and file details.
+[`Download`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.Download.html) instance
+carries the download status, progress, and file details.
 
 A storage permission must be added to support Android devices with API level <= 29:
 
@@ -773,10 +803,10 @@ A storage permission must be added to support Android devices with API level <= 
 ## Android 29 support
 
 On Android 29 a `SecurityException` is thrown when calling a deprecated method
-[`DownloadManager.addCompletedDownload`](https://developer.android.com/reference/android/app/DownloadManager#addCompletedDownload(java.lang.String,%20java.lang.String,%20boolean,%20java.lang.String,%20java.lang.String,%20long,%20boolean))
+[`DownloadManager.addCompletedDownload`&#8239;<sup>↗</sup>](<https://developer.android.com/reference/android/app/DownloadManager#addCompletedDownload(java.lang.String,%20java.lang.String,%20boolean,%20java.lang.String,%20java.lang.String,%20long,%20boolean)>)
 if permission `android.permission.WRITE_EXTERNAL_STORAGE` isn't granted. This method is used by Racehorse to populate
 the list of previous downloads when a data URI is downloaded. To fix this exception
-[the legacy external storage model](https://developer.android.com/training/data-storage/use-cases#opt-out-in-production-app)
+[the legacy external storage model&#8239;<sup>↗</sup>](https://developer.android.com/training/data-storage/use-cases#opt-out-in-production-app)
 must be enabled in Android manifest for API level 29.
 
 Create a resource file used for default config values `src/main/res/values/config.xml`
@@ -808,7 +838,8 @@ Configure the legacy external storage setting in Android manifest file:
 
 ## Downloadable links
 
-Downloadable links have a [`download`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a) attribute:
+Downloadable links have a [`download`&#8239;<sup>↗</sup>](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a)
+attribute:
 
 ```html
 <a
@@ -820,7 +851,7 @@ Downloadable links have a [`download`](https://developer.mozilla.org/en-US/docs/
 ```
 
 Initialize the
-[`DownloadPlugin`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-download-plugin/index.html)
+[`DownloadPlugin`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-download-plugin/index.html)
 as described in the previous section, and add a Racehorse listener to enable automatic handling of downloadable links:
 
 ```kotlin
@@ -831,7 +862,7 @@ webView.setDownloadListener(RacehorseDownloadListener())
 
 # Encrypted storage plugin
 
-[`EncryptedStorageManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.EncryptedStorageManager.html)
+[`EncryptedStorageManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.EncryptedStorageManager.html)
 enables a file-based persistence of a password-protected data.
 
 Initialize the plugin in your Android app:
@@ -866,8 +897,8 @@ await encryptedStorageManager.get('foo', PASSWORD);
 
 # Evergreen plugin
 
-[`EvergreenManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.EvergreenManager.html) provides a
-way to update your app using an archive that is downloadable from your server.
+[`EvergreenManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.EvergreenManager.html)
+provides a way to update your app using an archive that is downloadable from your server.
 
 You can find an extensive demo of evergreen plugin usage [in the example app.](#example-app)
 
@@ -902,7 +933,7 @@ assets would be labeled as version 1.0.0. During future app launches, the plugin
 version 1.0.0 and would skip the download. If the version changes then the update bundle would be downloaded again.
 
 After the update is downloaded a
-[`BundleReadyEvent`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse.evergreen/-bundle-ready-event/index.html)
+[`BundleReadyEvent`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse.evergreen/-bundle-ready-event/index.html)
 event is posted. You can use the [`AssetLoaderPlugin`](#asset-loader-plugin) to load resources provided by the evergreen
 plugin:
 
@@ -952,7 +983,7 @@ IsSameVersionAsMasterBundle
 -->|Yes| MainBundleReadyEvent([BundleReadyEvent])
 
 IsSameVersionAsMasterBundle
--->|No| HasPendingUpdateBundle{{Has pending update bundle?}} 
+-->|No| HasPendingUpdateBundle{{Has pending update bundle?}}
 
 HasPendingUpdateBundle
 -->|Yes| IsSameVersionAsPendingUpdateBundle{{Is same version as pending update bundle?}}
@@ -995,10 +1026,8 @@ import { evergreenManager } from 'racehorse';
 
 // 1️⃣ Wait for the update bundle to be downloaded
 evergreenManager.subscribe('ready', () => {
-
   // 2️⃣ Apply the update
   evergreenManager.applyUpdate().then(() => {
-
     // 3️⃣ Reload the web app to use the latest assets
     window.location.reload();
   });
@@ -1007,11 +1036,11 @@ evergreenManager.subscribe('ready', () => {
 
 # Facebook Login plugin
 
-[`FacebookLoginManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.FacebookLoginManager.html)
+[`FacebookLoginManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.FacebookLoginManager.html)
 enables Facebook Login support.
 
-Go to [developers.facebook.com](https://developers.facebook.com/docs/facebook-login/android/), register your app and
-add the required dependencies and configurations.
+Go to [developers.facebook.com&#8239;<sup>↗</sup>](https://developers.facebook.com/docs/facebook-login/android/),
+register your app and add the required dependencies and configurations.
 
 Initialize the Facebook SDK and register the plugin in your Android app:
 
@@ -1036,11 +1065,11 @@ facebookLoginManager.logIn().then(accessToken => {
 
 # Facebook Share plugin
 
-[`FacebookShareManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.FacebookShareManager.html)
+[`FacebookShareManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.FacebookShareManager.html)
 enables Facebook social sharing.
 
-Go to [developers.facebook.com](https://developers.facebook.com/docs/facebook-login/android/), register your app and
-add the required dependencies and configurations.
+Go to [developers.facebook.com&#8239;<sup>↗</sup>](https://developers.facebook.com/docs/facebook-login/android/),
+register your app and add the required dependencies and configurations.
 
 Initialize the Facebook SDK and register the plugin in your Android app:
 
@@ -1071,7 +1100,7 @@ web app.
 For example, if you have a file input:
 
 ```html
-<input type="file">
+<input type="file" />
 ```
 
 You can register a plugin to make this input open a file chooser dialog:
@@ -1137,12 +1166,12 @@ EventBus.getDefault().register(
 ```
 
 If you want to store images and videos in the gallery app after they were captured through file chooser, use
-[`GalleryCameraFileFactory`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-gallery-camera-file-factory/index.html).
+[`GalleryCameraFileFactory`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-gallery-camera-file-factory/index.html).
 
 # File system plugin
 
-[`FsManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.FsManager.html) enables file system CRUD
-operations.
+[`FsManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.FsManager.html) enables
+file system CRUD operations.
 
 Initialize the plugin in your Android app:
 
@@ -1170,7 +1199,7 @@ await file.readDataUri();
 ## Serving local files
 
 To load an arbitrary file from the web view,
-use [`localUrl`](https://smikhalevski.github.io/racehorse/classes/racehorse.File.html#localurl):
+use [`localUrl`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/classes/racehorse.File.html#localurl):
 
 ```ts
 import { contactsManager, fsManager } from 'racehorse';
@@ -1189,10 +1218,12 @@ document.getElementsByTagName('img')[0].src = photoUrl;
 
 # Google Pay plugin
 
-[`GooglePayManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.GooglePayManager.html) enables
-[Android Push Provisioning](https://developers.google.com/pay/issuers/apis/push-provisioning/android) support.
+[`GooglePayManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.GooglePayManager.html)
+enables
+[Android Push Provisioning&#8239;<sup>↗</sup>](https://developers.google.com/pay/issuers/apis/push-provisioning/android)
+support.
 
-[Set up the development environment](https://developers.google.com/pay/issuers/apis/push-provisioning/android/setup),
+[Set up the development environment&#8239;<sup>↗</sup>](https://developers.google.com/pay/issuers/apis/push-provisioning/android/setup),
 so TapAndPay SDK is available in your app.
 
 Initialize the plugin in your Android app:
@@ -1234,9 +1265,10 @@ To get the token info from the wallet use:
 
 ```ts
 async function getTokenInfo(lastFour: string): GooglePayTokenInfo | undefined {
-  (await googlePayManager.listTokens()).find(tokenInfo =>
-    (tokenInfo.dpanLastFour === lastFour || tokenInfo.fpanLastFour === lastFour) &&
-    tokenInfo.tokenServiceProvider === GooglePayTokenServiceProvider.MASTERCARD
+  (await googlePayManager.listTokens()).find(
+    tokenInfo =>
+      (tokenInfo.dpanLastFour === lastFour || tokenInfo.fpanLastFour === lastFour) &&
+      tokenInfo.tokenServiceProvider === GooglePayTokenServiceProvider.MASTERCARD
   );
 }
 ```
@@ -1286,8 +1318,9 @@ async function revealCard(lastFour: string): Promise<boolean> {
 
 # Google Play referrer plugin
 
-[`GooglePlayReferrerManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.GooglePlayReferrerManager.html)
-fetches the [Google Play referrer](https://developer.android.com/google/play/installreferrer/library) information.
+[`GooglePlayReferrerManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.GooglePlayReferrerManager.html)
+fetches the [Google Play referrer&#8239;<sup>↗</sup>](https://developer.android.com/google/play/installreferrer/library)
+information.
 
 Add Google Play referrer SDK dependency to your Android app:
 
@@ -1316,19 +1349,19 @@ googlePlayReferrerManager.getGooglePlayReferrer();
 
 # Google Sign-In plugin
 
-[`GoogleSignInManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.GoogleSignInManager.html) enables
-Google Sign-In support.
+[`GoogleSignInManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.GoogleSignInManager.html)
+enables Google Sign-In support.
 
-Go to [console.firebase.google.com](https://console.firebase.google.com), set up a new project, and configure an
-Android app following all instructions. Use the `applicationId` of your app and SHA-1 that is used for app signing.
-You can use gradle to retrieve SHA-1:
+Go to [console.firebase.google.com&#8239;<sup>↗</sup>](https://console.firebase.google.com), set up a new project, and
+configure an Android app following all instructions. Use the `applicationId` of your app and SHA-1 that is used for app
+signing. You can use gradle to retrieve SHA-1:
 
 ```shell
 ./gradlew signingReport
 ```
 
-Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials) for your project and add an OAuth
-client ID for Android.
+Go to [Google Cloud Console&#8239;<sup>↗</sup>](https://console.cloud.google.com/apis/credentials) for your project and
+add an OAuth client ID for Android.
 
 Add Google Sign-In SDK dependencies to your Android app:
 
@@ -1370,8 +1403,8 @@ EventBus.getDefault().register(HttpsPlugin())
 
 # Keyboard plugin
 
-[`KeyboardManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.KeyboardManager.html) toggles
-the software keyboard and notifies about keyboard animation.
+[`KeyboardManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.KeyboardManager.html)
+toggles the software keyboard and notifies about keyboard animation.
 
 Initialize the plugin in your Android app:
 
@@ -1402,7 +1435,7 @@ keyboardManager.subscribe(animation => {
 ```
 
 If you are using React, use
-[`useKeyboardAnimation`](https://smikhalevski.github.io/racehorse/functions/_racehorse_react.useKeyboardAnimation.html)
+[`useKeyboardAnimation`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/functions/_racehorse_react.useKeyboardAnimation.html)
 hook to subscribe to the keyboard animation from a component:
 
 ```tsx
@@ -1413,10 +1446,10 @@ useKeyboardAnimation((animation, signal) => {
 });
 ```
 
-Use [`runAnimation`](https://smikhalevski.github.io/racehorse/functions/racehorse.runAnimation.html) to run
-the animation. For example, if your
-[app is rendered edge-to-edge](https://developer.android.com/develop/ui/views/layout/edge-to-edge), you can animate
-the bottom padding to compensate the height of the keyboard.
+Use [`runAnimation`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/functions/racehorse.runAnimation.html)
+to run the animation. For example, if your
+[app is rendered edge-to-edge&#8239;<sup>↗</sup>](https://developer.android.com/develop/ui/views/layout/edge-to-edge),
+you can animate the bottom padding to compensate the height of the keyboard.
 
 ```ts
 import { useKeyboardAnimation, runAnimation } from '@racehorse/react';
@@ -1430,7 +1463,7 @@ useKeyboardAnimation((animation, signal) => {
         const keyboardHeight = animation.startValue + (animation.endValue - animation.startValue) * fraction;
 
         document.body.style.paddingBottom = keyboardHeight + 'px';
-      }
+      },
     },
     signal
   );
@@ -1438,14 +1471,13 @@ useKeyboardAnimation((animation, signal) => {
 ```
 
 You may also want to scroll the window to prevent the focused element from bing obscured by the keyboard.
-Use [`scrollToElement`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.scrollToElement.html) to animate
-scrolling in sync with keyboard animation:
+Use [`scrollToElement`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.scrollToElement.html)
+to animate scrolling in sync with keyboard animation:
 
 ```ts
 import { useKeyboardAnimation, scrollToElement } from '@racehorse/react';
 
 useKeyboardAnimation((animation, signal) => {
-
   // Ensure there's an active element to scroll to.
   if (document.activeElement === null && !document.hasFocus()) {
     return;
@@ -1460,17 +1492,18 @@ useKeyboardAnimation((animation, signal) => {
 });
 ```
 
-Check out [the example app](./web/example/src/App.tsx#L44) that has the real-world keyboard animation handling.
+Check out [the example app](https://github.com/smikhalevski/racehorse/tree/master/web/example/src/App.tsx#L45) that has
+the real-world keyboard animation handling.
 
 <br/>
 <p align="center">
-  <img src="./images/keyboard-animation.gif" alt="Keyboard animation" width="300"/>
+  <img src="https://raw.githubusercontent.com/smikhalevski/racehorse/refs/heads/master/images/keyboard-animation.gif" alt="Keyboard animation" width="300"/>
 </p>
 
 # Network plugin
 
-[`NetworkManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.NetworkManager.html) enables network
-connection monitoring support.
+[`NetworkManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.NetworkManager.html)
+enables network connection monitoring support.
 
 Initialize the plugin in your Android app:
 
@@ -1510,8 +1543,8 @@ networkManager.subscribe(status => {
 ```
 
 If you are using React, then refer to
-[`useNetworkStatus`](https://smikhalevski.github.io/racehorse/functions/_racehorse_react.useNetworkStatus.html) hook
-that re-renders a component when network status changes.
+[`useNetworkStatus`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/functions/_racehorse_react.useNetworkStatus.html)
+hook that re-renders a component when network status changes.
 
 ```tsx
 import { useNetworkStatus } from '@racehorse/react';
@@ -1527,7 +1560,7 @@ status.type;
 
 # Notifications plugin
 
-[`NotificationsManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.NotificationsManager.html)
+[`NotificationsManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.NotificationsManager.html)
 provides access to Android system notifications status.
 
 Initialize the plugin in your Android app:
@@ -1549,8 +1582,8 @@ notificationsManager.areNotificationsEnabled();
 
 # Permissions plugin
 
-[`PermissionsManager`](https://smikhalevski.github.io/racehorse/interfaces/racehorse.PermissionsManager.html) allows
-checking and requesting application permissions.
+[`PermissionsManager`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/interfaces/racehorse.PermissionsManager.html)
+allows checking and requesting application permissions.
 
 Initialize the plugin in your Android app:
 
@@ -1577,8 +1610,9 @@ permissionsManager.askForPermission('android.permission.CALL_PHONE');
 ## Blur preview on recent apps screen
 
 Post a custom
-[`NoticeEvent`](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-notice-event/index.html) event
-in [`onWindowFocusChanged`](https://developer.android.com/reference/android/app/Activity#onWindowFocusChanged(boolean)):
+[`NoticeEvent`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/racehorse/android/racehorse/org.racehorse/-notice-event/index.html)
+event
+in [`onWindowFocusChanged`&#8239;<sup>↗</sup>](<https://developer.android.com/reference/android/app/Activity#onWindowFocusChanged(boolean)>):
 
 ```kotlin
 package com.myapplication
@@ -1607,4 +1641,6 @@ eventBridge.subscribe('com.myapplication.WindowFocusChangedEvent', payload => {
 ```
 
 Now your application would become blurred when it is going to background and become non-blurred when it comes to the
-foreground. 
+foreground.
+
+<!--/ARTICLE-->

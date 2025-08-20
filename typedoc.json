@@ -13,7 +13,7 @@
     "includeFolders": false
   },
   "sidebarLinks": {
-    "Racehorse Android API": "/racehorse/android/index.html"
+    "Racehorse Android API": "/racehorse/android"
   },
   "plugin": ["typedoc-plugin-mdn-links"],
   "externalSymbolLinkMappings": {
