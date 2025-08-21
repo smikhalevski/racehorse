@@ -2,9 +2,9 @@
   "private": true,
   "scripts": {
     "build": "npm run build --workspaces",
-    "clean": "rimraf ./docs ./coverage && npm run clean --workspaces",
+    "clean": "rimraf docs coverage && npm run clean --workspaces",
     "test": "tsc && vitest run",
-    "docs": "typedoc && cd ./android/racehorse && ../gradlew dokkaHtml"
+    "docs": "typedoc && cd android/racehorse && ../gradlew dokkaHtml"
   },
   "workspaces": [
     "./web/racehorse",
@@ -12,15 +12,15 @@
     "./web/example"
   ],
   "devDependencies": {
-    "@types/react": "^18.3.11",
-    "@types/react-dom": "^18.3.0",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
     "jsdom": "^26.1.0",
-    "prettier": "^3.5.3",
+    "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
     "tslib": "^2.8.1",
-    "typedoc": "^0.28.4",
-    "typedoc-plugin-mdn-links": "^5.0.2",
-    "typescript": "^5.8.3",
-    "vitest": "^3.1.4"
+    "typedoc": "^0.28.10",
+    "typedoc-plugin-mdn-links": "^5.0.8",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
   }
 }

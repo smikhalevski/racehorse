@@ -12,7 +12,7 @@ export function useKeyboardHeight(): number {
   const [keyboardHeight, setKeyboardHeight] = useState(manager.getKeyboardHeight);
 
   useEffect(() => {
-    let timer: number;
+    let timer: ReturnType<typeof setTimeout>;
 
     setKeyboardHeight(manager.getKeyboardHeight());
 
