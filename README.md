@@ -1192,9 +1192,7 @@ Access files stored on the device from a WebView:
 ```ts
 import { fsManager, Directory } from 'racehorse';
 
-const uri = fsManager.resolve(Directory.CACHE, 'temp.txt');
-
-const file = fsManager.File(uri);
+const file = fsManager.open(Directory.CACHE, 'temp.txt');
 
 await file.writeText('Hello world!');
 
@@ -1212,7 +1210,7 @@ import { contactsManager, fsManager } from 'racehorse';
 
 const contact = await contactsManager.pickContact();
 
-const photoUrl = fsManager.File(contact.photoUri).localUrl;
+const photoUrl = fsManager.open(contact.photoUri).localUrl;
 // ⮕ 'https://racehorce.local/fs?uri=…'
 ```
 

@@ -7,12 +7,12 @@ const SCHEME_RACEHORSE = 'racehorse';
  * Device-independent URIs for well-known directories.
  */
 export const Directory = {
-  DOCUMENTS: `${SCHEME_RACEHORSE}://documents`,
-  DATA: `${SCHEME_RACEHORSE}://data`,
-  LIBRARY: `${SCHEME_RACEHORSE}://library`,
-  CACHE: `${SCHEME_RACEHORSE}://cache`,
-  EXTERNAL: `${SCHEME_RACEHORSE}://external`,
-  EXTERNAL_STORAGE: `${SCHEME_RACEHORSE}://external_storage`,
+  DOCUMENTS: SCHEME_RACEHORSE + '://documents',
+  DATA: SCHEME_RACEHORSE + '://data',
+  LIBRARY: SCHEME_RACEHORSE + '://library',
+  CACHE: SCHEME_RACEHORSE + '://cache',
+  EXTERNAL: SCHEME_RACEHORSE + '://external',
+  EXTERNAL_STORAGE: SCHEME_RACEHORSE + '://external_storage',
 } as const;
 
 export type Directory = (typeof Directory)[keyof typeof Directory];
@@ -249,9 +249,9 @@ export class File {
   /**
    * Reads the list of files contained in the directory.
    */
-  readDir(): Promise<File[]> {
+  readdir(): Promise<File[]> {
     return this._eventBridge
-      .requestAsync({ type: 'org.racehorse.FsReadDirEvent', payload: { uri: this.uri } })
+      .requestAsync({ type: 'org.racehorse.FsReaddirEvent', payload: { uri: this.uri } })
       .then(event => event.payload.fileUris.map((fileUri: string) => new File(this._eventBridge, fileUri)));
   }
 
@@ -397,8 +397,10 @@ export interface FsManager {
    * Creates a new {@link File} instance.
    *
    * @param uri The URI that points to the file on the file system.
+   * @param path The relative path to concatenate.
+   * @returns The file handle.
    */
-  File(uri: string): File;
+  open(uri: string, path?: string): File;
 
   /**
    * Concatenates URI and relative path.
@@ -416,10 +418,13 @@ export interface FsManager {
  * @param eventBridge The underlying event bridge.
  */
 export function createFsManager(eventBridge: EventBridge): FsManager {
-  return {
-    File: uri => new File(eventBridge, uri),
+  const resolve: FsManager['resolve'] = (uri, path) =>
+    uri + (path.length === 0 || uri.endsWith('/') || path.startsWith('/') ? path : '/' + path);
 
-    resolve: (uri, path) => uri + (path.length === 0 || uri.endsWith('/') || path.startsWith('/') ? path : '/' + path),
+  return {
+    open: (uri, path) => new File(eventBridge, path !== undefined ? resolve(uri, path) : uri),
+
+    resolve,
   };
 }
 

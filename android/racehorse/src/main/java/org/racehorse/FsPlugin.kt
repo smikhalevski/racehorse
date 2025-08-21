@@ -85,7 +85,7 @@ class FsMkdirEvent(val uri: @Contextual Uri) : RequestEvent() {
 }
 
 @Serializable
-class FsReadDirEvent(val uri: @Contextual Uri) : RequestEvent() {
+class FsReaddirEvent(val uri: @Contextual Uri) : RequestEvent() {
 
     @Serializable
     class ResultEvent(val fileUris: List<@Contextual Uri>) : ResponseEvent()
@@ -282,11 +282,11 @@ open class FsPlugin(
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    open fun onFsReadDir(event: FsReadDirEvent) {
+    open fun onFsReaddir(event: FsReaddirEvent) {
         val dir = event.uri.toSupportedUri().toFile()
 
         event.respond(
-            FsReadDirEvent.ResultEvent(
+            FsReaddirEvent.ResultEvent(
                 dir.list()?.map { File(dir, it).toUri() } ?: throw NotDirectoryException(dir.absolutePath)
             )
         )

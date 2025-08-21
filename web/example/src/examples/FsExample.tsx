@@ -8,7 +8,7 @@ export function FsExample() {
   const [url, setUrl] = useState<string>();
 
   useEffect(() => {
-    handleOpenFile(fsManager.File(goToUri));
+    handleOpenFile(fsManager.open(goToUri));
   }, [goToUri]);
 
   const handleOpenFile = (file: File) => {
