@@ -965,6 +965,8 @@ Evergreen plugin keeps track of downloaded bundles:
 - The master bundle contains current assets of the web app;
 - The pending update bundle contains assets that were downloaded but not yet applied as master.
 
+<!--HIDDEN-->
+
 Below is the diagram of events posted by the evergreen plugin.
 
 ```mermaid
@@ -1005,12 +1007,14 @@ IsMandatoryUpdateMode
 --->|Yes| MandatoryUpdate
 
 subgraph OptionalUpdate [Optional update]
+direction TB
 OptionalUpdateStartedEvent([UpdateStartedEvent])
 --> OptionalUpdateProgressEvent([UpdateProgressEvent])
 --> OptionalUpdateReadyEvent([UpdateReadyEvent])
 end
 
 subgraph MandatoryUpdate [Mandatory update]
+direction TB
 MandatoryUpdateStartedEvent([UpdateStartedEvent])
 --> MandatoryUpdateProgressEvent([UpdateProgressEvent])
 --> MandatoryBundleReadyEvent([BundleReadyEvent])
@@ -1018,6 +1022,8 @@ end
 ```
 
 ¹ The app is started with the assets from the available master bundle while the update is downloaded in the background.
+
+<!--/HIDDEN-->
 
 You can monitor background updates and apply them as soon as they are ready:
 
