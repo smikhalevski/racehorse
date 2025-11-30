@@ -12,7 +12,7 @@
 
 <!--OVERVIEW-->
 
-The bootstrapper for WebView-based Android apps.
+The pluggable bridge for WebView-based Android apps that marshals events between the web layer and native Android.
 
 - Kotlin and TypeScript first.
 - Plugin-based architecture.
