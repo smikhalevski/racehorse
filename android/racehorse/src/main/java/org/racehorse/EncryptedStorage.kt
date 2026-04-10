@@ -24,9 +24,9 @@ open class EncryptedStorage(private val storageDir: File) {
         const val HASH_SIZE = 64 // bytes
 
         /**
-         * The size in bytes of the IV array.
+         * The size in bytes of the field that stores the IV length.
          */
-        const val IV_SIZE_SIZE = 4 // bytes
+        const val IV_LENGTH_SIZE = 4 // bytes
     }
 
     /**
@@ -34,15 +34,15 @@ open class EncryptedStorage(private val storageDir: File) {
      *
      * @param cipher The cipher that is used to encode the value.
      * @param key The key under which the value is stored.
-     * @param value The byte array the holds the data.
+     * @param value The byte array that holds the data.
      * @return `true` if the key was successfully persisted, or `false` otherwise.
      */
     open fun set(cipher: Cipher, key: String, value: ByteArray): Boolean {
         val valueHash = MessageDigest.getInstance(HASH_ALGORITHM).digest(value)
 
-        val ivSize = ByteBuffer.allocate(IV_SIZE_SIZE).putInt(cipher.iv.size).array()
+        val ivLength = ByteBuffer.allocate(IV_LENGTH_SIZE).putInt(cipher.iv.size).array()
 
-        val fileBytes = ivSize + cipher.iv + cipher.doFinal(valueHash + value)
+        val fileBytes = ivLength + cipher.iv + cipher.doFinal(valueHash + value)
 
         return try {
             getFile(key).writeBytes(fileBytes)
@@ -65,12 +65,25 @@ open class EncryptedStorage(private val storageDir: File) {
             return null
         }
 
-        val fileBytes = file.readBytes()
-        val ivSize = ByteBuffer.wrap(fileBytes.copyOf(IV_SIZE_SIZE)).int
+        val fileBytes = try {
+            file.readBytes()
+        } catch (_: IOException) {
+            return null
+        }
+
+        if (fileBytes.size < IV_LENGTH_SIZE) {
+            return null
+        }
+
+        val ivLength = ByteBuffer.wrap(fileBytes.copyOf(IV_LENGTH_SIZE)).int
+
+        if (ivLength < 0 || fileBytes.size < IV_LENGTH_SIZE + ivLength) {
+            return null
+        }
 
         return EncryptedRecord(
-            iv = fileBytes.copyOfRange(IV_SIZE_SIZE, IV_SIZE_SIZE + ivSize),
-            encryptedValue = fileBytes.copyOfRange(IV_SIZE_SIZE + ivSize, fileBytes.size)
+            iv = fileBytes.copyOfRange(IV_LENGTH_SIZE, IV_LENGTH_SIZE + ivLength),
+            encryptedValue = fileBytes.copyOfRange(IV_LENGTH_SIZE + ivLength, fileBytes.size)
         )
     }
 
@@ -87,13 +100,22 @@ open class EncryptedStorage(private val storageDir: File) {
     /**
      * Decrypts the encrypted value that was retrieved via [getRecord].
      *
-     * Returns the decrypted value or `null` if decryption failed because of the invalid decryption key.
+     * Returns the decrypted value or `null` if decryption failed because of an invalid decryption key or hash mismatch.
      */
     open fun decrypt(cipher: Cipher, encryptedValue: ByteArray): ByteArray? {
         return try {
             val bytes = cipher.doFinal(encryptedValue)
 
-            bytes.copyOfRange(HASH_SIZE, bytes.size)
+            if (bytes.size < HASH_SIZE) {
+                return null
+            }
+
+            val value = bytes.copyOfRange(HASH_SIZE, bytes.size)
+
+            val storedHash = bytes.copyOfRange(0, HASH_SIZE)
+            val expectedHash = MessageDigest.getInstance(HASH_ALGORITHM).digest(value)
+
+            if (MessageDigest.isEqual(storedHash, expectedHash)) value else null
         } catch (_: BadPaddingException) {
             null
         }
