@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.io.File
+import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
@@ -19,7 +20,7 @@ import javax.crypto.spec.SecretKeySpec
  * @param password The password that is used to cipher the file contents.
  */
 @Serializable
-class SetEncryptedValueEvent(val key: String, val value: String, val password: String) : RequestEvent() {
+open class SetEncryptedValueEvent(val key: String, val value: String, val password: String) : RequestEvent() {
 
     /**
      * @param isSuccessful `true` if the value was written to the storage, or `false` otherwise.
@@ -32,7 +33,7 @@ class SetEncryptedValueEvent(val key: String, val value: String, val password: S
  * Retrieves an encrypted value associated with the key.
  */
 @Serializable
-class GetEncryptedValueEvent(val key: String, val password: String) : RequestEvent() {
+open class GetEncryptedValueEvent(val key: String, val password: String) : RequestEvent() {
 
     /**
      * @param value The deciphered value or `null` if key wasn't found or if password is incorrect.
@@ -45,7 +46,7 @@ class GetEncryptedValueEvent(val key: String, val password: String) : RequestEve
  * Checks that the key exists in the storage.
  */
 @Serializable
-class HasEncryptedValueEvent(val key: String) : RequestEvent() {
+open class HasEncryptedValueEvent(val key: String) : RequestEvent() {
 
     @Serializable
     class ResultEvent(val isExisting: Boolean) : ResponseEvent()
@@ -55,7 +56,7 @@ class HasEncryptedValueEvent(val key: String) : RequestEvent() {
  * Deletes an encrypted value associated with the key.
  */
 @Serializable
-class DeleteEncryptedValueEvent(val key: String) : RequestEvent() {
+open class DeleteEncryptedValueEvent(val key: String) : RequestEvent() {
 
     @Serializable
     class ResultEvent(val isDeleted: Boolean) : ResponseEvent()
@@ -65,15 +66,13 @@ class DeleteEncryptedValueEvent(val key: String) : RequestEvent() {
  * An encrypted key-value file-based storage.
  *
  * @param storageDir The directory to write files to.
- * @param salt The salt required to generate the encryption key.
- * @param iterationCount The number of iterations to generate an encryption key.
- * @param keySize The size in bits of the secret key that is derived from the password.
+ * @param secretKeyIterationCount The number of iterations to generate an encryption key.
+ * @param secretKeySize The size in bits of the secret key that is derived from the password.
  */
 open class EncryptedStoragePlugin(
     private val storageDir: File,
-    private val salt: ByteArray,
-    private val iterationCount: Int = 10_000,
-    private val keySize: Int = 256
+    private val secretKeyIterationCount: Int = 300_000,
+    private val secretKeySize: Int = 256
 ) {
 
     private companion object {
@@ -81,16 +80,20 @@ open class EncryptedStoragePlugin(
         const val ENCRYPTION_BLOCK_MODE = "CBC"
         const val ENCRYPTION_PADDING = "PKCS5Padding"
         const val SECRET_KEY_ALGORITHM = "PBKDF2withHmacSHA256"
+        const val SECRET_SALT_LENGTH = 32
     }
 
+    private val secureRandom = SecureRandom()
     private val encryptedStorage = EncryptedStorage(storageDir)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     open fun onSetEncryptedValue(event: SetEncryptedValueEvent) {
-        val cipher = createCipher()
-        cipher.init(Cipher.ENCRYPT_MODE, createSecretKey(event.password))
+        val salt = ByteArray(SECRET_SALT_LENGTH).apply(secureRandom::nextBytes)
 
-        val result = encryptedStorage.set(cipher, event.key, event.value.toByteArray(Charsets.UTF_8))
+        val cipher = getCipher()
+        cipher.init(Cipher.ENCRYPT_MODE, createSecretKey(event.password, salt))
+
+        val result = encryptedStorage.set(cipher, event.key, salt, event.value.toByteArray(Charsets.UTF_8))
         event.respond(SetEncryptedValueEvent.ResultEvent(result))
     }
 
@@ -99,8 +102,8 @@ open class EncryptedStoragePlugin(
         val record = encryptedStorage.getRecord(event.key)
             ?: return event.respond(GetEncryptedValueEvent.ResultEvent(null))
 
-        val cipher = createCipher()
-        cipher.init(Cipher.DECRYPT_MODE, createSecretKey(event.password), IvParameterSpec(record.iv))
+        val cipher = getCipher()
+        cipher.init(Cipher.DECRYPT_MODE, createSecretKey(event.password, record.salt), IvParameterSpec(record.iv))
 
         val value = encryptedStorage.decrypt(cipher, record.encryptedValue)?.toString(Charsets.UTF_8)
         event.respond(GetEncryptedValueEvent.ResultEvent(value))
@@ -119,17 +122,21 @@ open class EncryptedStoragePlugin(
     /**
      * Returns the [Cipher] instance that is used for encoding/decoding.
      */
-    protected open fun createCipher(): Cipher {
+    protected open fun getCipher(): Cipher {
         return Cipher.getInstance("$ENCRYPTION_ALGORITHM/$ENCRYPTION_BLOCK_MODE/$ENCRYPTION_PADDING")
     }
 
     /**
      * Returns the secret key for a password.
      */
-    protected open fun createSecretKey(password: String): SecretKey {
+    protected open fun createSecretKey(password: String, salt: ByteArray): SecretKey {
         val factory = SecretKeyFactory.getInstance(SECRET_KEY_ALGORITHM)
-        val keySpec = PBEKeySpec(password.toCharArray(), salt, iterationCount, keySize)
+        val keySpec = PBEKeySpec(password.toCharArray(), salt, secretKeyIterationCount, secretKeySize)
 
-        return SecretKeySpec(factory.generateSecret(keySpec).encoded, ENCRYPTION_ALGORITHM)
+        return try {
+            SecretKeySpec(factory.generateSecret(keySpec).encoded, ENCRYPTION_ALGORITHM)
+        } finally {
+            keySpec.clearPassword()
+        }
     }
 }

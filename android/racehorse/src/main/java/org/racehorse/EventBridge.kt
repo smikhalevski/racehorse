@@ -78,7 +78,7 @@ abstract class ChainableEvent {
     /**
      * Posts an [event] to the chain in the same event bus to which this event was originally posted.
      */
-    fun respond(event: ChainableEvent) {
+    open fun respond(event: ChainableEvent) {
         event.eventBus = eventBus
         event.requestId = requestId
 
