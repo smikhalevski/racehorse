@@ -90,7 +90,7 @@ enum class BiometricStatus(val value: Int) {
     SECURITY_UPDATE_REQUIRED(BiometricManager.BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED);
 
     companion object {
-        fun from(value: Int) = values().firstOrNull { it.value == value } ?: UNKNOWN
+        fun from(value: Int) = entries.firstOrNull { it.value == value } ?: UNKNOWN
     }
 }
 

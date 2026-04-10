@@ -88,7 +88,7 @@ open class EncryptedStoragePlugin(
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     open fun onSetEncryptedValue(event: SetEncryptedValueEvent) {
-        val salt = ByteArray(SECRET_SALT_LENGTH).apply(secureRandom::nextBytes)
+        val salt = nextSalt()
 
         val cipher = getCipher()
         cipher.init(Cipher.ENCRYPT_MODE, createSecretKey(event.password, salt))
@@ -122,9 +122,10 @@ open class EncryptedStoragePlugin(
     /**
      * Returns the [Cipher] instance that is used for encoding/decoding.
      */
-    protected open fun getCipher(): Cipher {
-        return Cipher.getInstance("$ENCRYPTION_ALGORITHM/$ENCRYPTION_BLOCK_MODE/$ENCRYPTION_PADDING")
-    }
+    protected open fun getCipher() =
+        Cipher.getInstance("$ENCRYPTION_ALGORITHM/$ENCRYPTION_BLOCK_MODE/$ENCRYPTION_PADDING")
+
+    protected open fun nextSalt() = ByteArray(SECRET_SALT_LENGTH).apply(secureRandom::nextBytes)
 
     /**
      * Returns the secret key for a password.

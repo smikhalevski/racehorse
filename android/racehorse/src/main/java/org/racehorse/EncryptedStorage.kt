@@ -6,6 +6,7 @@ import java.nio.ByteBuffer
 import java.security.MessageDigest
 import javax.crypto.BadPaddingException
 import javax.crypto.Cipher
+import javax.crypto.IllegalBlockSizeException
 
 /**
  * @param salt The salt used to derive the encryption key.
@@ -32,7 +33,9 @@ open class EncryptedStorage(private val storageDir: File) {
         const val MAX_SALT_LENGTH = 1024
     }
 
-    /**
+    open fun set(cipher: Cipher, key: String, value: ByteArray) = set(cipher, key, ByteArray(0), value)
+
+        /**
      * Stores a value under the given key.
      *
      * The cipher must be initialized with a fresh, random IV before calling this method.
@@ -45,9 +48,9 @@ open class EncryptedStorage(private val storageDir: File) {
     open fun set(cipher: Cipher, key: String, salt: ByteArray, value: ByteArray): Boolean {
         val iv = cipher.iv
 
-        require(iv.isNotEmpty() && iv.size <= MAX_IV_LENGTH) { "Invalid cipher IV size" }
+        require(iv.size >= 0 && iv.size <= MAX_IV_LENGTH) { "Invalid cipher IV size" }
 
-        require(salt.isNotEmpty() && salt.size <= MAX_SALT_LENGTH) { "Invalid salt size" }
+        require(salt.size <= MAX_SALT_LENGTH) { "Invalid salt size" }
 
         val valueHash = MessageDigest.getInstance(HASH_ALGORITHM).digest(value)
 
@@ -172,6 +175,8 @@ open class EncryptedStorage(private val storageDir: File) {
             val actualHash = MessageDigest.getInstance(HASH_ALGORITHM).digest(value)
 
             if (MessageDigest.isEqual(storedHash, actualHash)) value else null
+        } catch (_: IllegalBlockSizeException) {
+            null
         } catch (_: BadPaddingException) {
             null
         }

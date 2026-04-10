@@ -45,7 +45,7 @@ class EncryptedStorageTest {
 
     @Test
     fun `set returns true and creates a file`() {
-        val result = storage.set(getEncryptCipher(), "key", "salt".toByteArray(), "value".toByteArray())
+        val result = storage.set(getEncryptCipher(), "key", "value".toByteArray())
 
         assertTrue(result)
         assertTrue(storageDir.listFiles()!!.isNotEmpty())
@@ -53,8 +53,8 @@ class EncryptedStorageTest {
 
     @Test
     fun `set overwrites an existing entry`() {
-        storage.set(getEncryptCipher(), "key", "salt".toByteArray(), "value1".toByteArray())
-        storage.set(getEncryptCipher(), "key", "salt".toByteArray(), "value2".toByteArray())
+        storage.set(getEncryptCipher(), "key", "value1".toByteArray())
+        storage.set(getEncryptCipher(), "key", "value2".toByteArray())
 
         val record = storage.getRecord("key")!!
         val value = storage.decrypt(getDecryptCipher(record.iv), record.encryptedValue)
@@ -68,7 +68,7 @@ class EncryptedStorageTest {
         val storageDir = File(tempFolder.root, "aaa/bbb/ccc")
         val encryptedStorage = EncryptedStorage(storageDir)
 
-        val result = encryptedStorage.set(getEncryptCipher(), "key", "salt".toByteArray(), "value".toByteArray())
+        val result = encryptedStorage.set(getEncryptCipher(), "key", "value".toByteArray())
 
         assertTrue(result)
         assertTrue(storageDir.exists())
@@ -81,14 +81,14 @@ class EncryptedStorageTest {
 
     @Test
     fun `has returns true after set`() {
-        storage.set(getEncryptCipher(), "key", "salt".toByteArray(), "value".toByteArray())
+        storage.set(getEncryptCipher(), "key", "value".toByteArray())
 
         assertTrue(storage.has("key"))
     }
 
     @Test
     fun `has returns false after delete`() {
-        storage.set(getEncryptCipher(), "key", "salt".toByteArray(), "value".toByteArray())
+        storage.set(getEncryptCipher(), "key", "value".toByteArray())
         storage.delete("key")
 
         assertFalse(storage.has("key"))
@@ -101,7 +101,7 @@ class EncryptedStorageTest {
 
     @Test
     fun `getRecord returns record with non-empty IV and encrypted value`() {
-        storage.set(getEncryptCipher(), "key", "salt".toByteArray(), "value".toByteArray())
+        storage.set(getEncryptCipher(), "key", "value".toByteArray())
 
         val record = storage.getRecord("key")
 
@@ -138,7 +138,7 @@ class EncryptedStorageTest {
     fun `getRecord returns null for an unreadable file`() {
         val file = storage.getFile("key")
 
-        storage.set(getEncryptCipher(), "key", "salt".toByteArray(), "value".toByteArray())
+        storage.set(getEncryptCipher(), "key", "value".toByteArray())
 
         file.setReadable(false)
 
@@ -151,7 +151,7 @@ class EncryptedStorageTest {
 
     @Test
     fun `delete returns true and removes the file`() {
-        storage.set(getEncryptCipher(), "key", "salt".toByteArray(), "value".toByteArray())
+        storage.set(getEncryptCipher(), "key", "value".toByteArray())
 
         assertTrue(storage.delete("key"))
         assertFalse(storage.has("key"))
@@ -164,7 +164,7 @@ class EncryptedStorageTest {
 
     @Test
     fun `decrypt returns original value after round-trip`() {
-        storage.set(getEncryptCipher(), "key", "salt".toByteArray(), "value".toByteArray())
+        storage.set(getEncryptCipher(), "key", "value".toByteArray())
 
         val record = storage.getRecord("key")!!
         val result = storage.decrypt(getDecryptCipher(record.iv), record.encryptedValue)
@@ -175,7 +175,7 @@ class EncryptedStorageTest {
 
     @Test
     fun `decrypt returns null when ciphertext is tampered`() {
-        storage.set(getEncryptCipher(), "key", "salt".toByteArray(), "value".toByteArray())
+        storage.set(getEncryptCipher(), "key", "value".toByteArray())
 
         val record = storage.getRecord("key")!!
         val tampered = record.encryptedValue.copyOf()
@@ -189,7 +189,7 @@ class EncryptedStorageTest {
 
     @Test
     fun `decrypt returns null when decrypted with the wrong key`() {
-        storage.set(getEncryptCipher(), "key", "salt".toByteArray(), "value".toByteArray())
+        storage.set(getEncryptCipher(), "key", "value".toByteArray())
 
         val record = storage.getRecord("key")!!
 
@@ -217,8 +217,8 @@ class EncryptedStorageTest {
 
     @Test
     fun `different keys are stored independently`() {
-        storage.set(getEncryptCipher(), "key1", "salt".toByteArray(), "value1".toByteArray())
-        storage.set(getEncryptCipher(), "key2", "salt".toByteArray(), "value2".toByteArray())
+        storage.set(getEncryptCipher(), "key1", "value1".toByteArray())
+        storage.set(getEncryptCipher(), "key2", "value2".toByteArray())
 
         val record1 = storage.getRecord("key1")!!
         val record2 = storage.getRecord("key2")!!
@@ -235,8 +235,8 @@ class EncryptedStorageTest {
 
     @Test
     fun `deleting one key does not affect another`() {
-        storage.set(getEncryptCipher(), "key1", "salt1".toByteArray(), "value1".toByteArray())
-        storage.set(getEncryptCipher(), "key2", "salt2".toByteArray(), "value2".toByteArray())
+        storage.set(getEncryptCipher(), "key1", "value1".toByteArray())
+        storage.set(getEncryptCipher(), "key2", "value2".toByteArray())
         storage.delete("key1")
 
         assertFalse(storage.has("key1"))
@@ -245,7 +245,7 @@ class EncryptedStorageTest {
 
     @Test
     fun `empty byte array can be stored and retrieved`() {
-        storage.set(getEncryptCipher(), "key", "salt".toByteArray(), ByteArray(0))
+        storage.set(getEncryptCipher(), "key", ByteArray(0))
 
         val record = storage.getRecord("key")!!
         val result = storage.decrypt(getDecryptCipher(record.iv), record.encryptedValue)
@@ -258,7 +258,7 @@ class EncryptedStorageTest {
     fun `large value can be stored and retrieved`() {
         val value = ByteArray(1_000_000) { it.toByte() }
 
-        storage.set(getEncryptCipher(), "key", "salt".toByteArray(), value)
+        storage.set(getEncryptCipher(), "key", value)
 
         val record = storage.getRecord("key")!!
         val result = storage.decrypt(getDecryptCipher(record.iv), record.encryptedValue)
@@ -270,7 +270,7 @@ class EncryptedStorageTest {
     fun `keys with special characters are stored safely`() {
         val key = "/\u0000 \t\n*?[]{}()<>|&;~\$`!#\\\"'%"
 
-        storage.set(getEncryptCipher(), key, "salt".toByteArray(), "value".toByteArray())
+        storage.set(getEncryptCipher(), key, "value".toByteArray())
 
         assertTrue(storage.has(key))
 
@@ -282,8 +282,8 @@ class EncryptedStorageTest {
 
     @Test
     fun `two encryptions of the same value produce different ciphertexts`() {
-        storage.set(getEncryptCipher(), "key1", "salt1".toByteArray(), "value".toByteArray())
-        storage.set(getEncryptCipher(), "key2", "salt2".toByteArray(), "value".toByteArray())
+        storage.set(getEncryptCipher(), "key1", "value".toByteArray())
+        storage.set(getEncryptCipher(), "key2", "value".toByteArray())
 
         val record1 = storage.getRecord("key1")!!
         val record2 = storage.getRecord("key2")!!
