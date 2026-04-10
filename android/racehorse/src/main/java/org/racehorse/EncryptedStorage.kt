@@ -8,29 +8,28 @@ import javax.crypto.BadPaddingException
 import javax.crypto.Cipher
 
 /**
+ * @param salt The salt used to derive the encryption key.
  * @param iv The initialization vector to init cipher.
  * @param encryptedValue The encrypted value stored in the record.
  */
-class EncryptedRecord(val iv: ByteArray, val encryptedValue: ByteArray)
+class EncryptedRecord(val salt: ByteArray, val iv: ByteArray, val encryptedValue: ByteArray)
 
 /**
  * File-based encrypted storage.
  */
 open class EncryptedStorage(private val storageDir: File) {
 
-    private companion object {
-        const val HASH_ALGORITHM = "SHA-512"
-        const val HASH_SIZE = 64
+    companion object {
+        private const val HASH_ALGORITHM = "SHA-512"
+        private const val HASH_SIZE = 64
 
         /**
-         * The size in bytes of the field that stores the IV length.
+         * The size in bytes of the field that stores the IV or salt length.
          */
-        const val IV_LENGTH_SIZE = 4
+        private const val LENGTH_SIZE = 4
 
-        /**
-         * Maximum allowed IV length (reasonable upper bound).
-         */
         const val MAX_IV_LENGTH = 4096
+        const val MAX_SALT_LENGTH = 1024
     }
 
     /**
@@ -43,26 +42,29 @@ open class EncryptedStorage(private val storageDir: File) {
      * @return `true` if the value was successfully persisted, `false` otherwise.
      */
     @Synchronized
-    open fun set(cipher: Cipher, key: String, value: ByteArray): Boolean {
-        val valueHash = MessageDigest.getInstance(HASH_ALGORITHM).digest(value)
-
+    open fun set(cipher: Cipher, key: String, salt: ByteArray, value: ByteArray): Boolean {
         val iv = cipher.iv
 
-        require(iv.isNotEmpty()) { "Cipher IV must not be empty" }
+        require(iv.isNotEmpty() && iv.size <= MAX_IV_LENGTH) { "Invalid cipher IV size" }
 
-        val ivLength = ByteBuffer.allocate(IV_LENGTH_SIZE).putInt(iv.size).array()
+        require(salt.isNotEmpty() && salt.size <= MAX_SALT_LENGTH) { "Invalid salt size" }
 
-        val encryptedPayload = try {
+        val valueHash = MessageDigest.getInstance(HASH_ALGORITHM).digest(value)
+
+        val encryptedValue = try {
             cipher.doFinal(valueHash + value)
         } catch (_: Exception) {
             return false
         }
 
-        val fileBytes = ivLength + iv + encryptedPayload
+        val saltLengthBytes = ByteBuffer.allocate(LENGTH_SIZE).putInt(salt.size).array()
+        val ivLengthBytes = ByteBuffer.allocate(LENGTH_SIZE).putInt(iv.size).array()
+
+        val fileBytes = saltLengthBytes + salt + ivLengthBytes + iv + encryptedValue
 
         val file = getFile(key)
 
-        val tempFile = File(storageDir, "${file.name}.tmp")
+        val tempFile = File.createTempFile(file.name, ".tmp")
 
         return try {
             tempFile.writeBytes(fileBytes)
@@ -71,7 +73,6 @@ open class EncryptedStorage(private val storageDir: File) {
                 file.delete()
                 tempFile.renameTo(file)
             }
-
             true
         } catch (_: IOException) {
             false
@@ -100,27 +101,39 @@ open class EncryptedStorage(private val storageDir: File) {
             return null
         }
 
-        if (fileBytes.size < IV_LENGTH_SIZE) {
+        if (fileBytes.size < LENGTH_SIZE) {
             return null
         }
 
-        val ivLength = ByteBuffer.wrap(fileBytes.copyOf(IV_LENGTH_SIZE)).int
+        val saltLength = ByteBuffer.wrap(fileBytes.copyOf(LENGTH_SIZE)).int
+        if (saltLength < 0 || saltLength > MAX_SALT_LENGTH) {
+            return null
+        }
 
+        val saltStart = LENGTH_SIZE
+        val saltEnd = saltStart + saltLength
+
+        if (fileBytes.size < saltEnd + LENGTH_SIZE) {
+            return null
+        }
+
+        val ivLength = ByteBuffer.wrap(fileBytes.copyOfRange(saltEnd, saltEnd + LENGTH_SIZE)).int
         if (ivLength < 0 || ivLength > MAX_IV_LENGTH) {
             return null
         }
 
-        val ivStart = IV_LENGTH_SIZE.toLong()
+        val ivStart = saltEnd + LENGTH_SIZE
         val ivEnd = ivStart + ivLength
 
         if (fileBytes.size < ivEnd) {
             return null
         }
 
-        val iv = fileBytes.copyOfRange(ivStart.toInt(), ivEnd.toInt())
-        val encryptedValue = fileBytes.copyOfRange(ivEnd.toInt(), fileBytes.size)
-
-        return EncryptedRecord(iv, encryptedValue)
+        return EncryptedRecord(
+            salt = fileBytes.copyOfRange(saltStart, saltEnd),
+            iv = fileBytes.copyOfRange(ivStart, ivEnd),
+            encryptedValue = fileBytes.copyOfRange(ivEnd, fileBytes.size)
+        )
     }
 
     /**
