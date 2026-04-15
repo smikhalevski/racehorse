@@ -1,28 +1,33 @@
 name: publish-docs
 
 on:
+  workflow_dispatch:
+
   workflow_call:
     secrets:
       GPG_PASSPHRASE:
         required: true
-jobs:
 
+permissions:
+  contents: write
+
+jobs:
   publish-docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: "22"
+          node-version: '24'
           cache: npm
-          registry-url: "https://registry.npmjs.org"
+          registry-url: 'https://registry.npmjs.org'
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
-          distribution: "zulu"
-          java-version: "17"
-          cache: "gradle"
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
 
       - uses: android-actions/setup-android@v3
 
@@ -31,32 +36,31 @@ jobs:
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-      - run: npm ci
-
-      - run: npm run docs
-
       - name: Configure git user
         run: |
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
 
+      - run: npm ci
+      - run: npm run docs
+
       - name: Publish docs
         run: |
           set -x
-          
+
           mv ./docs /tmp/docs
-          
+
           git reset HEAD --hard
           git fetch origin ghpages:ghpages
           git checkout ghpages
           git rm -rf --ignore-unmatch .
           git clean -fxd
-          
+
           cp -R /tmp/docs/. .
-          
+
           git add .
-          
-          git diff-index --quiet HEAD || {
-            git commit -m "Updated docs (${GITHUB_SHA::7})"
-            git push origin ghpages
-          }
+
+          ! git diff --staged --quiet --exit-code || exit 0
+
+          git commit -m "Updated docs (${GITHUB_SHA::7})"
+          git push origin ghpages

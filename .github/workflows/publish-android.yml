@@ -1,29 +1,73 @@
 name: publish-android
 
 on:
+  # release
   push:
-    tags: [ "android-*-v[0-9]+.[0-9]+.[0-9]+" ]
+    tags: ['android-*-v[0-9]+.[0-9]+.[0-9]+']
+
+  # prerelease
+  workflow_dispatch:
+    inputs:
+      workspace:
+        description: Workspace
+        type: choice
+        options:
+          - android/racehorse
+        default: android/racehorse
+        required: true
+
+      prerelease_type:
+        description: Prerelease type
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+        default: patch
+        required: true
+
+      tag:
+        description: Tag
+        type: string
+        default: next
+        required: true
+
+run-name: ${{ github.event_name == 'push' && github.ref_name || 'prerelease' }}
+
+permissions:
+  contents: write
+
+env:
+  WORKSPACE: ${{ inputs.workspace }}
 
 jobs:
-
   publish-android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
-          distribution: "zulu"
-          java-version: "17"
-          cache: "gradle"
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
 
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
 
       - name: Resolve workspace
+        if: github.event_name == 'push'
         run: echo "WORKSPACE=android/$(echo ${{ github.ref_name }} | cut -d- -f2- | rev | cut -d- -f2- | rev)" >> $GITHUB_ENV
 
+      - name: Set prerelease version
+        if: github.event_name == 'workflow_dispatch'
+        working-directory: ${{ env.WORKSPACE }}
+        run: |
+          npm version --no-workspaces --no-git-tag-version ${{ inputs.prerelease_type }}
+
+          npm version --no-workspaces --no-git-tag-version "$(npm pkg get version --no-workspaces | xargs)-${{ inputs.tag }}.${GITHUB_SHA::7}"
+
       - name: Unpack TapAndPay SDK
-        run: cd android && gpg -dq --batch --yes --passphrase ${GPG_PASSPHRASE} tapandpay_sdk.zip.gpg | tar -zx
+        run: cd android && gpg -dq --batch --yes --passphrase $GPG_PASSPHRASE tapandpay_sdk.zip.gpg | tar -zx
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
@@ -33,14 +77,18 @@ jobs:
       - run: ../gradlew build
         working-directory: ${{ env.WORKSPACE }}
 
-      - run: ../gradlew publish
+      - name: Publish artifact
+        run: |
+          ../gradlew publish
+
+          echo "::notice title=Artifact::$(npm pkg get name | xargs):$(npm pkg get version | xargs)"
         working-directory: ${{ env.WORKSPACE }}
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
 
   publish-docs:
-    needs:
-      - publish-android
+    if: github.event_name == 'push'
+    needs: [publish-android]
     uses: ./.github/workflows/publish-docs.yml
     secrets:
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}

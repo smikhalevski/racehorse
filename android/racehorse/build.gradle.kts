@@ -1,3 +1,5 @@
+import groovy.json.JsonSlurper
+
 plugins {
     id("com.android.library")
     id("maven-publish")
@@ -5,6 +7,8 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.serialization")
 }
+
+val packageJson = JsonSlurper().parseText(file("./package.json").readText()) as Map<*, *>
 
 tasks.dokkaHtml.configure {
     outputDirectory.set(file("../../docs/android"))
@@ -53,7 +57,7 @@ publishing {
         register<MavenPublication>("release") {
             groupId = "org.racehorse"
             artifactId = "racehorse"
-            version = "1.10.2"
+            version = packageJson["version"] as String
 
             afterEvaluate {
                 from(components["release"])

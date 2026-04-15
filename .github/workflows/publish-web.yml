@@ -1,26 +1,72 @@
 name: publish-web
 
 on:
+  # release
   push:
-    tags: [ "web-*-v[0-9]+.[0-9]+.[0-9]+" ]
+    tags: ['web-*-v[0-9]+.[0-9]+.[0-9]+']
+
+  # prerelease
+  workflow_dispatch:
+    inputs:
+      workspace:
+        description: Workspace
+        type: choice
+        options:
+          - web/racehorse
+          - web/react
+        default: web/racehorse
+        required: true
+
+      prerelease_type:
+        description: Prerelease type
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+        default: patch
+        required: true
+
+      tag:
+        description: Tag
+        type: string
+        default: next
+        required: true
+
+run-name: ${{ github.event_name == 'push' && github.ref_name || 'prerelease' }}
+
+permissions:
+  id-token: write
+  contents: write
+
+env:
+  WORKSPACE: ${{ inputs.workspace }}
 
 jobs:
-
   publish-web:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: "22"
+          node-version: '24'
           cache: npm
-          registry-url: "https://registry.npmjs.org"
-
-      - name: Resolve workspace
-        run: echo "WORKSPACE=web/$(echo ${{ github.ref_name }} | cut -d- -f2- | rev | cut -d- -f2- | rev)" >> $GITHUB_ENV
+          registry-url: 'https://registry.npmjs.org'
 
       - run: npm ci
+
+      - name: Resolve workspace
+        if: github.event_name == 'push'
+        run: echo "WORKSPACE=web/$(echo ${{ github.ref_name }} | cut -d- -f2- | rev | cut -d- -f2- | rev)" >> $GITHUB_ENV
+
+      - name: Set prerelease version
+        if: github.event_name == 'workflow_dispatch'
+        working-directory: ${{ env.WORKSPACE }}
+        run: |
+          npm version --no-workspaces --no-git-tag-version ${{ inputs.prerelease_type }}
+
+          npm version --no-workspaces --no-git-tag-version "$(npm pkg get version --no-workspaces | xargs)-${{ inputs.tag }}.${GITHUB_SHA::7}"
 
       - name: Build packages
         run: |
@@ -29,14 +75,22 @@ jobs:
 
       - run: npm test --workspace=$WORKSPACE
 
-      - run: npm publish --access public
+      - name: Publish package
         working-directory: ${{ env.WORKSPACE }}/lib
+        run: |
+          npm publish --tag ${{ inputs.tag || 'latest' }}
+
+          echo "::notice title=Package::npm install --save-exact $(npm pkg get name | xargs)@$(npm pkg get version | xargs)"
+
+      - name: Create release notes
+        if: github.event_name == 'push'
+        run: gh release create ${{ github.ref_name }} --generate-notes --draft
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
 
   publish-docs:
-    needs:
-      - publish-web
+    if: github.event_name == 'push'
+    needs: [publish-web]
     uses: ./.github/workflows/publish-docs.yml
     secrets:
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}

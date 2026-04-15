@@ -2,28 +2,34 @@ name: test
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
     paths-ignore:
       - 'README.md'
 
   pull_request:
-    branches: [ master ]
+    branches: [master]
     paths-ignore:
       - 'README.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
 
 env:
   ANDROID_API_LEVEL: 29
 
 jobs:
-
   test-web:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: "22"
+          node-version: '24'
           cache: npm
 
       - run: npm ci
@@ -33,7 +39,7 @@ jobs:
   test-android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Enable KVM
         run: |
@@ -43,7 +49,7 @@ jobs:
 
       - name: Unpack TapAndPay SDK
         working-directory: ./android
-        run: gpg -dq --batch --yes --passphrase ${GPG_PASSPHRASE} tapandpay_sdk.zip.gpg | tar -zx
+        run: gpg -dq --batch --yes --passphrase $GPG_PASSPHRASE tapandpay_sdk.zip.gpg | tar -zx
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
