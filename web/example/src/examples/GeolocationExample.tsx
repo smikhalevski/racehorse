@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FormattedJSON } from '../components/FormattedJSON.js';
 
 export function GeolocationExample() {
-  const [geolocation, setGeolocation] = useState<any>();
+  const [geolocation, setGeolocation] = useState<unknown>();
 
   return (
     <>
@@ -19,7 +19,8 @@ export function GeolocationExample() {
             },
             positionError => {
               setGeolocation(positionError.message);
-            }
+            },
+            { timeout: 5_000 }
           );
         }}
       >

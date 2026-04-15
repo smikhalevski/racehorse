@@ -131,6 +131,7 @@ open class ProxyPathHandler(private val baseUrl: URL) : PathHandler {
 
     constructor(baseUrl: String) : this(URL(baseUrl))
 
+    @WorkerThread
     override fun handle(path: String): WebResourceResponse {
         val connection = openConnection(path)
 

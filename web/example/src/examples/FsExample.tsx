@@ -15,7 +15,7 @@ export function FsExample() {
     const attributes = file.getAttributes();
 
     if (attributes.isDirectory) {
-      file.readDir().then(files => {
+      file.readdir().then(files => {
         setDir(file);
         setFiles(files);
         setUrl(undefined);
@@ -33,6 +33,7 @@ export function FsExample() {
 
       <p>
         {'Go to: '}
+        <br />
         <select
           value={goToUri}
           onChange={event => {

@@ -53,12 +53,7 @@ open class EncryptedStorage(private val storageDir: File) {
         require(salt.size <= MAX_SALT_LENGTH) { "Invalid salt size" }
 
         val valueHash = MessageDigest.getInstance(HASH_ALGORITHM).digest(value)
-
-        val encryptedValue = try {
-            cipher.doFinal(valueHash + value)
-        } catch (_: Exception) {
-            return false
-        }
+        val encryptedValue = cipher.doFinal(valueHash + value)
 
         val saltLengthBytes = ByteBuffer.allocate(LENGTH_SIZE).putInt(salt.size).array()
         val ivLengthBytes = ByteBuffer.allocate(LENGTH_SIZE).putInt(iv.size).array()
@@ -175,8 +170,6 @@ open class EncryptedStorage(private val storageDir: File) {
             val actualHash = MessageDigest.getInstance(HASH_ALGORITHM).digest(value)
 
             if (MessageDigest.isEqual(storedHash, actualHash)) value else null
-        } catch (_: IllegalBlockSizeException) {
-            null
         } catch (_: BadPaddingException) {
             null
         }

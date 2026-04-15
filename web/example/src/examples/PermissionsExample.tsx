@@ -12,6 +12,7 @@ export function PermissionsExample() {
 
       <p>
         {'Permissions: '}
+        <br />
         <select
           multiple={true}
           value={permissions}

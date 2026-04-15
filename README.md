@@ -625,21 +625,22 @@ the biometric-encrypted storage are invalidated and values become inaccessible.
 if (biometricEncryptedStorageManager.has(key)) {
   // Storage contains the key
 
-  biometricEncryptedStorageManager.get(key).then(
-    value => {
-      if (value !== null) {
-        // The value was successfully decrypted
-      } else {
-        // User authentication failed
-      }
-    },
-    error => {
-      if (error.name === 'KeyPermanentlyInvalidatedException') {
-        // Key was invalidated and cannot be decrypted anymore
-        biometricEncryptedStorageManager.delete(key);
-      }
+  biometricEncryptedStorageManager.get(key).then(value => {
+    if (value !== null) {
+      // The value was successfully decrypted
+    } else {
+      // User authentication failed, or key was invalidated
     }
-  );
+  });
+}
+```
+
+If the user has not enrolled for biometric authentication, `set()` returns `false`. Check the enrollment status via
+the [Biometric plugin](#biometric-plugin) before using the store:
+
+```ts
+if (biometricManager.getBiometricStatus([BiometricAuthenticator.BIOMETRIC_STRONG]) === BiometricStatus.SUPPORTED) {
+  await biometricEncryptedStorageManager.set('foo', 'bar');
 }
 ```
 

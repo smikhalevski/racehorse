@@ -11,6 +11,7 @@ export function FileInputExample() {
 
       <p>
         {'Accept: '}
+        <br />
         <select
           value={accept}
           onChange={event => {
@@ -26,14 +27,16 @@ export function FileInputExample() {
       </p>
 
       <p>
-        {'Multiple: '}
-        <input
-          type="checkbox"
-          checked={multiple}
-          onChange={event => {
-            setMultiple(event.target.checked);
-          }}
-        />
+        <label>
+          <input
+            type="checkbox"
+            checked={multiple}
+            onChange={event => {
+              setMultiple(event.target.checked);
+            }}
+          />
+          {' Multiple'}
+        </label>
       </p>
 
       <p>

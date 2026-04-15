@@ -1,20 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { encryptedStorageManager } from 'racehorse';
-import { FormattedJSON } from '../components/FormattedJSON.js';
 
 export function EncryptedStorageExample() {
   const [key, setKey] = useState('my_key');
   const [value, setValue] = useState('my_value');
   const [password, setPassword] = useState('my_password');
-  const [storedValue, setStoredValue] = useState<string | null>(null);
-
-  useEffect(() => {
-    encryptedStorageManager.get(key, password).then(setStoredValue);
-  }, [key, value, password]);
+  const [storedValueInfo, setStoredValueInfo] = useState('(unknown)');
 
   return (
     <>
       <h2>{'Encrypted storage'}</h2>
+
+      {'Stored value: '}
+      <strong>{storedValueInfo}</strong>
+
       <p>
         {'Key:'}
         <br />
@@ -28,9 +27,18 @@ export function EncryptedStorageExample() {
         />{' '}
         <button
           onClick={() => {
-            if (encryptedStorageManager.delete(key)) {
-              setStoredValue(null);
-            }
+            encryptedStorageManager.get(key, password).then(value => {
+              setStoredValueInfo(JSON.stringify(value) + ' (after get)');
+            });
+          }}
+        >
+          {'Get value'}
+        </button>{' '}
+        <button
+          onClick={() => {
+            encryptedStorageManager.delete(key);
+
+            setStoredValueInfo('null (after delete)');
           }}
         >
           {'❌ Delete key'}
@@ -61,9 +69,10 @@ export function EncryptedStorageExample() {
         />{' '}
         <button
           onClick={() => {
-            encryptedStorageManager.set(key, value, password).then(isSuccessful => {
+            const nextValue = value;
+            encryptedStorageManager.set(key, nextValue, password).then(isSuccessful => {
               if (isSuccessful) {
-                encryptedStorageManager.get(key, password).then(setStoredValue);
+                setStoredValueInfo(JSON.stringify(nextValue) + ' (after set)');
               }
             });
           }}
@@ -71,9 +80,6 @@ export function EncryptedStorageExample() {
           {'Set value'}
         </button>
       </p>
-
-      {'Stored value: '}
-      <FormattedJSON value={storedValue} />
     </>
   );
 }

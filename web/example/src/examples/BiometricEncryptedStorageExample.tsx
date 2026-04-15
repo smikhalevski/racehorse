@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { FormattedJSON } from '../components/FormattedJSON.js';
 import { BiometricAuthenticator, biometricEncryptedStorageManager } from 'racehorse';
 
 export function BiometricEncryptedStorageExample() {
@@ -9,45 +8,14 @@ export function BiometricEncryptedStorageExample() {
   const [authenticators, setAuthenticators] = useState<BiometricAuthenticator[]>([
     BiometricAuthenticator.BIOMETRIC_STRONG,
   ]);
-  const [storedValue, setStoredValue] = useState<string | null>(null);
+  const [storedValueInfo, setstoredValueInfo] = useState('(unknown)');
 
   return (
     <>
       <h2>{'Biometric encrypted storage'}</h2>
 
-      <p>
-        {'Authenticators: '}
-        <select
-          multiple={true}
-          value={authenticators}
-          onChange={event => {
-            setAuthenticators(
-              Array.from(event.target.selectedOptions).map(option => option.value as BiometricAuthenticator)
-            );
-          }}
-        >
-          <option value={BiometricAuthenticator.BIOMETRIC_STRONG}>{'Biometric strong'}</option>
-          <option value={BiometricAuthenticator.BIOMETRIC_WEAK}>{'Biometric weak'}</option>
-          <option value={BiometricAuthenticator.DEVICE_CREDENTIAL}>{'Device credential'}</option>
-        </select>
-      </p>
-
-      <p>
-        {'Authentication validity duration: ' +
-          (authenticationValidityDuration === -1 ? 'Disabled' : authenticationValidityDuration + ' seconds')}
-        <br />
-        <input
-          type="range"
-          value={authenticationValidityDuration}
-          min={-1}
-          max={10}
-          step={1}
-          style={{ margin: '0.5rem 3rem 0', width: 'calc(100% - 6rem)' }}
-          onChange={event => {
-            setAuthenticationValidityDuration(event.target.valueAsNumber);
-          }}
-        />
-      </p>
+      {'Stored value: '}
+      <strong>{storedValueInfo}</strong>
 
       <p>
         {'Key:'}
@@ -65,18 +33,21 @@ export function BiometricEncryptedStorageExample() {
             biometricEncryptedStorageManager
               .get(key, {
                 title: 'Get value from storage',
+                negativeButtonText: 'Cancel get',
                 authenticators,
               })
-              .then(setStoredValue);
+              .then(value => {
+                setstoredValueInfo(JSON.stringify(value) + ' (after get)');
+              });
           }}
         >
           {'Get value'}
         </button>{' '}
         <button
           onClick={() => {
-            if (biometricEncryptedStorageManager.delete(key)) {
-              setStoredValue(null);
-            }
+            biometricEncryptedStorageManager.delete(key);
+
+            setstoredValueInfo('null (after delete)');
           }}
         >
           {'❌ Delete key'}
@@ -96,14 +67,19 @@ export function BiometricEncryptedStorageExample() {
         />{' '}
         <button
           onClick={() => {
+            const nextValue = value;
+
             biometricEncryptedStorageManager
-              .set(key, value, {
+              .set(key, nextValue, {
                 title: 'Set value to storage',
+                negativeButtonText: 'Cancel set',
                 authenticators,
                 authenticationValidityDuration,
               })
               .then(isSuccessful => {
-                if (!isSuccessful) {
+                if (isSuccessful) {
+                  setstoredValueInfo(JSON.stringify(nextValue) + ' (after set)');
+                } else {
                   console.log('❌ Cannot set biometric storage entry: ' + key);
                 }
               });
@@ -113,8 +89,43 @@ export function BiometricEncryptedStorageExample() {
         </button>
       </p>
 
-      {'Stored value: '}
-      <FormattedJSON value={storedValue} />
+      <p>
+        {'Authenticators: '}
+        <br />
+        <select
+          multiple={true}
+          value={authenticators}
+          onChange={event => {
+            setAuthenticators(
+              Array.from(event.target.selectedOptions).map(option => option.value as BiometricAuthenticator)
+            );
+          }}
+        >
+          <option value={BiometricAuthenticator.BIOMETRIC_STRONG}>{'Biometric strong'}</option>
+          <option value={BiometricAuthenticator.BIOMETRIC_WEAK}>{'Biometric weak'}</option>
+          <option value={BiometricAuthenticator.DEVICE_CREDENTIAL}>{'Device credential'}</option>
+        </select>
+      </p>
+
+      <p>
+        {'Authentication validity duration: '}
+        <br />
+        <em>{'Applied only if the key is set for the first time.'}</em>
+      </p>
+
+      <p>
+        <input
+          type="range"
+          value={authenticationValidityDuration}
+          min={-1}
+          max={10}
+          step={1}
+          onChange={event => {
+            setAuthenticationValidityDuration(event.target.valueAsNumber);
+          }}
+        />{' '}
+        {authenticationValidityDuration === -1 ? 'Unset' : authenticationValidityDuration + ' seconds'}
+      </p>
     </>
   );
 }

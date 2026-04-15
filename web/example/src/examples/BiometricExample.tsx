@@ -14,6 +14,7 @@ export function BiometricExample() {
 
       <p>
         {'Authenticators: '}
+        <br />
         <select
           multiple={true}
           value={authenticators}
