@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(EventBridge(webView).apply { enable() })
         eventBus.register(assetLoaderPlugin)
         eventBus.register(DevicePlugin(this))
-        eventBus.register(EncryptedStoragePlugin(File(filesDir, "storage"), BuildConfig.APPLICATION_ID.toByteArray()))
+        eventBus.register(EncryptedStoragePlugin(File(filesDir, "storage")))
         eventBus.register(
             FileChooserPlugin(
                 this,
