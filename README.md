@@ -35,8 +35,6 @@ npm install --save-prod racehorse
 
 <!--TOC-->
 
-- [API docs](https://smikhalevski.github.io/racehorse/)
-
 <span class="toc-icon">🚀&ensp;</span>**Features**
 
 - [Overview](#overview)
@@ -75,6 +73,10 @@ npm install --save-prod racehorse
 <span class="toc-icon">🍪&ensp;</span>**Cookbook**
 
 - [Blur preview on recent apps screen](#blur-preview-on-recent-apps-screen)
+
+<span class="toc-icon">🔎&ensp;</span>**Resources**
+
+- [API docs](https://smikhalevski.github.io/racehorse/)
 
 <!--/TOC-->
 
