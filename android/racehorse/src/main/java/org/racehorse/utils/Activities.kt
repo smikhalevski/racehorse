@@ -54,6 +54,20 @@ fun <I, O> ActivityResultRegistryOwner.launchActivityForResult(
 }
 
 /**
+ * Same as [launchActivityForResult] but instead of returning `false` when no activity is found, it invokes [callback]
+ * with `null`.
+ */
+fun <I, O> ActivityResultRegistryOwner.launchActivityForResultOrNull(
+    contract: ActivityResultContract<I, O>,
+    input: I,
+    callback: (result: O?) -> Unit
+) {
+    if (!launchActivityForResult(contract, input, callback)) {
+        callback(null)
+    }
+}
+
+/**
  * Starts a one-time activity and returns its result via [callback].
  *
  * @param intent The intent that starts an activity.
@@ -65,6 +79,16 @@ fun ActivityResultRegistryOwner.launchActivityForResult(
     callback: ActivityResultCallback<ActivityResult>
 ) =
     launchActivityForResult(ActivityResultContracts.StartActivityForResult(), intent, callback)
+
+/**
+ * Same as [launchActivityForResult] but instead of returning `false` when no activity is found, it invokes [callback]
+ * with `null`.
+ */
+fun ActivityResultRegistryOwner.launchActivityForResultOrNull(
+    intent: Intent,
+    callback: (result: ActivityResult?) -> Unit
+) =
+    launchActivityForResultOrNull(ActivityResultContracts.StartActivityForResult(), intent, callback)
 
 /**
  * Shows a permission dialog for permissions that aren't granted yet.
