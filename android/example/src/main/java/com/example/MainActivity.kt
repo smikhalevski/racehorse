@@ -55,6 +55,8 @@ const val APP_URL = "https://example.local"
 
 const val DEV_SERVER_URL = "http://10.0.2.2:10001"
 
+const val GUEST_CONTENT_URL = "https://guestcontent.local"
+
 @SuppressLint("SetJavaScriptEnabled")
 class MainActivity : AppCompatActivity() {
 
@@ -86,7 +88,7 @@ class MainActivity : AppCompatActivity() {
         cookieManager.setAcceptThirdPartyCookies(webView, true)
 
         // Renders "Hello" in the iframe
-        assetLoaderPlugin.registerAssetLoader("https://guestcontent.local") {
+        assetLoaderPlugin.registerAssetLoader(GUEST_CONTENT_URL) {
             WebResourceResponse("text/html", null, "Hello".byteInputStream())
         }
 
@@ -103,7 +105,9 @@ class MainActivity : AppCompatActivity() {
         eventBus.register(DownloadPlugin(this))
         eventBus.register(FirebasePlugin())
         eventBus.register(GooglePlayReferrerPlugin(this))
-        eventBus.register(HttpsPlugin())
+        eventBus.register(HttpsPlugin { error ->
+            error.url.startsWith(APP_URL) || error.url.startsWith(GUEST_CONTENT_URL)
+        })
         eventBus.register(networkPlugin)
         eventBus.register(KeyboardPlugin(this).apply { enable() })
         eventBus.register(ActivityPlugin(this).apply { enable() })
