@@ -25,6 +25,7 @@ import org.racehorse.serializers.IntentSerializer
 import org.racehorse.serializers.ThrowableSerializer
 import org.racehorse.serializers.UriSerializer
 import org.racehorse.utils.loadClass
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.reflect.full.isSubclassOf
 
 /**
@@ -58,7 +59,7 @@ abstract class ChainableEvent {
      * Don't set this manually unless you really have to. This field is always populated during [respond] method call.
      */
     @Transient
-    var requestId = EventBridge.ORPHAN_REQUEST_ID
+    var requestId: Long? = null
 
     /**
      * Executes a block and posts the returned event to the chain using the same event bus to which this event was
@@ -169,24 +170,18 @@ open class EventBridge(
     companion object {
         const val TYPE_KEY = "type"
         const val PAYLOAD_KEY = "payload"
-        const val ORPHAN_REQUEST_ID = -1
-        const val NOTICE_REQUEST_ID = -2
+        const val NOTICE_REQUEST_ID = -2L
 
         private const val TAG = "EventBridge"
     }
 
     /**
-     * The ID that would be assigned to the next request.
+     * The ID of the pending request event posted from the web view.
      */
-    private var nextRequestId = 0
+    private var syncRequestId = AtomicLong()
 
     /**
-     * The ID of the currently pending synchronous request, or [ORPHAN_REQUEST_ID] if there's no pending sync request.
-     */
-    private var syncRequestId = ORPHAN_REQUEST_ID
-
-    /**
-     * The response event for the currently pending synchronous request.
+     * The response event for the pending sync request.
      */
     private var syncResponseEvent: ResponseEvent? = null
 
@@ -203,24 +198,35 @@ open class EventBridge(
         }
 
         if (event !is ChainableEvent) {
+            // No response expected
             eventBus.post(event)
             return encodeEventToJson(VoidEvent())
         }
 
-        return synchronized(this) {
-            event.eventBus = eventBus
-            event.requestId = nextRequestId++
+        val requestId = syncRequestId.incrementAndGet()
 
-            syncRequestId = event.requestId
-            syncResponseEvent = null
+        syncResponseEvent = null
 
-            try {
-                eventBus.post(event)
-                syncResponseEvent?.let(::encodeEventToJson) ?: event.requestId.toString()
-            } catch (e: Throwable) {
-                encodeEventToJson(ExceptionEvent(e))
-            } finally {
-                syncRequestId = ORPHAN_REQUEST_ID
+        try {
+            eventBus.post(event.also {
+                it.requestId = requestId
+                it.eventBus = eventBus
+            })
+
+            val responseEvent = syncResponseEvent
+
+            if (responseEvent?.requestId == requestId) {
+                // Received a synchronous response
+                return encodeEventToJson(responseEvent)
+            }
+
+            // Return ID of an asynchronous response
+            return requestId.toString()
+        } catch (e: Throwable) {
+            return encodeEventToJson(ExceptionEvent(e))
+        } finally {
+            // Increment ID to prevent late response events from being assigned to syncResponseEvent in onResponse
+            if (syncRequestId.compareAndSet(requestId, requestId + 1L)) {
                 syncResponseEvent = null
             }
         }
@@ -228,17 +234,21 @@ open class EventBridge(
 
     @Subscribe
     open fun onResponse(event: ResponseEvent) {
-        if (event.requestId == ORPHAN_REQUEST_ID) {
-            // The response event isn't related to any request event
+        val requestId = event.requestId
+
+        // Synchronously return the response event
+        if (syncRequestId.get() == requestId) {
+            syncResponseEvent = event
+            return
+        }
+
+        // The response event isn't related to any request event
+        if (requestId == null) {
             Log.i(TAG, "Received an orphan response event ${event::class.java.name}")
             return
         }
-        if (syncRequestId == event.requestId) {
-            // Synchronously return the response event
-            syncResponseEvent = event
-        } else {
-            publish(event.requestId, event)
-        }
+
+        publish(requestId, event)
     }
 
     @Subscribe
@@ -306,7 +316,7 @@ open class EventBridge(
                 json.encodeToString(event::class.serializer() as KSerializer<Any>, event)
             }}"
 
-    protected fun publish(requestId: Int, event: Any): Boolean = webView.post {
+    protected fun publish(requestId: Long, event: Any): Boolean = webView.post {
         val js = "(function(conn){" +
             "conn && conn.inbox && conn.inbox.publish([$requestId, ${encodeEventToJson(event)}])" +
             "})(window.$connectionKey)"
