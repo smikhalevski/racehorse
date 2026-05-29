@@ -2,6 +2,7 @@ package com.example
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.webkit.CookieManager
 import android.webkit.WebResourceResponse
@@ -128,7 +129,7 @@ class MainActivity : AppCompatActivity() {
             FsPlugin(
                 activity = this,
                 providerAuthority = "${BuildConfig.APPLICATION_ID}.provider",
-                baseLocalUrl = "$APP_URL/fs"
+                baseLocalUri = Uri.parse("$APP_URL/fs")
             )
         )
         eventBus.register(ToastPlugin(this))

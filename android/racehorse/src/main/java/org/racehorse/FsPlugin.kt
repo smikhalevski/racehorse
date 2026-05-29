@@ -121,12 +121,12 @@ class FsDeleteEvent(val uri: @Contextual Uri) : RequestEvent() {
  *
  * @param activity The activity that provides access to content resolver.
  * @param providerAuthority The authority of a [FileProvider] defined in a `<provider>` element in your app's manifest.
- * @param baseLocalUrl The base local URL from which files are served to the web view.
+ * @param baseLocalUri The base local URL from which files are served to the web view.
  */
 open class FsPlugin(
     val activity: ComponentActivity,
     val providerAuthority: String? = null,
-    val baseLocalUrl: String = "https://racehorse.local/fs"
+    val baseLocalUri: Uri = Uri.parse("https://racehorse.local/fs")
 ) {
 
     private companion object {
@@ -144,7 +144,6 @@ open class FsPlugin(
         const val LOCAL_URI_PARAM = "uri"
     }
 
-    private val baseLocalUri = Uri.parse(baseLocalUrl)
 
     @Subscribe
     open fun onFsIsExisting(event: FsIsExistingEvent) {
@@ -348,13 +347,27 @@ open class FsPlugin(
 
     @Subscribe
     open fun onShouldInterceptRequest(event: ShouldInterceptRequestEvent) {
-        if (!event.request.url.toString().startsWith(baseLocalUrl)) {
+        val requestUri = event.request.url
+
+        if (
+            requestUri.scheme != baseLocalUri.scheme ||
+            requestUri.userInfo != baseLocalUri.userInfo ||
+            requestUri.port != baseLocalUri.port ||
+            !requestUri.authority.equals(baseLocalUri.authority, ignoreCase = true) ||
+            requestUri.path.orEmpty() != baseLocalUri.path.orEmpty() ||
+            baseLocalUri.queryParameterNames.any { name ->
+                baseLocalUri.getQueryParameters(name) != requestUri.getQueryParameters(name)
+            }
+        ) {
             // Unrelated request
             return
         }
 
         event.response = try {
-            val uri = Uri.parse(event.request.url.getQueryParameter(LOCAL_URI_PARAM)).toSupportedUri()
+            val localUri = requestUri.getQueryParameter(LOCAL_URI_PARAM)
+                ?: throw IllegalArgumentException("Missing \"$LOCAL_URI_PARAM\" param")
+
+            val uri = Uri.parse(localUri).toSupportedUri()
 
             when (uri.scheme) {
 
