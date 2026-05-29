@@ -24,7 +24,7 @@ internal class BundleDownload(
     private val connection: URLConnection,
     private val targetDir: File,
     private val bufferSize: Int,
-    private val onProgress: (contentLength: Int, readLength: Long) -> Unit,
+    private val onProgress: (contentLength: Long, readLength: Long) -> Unit,
 ) {
 
     /**
@@ -106,7 +106,7 @@ internal class BundleDownload(
             }
 
             FileOutputStream(zipFile, readLength != 0L).use { outputStream ->
-                val contentLength = connection.contentLength.let { if (it == -1) -1 else it + readLength.toInt() }
+                val contentLength = connection.contentLength.let { if (it == -1) -1 else it.toLong() + readLength }
                 val buffer = ByteArray(bufferSize)
 
                 while (!isStopped) {

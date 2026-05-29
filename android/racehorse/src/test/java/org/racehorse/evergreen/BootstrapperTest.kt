@@ -48,7 +48,7 @@ class BootstrapperTest {
             updateReadyCallIndex = callIndex.incrementAndGet()
         }
 
-        override fun onUpdateProgress(contentLength: Int, readLength: Long) {
+        override fun onUpdateProgress(contentLength: Long, readLength: Long) {
             updateProgressCallIndex = callIndex.incrementAndGet()
         }
     }

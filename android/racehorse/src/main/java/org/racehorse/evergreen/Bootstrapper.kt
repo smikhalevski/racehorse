@@ -83,7 +83,7 @@ open class Bootstrapper(private val bundlesDir: File) {
     /**
      * Progress of a pending update download.
      */
-    protected open fun onUpdateProgress(contentLength: Int, readLength: Long) {}
+    protected open fun onUpdateProgress(contentLength: Long, readLength: Long) {}
 
     /**
      * Starts/restarts the bundle provisioning process.
@@ -93,7 +93,6 @@ open class Bootstrapper(private val bundlesDir: File) {
      * @param openConnection Returns connection that downloads the bundle ZIP archive.
      */
     fun start(version: String, updateMode: UpdateMode, openConnection: () -> URLConnection) {
-
         if (isMasterReady && masterVersion == version) {
             updateDownload?.stop()
             updateDownload = null

@@ -57,7 +57,7 @@ class UpdateReadyEvent(val version: String) : NoticeEvent
  * @param readLength The number of bytes that are already downloaded.
  */
 @Serializable
-class UpdateProgressEvent(val contentLength: Int, val readLength: Long) : NoticeEvent
+class UpdateProgressEvent(val contentLength: Long, val readLength: Long) : NoticeEvent
 
 /**
  * Get the version of the available master bundle.
@@ -153,7 +153,7 @@ open class EvergreenPlugin(
         eventBus.post(UpdateReadyEvent(version))
     }
 
-    override fun onUpdateProgress(contentLength: Int, readLength: Long) {
+    override fun onUpdateProgress(contentLength: Long, readLength: Long) {
         eventBus.post(UpdateProgressEvent(contentLength, readLength))
     }
 
