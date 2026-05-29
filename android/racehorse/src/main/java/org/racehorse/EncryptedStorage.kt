@@ -62,7 +62,7 @@ open class EncryptedStorage(private val storageDir: File) {
 
         val file = getFile(key)
 
-        val tempFile = File.createTempFile(file.name, ".tmp")
+        val tempFile = File.createTempFile(file.name, ".tmp", file.parentFile)
 
         return try {
             tempFile.writeBytes(fileBytes)
