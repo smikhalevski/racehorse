@@ -15,6 +15,7 @@ import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.utils.ifNullOrBlank
+import org.racehorse.utils.sha256
 import java.io.File
 import java.security.InvalidAlgorithmParameterException
 import java.security.InvalidKeyException
@@ -309,13 +310,18 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
         }
     }
 
+    protected open fun toKeyAlias(key: String): String {
+        return "racehorse" + storageDir.canonicalPath.sha256().substring(0, 32) + key.sha256()
+    }
+
     protected open fun createSecretKey(key: String, config: BiometricConfig?): SecretKey {
-        val builder = KeyGenParameterSpec.Builder(key, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
-            .setUserAuthenticationRequired(true)
-            .setInvalidatedByBiometricEnrollment(true)
-            .setBlockModes(ENCRYPTION_BLOCK_MODE)
-            .setEncryptionPaddings(ENCRYPTION_PADDING)
-            .setKeySize(SECRET_KEY_SIZE)
+        val builder =
+            KeyGenParameterSpec.Builder(toKeyAlias(key), KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+                .setUserAuthenticationRequired(true)
+                .setInvalidatedByBiometricEnrollment(true)
+                .setBlockModes(ENCRYPTION_BLOCK_MODE)
+                .setEncryptionPaddings(ENCRYPTION_PADDING)
+                .setKeySize(SECRET_KEY_SIZE)
 
         val validityDuration = config?.authenticationValidityDuration ?: -1
 
@@ -337,11 +343,15 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
         return keyGenerator.generateKey()
     }
 
-    protected open fun getSecretKey(key: String) = keyStore.getKey(key, null) as? SecretKey
+    protected open fun getSecretKey(key: String): SecretKey? {
+        return keyStore.getKey(toKeyAlias(key), null) as? SecretKey
+    }
 
     protected open fun deleteSecretKey(key: String) {
-        if (keyStore.isKeyEntry(key)) {
-            keyStore.deleteEntry(key)
+        val keyAlias = toKeyAlias(key)
+
+        if (keyStore.isKeyEntry(keyAlias)) {
+            keyStore.deleteEntry(keyAlias)
         }
     }
 
