@@ -10,8 +10,10 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.contextual
 import kotlinx.serialization.serializer
@@ -310,11 +312,10 @@ open class EventBridge(
     @OptIn(InternalSerializationApi::class)
     @Suppress("UNCHECKED_CAST")
     protected fun encodeEventToJson(event: Any): String =
-        "{" +
-            "\"$TYPE_KEY\":\"${event::class.java.name}\"," +
-            "\"$PAYLOAD_KEY\":${
-                json.encodeToString(event::class.serializer() as KSerializer<Any>, event)
-            }}"
+        buildJsonObject {
+            put(TYPE_KEY, event::class.java.name)
+            put(PAYLOAD_KEY, json.encodeToJsonElement(event::class.serializer() as KSerializer<Any>, event))
+        }.toString()
 
     protected fun publish(requestId: Long, event: Any): Boolean = webView.post {
         val js = "(function(conn){" +
