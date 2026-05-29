@@ -212,6 +212,7 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
                         GetBiometricEncryptedValueEvent.ResultEvent(value)
                     }
                 }
+                return
             }
 
             if (isPerUseAuthenticationRequired(e)) {
