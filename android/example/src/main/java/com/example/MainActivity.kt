@@ -41,6 +41,8 @@ import org.racehorse.PermissionsPlugin
 import org.racehorse.ProcessPlugin
 import org.racehorse.ProxyPathHandler
 import org.racehorse.StaticPathHandler
+import org.racehorse.activity
+import org.racehorse.connection.RacehorseConnection
 import org.racehorse.evergreen.BundleReadyEvent
 import org.racehorse.evergreen.EvergreenPlugin
 import org.racehorse.evergreen.StartEvent
@@ -87,6 +89,10 @@ class MainActivity : AppCompatActivity() {
 
         cookieManager.setAcceptCookie(true)
         cookieManager.setAcceptThirdPartyCookies(webView, true)
+
+        RacehorseConnection().apply {
+            activity(this@MainActivity)
+        }
 
         // Renders "Hello" in the iframe
         assetLoaderPlugin.registerAssetLoader(GUEST_CONTENT_URL) {

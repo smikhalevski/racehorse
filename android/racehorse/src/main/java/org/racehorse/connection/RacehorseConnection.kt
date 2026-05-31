@@ -2,6 +2,7 @@ package org.racehorse.connection
 
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
+import androidx.activity.ComponentActivity
 import androidx.annotation.MainThread
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +19,14 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
 import kotlinx.serialization.serializer
+import org.racehorse.serializers.AnySerializer
+import org.racehorse.serializers.FileSerializer
+import org.racehorse.serializers.IntentSerializer
+import org.racehorse.serializers.ThrowableSerializer
+import org.racehorse.serializers.UriSerializer
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
@@ -70,8 +78,18 @@ private const val PAYLOAD_KEY = "payload"
  * 3. [connect] may be called again after [disconnect] to reattach.
  */
 class RacehorseConnection(
-    private val json: Json = Json,
-    private val connectionName: String = "racehorseConnection"
+    private val json: Json = Json {
+        encodeDefaults = true
+        ignoreUnknownKeys = true
+        serializersModule = SerializersModule {
+            contextual(FileSerializer)
+            contextual(IntentSerializer)
+            contextual(ThrowableSerializer)
+            contextual(UriSerializer)
+            contextual(AnySerializer())
+        }
+    },
+    private val name: String = "racehorseConnection"
 ) {
     private val messageHandlers =
         ConcurrentHashMap<KClass<*>, CopyOnWriteArrayList<suspend MessageContext.(Any) -> Any?>>()
@@ -138,7 +156,7 @@ class RacehorseConnection(
     fun connect(view: WebView) {
         disconnect()
 
-        webView = view.apply { addJavascriptInterface(javascriptInterface, connectionName) }
+        webView = view.apply { addJavascriptInterface(javascriptInterface, name) }
         coroutineScope = CoroutineScope(SupervisorJob())
     }
 
@@ -147,7 +165,7 @@ class RacehorseConnection(
         coroutineScope?.cancel()
         coroutineScope = null
 
-        webView?.removeJavascriptInterface(connectionName)
+        webView?.removeJavascriptInterface(name)
         webView = null
     }
 
@@ -163,8 +181,8 @@ class RacehorseConnection(
         }
     }
 
-    suspend fun notify(message: Any) {
-        postMessage(null, message)
+    fun notify(message: Any) {
+        runBlocking { postMessage(null, message) }
     }
 
     private suspend fun postMessage(requestId: Long?, message: Any) {
@@ -175,7 +193,7 @@ class RacehorseConnection(
                 """
                     (function(conn){
                       conn && conn.inbox && conn.inbox.publish([$requestId, $messageJson])
-                    })(window[${json.encodeToString(connectionName)}])
+                    })(window[${json.encodeToString(name)}])
                 """.trimIndent(),
                 null
             )
