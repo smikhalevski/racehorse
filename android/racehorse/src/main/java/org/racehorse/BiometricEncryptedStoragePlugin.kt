@@ -18,11 +18,13 @@ import org.greenrobot.eventbus.ThreadMode
 import org.racehorse.utils.ifNullOrBlank
 import org.racehorse.utils.sha256
 import java.io.File
+import java.io.IOException
 import java.security.InvalidAlgorithmParameterException
 import java.security.InvalidKeyException
 import java.security.KeyStore
 import java.security.NoSuchAlgorithmException
 import java.security.UnrecoverableKeyException
+import javax.crypto.BadPaddingException
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
@@ -187,111 +189,144 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
     open fun onSetBiometricEncryptedValue(event: SetBiometricEncryptedValueEvent) {
         val valueBytes = event.value.toByteArray(Charsets.UTF_8)
 
-        for (i in 0..1) {
+        for (retryCount in 0..1) {
             try {
-                val cipher = createEncryptCypher(event.key, event.config)
-                val isSuccessful = encryptedStorage.set(cipher, event.key, valueBytes)
+                val cipher = createEncryptCipher(event.key, event.config)
+                encryptedStorage.set(cipher, event.key, valueBytes)
 
-                event.respond(SetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.STORAGE_FAILED.takeUnless { isSuccessful }))
-                break
+                event.respond(SetBiometricEncryptedValueEvent.ResultEvent(null))
+                return
             } catch (e: Exception) {
                 if (isTimeBoundAuthenticationRequired(e)) {
                     authenticate(null, event.config) { errorCode ->
                         event.respond {
-                            if (errorCode != null) {
-                                return@respond SetBiometricEncryptedValueEvent.ResultEvent(errorCode)
-                            }
-
-                            val cipher = createEncryptCypher(event.key, event.config)
-                            val isSuccessful = encryptedStorage.set(cipher, event.key, valueBytes)
-
-                            SetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.STORAGE_FAILED.takeUnless { isSuccessful })
+                            SetBiometricEncryptedValueEvent.ResultEvent(
+                                errorCode ?: try {
+                                    val cipher = createEncryptCipher(event.key, event.config)
+                                    encryptedStorage.set(cipher, event.key, valueBytes)
+                                    null
+                                } catch (_: IOException) {
+                                    BiometricStorageErrorCode.STORAGE_FAILED
+                                } catch (_: Throwable) {
+                                    BiometricStorageErrorCode.UNKNOWN
+                                }
+                            )
                         }
                     }
-                    break
+                    return
                 }
 
                 if (isPerUseAuthenticationRequired(e)) {
-                    val cipher = createEncryptCypher(event.key, event.config)
+                    val cipher = try {
+                        createEncryptCipher(event.key, event.config)
+                    } catch (_: Throwable) {
+                        event.respond(SetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.KEY_UNRECOVERABLE))
+                        return
+                    }
 
                     authenticate(cipher, event.config) { errorCode ->
                         event.respond {
-                            if (errorCode != null) {
-                                return@respond SetBiometricEncryptedValueEvent.ResultEvent(errorCode)
-                            }
-
-                            val isSuccessful = encryptedStorage.set(cipher, event.key, valueBytes)
-
-                            SetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.STORAGE_FAILED.takeUnless { isSuccessful })
+                            SetBiometricEncryptedValueEvent.ResultEvent(
+                                errorCode ?: try {
+                                    encryptedStorage.set(cipher, event.key, valueBytes)
+                                    null
+                                } catch (_: IOException) {
+                                    BiometricStorageErrorCode.STORAGE_FAILED
+                                } catch (_: Throwable) {
+                                    BiometricStorageErrorCode.UNKNOWN
+                                }
+                            )
                         }
                     }
-                    break
+                    return
                 }
 
                 if (isKeyInvalidated(e)) {
                     deleteSecretKey(event.key)
 
-                    if (i == 0) {
-                        // Retry
+                    if (retryCount == 0) {
                         continue
                     }
-
                     event.respond(SetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.KEY_UNRECOVERABLE))
-                    break
+                    return
                 }
 
-                // Unexpected exception
-                throw e
+                // Unrecoverable key
+                SetBiometricEncryptedValueEvent.ResultEvent(
+                    if (e is IOException || e is BadPaddingException) BiometricStorageErrorCode.STORAGE_FAILED
+                    else BiometricStorageErrorCode.UNKNOWN
+                )
+                return
             }
         }
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     open fun onGetBiometricEncryptedValue(event: GetBiometricEncryptedValueEvent) {
-        val record = encryptedStorage.getRecord(event.key)
-            ?: return event.respond(GetBiometricEncryptedValueEvent.ResultEvent(null))
+        val record = try {
+            encryptedStorage.getRecord(event.key)
+        } catch (_: IOException) {
+            // Corrupted record
+            return event.respond(GetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.STORAGE_FAILED))
+        }
+
+        if (record == null) {
+            return event.respond(GetBiometricEncryptedValueEvent.ResultEvent(null))
+        }
 
         val ivParameterSpec = IvParameterSpec(record.iv)
 
         try {
-            val cipher = createDecryptCypher(event.key, ivParameterSpec)
-                ?: return event.respond(GetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.KEY_UNRECOVERABLE))
+            val cipher = createDecryptCipher(event.key, ivParameterSpec)
+            val valueBytes = encryptedStorage.decrypt(cipher, record.encryptedValue)
 
-            val value = encryptedStorage.decrypt(cipher, record.encryptedValue)?.toString(Charsets.UTF_8)
-
-            event.respond(GetBiometricEncryptedValueEvent.ResultEvent(value))
+            event.respond(GetBiometricEncryptedValueEvent.ResultEvent(valueBytes?.toString(Charsets.UTF_8)))
         } catch (e: Exception) {
             if (isTimeBoundAuthenticationRequired(e)) {
                 authenticate(null, event.config) { errorCode ->
                     event.respond {
                         if (errorCode != null) {
-                            return@respond GetBiometricEncryptedValueEvent.ResultEvent(errorCode)
+                            GetBiometricEncryptedValueEvent.ResultEvent(errorCode)
+                        } else try {
+                            val cipher = createDecryptCipher(event.key, ivParameterSpec)
+                            val valueBytes = encryptedStorage.decrypt(cipher, record.encryptedValue)
+
+                            GetBiometricEncryptedValueEvent.ResultEvent(valueBytes?.toString(Charsets.UTF_8))
+                        } catch (_: IOException) {
+                            GetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.STORAGE_FAILED)
+                        } catch (_: BadPaddingException) {
+                            GetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.STORAGE_FAILED)
+                        } catch (_: Throwable) {
+                            GetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.UNKNOWN)
                         }
-
-                        val cipher = createDecryptCypher(event.key, ivParameterSpec)
-                            ?: return@respond GetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.KEY_UNRECOVERABLE)
-
-                        val value = encryptedStorage.decrypt(cipher, record.encryptedValue)?.toString(Charsets.UTF_8)
-
-                        GetBiometricEncryptedValueEvent.ResultEvent(value)
                     }
                 }
                 return
             }
 
             if (isPerUseAuthenticationRequired(e)) {
-                val cipher = createDecryptCypher(event.key, ivParameterSpec)
-                    ?: return event.respond(GetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.KEY_UNRECOVERABLE))
+                val cipher = try {
+                    createDecryptCipher(event.key, ivParameterSpec)
+                } catch (_: Throwable) {
+                    event.respond(GetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.KEY_UNRECOVERABLE))
+                    return
+                }
 
                 authenticate(cipher, event.config) { errorCode ->
                     event.respond {
                         if (errorCode != null) {
-                            return@respond GetBiometricEncryptedValueEvent.ResultEvent(errorCode)
+                            GetBiometricEncryptedValueEvent.ResultEvent(errorCode)
+                        } else try {
+                            val valueBytes = encryptedStorage.decrypt(cipher, record.encryptedValue)
+
+                            GetBiometricEncryptedValueEvent.ResultEvent(valueBytes?.toString(Charsets.UTF_8))
+                        } catch (_: IOException) {
+                            GetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.STORAGE_FAILED)
+                        } catch (_: BadPaddingException) {
+                            GetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.STORAGE_FAILED)
+                        } catch (_: Throwable) {
+                            GetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.UNKNOWN)
                         }
-
-                        val value = encryptedStorage.decrypt(cipher, record.encryptedValue)?.toString(Charsets.UTF_8)
-
-                        GetBiometricEncryptedValueEvent.ResultEvent(value)
                     }
                 }
                 return
@@ -302,8 +337,12 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
                 return
             }
 
-            // Unexpected exception
-            throw e
+            // Unrecoverable key
+            SetBiometricEncryptedValueEvent.ResultEvent(
+                if (e is IOException || e is BadPaddingException) BiometricStorageErrorCode.STORAGE_FAILED
+                else BiometricStorageErrorCode.UNKNOWN
+            )
+            return
         }
     }
 
@@ -374,7 +413,7 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
     }
 
     protected open fun toKeyAlias(key: String): String {
-        return "racehorse" + storageDir.canonicalPath.sha256().substring(0, 32) + key.sha256()
+        return "racehorse://" + storageDir.canonicalPath.sha256().substring(0, 32) + key.sha256()
     }
 
     protected open fun createSecretKey(key: String, config: BiometricConfig?): SecretKey {
@@ -422,7 +461,7 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
         return Cipher.getInstance("$ENCRYPTION_ALGORITHM/$ENCRYPTION_BLOCK_MODE/$ENCRYPTION_PADDING")
     }
 
-    private fun createEncryptCypher(key: String, config: BiometricConfig?): Cipher {
+    private fun createEncryptCipher(key: String, config: BiometricConfig?): Cipher {
         val cipher = createCipher()
         val secretKey = getSecretKey(key) ?: createSecretKey(key, config)
 
@@ -431,9 +470,9 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
         return cipher
     }
 
-    private fun createDecryptCypher(key: String, ivParameterSpec: IvParameterSpec): Cipher? {
+    private fun createDecryptCipher(key: String, ivParameterSpec: IvParameterSpec): Cipher {
         val cipher = createCipher()
-        val secretKey = getSecretKey(key) ?: return null
+        val secretKey = getSecretKey(key) ?: throw UnrecoverableKeyException()
 
         cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec)
 

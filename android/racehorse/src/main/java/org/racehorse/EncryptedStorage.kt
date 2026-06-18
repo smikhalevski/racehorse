@@ -6,7 +6,6 @@ import java.nio.ByteBuffer
 import java.security.MessageDigest
 import javax.crypto.BadPaddingException
 import javax.crypto.Cipher
-import javax.crypto.IllegalBlockSizeException
 
 /**
  * @param salt The salt used to derive the encryption key.
@@ -35,7 +34,7 @@ open class EncryptedStorage(private val storageDir: File) {
 
     open fun set(cipher: Cipher, key: String, value: ByteArray) = set(cipher, key, ByteArray(0), value)
 
-        /**
+    /**
      * Stores a value under the given key.
      *
      * The cipher must be initialized with a fresh, random IV before calling this method.
@@ -43,9 +42,10 @@ open class EncryptedStorage(private val storageDir: File) {
      * The IV is taken from [cipher.iv] and stored together with the encrypted data.
      *
      * @return `true` if the value was successfully persisted, `false` otherwise.
+     * @throws IOException
      */
     @Synchronized
-    open fun set(cipher: Cipher, key: String, salt: ByteArray, value: ByteArray): Boolean {
+    open fun set(cipher: Cipher, key: String, salt: ByteArray, value: ByteArray) {
         val iv = cipher.iv
 
         require(iv.size >= 0 && iv.size <= MAX_IV_LENGTH) { "Invalid cipher IV size" }
@@ -64,16 +64,13 @@ open class EncryptedStorage(private val storageDir: File) {
 
         val tempFile = File.createTempFile(file.name, ".tmp", file.parentFile)
 
-        return try {
+        try {
             tempFile.writeBytes(fileBytes)
 
             if (!tempFile.renameTo(file)) {
                 file.delete()
                 tempFile.renameTo(file)
             }
-            true
-        } catch (_: IOException) {
-            false
         } finally {
             tempFile.delete()
         }
@@ -84,6 +81,7 @@ open class EncryptedStorage(private val storageDir: File) {
      *
      * The first element holds the initialization vector.
      * The second element holds the encrypted bytes. Use [decrypt] to read the value from the encrypted bytes.
+     * @throws IOException
      */
     @Synchronized
     open fun getRecord(key: String): EncryptedRecord? {
@@ -93,38 +91,34 @@ open class EncryptedStorage(private val storageDir: File) {
             return null
         }
 
-        val fileBytes = try {
-            file.readBytes()
-        } catch (_: IOException) {
-            return null
-        }
+        val fileBytes = file.readBytes()
 
         if (fileBytes.size < LENGTH_SIZE) {
-            return null
+            throw IOException("Invalid file content")
         }
 
         val saltLength = ByteBuffer.wrap(fileBytes.copyOf(LENGTH_SIZE)).int
         if (saltLength < 0 || saltLength > MAX_SALT_LENGTH) {
-            return null
+            throw IOException("Invalid file content")
         }
 
         val saltStart = LENGTH_SIZE
         val saltEnd = saltStart + saltLength
 
         if (fileBytes.size < saltEnd + LENGTH_SIZE) {
-            return null
+            throw IOException("Invalid file content")
         }
 
         val ivLength = ByteBuffer.wrap(fileBytes.copyOfRange(saltEnd, saltEnd + LENGTH_SIZE)).int
         if (ivLength < 0 || ivLength > MAX_IV_LENGTH) {
-            return null
+            throw IOException("Invalid file content")
         }
 
         val ivStart = saltEnd + LENGTH_SIZE
         val ivEnd = ivStart + ivLength
 
         if (fileBytes.size < ivEnd) {
-            return null
+            throw IOException("Invalid file content")
         }
 
         return EncryptedRecord(
@@ -154,25 +148,22 @@ open class EncryptedStorage(private val storageDir: File) {
      * **Note:** The [cipher] must be initialized with the IV from the [EncryptedRecord] before calling this method.
      *
      * @return The decrypted value, or `null` if decryption failed (wrong key, corrupted data, or hash mismatch).
+     * @throws BadPaddingException
      */
     @Synchronized
     open fun decrypt(cipher: Cipher, encryptedValue: ByteArray): ByteArray? {
-        return try {
-            val bytes = cipher.doFinal(encryptedValue)
+        val bytes = cipher.doFinal(encryptedValue)
 
-            if (bytes.size < HASH_SIZE) {
-                return null
-            }
-
-            val value = bytes.copyOfRange(HASH_SIZE, bytes.size)
-
-            val storedHash = bytes.copyOfRange(0, HASH_SIZE)
-            val actualHash = MessageDigest.getInstance(HASH_ALGORITHM).digest(value)
-
-            if (MessageDigest.isEqual(storedHash, actualHash)) value else null
-        } catch (_: BadPaddingException) {
-            null
+        if (bytes.size < HASH_SIZE) {
+            throw BadPaddingException()
         }
+
+        val value = bytes.copyOfRange(HASH_SIZE, bytes.size)
+
+        val storedHash = bytes.copyOfRange(0, HASH_SIZE)
+        val actualHash = MessageDigest.getInstance(HASH_ALGORITHM).digest(value)
+
+        return if (MessageDigest.isEqual(storedHash, actualHash)) value else null
     }
 
     /**

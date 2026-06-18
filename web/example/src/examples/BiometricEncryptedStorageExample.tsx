@@ -38,7 +38,7 @@ export function BiometricEncryptedStorageExample() {
               })
               .then(result => {
                 setstoredValueInfo(
-                  'GET ' + (result.errorCode === null ? JSON.stringify(result.value) : '💥error=' + result.errorCode)
+                  'GET ' + (result.errorCode === null ? JSON.stringify(result.value) : '💥 Error ' + result.errorCode)
                 );
               });
           }}
@@ -49,7 +49,7 @@ export function BiometricEncryptedStorageExample() {
           onClick={() => {
             biometricEncryptedStorageManager.delete(key);
 
-            setstoredValueInfo('null (after delete)');
+            setstoredValueInfo('DELETE null');
           }}
         >
           {'❌ Delete key'}
@@ -80,7 +80,7 @@ export function BiometricEncryptedStorageExample() {
               })
               .then(result => {
                 setstoredValueInfo(
-                  'SET ' + (result.isSuccessful ? JSON.stringify(nextValue) : '💥error=' + result.errorCode)
+                  'SET ' + (result.isSuccessful ? JSON.stringify(nextValue) : '💥 Error ' + result.errorCode)
                 );
               });
           }}

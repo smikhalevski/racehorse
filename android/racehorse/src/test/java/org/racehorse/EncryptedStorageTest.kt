@@ -5,13 +5,16 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
+import java.io.IOException
 import java.nio.ByteBuffer
+import javax.crypto.BadPaddingException
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
@@ -45,9 +48,8 @@ class EncryptedStorageTest {
 
     @Test
     fun `set returns true and creates a file`() {
-        val result = storage.set(getEncryptCipher(), "key", "value".toByteArray())
+        storage.set(getEncryptCipher(), "key", "value".toByteArray())
 
-        assertTrue(result)
         assertTrue(storageDir.listFiles()!!.isNotEmpty())
     }
 
@@ -68,9 +70,8 @@ class EncryptedStorageTest {
         val storageDir = File(tempFolder.root, "aaa/bbb/ccc")
         val encryptedStorage = EncryptedStorage(storageDir)
 
-        val result = encryptedStorage.set(getEncryptCipher(), "key", "value".toByteArray())
+        encryptedStorage.set(getEncryptCipher(), "key", "value".toByteArray())
 
-        assertTrue(result)
         assertTrue(storageDir.exists())
     }
 
@@ -111,42 +112,48 @@ class EncryptedStorageTest {
     }
 
     @Test
-    fun `getRecord returns null for an empty file`() {
+    fun `getRecord throws for an empty file`() {
         storage.getFile("key").writeBytes(ByteArray(0))
 
-        assertNull(storage.getRecord("key"))
+        assertThrows(IOException::class.java) {
+            storage.getRecord("key")
+        }
     }
 
     @Test
-    fun `getRecord returns null for a file shorter than IV_LENGTH_SIZE`() {
+    fun `getRecord throws for a file shorter than IV_LENGTH_SIZE`() {
         storage.getFile("key").writeBytes(ByteArray(3))
 
-        assertNull(storage.getRecord("key"))
+        assertThrows(IOException::class.java) {
+            storage.getRecord("key")
+        }
     }
 
     @Test
-    fun `getRecord returns null for a file with bogus IV length`() {
+    fun `getRecord throws for a file with bogus IV length`() {
         // Write a 4-byte header claiming an IV of 999 bytes, then nothing
         val buffer = ByteBuffer.allocate(4).putInt(999).array()
 
         storage.getFile("key").writeBytes(buffer)
 
-        assertNull(storage.getRecord("key"))
+        assertThrows(IOException::class.java) {
+            storage.getRecord("key")
+        }
     }
 
     @Test
-    fun `getRecord returns null for an unreadable file`() {
+    fun `getRecord throws for an unreadable file`() {
         val file = storage.getFile("key")
 
         storage.set(getEncryptCipher(), "key", "value".toByteArray())
 
         file.setReadable(false)
 
-        try {
-            assertNull(storage.getRecord("key"))
-        } finally {
-            file.setReadable(true)
+        assertThrows(IOException::class.java) {
+            storage.getRecord("key")
         }
+
+        file.setReadable(true)
     }
 
     @Test
@@ -174,7 +181,7 @@ class EncryptedStorageTest {
     }
 
     @Test
-    fun `decrypt returns null when ciphertext is tampered`() {
+    fun `decrypt throws when ciphertext is tampered`() {
         storage.set(getEncryptCipher(), "key", "value".toByteArray())
 
         val record = storage.getRecord("key")!!
@@ -182,13 +189,13 @@ class EncryptedStorageTest {
 
         tampered[tampered.size - 1] = tampered[tampered.size - 1].inc()
 
-        val result = storage.decrypt(getDecryptCipher(record.iv), tampered)
-
-        assertNull(result)
+        assertThrows(BadPaddingException::class.java) {
+            storage.decrypt(getDecryptCipher(record.iv), tampered)
+        }
     }
 
     @Test
-    fun `decrypt returns null when decrypted with the wrong key`() {
+    fun `decrypt throws when decrypted with the wrong key`() {
         storage.set(getEncryptCipher(), "key", "value".toByteArray())
 
         val record = storage.getRecord("key")!!
@@ -199,20 +206,20 @@ class EncryptedStorageTest {
             it.init(Cipher.DECRYPT_MODE, wrongKey, IvParameterSpec(record.iv))
         }
 
-        val result = storage.decrypt(wrongCipher, record.encryptedValue)
-
-        assertNull(result)
+        assertThrows(BadPaddingException::class.java) {
+            storage.decrypt(wrongCipher, record.encryptedValue)
+        }
     }
 
     @Test
-    fun `decrypt returns null when ciphertext is too short to contain a hash`() {
+    fun `decrypt throws ciphertext is too short to contain a hash`() {
         // Encrypt a payload that is shorter than HASH_SIZE bytes after decryption
         val cipher = getEncryptCipher()
         val encryptedValue = cipher.doFinal(ByteArray(4))
 
-        val result = storage.decrypt(getDecryptCipher(cipher.iv), encryptedValue)
-
-        assertNull(result)
+        assertThrows(BadPaddingException::class.java) {
+            storage.decrypt(getDecryptCipher(cipher.iv), encryptedValue)
+        }
     }
 
     @Test

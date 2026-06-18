@@ -5,7 +5,7 @@ export function EncryptedStorageExample() {
   const [key, setKey] = useState('my_key');
   const [value, setValue] = useState('my_value');
   const [password, setPassword] = useState('my_password');
-  const [storedValueInfo, setStoredValueInfo] = useState('(unknown)');
+  const [storedValueInfo, setStoredValueInfo] = useState('UNKNOWN');
 
   return (
     <>
@@ -28,7 +28,7 @@ export function EncryptedStorageExample() {
         <button
           onClick={() => {
             encryptedStorageManager.get(key, password).then(value => {
-              setStoredValueInfo(JSON.stringify(value) + ' (after get)');
+              setStoredValueInfo('GET ' + JSON.stringify(value));
             });
           }}
         >
@@ -38,7 +38,7 @@ export function EncryptedStorageExample() {
           onClick={() => {
             encryptedStorageManager.delete(key);
 
-            setStoredValueInfo('null (after delete)');
+            setStoredValueInfo('DELETE null');
           }}
         >
           {'❌ Delete key'}
@@ -71,9 +71,7 @@ export function EncryptedStorageExample() {
           onClick={() => {
             const nextValue = value;
             encryptedStorageManager.set(key, nextValue, password).then(isSuccessful => {
-              if (isSuccessful) {
-                setStoredValueInfo(JSON.stringify(nextValue) + ' (after set)');
-              }
+              setStoredValueInfo('SET ' + (isSuccessful ? JSON.stringify(nextValue) : '💥Failed'));
             });
           }}
         >

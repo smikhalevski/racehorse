@@ -4,7 +4,9 @@ import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.io.File
+import java.io.IOException
 import java.security.SecureRandom
+import javax.crypto.BadPaddingException
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
@@ -90,22 +92,42 @@ open class EncryptedStoragePlugin(
     open fun onSetEncryptedValue(event: SetEncryptedValueEvent) {
         val salt = nextSalt()
 
-        val cipher = getCipher()
-        cipher.init(Cipher.ENCRYPT_MODE, createSecretKey(event.password, salt))
+        val isSuccessful = try {
+            val cipher = getCipher()
 
-        val result = encryptedStorage.set(cipher, event.key, salt, event.value.toByteArray(Charsets.UTF_8))
-        event.respond(SetEncryptedValueEvent.ResultEvent(result))
+            cipher.init(Cipher.ENCRYPT_MODE, createSecretKey(event.password, salt))
+
+            encryptedStorage.set(cipher, event.key, salt, event.value.toByteArray(Charsets.UTF_8))
+            true
+        } catch (_: IOException) {
+            false
+        }
+
+        event.respond(SetEncryptedValueEvent.ResultEvent(isSuccessful))
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     open fun onGetEncryptedValue(event: GetEncryptedValueEvent) {
-        val record = encryptedStorage.getRecord(event.key)
-            ?: return event.respond(GetEncryptedValueEvent.ResultEvent(null))
+        val record = try {
+            encryptedStorage.getRecord(event.key)
+        } catch (_: IOException) {
+            null
+        }
 
-        val cipher = getCipher()
-        cipher.init(Cipher.DECRYPT_MODE, createSecretKey(event.password, record.salt), IvParameterSpec(record.iv))
+        if (record == null) {
+            return event.respond(GetEncryptedValueEvent.ResultEvent(null))
+        }
 
-        val value = encryptedStorage.decrypt(cipher, record.encryptedValue)?.toString(Charsets.UTF_8)
+        val value = try {
+            val cipher = getCipher()
+
+            cipher.init(Cipher.DECRYPT_MODE, createSecretKey(event.password, record.salt), IvParameterSpec(record.iv))
+
+            encryptedStorage.decrypt(cipher, record.encryptedValue)?.toString(Charsets.UTF_8)
+        } catch (_: BadPaddingException) {
+            null
+        }
+
         event.respond(GetEncryptedValueEvent.ResultEvent(value))
     }
 
