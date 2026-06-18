@@ -43,6 +43,139 @@ export interface BiometricConfig {
   authenticationValidityDuration?: number;
 }
 
+export const BiometricStorageErrorCode = {
+  /**
+   * Unknown error.
+   */
+  UNKNOWN: 'unknown',
+
+  /**
+   * Underlying file storage failed.
+   */
+  STORAGE_FAILED: 'storage_failed',
+
+  /**
+   * Encryption key became unrecoverable because user enrolled new auth method.
+   */
+  KEY_UNRECOVERABLE: 'key_unrecoverable',
+
+  /**
+   * The hardware is unavailable. Try again later.
+   */
+  HARDWARE_UNAVAILABLE: 'hardware_unavailable',
+
+  /**
+   * The sensor was unable to process the current image.
+   */
+  UNABLE_TO_PROCESS: 'unable_to_process',
+
+  /**
+   * The current operation has been running too long and has timed out.
+   *
+   * This is intended to prevent programs from waiting for the biometric sensor indefinitely.
+   * The timeout is platform and sensor-specific, but is generally on the order of ~30 seconds.
+   */
+  TIMEOUT: 'timeout',
+
+  /**
+   * The operation can't be completed because there is not enough device storage remaining.
+   */
+  NO_SPACE: 'no_space',
+
+  /**
+   * The operation was canceled because the biometric sensor is unavailable. This may happen when
+   * the user is switched, the device is locked, or another pending operation prevents it.
+   */
+  CANCELED: 'canceled',
+
+  /**
+   * The operation was canceled because the API is locked out due to too many attempts. This occurs after 5 failed
+   * attempts, and lasts for 30 seconds.
+   */
+  LOCKOUT: 'lockout',
+
+  /**
+   * The operation failed due to a vendor-specific error.
+   *
+   * This error code may be used by hardware vendors to extend this list to cover errors that don't fall under one of
+   * the other predefined categories. Vendors are responsible for providing the strings for these errors.
+   *
+   * These messages are typically reserved for internal operations such as enrollment but may be used to express any
+   * error that is not otherwise covered. In this case, applications are expected to show the error message,
+   * but they are advised not to rely on the message ID, since this may vary by vendor and device.
+   */
+  VENDOR: 'vendor',
+
+  /**
+   * The operation was canceled because {@link LOCKOUT} occurred too many times. Biometric authentication is disabled
+   * until the user unlocks with their device credential (i.e. PIN, pattern, or password).
+   */
+  LOCKOUT_PERMANENT: 'lockout_permanent',
+
+  /**
+   * The user canceled the operation by pressing "Back" button.
+   *
+   * Upon receiving this, applications should use alternate authentication, such as a password.
+   *
+   * The application should also provide the user a way of returning to biometric authentication, such as a button.
+   */
+  USER_CANCELED: 'user_canceled',
+
+  /**
+   * The user does not have any biometrics enrolled.
+   */
+  NO_BIOMETRICS: 'no_biometrics',
+
+  /**
+   * The device does not have the required authentication hardware.
+   */
+  HARDWARE_NOT_PRESENT: 'hardware_not_present',
+
+  /**
+   * The user pressed the negative button.
+   *
+   * @see {@link BiometricConfig.negativeButtonText}
+   */
+  NEGATIVE_BUTTON: 'negative_button',
+
+  /**
+   * The device does not have pin, pattern, or password set up.
+   */
+  NO_DEVICE_CREDENTIAL: 'no_device_credential',
+
+  /**
+   * A security vulnerability has been discovered with one or more hardware sensors. The affected sensor(s)
+   * are unavailable until a security update has addressed the issue.
+   */
+  SECURITY_UPDATE_REQUIRED: 'security_update_required',
+} as const;
+
+export type BiometricStorageErrorCode = (typeof BiometricStorageErrorCode)[keyof typeof BiometricStorageErrorCode];
+
+export interface BiometricEncryptedStorageSetResult {
+  /**
+   * `true` if the value was written to the storage, or `false` if authentication has failed.
+   */
+  isSuccessful: boolean;
+
+  /**
+   * The error that prevented from successfully writing the value to the storage, or `null` if there was no error.
+   */
+  errorCode: BiometricStorageErrorCode | null;
+}
+
+export interface BiometricEncryptedStorageGetResult {
+  /**
+   * The deciphered value, or `null` if key wasn't found, or authentication has failed.
+   */
+  value: string | null;
+
+  /**
+   * The error that prevented from returning the value, or `null` if there was no error.
+   */
+  errorCode: BiometricStorageErrorCode | null;
+}
+
 export interface BiometricEncryptedStorageManager {
   /**
    * Associates a value with a key in an encrypted storage.
@@ -53,14 +186,8 @@ export interface BiometricEncryptedStorageManager {
    * @param key A key to set.
    * @param value A value to write.
    * @param config The options of the biometric prompt.
-   * @return `true` if the value was written to the storage, or `false` if authentication has failed.
-   * @throws InvalidAlgorithmParameterException At least one biometric must be enrolled to create keys requiring user
-   * authentication for every use. Check {@link BiometricManager.getBiometricStatus} before setting the key.
-   * @throws IllegalArgumentException Device credential is not supported on API 28 and below.
-   * @throws IllegalArgumentException Crypto-based authentication is not supported for Class 2 (Weak) biometrics.
-   * @throws IllegalStateException Unable to start authentication if the app is in the background.
    */
-  set(key: string, value: string, config?: BiometricConfig): Promise<boolean>;
+  set(key: string, value: string, config?: BiometricConfig): Promise<BiometricEncryptedStorageSetResult>;
 
   /**
    * Retrieves an encrypted value associated with the key.
@@ -68,18 +195,10 @@ export interface BiometricEncryptedStorageManager {
    * **Note:** This operation requires the user interaction, consider using {@link ActivityManager.runUserInteraction}
    * to ensure that consequent UI-related operations are suspended until this one is completed.
    *
-   * @returns The deciphered value, or `null` if key wasn't found, or authentication has failed.
-   * @throws InvalidAlgorithmParameterException At least one biometric must be enrolled to create keys requiring user
-   * authentication for every use. Check {@link BiometricManager.getBiometricStatus} before reading the key.
-   * @throws KeyPermanentlyInvalidatedException Indicates that the key can no longer be read because it has been
-   * permanently invalidated (for example, because of the biometric enrollment). Set a new value or delete the key to
-   * recover from this error.
-   * @throws UnrecoverableKeyException User changed or deleted their auth credentials.
-   * @throws IllegalArgumentException Device credential is not supported on API 28 and below.
-   * @throws IllegalArgumentException Crypto-based authentication is not supported for Class 2 (Weak) biometrics.
-   * @throws IllegalStateException Unable to start authentication if the app is in the background.
+   * @param key A key to get value for.
+   * @param config The options of the biometric prompt.
    */
-  get(key: string, config?: BiometricConfig): Promise<string | null>;
+  get(key: string, config?: BiometricConfig): Promise<BiometricEncryptedStorageGetResult>;
 
   /**
    * Returns `true` if the key exists in the storage, or `false` otherwise.
@@ -104,12 +223,12 @@ export function createBiometricEncryptedStorageManager(eventBridge: EventBridge)
     set: (key, value, config) =>
       eventBridge
         .requestAsync({ type: 'org.racehorse.SetBiometricEncryptedValueEvent', payload: { key, value, config } })
-        .then(event => event.payload.isSuccessful),
+        .then(event => event.payload),
 
     get: (key, config) =>
       eventBridge
         .requestAsync({ type: 'org.racehorse.GetBiometricEncryptedValueEvent', payload: { key, config } })
-        .then(event => event.payload.value),
+        .then(event => event.payload),
 
     has: key =>
       eventBridge.request({

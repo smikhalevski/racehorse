@@ -11,6 +11,7 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -26,6 +27,63 @@ import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
+
+enum class BiometricStorageErrorCode(val value: Int) {
+    @SerialName("unknown")
+    UNKNOWN(-1),
+
+    @SerialName("storage_failed")
+    STORAGE_FAILED(-2),
+
+    @SerialName("key_unrecoverable")
+    KEY_UNRECOVERABLE(-3),
+
+    @SerialName("hardware_unavailable")
+    HARDWARE_UNAVAILABLE(BiometricPrompt.ERROR_HW_UNAVAILABLE),
+
+    @SerialName("unable_to_process")
+    UNABLE_TO_PROCESS(BiometricPrompt.ERROR_UNABLE_TO_PROCESS),
+
+    @SerialName("timeout")
+    TIMEOUT(BiometricPrompt.ERROR_TIMEOUT),
+
+    @SerialName("no_space")
+    NO_SPACE(BiometricPrompt.ERROR_NO_SPACE),
+
+    @SerialName("canceled")
+    CANCELED(BiometricPrompt.ERROR_CANCELED),
+
+    @SerialName("lockout")
+    LOCKOUT(BiometricPrompt.ERROR_LOCKOUT),
+
+    @SerialName("vendor")
+    VENDOR(BiometricPrompt.ERROR_VENDOR),
+
+    @SerialName("lockout_permanent")
+    LOCKOUT_PERMANENT(BiometricPrompt.ERROR_LOCKOUT_PERMANENT),
+
+    @SerialName("user_canceled")
+    USER_CANCELED(BiometricPrompt.ERROR_USER_CANCELED),
+
+    @SerialName("no_biometrics")
+    NO_BIOMETRICS(BiometricPrompt.ERROR_NO_BIOMETRICS),
+
+    @SerialName("hardware_not_present")
+    HARDWARE_NOT_PRESENT(BiometricPrompt.ERROR_HW_NOT_PRESENT),
+
+    @SerialName("negative_button")
+    NEGATIVE_BUTTON(BiometricPrompt.ERROR_NEGATIVE_BUTTON),
+
+    @SerialName("no_device_credential")
+    NO_DEVICE_CREDENTIAL(BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL),
+
+    @SerialName("security_update_required")
+    SECURITY_UPDATE_REQUIRED(BiometricPrompt.ERROR_SECURITY_UPDATE_REQUIRED);
+
+    companion object {
+        fun from(value: Int) = BiometricStorageErrorCode.entries.firstOrNull { it.value == value } ?: UNKNOWN
+    }
+}
 
 @Serializable
 class BiometricConfig(
@@ -51,11 +109,11 @@ class SetBiometricEncryptedValueEvent(
     val config: BiometricConfig? = null
 ) : RequestEvent() {
 
-    /**
-     * @param isSuccessful `true` if the value was written to the storage, or `false` otherwise.
-     */
     @Serializable
-    class ResultEvent(val isSuccessful: Boolean) : ResponseEvent()
+    class ResultEvent(val isSuccessful: Boolean, val errorCode: BiometricStorageErrorCode?) : ResponseEvent() {
+
+        constructor(errorCode: BiometricStorageErrorCode?) : this(errorCode == null, errorCode)
+    }
 }
 
 /**
@@ -64,11 +122,13 @@ class SetBiometricEncryptedValueEvent(
 @Serializable
 class GetBiometricEncryptedValueEvent(val key: String, val config: BiometricConfig? = null) : RequestEvent() {
 
-    /**
-     * @param value The deciphered value or `null` if key wasn't found or auth has failed.
-     */
     @Serializable
-    class ResultEvent(val value: String?) : ResponseEvent()
+    class ResultEvent(val value: String?, val errorCode: BiometricStorageErrorCode?) : ResponseEvent() {
+
+        constructor(value: String?) : this(value, null)
+
+        constructor(errorCode: BiometricStorageErrorCode) : this(null, errorCode)
+    }
 }
 
 /**
@@ -132,20 +192,20 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
                 val cipher = createEncryptCypher(event.key, event.config)
                 val isSuccessful = encryptedStorage.set(cipher, event.key, valueBytes)
 
-                event.respond(SetBiometricEncryptedValueEvent.ResultEvent(isSuccessful))
+                event.respond(SetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.STORAGE_FAILED.takeUnless { isSuccessful }))
                 break
             } catch (e: Exception) {
                 if (isTimeBoundAuthenticationRequired(e)) {
-                    authenticate(null, event.config) { isAuthenticated ->
+                    authenticate(null, event.config) { errorCode ->
                         event.respond {
-                            if (!isAuthenticated) {
-                                return@respond SetBiometricEncryptedValueEvent.ResultEvent(false)
+                            if (errorCode != null) {
+                                return@respond SetBiometricEncryptedValueEvent.ResultEvent(errorCode)
                             }
 
                             val cipher = createEncryptCypher(event.key, event.config)
                             val isSuccessful = encryptedStorage.set(cipher, event.key, valueBytes)
 
-                            SetBiometricEncryptedValueEvent.ResultEvent(isSuccessful)
+                            SetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.STORAGE_FAILED.takeUnless { isSuccessful })
                         }
                     }
                     break
@@ -154,15 +214,15 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
                 if (isPerUseAuthenticationRequired(e)) {
                     val cipher = createEncryptCypher(event.key, event.config)
 
-                    authenticate(cipher, event.config) { isAuthenticated ->
+                    authenticate(cipher, event.config) { errorCode ->
                         event.respond {
-                            if (!isAuthenticated) {
-                                return@respond SetBiometricEncryptedValueEvent.ResultEvent(false)
+                            if (errorCode != null) {
+                                return@respond SetBiometricEncryptedValueEvent.ResultEvent(errorCode)
                             }
 
                             val isSuccessful = encryptedStorage.set(cipher, event.key, valueBytes)
 
-                            SetBiometricEncryptedValueEvent.ResultEvent(isSuccessful)
+                            SetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.STORAGE_FAILED.takeUnless { isSuccessful })
                         }
                     }
                     break
@@ -171,10 +231,13 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
                 if (isKeyInvalidated(e)) {
                     deleteSecretKey(event.key)
 
-                    if (i == 1) {
-                        event.respond(SetBiometricEncryptedValueEvent.ResultEvent(false))
+                    if (i == 0) {
+                        // Retry
+                        continue
                     }
-                    continue
+
+                    event.respond(SetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.KEY_UNRECOVERABLE))
+                    break
                 }
 
                 // Unexpected exception
@@ -192,21 +255,21 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
 
         try {
             val cipher = createDecryptCypher(event.key, ivParameterSpec)
-                ?: return event.respond(GetBiometricEncryptedValueEvent.ResultEvent(null))
+                ?: return event.respond(GetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.KEY_UNRECOVERABLE))
 
             val value = encryptedStorage.decrypt(cipher, record.encryptedValue)?.toString(Charsets.UTF_8)
 
             event.respond(GetBiometricEncryptedValueEvent.ResultEvent(value))
         } catch (e: Exception) {
             if (isTimeBoundAuthenticationRequired(e)) {
-                authenticate(null, event.config) { isAuthenticated ->
+                authenticate(null, event.config) { errorCode ->
                     event.respond {
-                        if (!isAuthenticated) {
-                            return@respond GetBiometricEncryptedValueEvent.ResultEvent(null)
+                        if (errorCode != null) {
+                            return@respond GetBiometricEncryptedValueEvent.ResultEvent(errorCode)
                         }
 
                         val cipher = createDecryptCypher(event.key, ivParameterSpec)
-                            ?: return@respond GetBiometricEncryptedValueEvent.ResultEvent(null)
+                            ?: return@respond GetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.KEY_UNRECOVERABLE)
 
                         val value = encryptedStorage.decrypt(cipher, record.encryptedValue)?.toString(Charsets.UTF_8)
 
@@ -218,12 +281,12 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
 
             if (isPerUseAuthenticationRequired(e)) {
                 val cipher = createDecryptCypher(event.key, ivParameterSpec)
-                    ?: return event.respond(GetBiometricEncryptedValueEvent.ResultEvent(null))
+                    ?: return event.respond(GetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.KEY_UNRECOVERABLE))
 
-                authenticate(cipher, event.config) { isAuthenticated ->
+                authenticate(cipher, event.config) { errorCode ->
                     event.respond {
-                        if (!isAuthenticated) {
-                            return@respond GetBiometricEncryptedValueEvent.ResultEvent(null)
+                        if (errorCode != null) {
+                            return@respond GetBiometricEncryptedValueEvent.ResultEvent(errorCode)
                         }
 
                         val value = encryptedStorage.decrypt(cipher, record.encryptedValue)?.toString(Charsets.UTF_8)
@@ -235,7 +298,7 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
             }
 
             if (isKeyInvalidated(e)) {
-                event.respond(GetBiometricEncryptedValueEvent.ResultEvent(null))
+                event.respond(GetBiometricEncryptedValueEvent.ResultEvent(BiometricStorageErrorCode.KEY_UNRECOVERABLE))
                 return
             }
 
@@ -258,20 +321,20 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
     private fun authenticate(
         cipher: Cipher?,
         config: BiometricConfig?,
-        callback: (isAuthenticated: Boolean) -> Unit
+        callback: (errorCode: BiometricStorageErrorCode?) -> Unit
     ) {
         if (activity.isFinishing || activity.isDestroyed || activity.supportFragmentManager.isStateSaved) {
-            callback(false)
+            callback(BiometricStorageErrorCode.UNKNOWN)
             return
         }
 
         val promptCallback = object : BiometricPrompt.AuthenticationCallback() {
             override fun onAuthenticationError(errorCode: Int, errorMessage: CharSequence) {
-                callback(false)
+                callback(BiometricStorageErrorCode.from(errorCode))
             }
 
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                callback(true)
+                callback(null)
             }
 
             // User can retry, do nothing
@@ -305,7 +368,7 @@ open class BiometricEncryptedStoragePlugin(private val activity: FragmentActivit
                 // after too many failed attempts
                 // @see https://issuetracker.google.com/issues/277499446
 
-                callback(false)
+                callback(BiometricStorageErrorCode.LOCKOUT)
             }
         }
     }

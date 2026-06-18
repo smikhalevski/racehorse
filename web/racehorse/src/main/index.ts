@@ -22,7 +22,10 @@ import { createPermissionsManager } from './createPermissionsManager.js';
 import { createProcessManager } from './createProcessManager.js';
 
 export { createActivityManager, Intent, Activity, ActivityState } from './createActivityManager.js';
-export { createBiometricEncryptedStorageManager } from './createBiometricEncryptedStorageManager.js';
+export {
+  createBiometricEncryptedStorageManager,
+  BiometricStorageErrorCode,
+} from './createBiometricEncryptedStorageManager.js';
 export { createBiometricManager, BiometricStatus, BiometricAuthenticator } from './createBiometricManager.js';
 export { createContactsManager } from './createContactsManager.js';
 export { createDeepLinkManager } from './createDeepLinkManager.js';
@@ -53,7 +56,12 @@ export { runAnimation } from './runAnimation.js';
 export { scrollToElement } from './scrollToElement.js';
 
 export type { ActivityManager, ActivityResult, ActivityInfo } from './createActivityManager.js';
-export type { BiometricEncryptedStorageManager, BiometricConfig } from './createBiometricEncryptedStorageManager.js';
+export type {
+  BiometricEncryptedStorageManager,
+  BiometricConfig,
+  BiometricEncryptedStorageGetResult,
+  BiometricEncryptedStorageSetResult,
+} from './createBiometricEncryptedStorageManager.js';
 export type { BiometricManager } from './createBiometricManager.js';
 export type { ContactsManager, Contact } from './createContactsManager.js';
 export type { DeepLinkManager } from './createDeepLinkManager.js';

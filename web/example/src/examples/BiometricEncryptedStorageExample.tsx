@@ -8,7 +8,7 @@ export function BiometricEncryptedStorageExample() {
   const [authenticators, setAuthenticators] = useState<BiometricAuthenticator[]>([
     BiometricAuthenticator.BIOMETRIC_STRONG,
   ]);
-  const [storedValueInfo, setstoredValueInfo] = useState('(unknown)');
+  const [storedValueInfo, setstoredValueInfo] = useState('UNKNOWN');
 
   return (
     <>
@@ -36,8 +36,10 @@ export function BiometricEncryptedStorageExample() {
                 negativeButtonText: 'Cancel get',
                 authenticators,
               })
-              .then(value => {
-                setstoredValueInfo(JSON.stringify(value) + ' (after get)');
+              .then(result => {
+                setstoredValueInfo(
+                  'GET ' + (result.errorCode === null ? JSON.stringify(result.value) : '💥error=' + result.errorCode)
+                );
               });
           }}
         >
@@ -76,12 +78,10 @@ export function BiometricEncryptedStorageExample() {
                 authenticators,
                 authenticationValidityDuration,
               })
-              .then(isSuccessful => {
-                if (isSuccessful) {
-                  setstoredValueInfo(JSON.stringify(nextValue) + ' (after set)');
-                } else {
-                  console.log('❌ Cannot set biometric storage entry: ' + key);
-                }
+              .then(result => {
+                setstoredValueInfo(
+                  'SET ' + (result.isSuccessful ? JSON.stringify(nextValue) : '💥error=' + result.errorCode)
+                );
               });
           }}
         >
