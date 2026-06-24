@@ -12,7 +12,9 @@ import androidx.activity.result.ActivityResultRegistryOwner
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.UUID
+import kotlin.coroutines.resume
 
 /**
  * Starts activity.
@@ -84,11 +86,13 @@ fun ActivityResultRegistryOwner.launchActivityForResult(
  * Same as [launchActivityForResult] but instead of returning `false` when no activity is found, it invokes [callback]
  * with `null`.
  */
-fun ActivityResultRegistryOwner.launchActivityForResultOrNull(
-    intent: Intent,
-    callback: (result: ActivityResult?) -> Unit
-) =
-    launchActivityForResultOrNull(ActivityResultContracts.StartActivityForResult(), intent, callback)
+suspend fun ActivityResultRegistryOwner.launchActivityForResultOrNull(intent: Intent): ActivityResult? {
+    return suspendCancellableCoroutine { continuation ->
+        launchActivityForResultOrNull(ActivityResultContracts.StartActivityForResult(), intent) {
+            continuation.resume(it)
+        }
+    }
+}
 
 /**
  * Shows a permission dialog for permissions that aren't granted yet.
