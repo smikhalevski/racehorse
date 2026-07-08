@@ -1,6 +1,6 @@
 {
   "name": "@racehorse/react",
-  "version": "1.10.1",
+  "version": "1.11.0",
   "description": "React hooks for Racehorse.",
   "type": "module",
   "main": "./index.js",
