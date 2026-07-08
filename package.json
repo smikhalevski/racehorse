@@ -4,7 +4,7 @@
     "build": "npm run build --workspaces",
     "clean": "rimraf docs coverage && npm run clean --workspaces",
     "test": "tsc && vitest run",
-    "docs": "typedoc && cd android/racehorse && ../gradlew dokkaHtml"
+    "docs": "typedoc && cd android/racehorse && ../gradlew dokkaGenerate"
   },
   "workspaces": [
     "./web/racehorse",

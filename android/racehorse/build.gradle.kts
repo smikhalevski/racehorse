@@ -3,15 +3,17 @@ import groovy.json.JsonSlurper
 plugins {
     id("com.android.library")
     id("maven-publish")
-    id("org.jetbrains.dokka")
+    id("org.jetbrains.dokka") version "2.2.0"
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 val packageJson = JsonSlurper().parseText(file("./package.json").readText()) as Map<*, *>
 
-tasks.dokkaHtml.configure {
-    outputDirectory.set(file("../../docs/android"))
+dokka {
+    dokkaPublications.html {
+        outputDirectory.set(file("../../docs/android"))
+    }
 }
 
 android {
