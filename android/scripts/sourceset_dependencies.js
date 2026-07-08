@@ -1,1 +1,1 @@
-sourceset_dependencies='{":racehorse:dokkaHtml/debug":[],":racehorse:dokkaHtml/main":[],":racehorse:dokkaHtml/release":[],":racehorse:dokkaHtml/staging":[]}'
+sourceset_dependencies='{":racehorse/main":[],":racehorse/release":[]}'

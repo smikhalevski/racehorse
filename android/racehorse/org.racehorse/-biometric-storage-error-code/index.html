@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>BiometricStorageErrorCode</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+        <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer="defer"></script>
+</head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+            <a class="library-name--link" href="../../../index.html" tabindex="1">
+                    racehorse
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true"
+                        data-filter=":racehorse/main">androidJvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":racehorse/main"
+                                       data-filter=":racehorse/main"/>
+                                <span class="checkbox--icon"></span>
+                                androidJvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config='{"defaultSize": 280, "minSize": 200, "maxSize": 400}'>
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                    data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    racehorse
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="racehorse::org.racehorse/BiometricStorageErrorCode///PointingToDeclaration//-1086564785">
+  <div class="breadcrumbs"><a href="../../../index.html">racehorse</a><span class="delimiter">/</span><a href="../index.html">org.racehorse</a><span class="delimiter">/</span><span class="current">BiometricStorageErrorCode</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Biometric</span><wbr></wbr><span>Storage</span><wbr></wbr><span>Error</span><wbr></wbr><span><span>Code</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><span class="token keyword">enum </span><a href="index.html">BiometricStorageErrorCode</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="index.html">BiometricStorageErrorCode</a><span class="token operator">&gt; </span></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="ENTRY">Entries</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="ENTRY">
+        <h2 class="tableheader">Entries</h2>
+        <div class="table"><a data-name="-1166476043%2FClasslikes%2F-1086564785" anchor-label="UNKNOWN" id="-1166476043%2FClasslikes%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-u-n-k-n-o-w-n/index.html">UNKNOWN</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1166476043%2FClasslikes%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><div class="block"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;unknown&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><a href="-u-n-k-n-o-w-n/index.html">UNKNOWN</a></div></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1433468962%2FClasslikes%2F-1086564785" anchor-label="STORAGE_FAILED" id="-1433468962%2FClasslikes%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-f-a-i-l-e-d/index.html">STORAGE_FAILED</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1433468962%2FClasslikes%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><div class="block"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;storage_failed&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><a href="-s-t-o-r-a-g-e_-f-a-i-l-e-d/index.html">STORAGE_FAILED</a></div></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="202037552%2FClasslikes%2F-1086564785" anchor-label="KEY_UNRECOVERABLE" id="202037552%2FClasslikes%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-k-e-y_-u-n-r-e-c-o-v-e-r-a-b-l-e/index.html">KEY_UNRECOVERABLE</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="202037552%2FClasslikes%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><div class="block"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;key_unrecoverable&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><a href="-k-e-y_-u-n-r-e-c-o-v-e-r-a-b-l-e/index.html">KEY_UNRECOVERABLE</a></div></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1826540330%2FClasslikes%2F-1086564785" anchor-label="HARDWARE_UNAVAILABLE" id="-1826540330%2FClasslikes%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-a-r-d-w-a-r-e_-u-n-a-v-a-i-l-a-b-l-e/index.html">HARDWARE_UNAVAILABLE</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1826540330%2FClasslikes%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><div class="block"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;hardware_unavailable&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><a href="-h-a-r-d-w-a-r-e_-u-n-a-v-a-i-l-a-b-l-e/index.html">HARDWARE_UNAVAILABLE</a></div></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-302100446%2FClasslikes%2F-1086564785" anchor-label="UNABLE_TO_PROCESS" id="-302100446%2FClasslikes%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-u-n-a-b-l-e_-t-o_-p-r-o-c-e-s-s/index.html">UNABLE_TO_PROCESS</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-302100446%2FClasslikes%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><div class="block"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;unable_to_process&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><a href="-u-n-a-b-l-e_-t-o_-p-r-o-c-e-s-s/index.html">UNABLE_TO_PROCESS</a></div></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="70354892%2FClasslikes%2F-1086564785" anchor-label="TIMEOUT" id="70354892%2FClasslikes%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-i-m-e-o-u-t/index.html">TIMEOUT</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="70354892%2FClasslikes%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><div class="block"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;timeout&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><a href="-t-i-m-e-o-u-t/index.html">TIMEOUT</a></div></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1775787685%2FClasslikes%2F-1086564785" anchor-label="NO_SPACE" id="1775787685%2FClasslikes%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-n-o_-s-p-a-c-e/index.html">NO_SPACE</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1775787685%2FClasslikes%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><div class="block"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;no_space&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><a href="-n-o_-s-p-a-c-e/index.html">NO_SPACE</a></div></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1411208554%2FClasslikes%2F-1086564785" anchor-label="CANCELED" id="-1411208554%2FClasslikes%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-c-a-n-c-e-l-e-d/index.html">CANCELED</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1411208554%2FClasslikes%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><div class="block"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;canceled&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><a href="-c-a-n-c-e-l-e-d/index.html">CANCELED</a></div></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-62176978%2FClasslikes%2F-1086564785" anchor-label="LOCKOUT" id="-62176978%2FClasslikes%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-l-o-c-k-o-u-t/index.html">LOCKOUT</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-62176978%2FClasslikes%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><div class="block"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;lockout&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><a href="-l-o-c-k-o-u-t/index.html">LOCKOUT</a></div></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1929393477%2FClasslikes%2F-1086564785" anchor-label="VENDOR" id="1929393477%2FClasslikes%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-v-e-n-d-o-r/index.html">VENDOR</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1929393477%2FClasslikes%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><div class="block"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;vendor&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><a href="-v-e-n-d-o-r/index.html">VENDOR</a></div></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="748777341%2FClasslikes%2F-1086564785" anchor-label="LOCKOUT_PERMANENT" id="748777341%2FClasslikes%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-l-o-c-k-o-u-t_-p-e-r-m-a-n-e-n-t/index.html">LOCKOUT_PERMANENT</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="748777341%2FClasslikes%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><div class="block"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;lockout_permanent&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><a href="-l-o-c-k-o-u-t_-p-e-r-m-a-n-e-n-t/index.html">LOCKOUT_PERMANENT</a></div></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1924693288%2FClasslikes%2F-1086564785" anchor-label="USER_CANCELED" id="-1924693288%2FClasslikes%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-u-s-e-r_-c-a-n-c-e-l-e-d/index.html">USER_CANCELED</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1924693288%2FClasslikes%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><div class="block"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;user_canceled&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><a href="-u-s-e-r_-c-a-n-c-e-l-e-d/index.html">USER_CANCELED</a></div></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1934927684%2FClasslikes%2F-1086564785" anchor-label="NO_BIOMETRICS" id="1934927684%2FClasslikes%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-n-o_-b-i-o-m-e-t-r-i-c-s/index.html">NO_BIOMETRICS</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1934927684%2FClasslikes%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><div class="block"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;no_biometrics&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><a href="-n-o_-b-i-o-m-e-t-r-i-c-s/index.html">NO_BIOMETRICS</a></div></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1991148683%2FClasslikes%2F-1086564785" anchor-label="HARDWARE_NOT_PRESENT" id="-1991148683%2FClasslikes%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-a-r-d-w-a-r-e_-n-o-t_-p-r-e-s-e-n-t/index.html">HARDWARE_NOT_PRESENT</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1991148683%2FClasslikes%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><div class="block"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;hardware_not_present&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><a href="-h-a-r-d-w-a-r-e_-n-o-t_-p-r-e-s-e-n-t/index.html">HARDWARE_NOT_PRESENT</a></div></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-875540281%2FClasslikes%2F-1086564785" anchor-label="NEGATIVE_BUTTON" id="-875540281%2FClasslikes%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-n-e-g-a-t-i-v-e_-b-u-t-t-o-n/index.html">NEGATIVE_BUTTON</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-875540281%2FClasslikes%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><div class="block"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;negative_button&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><a href="-n-e-g-a-t-i-v-e_-b-u-t-t-o-n/index.html">NEGATIVE_BUTTON</a></div></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-201950817%2FClasslikes%2F-1086564785" anchor-label="NO_DEVICE_CREDENTIAL" id="-201950817%2FClasslikes%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-n-o_-d-e-v-i-c-e_-c-r-e-d-e-n-t-i-a-l/index.html">NO_DEVICE_CREDENTIAL</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-201950817%2FClasslikes%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><div class="block"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;no_device_credential&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><a href="-n-o_-d-e-v-i-c-e_-c-r-e-d-e-n-t-i-a-l/index.html">NO_DEVICE_CREDENTIAL</a></div></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="226832019%2FClasslikes%2F-1086564785" anchor-label="SECURITY_UPDATE_REQUIRED" id="226832019%2FClasslikes%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-e-c-u-r-i-t-y_-u-p-d-a-t-e_-r-e-q-u-i-r-e-d/index.html">SECURITY_UPDATE_REQUIRED</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="226832019%2FClasslikes%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><div class="block"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;security_update_required&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><a href="-s-e-c-u-r-i-t-y_-u-p-d-a-t-e_-r-e-q-u-i-r-e-d/index.html">SECURITY_UPDATE_REQUIRED</a></div></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="2018414958%2FClasslikes%2F-1086564785" anchor-label="Companion" id="2018414958%2FClasslikes%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2018414958%2FClasslikes%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="1541050391%2FProperties%2F-1086564785" anchor-label="entries" id="1541050391%2FProperties%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="entries.html"><span><span>entries</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1541050391%2FProperties%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="entries.html">entries</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.enums/-enum-entries/index.html">EnumEntries</a><span class="token operator">&lt;</span><a href="index.html">BiometricStorageErrorCode</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns a representation of an immutable list of all enum entries, in the order they're declared.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-372974862%2FProperties%2F-1086564785" anchor-label="name" id="-372974862%2FProperties%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../org.racehorse.evergreen/-update-mode/-p-o-s-t-p-o-n-e-d/index.html#-372974862%2FProperties%2F-1086564785"><span><span>name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-372974862%2FProperties%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="../../org.racehorse.evergreen/-update-mode/-p-o-s-t-p-o-n-e-d/index.html#-372974862%2FProperties%2F-1086564785">name</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-739389684%2FProperties%2F-1086564785" anchor-label="ordinal" id="-739389684%2FProperties%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../org.racehorse.evergreen/-update-mode/-p-o-s-t-p-o-n-e-d/index.html#-739389684%2FProperties%2F-1086564785"><span><span>ordinal</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-739389684%2FProperties%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="../../org.racehorse.evergreen/-update-mode/-p-o-s-t-p-o-n-e-d/index.html#-739389684%2FProperties%2F-1086564785">ordinal</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="556451030%2FProperties%2F-1086564785" anchor-label="value" id="556451030%2FProperties%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="value.html"><span><span>value</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="556451030%2FProperties%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="value.html">value</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="1082682085%2FFunctions%2F-1086564785" anchor-label="valueOf" id="1082682085%2FFunctions%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="value-of.html"><span>value</span><wbr></wbr><span><span>Of</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1082682085%2FFunctions%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="value-of.html"><span class="token function">valueOf</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">BiometricStorageErrorCode</a></div><div class="brief "><p class="paragraph">Returns the enum constant of this type with the specified name. The string must match exactly an identifier used to declare an enum constant in this type. (Extraneous whitespace characters are not permitted.)</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1636367537%2FFunctions%2F-1086564785" anchor-label="values" id="1636367537%2FFunctions%2F-1086564785" data-filterable-set=":racehorse/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":racehorse/main" data-filterable-set=":racehorse/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="values.html"><span><span>values</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1636367537%2FFunctions%2F-1086564785"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":racehorse/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="values.html"><span class="token function">values</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><a href="index.html">BiometricStorageErrorCode</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns an array containing the constants of this enum type, in the order they're declared.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
