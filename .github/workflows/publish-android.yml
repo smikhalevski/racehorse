@@ -35,7 +35,9 @@ on:
 run-name: ${{ github.event_name == 'push' && github.ref_name || 'prerelease' }}
 
 permissions:
+  id-token: write
   contents: write
+  packages: write
 
 env:
   WORKSPACE: ${{ inputs.workspace }}
@@ -84,7 +86,7 @@ jobs:
           echo "::notice title=Artifact::$(npm pkg get name | xargs):$(npm pkg get version | xargs)"
         working-directory: ${{ env.WORKSPACE }}
         env:
-          GH_PAT: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ github.token }}
 
   publish-docs:
     if: github.event_name == 'push'

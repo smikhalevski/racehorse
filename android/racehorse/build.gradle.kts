@@ -73,7 +73,7 @@ publishing {
 
             credentials {
                 username = "smikhalevski"
-                password = System.getenv("GH_PAT")
+                password = System.getenv("GITHUB_TOKEN")
             }
         }
     }
