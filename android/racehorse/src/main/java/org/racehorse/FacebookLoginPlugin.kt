@@ -21,7 +21,7 @@ class AccessTokenSurrogate(
     val applicationId: String,
     val userId: String,
     val dataAccessExpirationTime: Long,
-    val graphDomain: String?,
+    val graphDomain: String? = null,
     val isExpired: Boolean,
     val isDataAccessExpired: Boolean,
     val isInstagramToken: Boolean,

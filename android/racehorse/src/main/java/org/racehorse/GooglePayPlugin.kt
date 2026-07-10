@@ -44,14 +44,14 @@ class TokenInfoSurrogate(
 
 @Serializable
 class UserAddressSurrogate(
-    val name: String?,
-    val address1: String?,
-    val address2: String?,
-    val locality: String?,
-    val administrativeArea: String?,
-    val countryCode: String?,
-    val postalCode: String?,
-    val phoneNumber: String?,
+    val name: String? = null,
+    val address1: String? = null,
+    val address2: String? = null,
+    val locality: String? = null,
+    val administrativeArea: String? = null,
+    val countryCode: String? = null,
+    val postalCode: String? = null,
+    val phoneNumber: String? = null,
 ) {
     fun toUserAddress() = UserAddress.newBuilder()
         .setName(name.orEmpty())
