@@ -9,8 +9,12 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.racehorse.connection.Message
+import org.racehorse.connection.RacehorseConnection
+import org.racehorse.connection.ThreadMode
 import org.racehorse.utils.launchActivity
 import org.racehorse.utils.launchActivityForResult
+import org.racehorse.utils.launchActivityForResultOrNull
 
 @Serializable
 class ActivityInfo(
@@ -20,19 +24,24 @@ class ActivityInfo(
     val versionCode: Int,
 )
 
+@Message("org.racehorse.ActivityStateChangedEvent")
 @Serializable
-class ActivityStateChangedEvent(val state: Int) : NoticeEvent
+class ActivityStateChangedEvent(val state: Int) : RequestEvent()
 
+@Message("org.racehorse.GetActivityStateEvent", threadMode = ThreadMode.SYNC)
 @Serializable
 class GetActivityStateEvent : RequestEvent() {
 
+    @Message("org.racehorse.GetActivityStateEvent.ResultEvent")
     @Serializable
     class ResultEvent(val state: Int) : ResponseEvent()
 }
 
+@Message("org.racehorse.GetActivityInfoEvent", threadMode = ThreadMode.SYNC)
 @Serializable
 class GetActivityInfoEvent : RequestEvent() {
 
+    @Message("org.racehorse.GetActivityInfoEvent.ResultEvent")
     @Serializable
     class ResultEvent(val info: ActivityInfo) : ResponseEvent()
 }
@@ -42,9 +51,11 @@ class GetActivityInfoEvent : RequestEvent() {
  *
  * @param intent The intent that starts an activity.
  */
+@Message("org.racehorse.StartActivityEvent", threadMode = ThreadMode.SYNC)
 @Serializable
 class StartActivityEvent(val intent: @Contextual Intent) : RequestEvent() {
 
+    @Message("org.racehorse.StartActivityEvent.ResultEvent")
     @Serializable
     class ResultEvent(val isStarted: Boolean) : ResponseEvent()
 }
@@ -52,11 +63,69 @@ class StartActivityEvent(val intent: @Contextual Intent) : RequestEvent() {
 /**
  * Start an activity for the [intent] and wait for the result.
  */
+@Message("org.racehorse.StartActivityForResultEvent")
 @Serializable
 class StartActivityForResultEvent(val intent: @Contextual Intent) : RequestEvent() {
 
+    @Message("org.racehorse.StartActivityForResultEvent.ResultEvent")
     @Serializable
     class ResultEvent(val resultCode: Int, val intent: @Contextual Intent?) : ResponseEvent()
+}
+
+private const val BACKGROUND = 0
+private const val FOREGROUND = 1
+private const val ACTIVE = 2
+
+fun RacehorseConnection.activity(activity: ComponentActivity) {
+
+    val lifecycleListener = LifecycleEventObserver { _, event ->
+        when (event.targetState) {
+            Lifecycle.State.CREATED -> notify(ActivityStateChangedEvent(BACKGROUND))
+            Lifecycle.State.STARTED -> notify(ActivityStateChangedEvent(FOREGROUND))
+            Lifecycle.State.RESUMED -> notify(ActivityStateChangedEvent(ACTIVE))
+            else -> {}
+        }
+    }
+
+    activity.lifecycle.addObserver(lifecycleListener)
+
+    on<GetActivityStateEvent> {
+        GetActivityStateEvent.ResultEvent(
+            when (activity.lifecycle.currentState) {
+                Lifecycle.State.STARTED -> FOREGROUND
+                Lifecycle.State.RESUMED -> ACTIVE
+                else -> BACKGROUND
+            }
+        )
+    }
+
+    on<GetActivityInfoEvent> {
+        val packageInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
+
+        @Suppress("DEPRECATION")
+        GetActivityInfoEvent.ResultEvent(
+            ActivityInfo(
+                applicationLabel = activity.applicationInfo.loadLabel(activity.packageManager).toString(),
+                applicationId = activity.packageName,
+                versionName = packageInfo.versionName ?: "",
+                versionCode = packageInfo.versionCode,
+            )
+        )
+    }
+
+    on<StartActivityEvent> {
+        StartActivityEvent.ResultEvent(activity.launchActivity(it.intent))
+    }
+
+    on<StartActivityForResultEvent> {
+        val result = activity.launchActivityForResultOrNull(it.intent)
+
+        if (result == null) {
+            StartActivityForResultEvent.ResultEvent(Activity.RESULT_CANCELED, null)
+        } else {
+            StartActivityForResultEvent.ResultEvent(result.resultCode, result.data)
+        }
+    }
 }
 
 /**
